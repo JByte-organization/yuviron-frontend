@@ -1,0 +1,93 @@
+name: Deploy DEV to Elastic Beanstalk
+
+on:
+  push:
+    branches: ["dev"]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy (dev)
+    runs-on: ubuntu-latest
+
+    # ВАЖНО: это включает GitHub Environment "dev"
+    # и даёт доступ к его Environment secrets
+    environment: dev
+
+    env:
+      # Берём всё из Environment secrets, которые ты создал на скрине
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      EB_APPLICATION: ${{ secrets.EB_APPLICATION }}
+      EB_ENVIRONMENT: ${{ secrets.EB_ENVIRONMENT }}
+
+      # Эти 2 — если нужны как переменные во время build (часто нужны)
+      NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
+      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Если хочешь, можешь явно "зафиксировать" production-режим билда:
+      # Next в CI и так обычно production-build, но это наглядно.
+      - name: Build (Next.js)
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ env.NEXT_PUBLIC_API_BASE_URL }}
+          API_BASE_URL: ${{ env.API_BASE_URL }}
+        run: npm run build
+
+      - name: Create deployment bundle
+        run: |
+          zip -r deploy.zip \
+            .next public package.json package-lock.json next.config.* \
+            -x "**/node_modules/**" || true
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Получаем EB storage bucket автоматически (без хардкода)
+      - name: Resolve EB S3 bucket
+        run: |
+          BUCKET=$(aws elasticbeanstalk create-storage-location --query S3Bucket --output text)
+          echo "EB_S3_BUCKET=$BUCKET" >> $GITHUB_ENV
+          echo "Using EB bucket: $BUCKET"
+
+      - name: Upload bundle to S3
+        run: |
+          VERSION_LABEL="dev-${GITHUB_SHA}"
+          S3_KEY="yuviron-frontend/dev/${VERSION_LABEL}.zip"
+
+          echo "VERSION_LABEL=$VERSION_LABEL" >> $GITHUB_ENV
+          echo "S3_KEY=$S3_KEY" >> $GITHUB_ENV
+
+          aws s3 cp deploy.zip "s3://${EB_S3_BUCKET}/${S3_KEY}"
+
+      - name: Create EB application version
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name "${EB_APPLICATION}" \
+            --version-label "${VERSION_LABEL}" \
+            --source-bundle S3Bucket="${EB_S3_BUCKET}",S3Key="${S3_KEY}" \
+            --process
+
+      - name: Deploy to EB environment
+        run: |
+          aws elasticbeanstalk update-environment \
+            --environment-name "${EB_ENVIRONMENT}" \
+            --version-label "${VERSION_LABEL}"
