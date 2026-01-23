@@ -2,7 +2,8 @@ name: Deploy DEV to Elastic Beanstalk (Next.js standalone)
 
 on:
   push:
-    branches: ["dev"]
+    branches:
+      - dev
 
 permissions:
   id-token: write
@@ -23,7 +24,6 @@ jobs:
       AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
       EB_APPLICATION: ${{ secrets.EB_APPLICATION }}
       EB_ENVIRONMENT: ${{ secrets.EB_ENVIRONMENT }}
-
       NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
       API_BASE_URL: ${{ secrets.API_BASE_URL }}
 
@@ -54,34 +54,30 @@ jobs:
           rm -rf bundle deploy.zip
           mkdir -p bundle
 
-          # 1) standalone -> в корень бандла (чтобы server.js лежал в bundle/server.js)
+          # standalone -> в корень бандла (server.js должен быть bundle/server.js)
           cp -R .next/standalone/* bundle/
 
-          # 2) .next/static -> bundle/.next/static (обязательно для CSS/JS)
+          # static ассеты -> bundle/.next/static (иначе не будет CSS/JS)
           mkdir -p bundle/.next
           cp -R .next/static bundle/.next/static
 
-          # 3) public
-          if [ -d "public" ]; then
+          # public (если есть)
+          if [ -d public ]; then
             cp -R public bundle/public
           fi
 
-          # 4) Procfile (без отступов!)
+          # Procfile (строго без отступов)
           cat > bundle/Procfile <<'EOF'
 web: node server.js
 EOF
 
-          # 5) package.json + lock (на всякий)
+          # package.json (+ lock если есть)
           cp package.json bundle/package.json
-          if [ -f "package-lock.json" ]; then
+          if [ -f package-lock.json ]; then
             cp package-lock.json bundle/package-lock.json
           fi
 
-          # Диагностика (полезно в логах Actions)
-          echo "Bundle root:"
-          ls -la bundle | sed -n '1,120p'
-          echo "Bundle .next:"
-          ls -la bundle/.next | sed -n '1,120p'
+          # sanity check
           test -f bundle/server.js
 
       - name: Create deployment zip
@@ -91,7 +87,6 @@ EOF
           cd bundle
           zip -r ../deploy.zip .
           cd ..
-          ls -lh deploy.zip
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -105,7 +100,6 @@ EOF
           set -euo pipefail
           BUCKET=$(aws elasticbeanstalk create-storage-location --query S3Bucket --output text)
           echo "EB_S3_BUCKET=$BUCKET" >> "$GITHUB_ENV"
-          echo "Using EB bucket: $BUCKET"
 
       - name: Upload bundle to S3
         shell: bash
@@ -113,10 +107,8 @@ EOF
           set -euo pipefail
           VERSION_LABEL="dev-${GITHUB_SHA}"
           S3_KEY="yuviron-frontend/dev/${VERSION_LABEL}.zip"
-
           echo "VERSION_LABEL=$VERSION_LABEL" >> "$GITHUB_ENV"
           echo "S3_KEY=$S3_KEY" >> "$GITHUB_ENV"
-
           aws s3 cp deploy.zip "s3://${EB_S3_BUCKET}/${S3_KEY}"
 
       - name: Create EB application version
