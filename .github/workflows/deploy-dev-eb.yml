@@ -15,7 +15,6 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy (dev)
     runs-on: ubuntu-latest
     environment: dev
 
@@ -28,59 +27,38 @@ jobs:
       API_BASE_URL: ${{ secrets.API_BASE_URL }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: npm
 
-      - name: Install dependencies
+      - name: Install
         run: npm ci
 
-      - name: Build (Next.js standalone)
+      - name: Build
         env:
           NEXT_PUBLIC_API_BASE_URL: ${{ env.NEXT_PUBLIC_API_BASE_URL }}
           API_BASE_URL: ${{ env.API_BASE_URL }}
         run: npm run build
 
-      - name: Prepare Elastic Beanstalk bundle (standalone)
+      - name: Prepare bundle
         shell: bash
         run: |
           set -euo pipefail
-
           rm -rf bundle deploy.zip
           mkdir -p bundle
-
-          # standalone -> в корень бандла (server.js должен быть bundle/server.js)
           cp -R .next/standalone/* bundle/
-
-          # static ассеты -> bundle/.next/static (иначе не будет CSS/JS)
           mkdir -p bundle/.next
           cp -R .next/static bundle/.next/static
-
-          # public (если есть)
-          if [ -d public ]; then
-            cp -R public bundle/public
-          fi
-
-          # Procfile (строго без отступов)
-          cat > bundle/Procfile <<'EOF'
-web: node server.js
-EOF
-
-          # package.json (+ lock если есть)
+          if [ -d public ]; then cp -R public bundle/public; fi
+          printf "web: node server.js\n" > bundle/Procfile
           cp package.json bundle/package.json
-          if [ -f package-lock.json ]; then
-            cp package-lock.json bundle/package-lock.json
-          fi
-
-          # sanity check
+          if [ -f package-lock.json ]; then cp package-lock.json bundle/package-lock.json; fi
           test -f bundle/server.js
 
-      - name: Create deployment zip
+      - name: Zip
         shell: bash
         run: |
           set -euo pipefail
@@ -88,20 +66,20 @@ EOF
           zip -r ../deploy.zip .
           cd ..
 
-      - name: Configure AWS credentials (OIDC)
+      - name: AWS creds (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Resolve EB S3 bucket
+      - name: Resolve EB bucket
         shell: bash
         run: |
           set -euo pipefail
           BUCKET=$(aws elasticbeanstalk create-storage-location --query S3Bucket --output text)
           echo "EB_S3_BUCKET=$BUCKET" >> "$GITHUB_ENV"
 
-      - name: Upload bundle to S3
+      - name: Upload to S3
         shell: bash
         run: |
           set -euo pipefail
@@ -111,7 +89,7 @@ EOF
           echo "S3_KEY=$S3_KEY" >> "$GITHUB_ENV"
           aws s3 cp deploy.zip "s3://${EB_S3_BUCKET}/${S3_KEY}"
 
-      - name: Create EB application version
+      - name: Create EB app version
         shell: bash
         run: |
           set -euo pipefail
@@ -121,7 +99,7 @@ EOF
             --source-bundle S3Bucket="${EB_S3_BUCKET}",S3Key="${S3_KEY}" \
             --process
 
-      - name: Deploy to EB environment
+      - name: Deploy
         shell: bash
         run: |
           set -euo pipefail
