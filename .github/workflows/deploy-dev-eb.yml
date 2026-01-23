@@ -1,4 +1,4 @@
-name: Deploy DEV to Elastic Beanstalk
+name: Deploy DEV to Elastic Beanstalk (standalone)
 
 on:
   push:
@@ -12,19 +12,14 @@ jobs:
   deploy:
     name: Deploy (dev)
     runs-on: ubuntu-latest
-
-    # ВАЖНО: это включает GitHub Environment "dev"
-    # и даёт доступ к его Environment secrets
     environment: dev
 
     env:
-      # Берём всё из Environment secrets, которые ты создал на скрине
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
       EB_APPLICATION: ${{ secrets.EB_APPLICATION }}
       EB_ENVIRONMENT: ${{ secrets.EB_ENVIRONMENT }}
 
-      # Эти 2 — если нужны как переменные во время build (часто нужны)
       NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
       API_BASE_URL: ${{ secrets.API_BASE_URL }}
 
@@ -41,19 +36,36 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Если хочешь, можешь явно "зафиксировать" production-режим билда:
-      # Next в CI и так обычно production-build, но это наглядно.
-      - name: Build (Next.js)
+      - name: Build (Next.js standalone)
         env:
           NEXT_PUBLIC_API_BASE_URL: ${{ env.NEXT_PUBLIC_API_BASE_URL }}
           API_BASE_URL: ${{ env.API_BASE_URL }}
         run: npm run build
 
-      - name: Create deployment bundle
+      # Собираем структуру, которую ждёт standalone
+      - name: Prepare bundle
         run: |
-          zip -r deploy.zip \
-            .next public package.json package-lock.json next.config.* \
-            -x "**/node_modules/**" || true
+          rm -rf bundle
+          mkdir -p bundle
+
+          # standalone server + минимальные node_modules
+          cp -R .next/standalone bundle/.next
+
+          # статические ассеты Next должны быть по пути .next/static
+          mkdir -p bundle/.next/static
+          cp -R .next/static bundle/.next/static
+
+          # public
+          cp -R public bundle/public
+
+          # EB config (NodeCommand)
+          cp -R .ebextensions bundle/.ebextensions
+
+      - name: Create deployment zip
+        run: |
+          cd bundle
+          zip -r ../deploy.zip ./*
+          cd ..
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -61,7 +73,6 @@ jobs:
           role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # Получаем EB storage bucket автоматически (без хардкода)
       - name: Resolve EB S3 bucket
         run: |
           BUCKET=$(aws elasticbeanstalk create-storage-location --query S3Bucket --output text)
