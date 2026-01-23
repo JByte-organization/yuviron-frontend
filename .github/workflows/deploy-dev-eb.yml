@@ -1,50 +1,113 @@
-name: Deploy to AWS EB (dev)
+name: Deploy DEV to Elastic Beanstalk (Next.js standalone)
 
 on:
   push:
     branches:
       - dev
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+permissions:
+  id-token: write
+  contents: read
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+concurrency:
+  group: deploy-dev-eb
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      EB_APPLICATION: ${{ secrets.EB_APPLICATION }}
+      EB_ENVIRONMENT: ${{ secrets.EB_ENVIRONMENT }}
+      NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
+      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: "20"
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Next.js (standalone output)
+      - name: Build Next.js
         env:
-          NODE_ENV: production  # гарантируем production-режим сборки
+          NEXT_PUBLIC_API_BASE_URL: ${{ env.NEXT_PUBLIC_API_BASE_URL }}
+          API_BASE_URL: ${{ env.API_BASE_URL }}
         run: npm run build
 
-      - name: Copy static assets to standalone folder
+      - name: Prepare EB bundle
+        shell: bash
         run: |
-          cp -r public .next/standalone/ 
-          cp -r .next/static .next/standalone/.next/
+          set -euo pipefail
+          rm -rf bundle deploy.zip
+          mkdir -p bundle
 
-      - name: Prepare deployment artifact
+          cp -R .next bundle/.next
+          if [ -d public ]; then cp -R public bundle/public; fi
+
+          cp Procfile server.js package.json bundle/
+          [ -f package-lock.json ] && cp package-lock.json bundle/
+
+          rm -rf bundle/.next/cache bundle/.next/standalone
+
+          echo "Bundle:"
+          find bundle -type f | sed -n '1,40p'
+
+      - name: Create ZIP archive
+        shell: bash
         run: |
-          # Добавляем Procfile и (при наличии) next.config.js в пакет
-          echo "web: node .next/standalone/server.js" > Procfile
-          [ -f next.config.js ] && cp next.config.js .next/standalone/ 
-          # Архивируем содержимое .next/standalone в deploy.zip 
-          cd .next/standalone && zip -r ../../deploy.zip * .[^.]*
+          set -euo pipefail
+          cd bundle
+          zip -r ../deploy.zip .
+          cd ..
 
-      - name: Deploy to Elastic Beanstalk
-        uses: einaregilsson/beanstalk-deploy@v22
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          region: eu-west-2                      # регион AWS (пример)
-          application_name: YourAppName          # имя приложения EB
-          environment_name: yuviron-web-dev      # имя окружения EB (dev)
-          version_label: yuviron-dev-${{ github.sha }}  # уникальная метка версии
-          deployment_package: deploy.zip
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get EB S3 bucket
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUCKET=$(aws elasticbeanstalk create-storage-location --query S3Bucket --output text)
+          echo "EB_S3_BUCKET=$BUCKET" >> "$GITHUB_ENV"
+
+      - name: Upload to S3
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION_LABEL="dev-${GITHUB_SHA}"
+          S3_KEY="yuviron-frontend/dev/${VERSION_LABEL}.zip"
+
+          echo "VERSION_LABEL=$VERSION_LABEL" >> "$GITHUB_ENV"
+          echo "S3_KEY=$S3_KEY" >> "$GITHUB_ENV"
+
+          aws s3 cp deploy.zip "s3://${EB_S3_BUCKET}/${S3_KEY}"
+
+      - name: Create EB app version
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws elasticbeanstalk create-application-version \
+            --application-name "${EB_APPLICATION}" \
+            --version-label "${VERSION_LABEL}" \
+            --source-bundle S3Bucket="${EB_S3_BUCKET}",S3Key="${S3_KEY}" \
+            --process
+
+      - name: Deploy to EB
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws elasticbeanstalk update-environment \
+            --environment-name "${EB_ENVIRONMENT}" \
+            --version-label "${VERSION_LABEL}"
