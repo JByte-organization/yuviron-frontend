@@ -1,4 +1,4 @@
-name: Deploy DEV to Elastic Beanstalk (standalone)
+name: Deploy DEV to Elastic Beanstalk (Next.js standalone)
 
 on:
   push:
@@ -7,6 +7,10 @@ on:
 permissions:
   id-token: write
   contents: read
+
+concurrency:
+  group: eb-dev-deploy
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -17,6 +21,7 @@ jobs:
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
       EB_APPLICATION: ${{ secrets.EB_APPLICATION }}
       EB_ENVIRONMENT: ${{ secrets.EB_ENVIRONMENT }}
 
@@ -42,30 +47,54 @@ jobs:
           API_BASE_URL: ${{ env.API_BASE_URL }}
         run: npm run build
 
-      # Собираем структуру, которую ждёт standalone
-      - name: Prepare bundle
+      - name: Prepare bundle (EB-ready)
+        shell: bash
         run: |
-          rm -rf bundle
+          set -euo pipefail
+
+          rm -rf bundle deploy.zip
           mkdir -p bundle
 
-          # standalone server + минимальные node_modules
-          cp -R .next/standalone bundle/.next
+          # 1) Кладём standalone в корень bundle (там будут server.js + node_modules)
+          cp -R .next/standalone/* bundle/
 
-          # статические ассеты Next должны быть по пути .next/static
-          mkdir -p bundle/.next/static
+          # 2) Next static должен быть по пути bundle/.next/static
+          mkdir -p bundle/.next
           cp -R .next/static bundle/.next/static
 
-          # public
-          cp -R public bundle/public
+          # 3) public
+          if [ -d "public" ]; then
+            cp -R public bundle/public
+          fi
 
-          # EB config (NodeCommand)
-          cp -R .ebextensions bundle/.ebextensions
+          # 4) Procfile — чтобы EB не пытался "next start"
+          echo "web: node server.js" > bundle/Procfile
 
-      - name: Create deployment zip
+          # 5) .ebextensions (если есть)
+          if [ -d ".ebextensions" ]; then
+            cp -R .ebextensions bundle/.ebextensions
+          fi
+
+          # Полезно: если есть platform hooks/config
+          if [ -d ".platform" ]; then
+            cp -R .platform bundle/.platform
+          fi
+
+      - name: Create deployment zip (include dotfiles)
+        shell: bash
         run: |
+          set -euo pipefail
           cd bundle
-          zip -r ../deploy.zip ./*
+          # Важно: zip из "." включает скрытые папки (.next, .ebextensions и т.д.)
+          zip -r ../deploy.zip .
           cd ..
+
+      - name: Sanity check zip
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -l deploy.zip | head -n 80
+          unzip -l deploy.zip | grep -E "Procfile|server\.js|\.next/static" >/dev/null
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -74,13 +103,17 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Resolve EB S3 bucket
+        shell: bash
         run: |
+          set -euo pipefail
           BUCKET=$(aws elasticbeanstalk create-storage-location --query S3Bucket --output text)
           echo "EB_S3_BUCKET=$BUCKET" >> $GITHUB_ENV
           echo "Using EB bucket: $BUCKET"
 
       - name: Upload bundle to S3
+        shell: bash
         run: |
+          set -euo pipefail
           VERSION_LABEL="dev-${GITHUB_SHA}"
           S3_KEY="yuviron-frontend/dev/${VERSION_LABEL}.zip"
 
@@ -90,7 +123,9 @@ jobs:
           aws s3 cp deploy.zip "s3://${EB_S3_BUCKET}/${S3_KEY}"
 
       - name: Create EB application version
+        shell: bash
         run: |
+          set -euo pipefail
           aws elasticbeanstalk create-application-version \
             --application-name "${EB_APPLICATION}" \
             --version-label "${VERSION_LABEL}" \
@@ -98,7 +133,9 @@ jobs:
             --process
 
       - name: Deploy to EB environment
+        shell: bash
         run: |
+          set -euo pipefail
           aws elasticbeanstalk update-environment \
             --environment-name "${EB_ENVIRONMENT}" \
             --version-label "${VERSION_LABEL}"
