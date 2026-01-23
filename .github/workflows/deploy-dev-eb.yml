@@ -2,7 +2,7 @@ name: Deploy DEV to Elastic Beanstalk (Next.js standalone)
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: ["dev"]
 
 permissions:
   id-token: write
@@ -52,17 +52,37 @@ jobs:
           set -euo pipefail
 
           rm -rf bundle deploy.zip
+          mkdir -p bundle
+
+          # 1) standalone -> в корень бандла (чтобы server.js лежал в bundle/server.js)
+          cp -R .next/standalone/* bundle/
+
+          # 2) .next/static -> bundle/.next/static (обязательно для CSS/JS)
           mkdir -p bundle/.next
-
-          cp -R .next/standalone bundle/.next/standalone
           cp -R .next/static bundle/.next/static
-          cp -R public bundle/public
 
+          # 3) public
+          if [ -d "public" ]; then
+            cp -R public bundle/public
+          fi
+
+          # 4) Procfile (без отступов!)
           cat > bundle/Procfile <<'EOF'
-          web: node .next/standalone/server.js
-          EOF
+web: node server.js
+EOF
 
+          # 5) package.json + lock (на всякий)
           cp package.json bundle/package.json
+          if [ -f "package-lock.json" ]; then
+            cp package-lock.json bundle/package-lock.json
+          fi
+
+          # Диагностика (полезно в логах Actions)
+          echo "Bundle root:"
+          ls -la bundle | sed -n '1,120p'
+          echo "Bundle .next:"
+          ls -la bundle/.next | sed -n '1,120p'
+          test -f bundle/server.js
 
       - name: Create deployment zip
         shell: bash
@@ -71,6 +91,7 @@ jobs:
           cd bundle
           zip -r ../deploy.zip .
           cd ..
+          ls -lh deploy.zip
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
