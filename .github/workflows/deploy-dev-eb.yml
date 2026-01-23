@@ -31,19 +31,19 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Next.js
+      - name: Build (Next.js standalone)
         env:
           NEXT_PUBLIC_API_BASE_URL: ${{ env.NEXT_PUBLIC_API_BASE_URL }}
           API_BASE_URL: ${{ env.API_BASE_URL }}
         run: npm run build
 
-      - name: Prepare EB bundle
+      - name: Prepare bundle
         shell: bash
         run: |
           set -euo pipefail
@@ -51,59 +51,52 @@ jobs:
           mkdir -p bundle
 
           cp -R .next/standalone/* bundle/
+          cp -R .next/static bundle/.next/static
           cp -R public bundle/public || true
 
-          cp Procfile server.js package.json bundle/
+          cp Procfile package.json server.js bundle/
           [ -f package-lock.json ] && cp package-lock.json bundle/
 
-
-      - name: Create ZIP archive
+      - name: Zip bundle
         shell: bash
         run: |
-          set -euo pipefail
           cd bundle
           zip -r ../deploy.zip .
           cd ..
 
-      - name: Configure AWS credentials (OIDC)
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Get EB S3 bucket
+      - name: Resolve Elastic Beanstalk bucket
         shell: bash
         run: |
-          set -euo pipefail
           BUCKET=$(aws elasticbeanstalk create-storage-location --query S3Bucket --output text)
           echo "EB_S3_BUCKET=$BUCKET" >> "$GITHUB_ENV"
 
-      - name: Upload to S3
+      - name: Upload bundle to S3
         shell: bash
         run: |
-          set -euo pipefail
           VERSION_LABEL="dev-${GITHUB_SHA}"
           S3_KEY="yuviron-frontend/dev/${VERSION_LABEL}.zip"
-
           echo "VERSION_LABEL=$VERSION_LABEL" >> "$GITHUB_ENV"
           echo "S3_KEY=$S3_KEY" >> "$GITHUB_ENV"
-
           aws s3 cp deploy.zip "s3://${EB_S3_BUCKET}/${S3_KEY}"
 
-      - name: Create EB app version
+      - name: Create Elastic Beanstalk application version
         shell: bash
         run: |
-          set -euo pipefail
           aws elasticbeanstalk create-application-version \
             --application-name "${EB_APPLICATION}" \
             --version-label "${VERSION_LABEL}" \
             --source-bundle S3Bucket="${EB_S3_BUCKET}",S3Key="${S3_KEY}" \
             --process
 
-      - name: Deploy to EB
+      - name: Deploy to Elastic Beanstalk environment
         shell: bash
         run: |
-          set -euo pipefail
           aws elasticbeanstalk update-environment \
             --environment-name "${EB_ENVIRONMENT}" \
             --version-label "${VERSION_LABEL}"
