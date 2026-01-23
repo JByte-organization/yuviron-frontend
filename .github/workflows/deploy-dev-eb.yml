@@ -51,11 +51,19 @@ jobs:
           mkdir -p bundle
 
           cp -R .next/standalone/* bundle/
-          cp -R .next/static bundle/.next/static
-          cp -R public bundle/public || true
+
+          # Если есть .next/static — создаём нужную структуру и копируем
+          if [ -d .next/static ]; then
+            mkdir -p bundle/.next
+            cp -R .next/static bundle/.next/static
+          fi
+
+          # public — не обязателен
+          [ -d public ] && cp -R public bundle/public
 
           cp Procfile package.json server.js bundle/
           [ -f package-lock.json ] && cp package-lock.json bundle/
+
 
       - name: Zip bundle
         shell: bash
