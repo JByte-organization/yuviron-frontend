@@ -31,7 +31,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
 
       - name: Install
@@ -49,14 +49,27 @@ jobs:
           set -euo pipefail
           rm -rf bundle deploy.zip
           mkdir -p bundle
-          cp -R .next/standalone/* bundle/
-          mkdir -p bundle/.next
-          cp -R .next/static bundle/.next/static
+          cp -R .next bundle/.next
           if [ -d public ]; then cp -R public bundle/public; fi
-          printf "web: node server.js\n" > bundle/Procfile
-          cp package.json bundle/package.json
+          cp Procfile server.js package.json bundle/
           if [ -f package-lock.json ]; then cp package-lock.json bundle/package-lock.json; fi
+
+          rm -rf bundle/.next/cache
+          rm -rf bundle/.next/standalone
+
+          echo "Bundle structure:"
+          find bundle -maxdepth 3 -type d -print | sed -n '1,120p'
+
+          echo "Checking required files:"
+          test -d bundle/.next/static
+          test -d bundle/.next/static/chunks
+          test -f bundle/.next/BUILD_ID
+          test -f bundle/.next/required-server-files.json
           test -f bundle/server.js
+          test -f bundle/Procfile
+
+          echo "Sample static chunks:"
+          ls -la bundle/.next/static/chunks | head -n 20
 
       - name: Zip
         shell: bash
