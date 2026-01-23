@@ -2,22 +2,7 @@ name: Deploy DEV to Elastic Beanstalk (Next.js standalone)
 
 on:
   push:
-    branches: ["dev"]
-
-permissions:
-  id-token: write
-  contents: read
-
-concurrency:
-  group: eb-dev-deploy
-  cancel-in-progress: true
-
-jobs:
-  deploy:name: Deploy DEV to Elastic Beanstalk (Next.js standalone)
-
-on:
-  push:
-    branches: ["dev"]
+    branches: [ "dev" ]
 
 permissions:
   id-token: write
@@ -50,7 +35,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -69,22 +54,14 @@ jobs:
           rm -rf bundle deploy.zip
           mkdir -p bundle/.next
 
-          # 1) Standalone server должен лежать по пути: .next/standalone/server.js
           cp -R .next/standalone bundle/.next/standalone
-
-          # 2) Статика Next должна быть: .next/static
           cp -R .next/static bundle/.next/static
-
-          # 3) public
           cp -R public bundle/public
 
-          # 4) Procfile заставляет EB запускать НЕ npm start, а standalone server
           cat > bundle/Procfile <<'EOF'
           web: node .next/standalone/server.js
           EOF
 
-          # (опционально) если нужен package.json для каких-то EB хуков — можно оставить.
-          # Обычно для Procfile не требуется, но иногда удобно для метаданных.
           cp package.json bundle/package.json
 
       - name: Create deployment zip
