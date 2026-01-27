@@ -1,30 +1,31 @@
-name: Deploy DEV to Elastic Beanstalk (Next.js standalone)
+name: Deploy PROD to Elastic Beanstalk (Next.js standalone)
 
 on:
   push:
     branches:
-      - dev
+      - main  # или prod, если у тебя прод-ветка prod
 
 permissions:
   id-token: write
   contents: read
 
 concurrency:
-  group: deploy-dev-eb
+  group: deploy-prod-eb
   cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: dev
+    environment: prod
 
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-      EB_APPLICATION: ${{ secrets.EB_APPLICATION }}
-      EB_ENVIRONMENT: ${{ secrets.EB_ENVIRONMENT }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}   # отдельный prod role
+      EB_APPLICATION: ${{ secrets.EB_APPLICATION }}           # отдельное prod приложение (или то же)
+      EB_ENVIRONMENT: ${{ secrets.EB_ENVIRONMENT }}           # prod env в EB
       NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
       API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      NEXT_TELEMETRY_DISABLED: "1"
 
     steps:
       - uses: actions/checkout@v4
@@ -50,7 +51,7 @@ jobs:
           rm -rf bundle deploy.zip
           mkdir -p bundle
 
-          # Копируем standalone ПОЛНОСТЬЮ, включая ".next"
+          # Копируем standalone полностью, включая ".next"
           cp -a .next/standalone/. bundle/
 
           # Докидываем статические ассеты
@@ -59,12 +60,14 @@ jobs:
             cp -a .next/static bundle/.next/static
           fi
 
-          # public
+          # public (если есть)
           [ -d public ] && cp -a public bundle/public
 
-          # ВАЖНО: не затирай Next-generated server.js, если он уже в standalone
-          # Если Procfile у тебя в репе — ок, копируй. package.json — осторожно (см. ниже).
+          # Procfile (если в репе)
           [ -f Procfile ] && cp Procfile bundle/
+
+          # Защита: убеждаемся, что required-server-files.json реально попал
+          test -f bundle/.next/required-server-files.json
 
       - name: Zip bundle
         shell: bash
@@ -88,8 +91,8 @@ jobs:
       - name: Upload bundle to S3
         shell: bash
         run: |
-          VERSION_LABEL="dev-${GITHUB_SHA}"
-          S3_KEY="yuviron-frontend/dev/${VERSION_LABEL}.zip"
+          VERSION_LABEL="prod-${GITHUB_SHA}"
+          S3_KEY="yuviron-frontend/prod/${VERSION_LABEL}.zip"
           echo "VERSION_LABEL=$VERSION_LABEL" >> "$GITHUB_ENV"
           echo "S3_KEY=$S3_KEY" >> "$GITHUB_ENV"
           aws s3 cp deploy.zip "s3://${EB_S3_BUCKET}/${S3_KEY}"
