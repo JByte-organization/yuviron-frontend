@@ -480,12 +480,17 @@ export default function Home() {
                 </main>
 
                 <footer className="mt-10 text-xs text-zinc-600 dark:text-zinc-400">
-                    Если открываешь в адресной строке{" "}
-                    <span className="font-mono">/users/getList</span> и видишь 404 — это
-                    не бэкенд, а Next-роут. Используй{" "}
-                    <span className="font-mono">/api/users/getList</span> или кнопки выше
-                    (добавлен rewrite, чтобы{" "}
-                    <span className="font-mono">/users/getList</span> тоже работал).
+                    <p>
+                        Если открываешь в адресной строке{" "}
+                        <span className="font-mono">/users/getList</span> и видишь 404 — это
+                        не бэкенд, а Next-роут. Используй{" "}
+                        <span className="font-mono">/api/users/getList</span> или кнопки выше
+                        (добавлен rewrite, чтобы{" "}
+                        <span className="font-mono">/users/getList</span> тоже работал).
+                    </p>
+                    <p className="mt-2 font-mono">
+                        &copy; {new Date().getFullYear()} JByte-organization
+                    </p>
                 </footer>
             </div>
         </div>
