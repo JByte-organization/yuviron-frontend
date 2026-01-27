@@ -50,20 +50,21 @@ jobs:
           rm -rf bundle deploy.zip
           mkdir -p bundle
 
-          cp -R .next/standalone/* bundle/
+          # Копируем standalone ПОЛНОСТЬЮ, включая ".next"
+          cp -a .next/standalone/. bundle/
 
-          # Если есть .next/static — создаём нужную структуру и копируем
+          # Докидываем статические ассеты
           if [ -d .next/static ]; then
             mkdir -p bundle/.next
-            cp -R .next/static bundle/.next/static
+            cp -a .next/static bundle/.next/static
           fi
 
-          # public — не обязателен
-          [ -d public ] && cp -R public bundle/public
+          # public
+          [ -d public ] && cp -a public bundle/public
 
-          cp Procfile package.json server.js bundle/
-          [ -f package-lock.json ] && cp package-lock.json bundle/
-
+          # ВАЖНО: не затирай Next-generated server.js, если он уже в standalone
+          # Если Procfile у тебя в репе — ок, копируй. package.json — осторожно (см. ниже).
+          [ -f Procfile ] && cp Procfile bundle/
 
       - name: Zip bundle
         shell: bash
