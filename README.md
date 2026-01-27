@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Yuviron Frontend
+
+Frontend часть проекта Yuviron, реализованная с использованием Next.js.
+
+Репозиторий проекта:  
+https://github.com/JByte-organization/yuviron-frontend
+
+---
+
+## Environments
+
+Доступные окружения:
+
+- **Production (main):**  
+  http://yuviron-web-prod.eba-6mnjiyxy.eu-west-2.elasticbeanstalk.com/
+
+- **Development (dev):**  
+  http://yuviron-web-dev.eba-6mnjiyxy.eu-west-2.elasticbeanstalk.com/
+
+Для веток `main` и `dev` настроен автоматический деплой.
+
+---
+
+## Restricted files
+
+⚠️ Следующие файлы и папки запрещено изменять, так как они участвуют в процессе деплоя:
+
+- `.github/workflows/deploy-dev-eb.yml`
+- `.github/workflows/deploy-prod-eb.yml`
+- `.github/workflows/deploy-prod-eb.yml`
+- `.platform/hooks/predeploy/01_build.sh`
+- `Procfile`
+- `server.js`
+
+---
 
 ## Getting Started
 
-First, run the development server:
+Установка зависимостей:
+
+```bash
+npm install
+```
+
+Запуск проекта в режиме разработки:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+После запуска откройте в браузере:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Основная страница проекта:
 
-## Learn More
+```ts
+app/page.tsx
+```
 
-To learn more about Next.js, take a look at the following resources:
+Изменения применяются автоматически при сохранении файлов.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tech Stack
 
-## Deploy on Vercel
+* Next.js
+* React
+* TypeScript
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+Основные директории проекта:
+
+* `app/` — страницы и роутинг
+* `public/` — статические файлы
+* `.github/` — CI/CD конфигурации
+* `.platform/` — конфигурация деплоя
+
+---
+
+## Useful Links
+
+* Next.js Documentation — [https://nextjs.org/docs](https://nextjs.org/docs)
+* Learn Next.js — [https://nextjs.org/learn](https://nextjs.org/learn)
+* Next.js GitHub — [https://github.com/vercel/next.js](https://github.com/vercel/next.js)
+
+---
+
+## Branching Rules
+
+* `dev` — ветка для разработки
+* `main` — продакшн ветка
+* все фичи делаются от `dev`
