@@ -489,7 +489,7 @@ export default function Home() {
                         <span className="font-mono">/users/getList</span> тоже работал).
                     </p>
                     <p className="mt-2 font-mono">
-                        &copy; {new Date().getFullYear()} JByte-organization
+                        &copy; {new Date().getFullYear()} JByte-organization v1.0
                     </p>
                 </footer>
             </div>
