@@ -1,0 +1,20 @@
+name: Deploy frontend
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, yuviron]
+
+    steps:
+      - name: Pull repo
+        run: |
+          cd /opt/yuviron/src/yuviron-frontend
+          git pull origin dev
+
+      - name: Rebuild frontend
+        run: |
+          cd /opt/yuviron/infra
+          docker compose -f compose.dev.yml up -d --build yuviron-dev-frontend
