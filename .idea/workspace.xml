@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="55276d0b-2c06-46e0-b32f-15b6ecef363b" name="Changes" comment="change structure">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(auth)/forgot-password/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(auth)/forgot-password/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(auth)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(auth)/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(auth)/login/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(auth)/login/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(auth)/register/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(auth)/register/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(auth)/repeat-password/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(auth)/repeat-password/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/albums/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/albums/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/artists/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/artists/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/dashboard/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/dashboard/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/genres/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/genres/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/moods/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/moods/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/playlists/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/playlists/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/settings/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/settings/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/tracks/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/tracks/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/users/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/users/page.tsx" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="3ARIo63ARdRzvpypCGSYz1vbcWD" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;SCRUM-118-As-an-Admin-I-want-to-go-to-the-Tracks-section&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Admin/WebstormProjects/yuviron-frontend/packages/ui/src&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\Admin\\WebstormProjects\\yuviron-frontend\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\packages\ui\src" />
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin" />
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin\app" />
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin\app\(auth)" />
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin\app\(dashboard)" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend" />
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\package\@yuviron\ui\src\styles" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-WS-241.15989.105" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="55276d0b-2c06-46e0-b32f-15b6ecef363b" name="Changes" comment="" />
+      <created>1772549127497</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1772549127497</updated>
+      <workItem from="1772549128650" duration="8054000" />
+      <workItem from="1772629478000" duration="589000" />
+      <workItem from="1772630090048" duration="13060000" />
+      <workItem from="1772696507907" duration="1543000" />
+      <workItem from="1772721113215" duration="5195000" />
+      <workItem from="1772731772315" duration="5035000" />
+    </task>
+    <task id="LOCAL-00001" summary="start">
+      <option name="closed" value="true" />
+      <created>1772550805966</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1772550805966</updated>
+    </task>
+    <task id="LOCAL-00002" summary="start">
+      <option name="closed" value="true" />
+      <created>1772551360442</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1772551360442</updated>
+    </task>
+    <task id="LOCAL-00003" summary="add structure">
+      <option name="closed" value="true" />
+      <created>1772629689884</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1772629689884</updated>
+    </task>
+    <task id="LOCAL-00004" summary="add structure">
+      <option name="closed" value="true" />
+      <created>1772629887064</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1772629887064</updated>
+    </task>
+    <task id="LOCAL-00005" summary="add structure">
+      <option name="closed" value="true" />
+      <created>1772630048339</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1772630048339</updated>
+    </task>
+    <task id="LOCAL-00006" summary="add structure">
+      <option name="closed" value="true" />
+      <created>1772630156148</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1772630156148</updated>
+    </task>
+    <task id="LOCAL-00007" summary="add structure">
+      <option name="closed" value="true" />
+      <created>1772630188504</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1772630188504</updated>
+    </task>
+    <task id="LOCAL-00008" summary="add structure">
+      <option name="closed" value="true" />
+      <created>1772630220052</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1772630220052</updated>
+    </task>
+    <task id="LOCAL-00009" summary="add structure">
+      <option name="closed" value="true" />
+      <created>1772630412537</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1772630412537</updated>
+    </task>
+    <task id="LOCAL-00010" summary="add variables">
+      <option name="closed" value="true" />
+      <created>1772640251623</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1772640251623</updated>
+    </task>
+    <task id="LOCAL-00011" summary="change structure">
+      <option name="closed" value="true" />
+      <created>1772697158729</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1772697158729</updated>
+    </task>
+    <task id="LOCAL-00012" summary="change structure">
+      <option name="closed" value="true" />
+      <created>1772736053065</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1772736053066</updated>
+    </task>
+    <task id="LOCAL-00013" summary="change structure">
+      <option name="closed" value="true" />
+      <created>1772736101696</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1772736101696</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="start" />
+    <MESSAGE value="add structure" />
+    <MESSAGE value="add variables" />
+    <MESSAGE value="change structure" />
+    <option name="LAST_COMMIT_MESSAGE" value="change structure" />
+  </component>
+</project>

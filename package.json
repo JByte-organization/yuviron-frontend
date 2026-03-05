@@ -1,19 +1,20 @@
 {
-  "name": "yuviron-frontend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "my-turborepo",
+  "private": true,
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.30.3",
   "devDependencies": {
+    "prettier": "^3.7.4",
     "turbo": "^2.8.13",
-    "typescript": "^5.9.3"
+    "typescript": "5.9.2"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18"
   }
 }

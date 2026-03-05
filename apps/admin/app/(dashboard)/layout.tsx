@@ -1,6 +1,7 @@
-import { Sidebar } from '../../components/layout/Sidebar';
+import { Sidebar } from '@/components/layout/Sidebar';
 //import { Header } from '../../components/layout/Header';
-import "@yuviron/ui/src/styles/main.scss";
+import "@repo/ui/src/styles/main.scss";
+
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -11,7 +12,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Основная область справа */}
             <div className="flex-grow-1 d-flex flex-column overflow-hidden">
                 {/*//<Header />*/}
-                <main className="p-4 overflow-auto" style={{ backgroundColor: '#020A13', minHeight: 'calc(100vh - 70px)' }}>
+                <main className="p-4 overflow-auto" style={{ backgroundColor: '#020A13' }}>
                     {children}
                 </main>
             </div>

@@ -1,7 +1,7 @@
 export default function RepeatPasswordPage() {
     return (
-        <main>
-            <h1>Repeat Password</h1>
-        </main>
-    )
+        <div>
+            <h1>Страница повтора пароля</h1>
+        </div>
+    );
 }
