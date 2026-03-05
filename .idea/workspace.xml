@@ -5,36 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="55276d0b-2c06-46e0-b32f-15b6ecef363b" name="Changes" comment="change structure">
-      <change afterPath="$PROJECT_DIR$/packages/ui/src/styles/abstract/_typography.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/ui/src/styles/abstract/_variables.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/ui/src/styles/components/_admin.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/ui/src/styles/main.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/yuviron-frontend.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(auth)/forgot-password/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(auth)/forgot-password/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(auth)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(auth)/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(auth)/login/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(auth)/login/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(auth)/register/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(auth)/register/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(auth)/repeat-password/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(auth)/repeat-password/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/albums/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/albums/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/artists/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/artists/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/dashboard/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/dashboard/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/genres/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/genres/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/moods/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/moods/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/playlists/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/playlists/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/settings/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/settings/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/tracks/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/tracks/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/admin/next-env.d.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/admin/next.config.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/admin/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/admin/tsconfig.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/app/layout.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui-bootstrap/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package/@yuviron/api/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package/@yuviron/library/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package/@yuviron/player/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package/@yuviron/ui/index.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package/@yuviron/ui/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package/@yuviron/ui/src/styles/abstract/_typography.scss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package/@yuviron/ui/src/styles/abstract/_variables.scss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package/@yuviron/ui/src/styles/components/_admin.scss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package/@yuviron/ui/src/styles/main.scss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package/@yuviron/utils/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pnpm-lock.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pnpm-lock.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pnpm-workspace.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/turbo.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/users/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/users/page.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,7 +91,7 @@
       <workItem from="1772630090048" duration="13060000" />
       <workItem from="1772696507907" duration="1543000" />
       <workItem from="1772721113215" duration="5195000" />
-      <workItem from="1772731772315" duration="4170000" />
+      <workItem from="1772731772315" duration="5035000" />
     </task>
     <task id="LOCAL-00001" summary="start">
       <option name="closed" value="true" />
@@ -195,7 +181,23 @@
       <option name="project" value="LOCAL" />
       <updated>1772697158729</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="change structure">
+      <option name="closed" value="true" />
+      <created>1772736053065</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1772736053066</updated>
+    </task>
+    <task id="LOCAL-00013" summary="change structure">
+      <option name="closed" value="true" />
+      <created>1772736101696</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1772736101696</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

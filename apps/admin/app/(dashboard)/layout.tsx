@@ -3,7 +3,6 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import "@repo/ui/src/styles/main.scss";
 
 
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
         <div className="admin-layout">

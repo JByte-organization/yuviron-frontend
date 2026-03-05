@@ -1,1 +1,0 @@
-import "@yuviron/ui/src/styles/main.scss";
