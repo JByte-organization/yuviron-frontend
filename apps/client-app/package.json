@@ -1,5 +1,5 @@
 {
-  "name": "admin",
+  "name": "client-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,8 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@repo/ui": "workspace:^",
-    "@repo/ui-bootstrap": "workspace:^",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"
@@ -22,7 +20,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "sass": "^1.97.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
