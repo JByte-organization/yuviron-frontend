@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
+    output: 'standalone',
+    
     transpilePackages: ["@yuviron/ui"],
     sassOptions: {
         // Указываем путь к корню, чтобы Sass всегда находил Bootstrap
