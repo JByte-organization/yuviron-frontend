@@ -1,3 +1,4 @@
+
 // 1. Твои цвета
 @import "abstract/variables";
 
@@ -13,3 +14,66 @@ $body-color: $white;
 // 4. Твои стили поверх
 @import "abstract/typography";
 @import "components/admin";
+
+// General Colors
+
+$blue: #BEF4FF;
+$indigo: #1DB954;
+$purple: #1DB954;
+$pink: #1DB954;
+$red: #1DB954;
+$orange: #1DB954;
+$yellow: #1DB954;
+$green: #1DB954;
+$teal: #1DB954;
+$cyan: #40A2FF;
+$black: #020A13;
+$white: #FFFFFF;
+$gray: #1DB954;
+$gray-dark: #0F1724;
+
+
+$colors: (
+        "blue":       $blue,
+        "indigo":     $indigo,
+        "purple":     $purple,
+        "pink":       $pink,
+        "red":        $red,
+        "orange":     $orange,
+        "yellow":     $yellow,
+        "green":      $green,
+        "teal":       $teal,
+        "cyan":       $cyan,
+        "black":      $black,
+        "white":      $white,
+        "gray":       $gray,
+        "gray-dark":  $gray-dark
+);
+
+$primary:      $cyan;
+
+//ADMIN PANEL
+// Colors
+$admin-bg:        #222731;
+$admin-primary:   #4B7490;
+$admin-stroke:    #828487;
+$admin-secondary: #353E4B;
+
+// Buttons
+$admin-approve:   #8EE6CC;
+$admin-cancel:    #FFCACB;
+
+
+$custom-colors: (
+        "approve": $admin-approve,
+        "cancel":  $admin-cancel,
+        "stroke":  $admin-stroke
+);
+
+
+
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+
+@import "bootstrap/scss/bootstrap";
+
