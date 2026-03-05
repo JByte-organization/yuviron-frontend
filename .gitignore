@@ -1,2 +1,7 @@
 /package/@yuviron/ui/node_modules/
 /node_modules/
+/package/@yuviron/utils/node_modules/
+/package/@yuviron/player/node_modules/
+/package/@yuviron/library/node_modules/
+/package/@yuviron/api/node_modules/
+/apps/admin/node_modules/
