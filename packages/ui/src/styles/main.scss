@@ -1,15 +1,12 @@
-// 1. Твои цвета
-@import "./abstract/variables";
-@import "./components/admin";
+// 1. Твои модули
+@use "./abstract/variables" as *;
+@use "./abstract/typography" as *;
 
-// 2. Переопределяем цвета Bootstrap ДО его загрузки
+
 $primary: $cyan;
 $body-bg: $black;
 $body-color: $white;
 
-// 3. Загружаем ВЕСЬ Bootstrap одной командой.
-// Так он сам внутри себя разберется с variables-dark и миксинами.
-//@import "bootstrap/scss/bootstrap";
+@import "bootstrap/dist/css/bootstrap.min.css";
 
-// 4. Твои стили поверх
-@import "./abstract/typography";
+// 3. Твои компоненты
