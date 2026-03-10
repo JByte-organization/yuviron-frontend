@@ -1,41 +1,124 @@
-@import "../abstract/variables";
+@use "../abstract/variables" as *;
 
-// Переменные для Админки
-
-.admin-layout {
-  display: flex;
-  min-height: 100vh;
-  background-color: $admin-bg;
-}
+// Вспомогательная переменная для ховера, если ее нет в основном файле
+$hover-bg: rgba(255, 255, 255, 0.05);
+$active-blue: #40A2FF;
 
 .admin-sidebar {
-  width: 260px;
-  background-color: $admin-bg;
-  border-right: 1px solid $admin-bg;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  z-index: 1000;
+  background-color: $admin-secondary;
+  height: 100vh;
+  border-right: 1px solid rgba($admin-stroke, 0.2);
 
-  &.mobile-closed {
-    @media (max-width: 991px) {
-      transform: translateX(-100%);
-      position: absolute;
+  .sidebar-header {
+    h5 {
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  // Кнопка New Item
+  .btn-new-item {
+    background-color: $cyan; // Твой #82E2FF
+    border: none;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+
+    &:hover {
+      background-color: lighten($cyan, 10%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba($cyan, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  // Навигация
+  .sidebar-nav {
+    .nav-link {
+      color: rgba($white, 0.6); // Приглушенный белый по дефолту
+      padding: 10px 20px;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: block;
+      cursor: pointer;
+
+      &:hover {
+        color: $white;
+        background-color: $hover-bg;
+      }
+
+      &.active {
+        color: $active-blue;
+        background-color: rgba($active-blue, 0.1);
+        font-weight: 500;
+        position: relative;
+
+        // Полоска слева у активного пункта
+        &::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+          background-color: $active-blue;
+        }
+      }
+    }
+
+    // Подменю (аккордеон)
+    .submenu {
+      .nav-link {
+        padding-left: 45px; // Сдвигаем вложенные пункты
+        font-size: 0.85rem;
+        border-bottom: none;
+
+        &.active {
+          background-color: transparent;
+          color: $active-blue;
+          &::before { display: none; } // Убираем полоску у вложенных
+        }
+      }
+    }
+  }
+
+  // Иконка стрелочки
+  .chevron {
+    font-size: 0.7rem;
+    transition: transform 0.3s ease;
+    display: inline-block;
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
+
+  // Футер
+  .sidebar-footer {
+    .btn-outline-danger {
+      border-color: rgba($admin-stroke, 0.3);
+      color: rgba($white, 0.7);
+      font-size: 0.9rem;
+
+      &:hover {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+      }
     }
   }
 }
 
-.admin-main {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
+// Контентная область
+main {
+  background-color: $admin-bg;
+  color: $white;
 }
 
 .admin-header {
-  height: 70px;
-  border-bottom: 1px solid $admin-bg;
-  display: flex;
-  align-items: center;
-  padding: 0 2rem;
-  justify-content: space-between;
+  height: 64px;
+  background-color: lighten($admin-secondary, 3%);
+  border-bottom: 1px solid rgba($admin-stroke, 0.1);
 }
