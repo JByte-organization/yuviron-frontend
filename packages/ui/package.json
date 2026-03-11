@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./src/styles/*": "./src/styles/*",
-    "./styles/*": "./src/styles/*"
+    "./styles": "./src/styles/main.scss",
+    "./components": "./src/index.ts",
+    "./admin-styles": "./src/styles/components/_admin.scss"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
@@ -21,6 +22,7 @@
     "typescript": "5.9.2"
   },
   "dependencies": {
+    "bootstrap": "^5.3.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   }
