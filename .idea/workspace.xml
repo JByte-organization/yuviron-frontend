@@ -4,6 +4,7 @@
     <list default="true" id="0eed3bb5-5ebd-4d8f-9bcc-82b3e949c59e" name="Changes" comment="Add Login page">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/admin/app/(auth)/forgot-password/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(auth)/forgot-password/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(auth)/repeat-password/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(auth)/repeat-password/page.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,7 +53,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "git-widget-placeholder": "SCRUM-124-As-an-Admin-I-want-to-Forgot-Password",
+    "git-widget-placeholder": "SCRUM-126-As-an-Admin-I-Lost-Password",
     "javascript.preferred.runtime.type.id": "node",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -92,7 +93,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773250680593</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Add Forgot Password page">
+      <option name="closed" value="true" />
+      <created>1773508589493</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1773508589493</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -102,6 +111,7 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="Add Login page" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add Login page" />
+    <MESSAGE value="Add Forgot Password page" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add Forgot Password page" />
   </component>
 </project>

@@ -77,8 +77,8 @@ export default function RegisterPage() {
                             </div>
                         </div>
 
-                        <a href="/tracks" className="btn admin-login__submit w-100">
-                            Sign In
+                        <a href="/repeat-password" className="btn btn-primary py-3 w-100">
+                            Continue
                         </a>
                     </form>
                 </div>
