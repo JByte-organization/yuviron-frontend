@@ -5,8 +5,32 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="55276d0b-2c06-46e0-b32f-15b6ecef363b" name="Changes" comment="change structure">
+      <change afterPath="$PROJECT_DIR$/apps/admin/components/layout/AdminHeader.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/components/shared/AdminModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/components/shared/TableToolbar.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/components/tracks/TrackForm.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/components/tracks/TracksTable.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/public/images/icons/calendar.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/public/images/icons/close.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/public/images/icons/filter.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/public/images/icons/plus.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/ui/src/styles/abstract/_typography.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui/src/styles/abstract/_typography.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/tracks/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/tracks/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/components/layout/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/components/layout/Sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/public/file.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/public/globe.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/public/next.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/public/vercel.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/public/window.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/src/styles/abstract/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui/src/styles/abstract/_variables.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/src/styles/components/_admin.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui/src/styles/components/_admin.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/src/styles/main.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui/src/styles/main.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pnpm-lock.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pnpm-lock.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,6 +41,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="TypeScript File" />
+        <option value="TypeScript JSX File" />
       </list>
     </option>
   </component>
@@ -27,6 +52,9 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="PackageJsonUpdateNotifier">
+    <dismissed value="$PROJECT_DIR$/package.json" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
@@ -42,7 +70,7 @@
     &quot;git-widget-placeholder&quot;: &quot;SCRUM-118-As-an-Admin-I-want-to-go-to-the-Tracks-section&quot;,
     &quot;javascript.nodejs.core.library.configured.version&quot;: &quot;24.11.0&quot;,
     &quot;javascript.nodejs.core.library.typings.version&quot;: &quot;24.11.2&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Admin/WebstormProjects/yuviron-frontend/packages/ui/src&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Admin/WebstormProjects/yuviron-frontend/apps/admin/public/images/icons&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -55,11 +83,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin\public\images\icons" />
       <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\packages\ui\src" />
       <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin" />
       <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin\app" />
       <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin\app\(auth)" />
-      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin\app\(dashboard)" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\packages\ui\src\styles" />
@@ -91,6 +119,7 @@
       <workItem from="1772731772315" duration="8236000" />
       <workItem from="1773072701532" duration="13508000" />
       <workItem from="1773160010807" duration="160000" />
+      <workItem from="1773673406313" duration="4613000" />
     </task>
     <task id="LOCAL-00001" summary="start">
       <option name="closed" value="true" />

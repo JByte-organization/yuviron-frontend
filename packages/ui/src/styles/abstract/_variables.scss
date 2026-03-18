@@ -41,9 +41,24 @@ $admin-primary:   #4B7490;
 $admin-stroke:    #828487;
 $admin-secondary: #353E4B;
 $admin-header: #325B76;
+$admin-btn-primary: #7AE0FF;
 
 // Buttons
 $admin-approve:   #8EE6CC;
 $admin-cancel:    #FFCACB;
 
 $primary: $green;
+
+
+//link
+$link-decoration: none;
+
+$enable-rounded: true;
+$border-radius-values: (
+        0: 0,
+        1: 6px,
+        2: 8px,
+        3: 12px,
+        4: 24px,
+        5: 48px
+);

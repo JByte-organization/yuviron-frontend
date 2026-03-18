@@ -1,12 +1,10 @@
-// 1. Твои модули
 @use "./abstract/variables" as *;
 @use "./abstract/typography" as *;
-
 
 $primary: $cyan;
 $body-bg: $black;
 $body-color: $white;
 
+
 @import "bootstrap/dist/css/bootstrap.min.css";
 
-// 3. Твои компоненты
