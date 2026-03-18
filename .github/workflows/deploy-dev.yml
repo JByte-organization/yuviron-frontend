@@ -16,7 +16,7 @@ jobs:
       - name: Update frontend source
         run: |
           set -e
-          cd /opt/yuviron/src/yuviron-frontend
+          cd /opt/yuviron-server/src/yuviron-frontend
           git fetch origin dev
           git reset --hard origin/dev
           git clean -fd
@@ -24,5 +24,5 @@ jobs:
       - name: Rebuild and restart frontend
         run: |
           set -e
-          cd /opt/yuviron/infra
+          cd /opt/yuviron-server/infra
           docker compose -f compose.dev.yml up -d --build --force-recreate yuviron-dev-frontend
