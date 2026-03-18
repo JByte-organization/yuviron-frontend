@@ -326,4 +326,104 @@ main {
   border: none;
   padding: 0;
   &:hover { opacity: 0.7; }
+// АДМИН ЛОГИН
+.admin-login {
+  background: mix($black, $admin-bg, 72%);
+  color: $white;
+
+  &__label {
+    color: rgba($white, 0.45);
+  }
+
+  &__panel {
+    background: darken($admin-bg, 2%);
+    border: 1px solid rgba($admin-stroke, 0.45);
+  }
+
+  &__content {
+    max-width: 500px;
+  }
+
+  &__logo {
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+  }
+
+  &__form-label {
+    color: $white;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  &__input {
+    height: 60px;
+    padding-inline: 24px;
+    background-color: darken($admin-bg, 6%);
+    border: 1px solid rgba($admin-stroke, 0.9);
+    border-radius: 14px;
+    color: $white;
+    font-size: 18px;
+    line-height: 1.2;
+    box-shadow: none;
+
+    &::placeholder {
+      color: rgba($white, 0.38);
+    }
+
+    &:focus {
+      background-color: darken($admin-bg, 6%);
+      border-color: rgba($admin-stroke, 0.95);
+      color: $white;
+      box-shadow: none;
+    }
+  }
+
+  &__toggle {
+    border: 0;
+    background: transparent;
+    color: rgba($white, 0.7);
+    font-size: 16px;
+    padding-inline: 16px;
+    box-shadow: none;
+
+    &:hover,
+    &:focus,
+    &:active {
+      color: $white;
+      background: transparent;
+      box-shadow: none;
+    }
+  }
+
+  &__submit {
+    height: 58px;
+    border: 0;
+    border-radius: 8px;
+    background-color: $admin-primary;
+    color: $white;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.2;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background-color: $admin-primary;
+      color: $white;
+      opacity: 0.96;
+      box-shadow: none;
+    }
+  }
+
+  &__link {
+    color: rgba($white, 0.5);
+    font-size: 14px;
+    line-height: 1.2;
+
+    &:hover {
+      color: rgba($white, 0.75);
+    }
+  }
 }

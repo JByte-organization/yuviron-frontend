@@ -1,7 +1,72 @@
+'use client';
+
+import Link from 'next/link';
+import { useState } from 'react';
+
 export default function LoginPage() {
+    const [showPassword, setShowPassword] = useState(false);
+
     return (
-        <div>
-            <h1>Страница логина</h1>
+        <div className="admin-login vh-100 d-flex flex-column">
+
+            <div className="admin-login__panel flex-grow-1 d-flex align-items-center justify-content-center">
+                <div className="admin-login__content w-100 px-3 px-md-4">
+                    <div className="text-center mb-5">
+                        <img
+                            src="/Logo/logo.svg"
+                            alt="Logo"
+                            width={180}
+                            height={180}
+                            className="admin-login__logo"
+                        />
+                    </div>
+
+                    <form>
+                        <div className="mb-4">
+                            <label htmlFor="email" className="form-label admin-login__form-label mb-2">
+                                Email Address
+                            </label>
+                            <input
+                                id="email"
+                                type="email"
+                                className="form-control admin-login__input"
+                                placeholder="admin@gmail.com"
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <label htmlFor="password" className="form-label admin-login__form-label mb-2">
+                                Password
+                            </label>
+
+                            <div className="position-relative">
+                                <input
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    className="form-control admin-login__input pe-5"
+                                    placeholder="********************"
+                                />
+
+                                <button
+                                    type="button"
+                                    className="btn admin-login__toggle position-absolute top-50 end-0 translate-middle-y"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? 'Hide' : 'Show'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <a href="/tracks" type="submit" className="btn btn-primary py-3 w-100 mb-4">
+                            Log In
+                        </a>
+
+                        <Link href="#" className="admin-login__link text-decoration-none">
+                            Lost your password?
+                        </Link>
+                    </form>
+                </div>
+            </div>
         </div>
     );
 }
