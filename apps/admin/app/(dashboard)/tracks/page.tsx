@@ -1,149 +1,96 @@
 'use client';
 
+import React, { useState, useEffect, useCallback } from 'react';
 import { TracksTable } from '@/components/tracks/TracksTable';
 import { TableToolbar } from '@/components/shared/TableToolbar';
 import { AdminModal } from '@/components/shared/AdminModal';
 import { TrackForm } from '@/components/tracks/TrackForm';
-import {useState, useEffect} from "react";
-
-export interface Track {
-    id: string;
-    name: string;
-    artistId: string;
-    genreId: string;
-    tagsId: string;
-    albumId: string;
-    SeqNum: string;
-    playsNum: number;
-    time: string;
-}
-
-// тестовые данные
-const mockTracks: Track[] = [
-    {
-        id: '1',
-        name: 'Etiam purus in',
-        artistId: 'Curabit...',
-        genreId: 'Morbi...',
-        tagsId: 'Tortor...',
-        albumId: 'Tortor...',
-        SeqNum: '264523273',
-        playsNum: 23564564,
-        time: '6:66',
-    },
-    {
-        id: '2',
-        name: 'Duis eget habi...',
-        artistId: 'At ame...',
-        genreId: 'Com...',
-        tagsId: 'Tortor...',
-        albumId: 'Tortor...',
-        SeqNum: '264523273',
-        playsNum: 31208371,
-        time: '6:66',
-    },
-    {
-        id: '3',
-        name: 'Aliquam velit l...',
-        artistId: 'Pellente...',
-        genreId: 'Tortor...',
-        tagsId: 'Tortor...',
-        albumId: 'Tortor...',
-        SeqNum: '264523273',
-        playsNum: 912381,
-        time: '6:66',
-    },
-];
+import { trackService, Track } from '@repo/api';
 
 export default function TracksPage() {
-    const [tracks, setTracks] = useState<Track[]>([]); // Состояние для списка треков
-    const [isLoading, setIsLoading] = useState(true); // Состояние загрузки
+    const [tracks, setTracks] = useState<Track[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
 
-    // Функция для получения данных с сервера
-    const fetchTracks = async (searchQuery: string = '') => {
+    // useCallback => функция не пересоздается при каждом рендере
+    const fetchTracks = useCallback(async (searchQuery: string = '') => {
         setIsLoading(true);
+        setError(null);
         try {
-            // Замени URL на адрес твоего реального API
-            const response = await fetch(`/api/tracks?search=${searchQuery}`);
-            const data = await response.json();
+            const data = await trackService.getAll(searchQuery);
             setTracks(data);
-        } catch (error) {
-            console.error("Ошибка при загрузке треков:", error);
+        } catch (err) {
+            console.error("Ошибка при загрузке треков:", err);
+            setError("Не удалось загрузить список треков. Проверьте соединение с сервером.");
         } finally {
             setIsLoading(false);
         }
-    };
-
-    // Вызываем загрузку при первом рендере
-    useEffect(() => {
-        fetchTracks();
     }, []);
 
+    // Загрузка данных при монтировании
+    useEffect(() => {
+        fetchTracks();
+    }, [fetchTracks]);
+
     const handleSearch = (query: string) => {
-        fetchTracks(query); // Теперь поиск реально дергает API
+        fetchTracks(query);
     };
 
     const handleSaveTrack = async (formData: any) => {
         try {
-            const response = await fetch('/api/tracks', {
-                method: 'POST',
-                body: JSON.stringify(formData),
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (response.ok) {
-                fetchTracks(); // Обновляем список после сохранения
-                setShowModal(false);
-            }
-        } catch (error) {
-            console.error("Ошибка при сохранении:", error);
+            await trackService.create(formData);
+            await fetchTracks(); // Обновляем список
+            setShowModal(false);
+        } catch (err) {
+            console.error("Ошибка при сохранении:", err);
+            alert("Произошла ошибка при сохранении трека.");
         }
     };
 
     return (
         <div className="p-4">
             <TableToolbar
-                title="Track"
-                subtitle="List track"
+                title="Tracks"
+                subtitle="Manage your music library"
                 addButtonText="New Track"
                 onAddClick={() => setShowModal(true)}
-                onSearch={(v) => console.log(v)}
+                onSearch={handleSearch}
             />
-            {/* modal */}
+
             <AdminModal
                 show={showModal}
                 onHide={() => setShowModal(false)}
-                title="Track"
+                title="Create New Track"
             >
-                <TrackForm onSave={(data) => {
-                    console.log(data);
-                    setShowModal(false);
-                }} />
+                <TrackForm onSave={handleSaveTrack} />
             </AdminModal>
-            <TracksTable data={mockTracks} />
+
+            {/* отображение ошибки */}
+            {error && (
+                <div className="alert alert-danger m-3" role="alert">
+                    {error}
+                </div>
+            )}
+
+            {isLoading ? (
+                <div className="d-flex justify-content-center align-items-center py-5">
+                    <div className="spinner-border text-cyan" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            ) : (
+                <div className="mt-3">
+                    {tracks.length > 0 ? (
+                        <TracksTable data={tracks} />
+                    ) : (
+                        <div className="text-center py-5 text-white">
+                            <i className="bi bi-music-note-beamed fs-1 d-block mb-3"></i>
+                            <p>No tracks found. Try changing your search or add a new one.</p>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
-
-
-    // return (
-    //     <div className="p-4">
-    //         <TableToolbar
-    //             title="Track"
-    //             subtitle="List track"
-    //             addButtonText="New Track"
-    //             onAddClick={() => setShowModal(true)}
-    //             onSearch={handleSearch}
-    //         />
-    //
-    //         <AdminModal show={showModal} onHide={() => setShowModal(false)} title="Track">
-    //             <TrackForm onSave={handleSaveTrack} />
-    //         </AdminModal>
-    //
-    //         {isLoading ? (
-    //             <div>Загрузка...</div>
-    //         ) : (
-    //             <TracksTable data={tracks} />
-    //         )}
-    //     </div>
-    // );
 }

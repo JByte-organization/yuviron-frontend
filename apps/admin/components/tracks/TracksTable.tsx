@@ -9,21 +9,10 @@ import {
 } from '@tanstack/react-table';
 import { OverlayTrigger, Tooltip, Form } from 'react-bootstrap';
 
-// Твой тип данных из макета
-type Track = {
-    name: string;
-    artistId: string;
-    genreId: string;
-    tagsId: string;
-    albumId: string;
-    SeqNum: number;
-    playsNum: number;
-    id: number;
-    time: string;
-};
+import { Track } from '@repo/api';
 
 export const TracksTable = ({ data }: { data: Track[] }) => {
-    const [playingTrackId, setPlayingTrackId] = useState<number | null>(null);
+    const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
 
     const columns = useMemo<ColumnDef<Track>[]>(
         () => [
@@ -55,19 +44,27 @@ export const TracksTable = ({ data }: { data: Track[] }) => {
                         placement="top"
                         overlay={<Tooltip>{info.getValue() as string}</Tooltip>}
                     >
-                        <span className="text-truncate d-block">{info.getValue() as string}</span>
+                        <span className="text-truncate d-block fw-medium">
+                            {info.getValue() as string}
+                        </span>
                     </OverlayTrigger>
                 ),
                 size: 180,
             },
-            { accessorKey: 'artistId', header: 'artistid', size: 120 },
-            { accessorKey: 'genreId', header: 'genreid', size: 120 },
-            { accessorKey: 'tagsId', header: 'tagsid', size: 120 },
-            { accessorKey: 'albumId', header: 'albumid', size: 120 },
-            { accessorKey: 'SeqNum', header: 'SeqNum', size: 100 },
-            { accessorKey: 'playsNum', header: 'PlaysNum', size: 120 },
-            { accessorKey: 'id', header: 'ID', size: 180 },
-            { accessorKey: 'time', header: 'Time', size: 90 },
+            // Делаем заголовки более читаемыми (Artist ID -> Artist)
+            { accessorKey: 'artistId', header: 'Artist', size: 120 },
+            { accessorKey: 'genreId', header: 'Genre', size: 120 },
+            { accessorKey: 'tagsId', header: 'Tags', size: 120 },
+            { accessorKey: 'albumId', header: 'Album', size: 120 },
+            { accessorKey: 'SeqNum', header: 'Seq', size: 80 },
+            {
+                accessorKey: 'playsNum',
+                header: 'Plays',
+                size: 100,
+                cell: (info) => (info.getValue() as number).toLocaleString() // Красивое число
+            },
+            { accessorKey: 'id', header: 'ID', size: 150 },
+            { accessorKey: 'time', header: 'Time', size: 80 },
             {
                 id: 'play',
                 header: 'Play',
@@ -79,22 +76,30 @@ export const TracksTable = ({ data }: { data: Track[] }) => {
                             className="btn btn-link p-0 text-cyan fs-5"
                             onClick={() => setPlayingTrackId(isPlaying ? null : row.original.id)}
                         >
-                            <i className={`bi ${isPlaying ? 'bi-pause-circle' : 'bi-play-circle'}`}></i>
+                            <i className={`bi ${isPlaying ? 'bi-pause-circle-fill' : 'bi-play-circle-fill'}`}></i>
                         </button>
                     );
                 }
             },
             {
-                id: 'tableTitle',
-                header: 'Table Title',
+                id: 'actions',
+                header: 'Actions',
                 size: 110,
                 cell: ({ row }) => (
                     <div className="d-flex gap-2 justify-content-center">
-                        <button className="btn-action edit">
+                        <button
+                            className="btn-action edit"
+                            title="Edit"
+                            onClick={() => console.log('Edit track:', row.original.id)}
+                        >
                             <i className="bi bi-pencil-fill"></i>
                         </button>
-                        <button className="btn-action delete">
-                            <i className="bi bi-x-lg"></i>
+                        <button
+                            className="btn-action delete"
+                            title="Delete"
+                            onClick={() => console.log('Delete track:', row.original.id)}
+                        >
+                            <i className="bi bi-trash3-fill"></i>
                         </button>
                     </div>
                 )
@@ -111,7 +116,7 @@ export const TracksTable = ({ data }: { data: Track[] }) => {
     });
 
     return (
-        <div className="admin-table-wrapper">
+        <div className="admin-table-wrapper border rounded-3 bg-dark-soft">
             <div className="table-responsive">
                 <table className="admin-table" style={{ width: table.getCenterTotalSize() }}>
                     <thead>
@@ -119,11 +124,10 @@ export const TracksTable = ({ data }: { data: Track[] }) => {
                         <tr key={headerGroup.id}>
                             {headerGroup.headers.map(header => (
                                 <th key={header.id} style={{ width: header.getSize() }}>
-                                    <div className="d-flex align-items-center justify-content-between">
+                                    <div className="d-flex align-items-center justify-content-between px-2">
                                         {flexRender(header.column.columnDef.header, header.getContext())}
                                         <i className="bi bi-chevron-expand opacity-25 small"></i>
                                     </div>
-                                    {/* Линия ресайза */}
                                     <div
                                         onMouseDown={header.getResizeHandler()}
                                         onTouchStart={header.getResizeHandler()}
@@ -139,7 +143,9 @@ export const TracksTable = ({ data }: { data: Track[] }) => {
                         <tr key={row.id}>
                             {row.getVisibleCells().map(cell => (
                                 <td key={cell.id} style={{ width: cell.column.getSize() }}>
-                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    <div className="px-2">
+                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    </div>
                                 </td>
                             ))}
                         </tr>
