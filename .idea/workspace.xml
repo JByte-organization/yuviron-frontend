@@ -2,17 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="55276d0b-2c06-46e0-b32f-15b6ecef363b" name="Changes" comment="change structure">
-      <change afterPath="$PROJECT_DIR$/apps/admin/components/layout/AdminHeader.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/admin/components/shared/AdminModal.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/admin/components/shared/TableToolbar.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/admin/components/tracks/TrackForm.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/admin/components/tracks/TracksTable.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/admin/public/images/icons/calendar.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/admin/public/images/icons/close.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/admin/public/images/icons/filter.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/admin/public/images/icons/plus.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/layout.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/admin/app/(dashboard)/tracks/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/app/(dashboard)/tracks/page.tsx" afterDir="false" />
@@ -85,6 +75,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "SCRUM-118-As-an-Admin-I-want-to-go-to-the-Tracks-section",
+    "javascript.nodejs.core.library.configured.version": "24.11.0",
+    "javascript.nodejs.core.library.typings.version": "24.11.2",
+    "last_opened_file_path": "C:/Users/Admin/WebstormProjects/yuviron-frontend/apps/admin/public/images/icons",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
+    "ts.external.directory.path": "C:\\Users\\Admin\\WebstormProjects\\yuviron-frontend\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
@@ -154,6 +159,7 @@
       <updated>1773244247344</updated>
       <workItem from="1773244248827" duration="5999000" />
       <workItem from="1773498469748" duration="2212000" />
+      <workItem from="1773844763574" duration="88000" />
     </task>
     <task id="LOCAL-00001" summary="Add Login page">
       <option name="closed" value="true" />
@@ -180,6 +186,12 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="start" />
+    <MESSAGE value="add structure" />
+    <MESSAGE value="add variables" />
+    <MESSAGE value="change structure" />
+    <MESSAGE value="add tracks table" />
+    <option name="LAST_COMMIT_MESSAGE" value="add tracks table" />
     <MESSAGE value="Add Login page" />
     <MESSAGE value="Add Forgot Password page" />
     <option name="LAST_COMMIT_MESSAGE" value="Add Forgot Password page" />
