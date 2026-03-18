@@ -1,6 +1,6 @@
 @use "../abstract/variables" as *;
+@use "../abstract/typography" as *;
 
-// Вспомогательная переменная для ховера, если ее нет в основном файле
 $hover-bg: rgba(255, 255, 255, 0.05);
 $active-blue: #40A2FF;
 
@@ -9,24 +9,18 @@ $active-blue: #40A2FF;
   height: 100vh;
   border-right: 1px solid rgba($admin-stroke, 0.2);
 
-  .sidebar-header {
-    h5 {
-      font-size: 1.1rem;
-      letter-spacing: 0.5px;
-    }
-  }
 
   // Кнопка New Item
   .btn-new-item {
-    background-color: $cyan; // Твой #82E2FF
+    background-color: $admin-btn-primary;
     border: none;
     transition: all 0.2s ease;
-    font-size: 0.9rem;
+    font-size: $h5-font-size;
 
     &:hover {
-      background-color: lighten($cyan, 10%);
+      background-color: lighten($admin-btn-primary, 10%);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba($cyan, 0.3);
+      box-shadow: 0 4px 12px rgba($admin-btn-primary, 0.3);
     }
 
     &:active {
@@ -37,9 +31,9 @@ $active-blue: #40A2FF;
   // Навигация
   .sidebar-nav {
     .nav-link {
-      color: rgba($white, 0.6); // Приглушенный белый по дефолту
+      color: rgba($white, 0.6);
       padding: 10px 20px;
-      font-size: 0.95rem;
+      font-size: 16px;
       transition: all 0.2s ease;
       text-decoration: none;
       display: block;
@@ -56,7 +50,6 @@ $active-blue: #40A2FF;
         font-weight: 500;
         position: relative;
 
-        // Полоска слева у активного пункта
         &::before {
           content: "";
           position: absolute;
@@ -69,17 +62,17 @@ $active-blue: #40A2FF;
       }
     }
 
-    // Подменю (аккордеон)
+    // Подменю
     .submenu {
       .nav-link {
-        padding-left: 45px; // Сдвигаем вложенные пункты
-        font-size: 0.85rem;
+        padding-left: 20px;
+        font-size: 16px;
         border-bottom: none;
 
         &.active {
           background-color: transparent;
-          color: $active-blue;
-          &::before { display: none; } // Убираем полоску у вложенных
+          color: $admin-btn-primary;
+          &::before { display: none; }
         }
       }
     }
@@ -119,9 +112,220 @@ main {
 
 .admin-header {
   height: 64px;
-  background-color: lighten($admin-secondary, 3%);
+  background-color: $admin-header;
   border-bottom: 1px solid rgba($admin-stroke, 0.1);
 }
+
+.admin-table-wrapper {
+  background-color: $admin-secondary;
+  border: 1px solid rgba($admin-stroke, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: $white;
+    table-layout: fixed; // Критично для корректного ресайза
+
+    thead th {
+      background-color: rgba($white, 0.03);
+      white-space: nowrap;
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba($admin-stroke, 0.3);
+      position: relative; // Для ресайзера
+
+      .resizer {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: $cyan;
+        cursor: col-resize;
+        user-select: none;
+        touch-action: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+
+        &.isResizing {
+          opacity: 1;
+          background: lighten($cyan, 10%);
+        }
+      }
+
+      &:hover .resizer {
+        opacity: 0.5;
+      }
+    }
+
+    tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba($admin-stroke, 0.1);
+      font-size: 0.9rem;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+    }
+
+    tr:hover td {
+      background-color: rgba($white, 0.02);
+    }
+  }
+}
+
+// Кастомный стиль для выпадающего фильтра
+.filter-dropdown-menu {
+  background-color: #1e1e1e;
+  border: 1px solid rgba($admin-stroke, 0.5);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  min-width: 200px;
+}
+
+.admin-secondary{
+  background-color: $admin-secondary;
+}
+.btn-primary{
+  background-color: $admin-btn-primary!important;
+}
+
+.admin-table {
+  width: 100%;
+
+  .btn-sm {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: #2c3034;
+    border: 1px solid rgba($white, 0.1);
+    transition: all 0.2s;
+
+    &:hover {
+      background: #3d4246;
+      border-color: rgba($white, 0.3);
+    }
+  }
+
+  .text-cyan {
+    color: $cyan; // Твой #82E2FF
+    &:hover {
+      color: lighten($cyan, 10%);
+    }
+  }
+}
+.table-toolbar {
+
+
+  .form-control {
+    background-color: #24282c !important; // Темный фон инпута
+    border-radius: 8px;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    font-size: 0.9rem;
+
+    &:focus {
+      border-color: $cyan !important;
+    }
+  }
+
+  .btn-dark {
+    background-color: #24282c;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: #2f3439;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  .btn-primary {
+    background-color: $cyan; // Твой #82E2FF
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+
+    &:hover {
+      background-color: lighten($cyan, 10%);
+    }
+  }
+}
+
+.search-container {
+  .form-control {
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
+      opacity: 1;
+    }
+
+    &:focus {
+      background-color: #24282c;
+      color: #fff;
+      border-color: $admin-btn-primary!important;
+    }
+  }
+}
+
+.admin-modal-content {
+  background-color: #343b43 !important;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  .admin-form {
+    label {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+
+    .form-control, .form-select {
+      background-color: #24282c;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: $white;
+      padding: 10px 14px;
+
+      &::placeholder { color: rgba(255, 255, 255, 0.3); }
+    }
+
+    .upload-input {
+      background-color: #24282c;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+    }
+
+    .save-btn {
+      background-color: $cyan; // #82E2FF
+      border: none;
+      border-radius: 8px;
+    }
+  }
+}
+
+.btn-close-custom {
+  background: none;
+  border: none;
+  padding: 0;
+  &:hover { opacity: 0.7; }
 // АДМИН ЛОГИН
 .admin-login {
   background: mix($black, $admin-bg, 72%);

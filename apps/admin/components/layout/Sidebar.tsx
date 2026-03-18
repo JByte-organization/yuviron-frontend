@@ -9,6 +9,7 @@ export const Sidebar = () => {
     const pathname = usePathname();
     const [elementsOpen, setElementsOpen] = useState(true);
 
+
     return (
         <aside className="admin-sidebar d-flex flex-column vh-100">
             {/* Header: Logo & Title */}
@@ -18,7 +19,7 @@ export const Sidebar = () => {
                         <path d="M12 2L14.5 9H21L15.5 13.5L18 21L12 16.5L6 21L8.5 13.5L3 9H9.5L12 2Z" fill="#40A2FF" />
                     </svg>
                 </div>
-                <h5 className="m-0 fw-bold text-white">Admin Dashboard</h5>
+                <p className="m-0 fw-medium text-white h4 text-center">Admin Dashboard</p>
             </div>
 
             {/* Action Button */}
