@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/typescript-config/base.json", // Твой базовый конфиг
+  "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -9,7 +9,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "types": ["node", "vite/client"], // Добавляем типы Vite здесь!
-    "esModuleInterop": true // Это исправит ошибку с импортом path
+    "esModuleInterop": true
   },
   "include": ["index.ts", "src/**/*", "vite.config.ts"],
   "exclude": ["node_modules", "dist"]

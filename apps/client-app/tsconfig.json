@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"],
+      "@repo/api/*": ["../../packages/api/src/*"],
     }
   },
   "include": [
