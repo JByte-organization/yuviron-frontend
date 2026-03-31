@@ -6,22 +6,20 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint"
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "api:gen": "orval --config orval.config.ts"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18"
   },
   "devDependencies": {
+    "@types/node": "^25.5.0",
+    "orval": "^8.5.3",
+    "prettier": "^3.7.4",
     "turbo": "^2.8.13",
-    "typescript": "5.9.2",
-    "prettier": "^3.7.4"
-  },
-  "dependencies": {
-    "bootstrap": "^5.3.3",
-    "react-bootstrap": "^2.10.0",
-    "sass": "^1.80.0"
+    "typescript": "5.9.2"
   }
 }

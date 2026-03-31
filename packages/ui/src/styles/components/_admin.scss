@@ -1,8 +1,14 @@
-@use "../abstract/variables" as *;
-@use "../abstract/typography" as *;
+//@use "../abstract/variables" as *;
+//@use "../abstract/typography" as *;
+@use "sass:color";
 
 $hover-bg: rgba(255, 255, 255, 0.05);
 $active-blue: #40A2FF;
+
+.bg-admin-primary{ background-color: $admin-secondary}
+.bg-admin-secondary{ background-color: $admin-bg}
+
+.admin-text{ color: $admin-text!important;}
 
 .admin-sidebar {
   background-color: $admin-secondary;
@@ -18,7 +24,7 @@ $active-blue: #40A2FF;
     font-size: $h5-font-size;
 
     &:hover {
-      background-color: lighten($admin-btn-primary, 10%);
+      background-color: color.adjust($admin-btn-primary, $lightness: -10%);
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba($admin-btn-primary, 0.3);
     }
@@ -158,7 +164,7 @@ main {
 
         &.isResizing {
           opacity: 1;
-          background: lighten($cyan, 10%);
+          background: color.adjust($cyan, $lightness: -10%);
         }
       }
 
@@ -223,13 +229,11 @@ main {
   .text-cyan {
     color: $cyan; // Твой #82E2FF
     &:hover {
-      color: lighten($cyan, 10%);
+      color: color.adjust($cyan, $lightness: -10%);
     }
   }
 }
 .table-toolbar {
-
-
   .form-control {
     background-color: #24282c !important; // Темный фон инпута
     border-radius: 8px;
@@ -242,9 +246,8 @@ main {
   }
 
   .btn-dark {
-    background-color: #24282c;
+    background-color: $admin-bg;
     border-radius: 8px;
-    font-size: 0.9rem;
     transition: all 0.2s;
 
     &:hover {
@@ -254,30 +257,60 @@ main {
   }
 
   .btn-primary {
-    background-color: $cyan; // Твой #82E2FF
+    background-color: $cyan;
     border: none;
     border-radius: 8px;
     font-size: 0.9rem;
 
     &:hover {
-      background-color: lighten($cyan, 10%);
+      background-color: color.adjust($cyan, $lightness: -10%);
     }
   }
 }
 
-.search-container {
-  .form-control {
+.img-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  background-color:  $admin-bg;
+  border-radius: 12px;
+  padding: 8px 16px;
+  width: 100%;
+
+  .search-input {
+    background: transparent !important;
+    border: none !important;
+    color: #fff;
+    font-size: $h6-font-size;
+    width: fit-content;
+    outline: none;
+
     &::placeholder {
-      color: rgba(255, 255, 255, 0.4) !important;
-      opacity: 1;
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 300;
     }
 
     &:focus {
-      background-color: #24282c;
-      color: #fff;
-      border-color: $admin-btn-primary!important;
+      box-shadow: none;
     }
   }
+}
+
+
+.btn-admin-dark{
+  background-color: $admin-bg;
+  color: $admin-text;
+  border-radius: 12px;
+
+  &:hover {
+    background-color: color.adjust($admin-bg, $lightness: -2%);
+  }
+
 }
 
 .admin-modal-content {
@@ -333,7 +366,7 @@ main {
 
 // АДМИН ЛОГИН
 .admin-login {
-  background: mix($black, $admin-bg, 72%);
+  background: color.mix($black, $admin-bg, 72%);
   color: $white;
 
   &__label {
@@ -341,7 +374,7 @@ main {
   }
 
   &__panel {
-    background: darken($admin-bg, 2%);
+    background: color.scale($admin-bg, $lightness: -2%);
     border: 1px solid rgba($admin-stroke, 0.45);
   }
 
@@ -365,7 +398,7 @@ main {
   &__input {
     height: 60px;
     padding-inline: 24px;
-    background-color: darken($admin-bg, 6%);
+    background-color: color.scale($admin-bg, $lightness: -6%);
     border: 1px solid rgba($admin-stroke, 0.9);
     border-radius: 14px;
     color: $white;
@@ -378,7 +411,7 @@ main {
     }
 
     &:focus {
-      background-color: darken($admin-bg, 6%);
+      background-color: color.scale($admin-bg, $lightness: -6%);
       border-color: rgba($admin-stroke, 0.95);
       color: $white;
       box-shadow: none;
