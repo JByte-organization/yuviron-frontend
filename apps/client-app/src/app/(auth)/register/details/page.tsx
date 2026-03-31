@@ -1,4 +1,4 @@
-export default function RegisterStep1Page() {
+export default function RegisterDetailsPage() {
     return (
         <div>
             <h1>Страница</h1>
