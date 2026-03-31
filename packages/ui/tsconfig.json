@@ -1,9 +1,16 @@
 {
-  "extends": "@repo/typescript-config/react-library.json",
+  "extends": "@repo/typescript-config/base.json", // Твой базовый конфиг
   "compilerOptions": {
-    "outDir": "dist",
-    "strictNullChecks": true
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["node", "vite/client"], // Добавляем типы Vite здесь!
+    "esModuleInterop": true // Это исправит ошибку с импортом path
   },
-  "include": ["src"],
+  "include": ["index.ts", "src/**/*", "vite.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

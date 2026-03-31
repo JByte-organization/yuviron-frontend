@@ -1,10 +1,11 @@
-@use "./abstract/variables" as *;
-@use "./abstract/typography" as *;
+@import "./abstract/variables";
+@import "./abstract/typography";
+
+
 
 $primary: $cyan;
 $body-bg: $black;
-$body-color: $white;
 
+@import "bootstrap/scss/bootstrap";
 
-@import "bootstrap/dist/css/bootstrap.min.css";
-
+@import "./components/admin";
