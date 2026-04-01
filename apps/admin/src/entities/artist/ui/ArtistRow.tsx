@@ -1,8 +1,8 @@
 import React from 'react';
-import { ArtistDto } from '@repo/api';
+import { ArtistDetailsDto } from '@repo/api';
 
 interface Props {
-    artist: ArtistDto;
+    artist: ArtistDetailsDto;
 }
 
 export const ArtistRow = ({ artist }: Props) => {
