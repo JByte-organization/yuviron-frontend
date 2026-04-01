@@ -1,4 +1,4 @@
-import { ArtistsPage } from '@/pages/artists/ui/ArtistsPage';
+import { ArtistsPage } from '@/views/artists/ui/ArtistsPage';
 
 export default function Page() {
     return <ArtistsPage />;
