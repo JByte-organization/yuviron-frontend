@@ -1,6 +1,6 @@
-import { ArtistDto } from '@repo/api';
+import { ArtistDetailsDto } from '@repo/api';
 
-export const ARTIST_COLUMNS_MAP: Partial<Record<keyof ArtistDto, string>> = {
+export const ARTIST_COLUMNS_MAP: Partial<Record<keyof ArtistDetailsDto, string>> = {
     name: 'Artist',
     description: 'Description',
     isVerified: 'Verified',
