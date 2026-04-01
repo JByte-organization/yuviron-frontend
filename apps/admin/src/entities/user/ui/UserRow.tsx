@@ -1,5 +1,7 @@
 import React from 'react';
 import { UserDetailsDto } from '@repo/api';
+import { RoleSimpleDto } from '@repo/api';
+import { AccountState } from '@repo/api';
 
 interface UserRowProps {
     user: UserDetailsDto;
@@ -18,27 +20,79 @@ export const UserRow = ({ user }: UserRowProps) => {
         });
     };
 
-    // Бейдж ролей (твоя логика)
+    // Бейдж ролей
+    // const renderRoles = () => {
+    //     //roles теперь массив объектов RoleSimpleDto [cite: 881]
+    //     const roles: RoleSimpleDto[] = user.roles || [];
+    //
+    //     // Извлекаем только имена для удобства проверки [cite: 697]
+    //     const roleNames = roles.map(r => r.name);
+    //
+    //     if (roleNames.includes('Admin')) {
+    //         return <span className="badge bg-danger">ADMIN</span>;
+    //     }
+    //     if (roleNames.includes('ManagementUser')) {
+    //         return <span className="badge bg-info text-dark">MANAGER</span>;
+    //     }
+    //
+    //     return <span className="badge bg-secondary text-white-50">USER</span>;
+    // };
+
     const renderRoles = () => {
         const roles = user.roles || [];
-        if (roles.includes('Admin')) return <span className="badge bg-danger">ADMIN</span>;
-        if (roles.includes('ManagementUser')) return <span className="badge bg-info text-dark">MANAGER</span>;
-        if (user.hasActivePremium) return <span className="badge bg-success">PREMIUM</span>;
+
+        const hasRole = (roleName: string) => {
+            return roles.some(role => {
+                if (typeof role === 'string') return role === roleName;
+                return role?.name === roleName;
+            });
+        };
+
+        if (hasRole('Admin')) {
+            return <span className="badge bg-danger">ADMIN</span>;
+        }
+
+        if (hasRole('ManagementUser')) {
+            return <span className="badge bg-info text-dark">MANAGER</span>;
+        }
+
         return <span className="badge bg-secondary text-white-50">USER</span>;
     };
 
     // Состояние аккаунта (Active / Blocked)
     const renderAccountState = () => {
-        const isActive = user.accountState === 'Active';
+        const isActive = user.accountState === AccountState.Active;
+        const isBanned = user.accountState === AccountState.Banned;
+        const isDeleted = user.accountState === AccountState.Deleted;
+
+        let statusText: string = user.accountState || 'Unknown';
+
+        // Логика выбора цвета (Bootstrap классы)
+        let dotClass = 'bg-secondary';
+        let textClass = 'text-secondary';
+
+        if (isActive) {
+            dotClass = 'bg-success';
+            textClass = 'text-success';
+        } else if (isBanned || isDeleted) {
+            dotClass = 'bg-danger';
+            textClass = 'text-danger';
+        } else if (user.accountState === 'Suspended' as any) {
+            // Suspended
+            dotClass = 'bg-warning';
+            textClass = 'text-warning';
+            statusText = 'Suspended';
+        }
+
         return (
             <div className="d-flex align-items-center gap-2">
-                <span
-                    className={`rounded-circle ${isActive ? 'bg-success' : 'bg-danger'}`}
-                    style={{ width: '8px', height: '8px' }}
-                ></span>
-                <span className={isActive ? 'text-success' : 'text-danger'}>
-                    {user.accountState}
-                </span>
+            <span
+                className={`rounded-circle ${dotClass}`}
+                style={{ width: '8px', height: '8px' }}
+            ></span>
+                <span className={`small ${textClass}`}>
+                {statusText}
+            </span>
             </div>
         );
     };

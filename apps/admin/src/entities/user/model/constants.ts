@@ -1,12 +1,6 @@
-// src/entities/user/model/columns.ts
-import { UserDto } from '@repo/api';
+import { UserDetailsDto } from '@repo/api';
 
-/**
- * Описываем маппинг: Ключ из API -> Название для заголовка таблицы.
- * Используем Partial<Record<keyof UserDto, string>>, чтобы TS
- * проверял существование ключей в модели UserDto.
- */
-export const USER_COLUMNS_MAP: Partial<Record<keyof UserDto, string>> = {
+export const USER_COLUMNS_MAP: Partial<Record<keyof UserDetailsDto, string>> = {
     displayName: 'User',
     email: 'Email',
     roles: 'Status/Roles',
@@ -16,8 +10,8 @@ export const USER_COLUMNS_MAP: Partial<Record<keyof UserDto, string>> = {
     id: 'ID'
 };
 
-// Экспортируем готовый массив заголовков для пропса columns в BaseTable
-export const tableColumns = Object.values(USER_COLUMNS_MAP);
+// Исправление: Добавляем as string[], чтобы убрать undefined из типа
+export const tableColumns = Object.values(USER_COLUMNS_MAP) as string[];
 
-// Экспортируем ключи, чтобы UserRow знал, в каком порядке рендерить ячейки
-export const tableColumnKeys = Object.keys(USER_COLUMNS_MAP) as Array<keyof UserDto>;
+// Для ключей используем более строгую типизацию
+export const tableColumnKeys = Object.keys(USER_COLUMNS_MAP) as Array<keyof UserDetailsDto>;
