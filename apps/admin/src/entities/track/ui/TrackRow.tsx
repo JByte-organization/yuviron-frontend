@@ -1,18 +1,18 @@
 import React from 'react';
-import { TrackDto } from '@repo/api';
+import { TrackDetailsDto } from '@repo/api';
 
 interface Props {
-    track: TrackDto;
+    track: TrackDetailsDto;
 }
 
 export const TrackRow = ({ track }: Props) => {
     // Форматирование секунд в ММ:СС
-    const formatDuration = (seconds?: number) => {
-        if (!seconds) return '00:00';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
+    // const formatDuration = (seconds?: number) => {
+    //     if (!seconds) return '00:00';
+    //     const mins = Math.floor(seconds / 60);
+    //     const secs = Math.floor(seconds % 60);
+    //     return `${mins}:${secs.toString().padStart(2, '0')}`;
+    // };
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>
@@ -35,25 +35,25 @@ export const TrackRow = ({ track }: Props) => {
                 </div>
             </td>
 
-            <td className="text-info">{track.artistName || 'Unknown Artist'}</td>
-            <td className="text-secondary small">{track.genreName}</td>
-            <td className="text-secondary font-monospace">{formatDuration(track.duration)}</td>
+            {/*<td className="text-info">{track.artists || 'Unknown Artist'}</td>*/}
+            {/*<td className="text-secondary small">{track.genreName}</td>*/}
+            {/*<td className="text-secondary font-monospace">{formatDuration(track.duration)}</td>*/}
 
-            <td>
-                <span className={`badge rounded-pill px-3 ${track.status === 'Active' ? 'bg-success' : 'bg-warning text-dark'}`}>
-                    {track.status?.toUpperCase()}
-                </span>
-            </td>
+            {/*<td>*/}
+            {/*    <span className={`badge rounded-pill px-3 ${track.status === 'Active' ? 'bg-success' : 'bg-warning text-dark'}`}>*/}
+            {/*        {track.status?.toUpperCase()}*/}
+            {/*    </span>*/}
+            {/*</td>*/}
 
-            <td className="text-secondary small">{track.createdAt ? new Date(track.createdAt).toLocaleDateString() : 'N/A'}</td>
-            <td className="text-secondary small font-monospace">{track.id?.slice(0, 8)}...</td>
+            {/*<td className="text-secondary small">{track.createdAt ? new Date(track.createdAt).toLocaleDateString() : 'N/A'}</td>*/}
+            {/*<td className="text-secondary small font-monospace">{track.id?.slice(0, 8)}...</td>*/}
 
-            <td className="text-end px-4">
-                <div className="d-flex justify-content-end gap-2">
-                    <button className="btn btn-sm text-info shadow-none">✏️</button>
-                    <button className="btn btn-sm text-danger shadow-none">❌</button>
-                </div>
-            </td>
+            {/*<td className="text-end px-4">*/}
+            {/*    <div className="d-flex justify-content-end gap-2">*/}
+            {/*        <button className="btn btn-sm text-info shadow-none">✏️</button>*/}
+            {/*        <button className="btn btn-sm text-danger shadow-none">❌</button>*/}
+            {/*    </div>*/}
+            {/*</td>*/}
         </tr>
     );
 };

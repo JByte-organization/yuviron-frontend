@@ -1,9 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="0eed3bb5-5ebd-4d8f-9bcc-82b3e949c59e" name="Changes" comment="fix auth">
+      <change afterPath="$PROJECT_DIR$/apps/client-app/app/favicon.ico" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/client-app/app/globals.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/client-app/app/layout.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/client-app/app/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/next-env.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(auth)/login/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(auth)/login/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/artists/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/artists/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/tracks/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/tracks/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/users/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/users/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/entities/track/model/columns.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/entities/track/model/columns.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/entities/track/ui/TrackRow.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/entities/track/ui/TrackRow.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/features/user/create/ui/CreateUserModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/features/user/create/ui/CreateUserModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/pages/albums/ui/AlbumsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/views/albums/ui/AlbumsPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/pages/artists/ui/ArtistsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/views/artists/ui/ArtistsPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/pages/dashboard/ui/DashboardPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/views/dashboard/ui/DashboardPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/pages/login/ui/LoginPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/views/login/ui/LoginPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/pages/tracks/ui/TrackForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/views/tracks/ui/TrackForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/pages/tracks/ui/TracksPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/views/tracks/ui/TracksPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/pages/tracks/ui/TracksTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/views/tracks/ui/TracksTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/pages/users/ui/UsersPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/views/users/ui/UsersPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/shared/ui/AdminModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/shared/ui/AdminModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/app/(auth)/forgot-password/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/app/(auth)/layout.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/app/(auth)/login/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/app/(auth)/register/details/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/app/(auth)/register/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/app/(auth)/register/profile/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/app/(auth)/reset-password/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/app/(auth)/verify-code/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/app/layout.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/app/providers/QueryProvider.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/entities/session/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/entities/session/lib/jwt.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/entities/session/model/store.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/entities/session/model/types.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/login/ui/LoginForm.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/logout/ui/LogoutButton.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/register/ui/RegisterForm/Step1Details.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/register/ui/RegisterForm/Step2Profile.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/register/ui/RegisterForm/model/useRegisterForm.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/ForgotPasswordForm.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/ResetPasswordForm.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/VerifyCodeForm.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/ForgotPasswordPage.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/LoginPage.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/RegisterDetailsPage.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/RegisterPage.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/RegisterProfilePage.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/ResetPasswordPage.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/VerifyCodePage.tsx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,23 +100,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
-    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\MISHA\\WebstormProjects\\yuviron-frontend\\node_modules\\typescript\\lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "SCRUM-127-add-structure",
+    "javascript.preferred.runtime.type.id": "node",
+    "last_opened_file_path": "C:/Users/Admin/WebstormProjects/yuviron-frontend/apps/client-app",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
+    "ts.external.directory.path": "C:\\Users\\Admin\\WebstormProjects\\yuviron-frontend\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\client-app" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\MISHA\WebstormProjects\yuviron-frontend\apps\admin\public\Logo" />
     </key>
@@ -74,6 +134,7 @@
       </set>
     </attachedChunks>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="0eed3bb5-5ebd-4d8f-9bcc-82b3e949c59e" name="Changes" comment="" />
