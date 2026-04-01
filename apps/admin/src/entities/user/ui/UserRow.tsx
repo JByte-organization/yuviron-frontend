@@ -20,24 +20,6 @@ export const UserRow = ({ user }: UserRowProps) => {
         });
     };
 
-    // Бейдж ролей
-    // const renderRoles = () => {
-    //     //roles теперь массив объектов RoleSimpleDto [cite: 881]
-    //     const roles: RoleSimpleDto[] = user.roles || [];
-    //
-    //     // Извлекаем только имена для удобства проверки [cite: 697]
-    //     const roleNames = roles.map(r => r.name);
-    //
-    //     if (roleNames.includes('Admin')) {
-    //         return <span className="badge bg-danger">ADMIN</span>;
-    //     }
-    //     if (roleNames.includes('ManagementUser')) {
-    //         return <span className="badge bg-info text-dark">MANAGER</span>;
-    //     }
-    //
-    //     return <span className="badge bg-secondary text-white-50">USER</span>;
-    // };
-
     const renderRoles = () => {
         const roles = user.roles || [];
 

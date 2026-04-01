@@ -1,11 +1,20 @@
-import { ArtistDetailsDto } from '@repo/api';
+import { ArtistListItemDto } from '@repo/api';
 
-export const ARTIST_COLUMNS_MAP: Partial<Record<keyof ArtistDetailsDto, string>> = {
+/**
+ * Используем camelCase ключи строго по твоему DTO.
+ * Добавляем 'actions' для колонки с кнопками.
+ */
+export const ARTIST_COLUMNS_MAP: Partial<Record<keyof ArtistListItemDto | 'actions', string>> = {
     name: 'Artist',
-    description: 'Description',
-    isVerified: 'Verified',
+    ownerEmail: 'Owner',
+    verificationStatus: 'Status',
+    totalAlbums: 'Albums',
     createdAt: 'Joined',
-    id: 'ID'
+    actions: 'Actions'
 };
 
-export const artistTableColumns = Object.values(ARTIST_COLUMNS_MAP);
+// Экспортируем массив строк для заголовков BaseTable
+export const artistTableColumns = Object.values(ARTIST_COLUMNS_MAP) as string[];
+
+// Экспортируем ключи для рендера строк
+export const artistTableColumnKeys = Object.keys(ARTIST_COLUMNS_MAP) as Array<keyof ArtistListItemDto | 'actions'>;
