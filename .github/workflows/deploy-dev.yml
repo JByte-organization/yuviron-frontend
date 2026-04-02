@@ -27,19 +27,21 @@ jobs:
 
       - name: Detect affected apps
         id: affected
+        env:
+            BASE_SHA: ${{ github.event.before }}
         run: |
-          set -Eeuo pipefail
-          cd /opt/yuviron-server/src/yuviron-frontend
+            set -Eeuo pipefail
+            cd /opt/yuviron-server/src/yuviron-frontend
 
-          APPS=$(bash .github/scripts/get-affected-apps.sh | tail -n 1)
+            APPS=$(bash .github/scripts/get-affected-apps.sh "$BASE_SHA")
 
-          echo "apps=$APPS" >> "$GITHUB_OUTPUT"
+            echo "apps=$APPS" >> "$GITHUB_OUTPUT"
 
-          if [ "$APPS" = "[]" ]; then
+            if [ "$APPS" = "[]" ]; then
             echo "has_apps=false" >> "$GITHUB_OUTPUT"
-          else
+            else
             echo "has_apps=true" >> "$GITHUB_OUTPUT"
-          fi
+            fi
 
       - name: Print affected apps
         run: |
