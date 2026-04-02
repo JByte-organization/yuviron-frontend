@@ -12,6 +12,10 @@ if ! command -v pnpm >/dev/null 2>&1; then
   exit 1
 fi
 
-pnpm turbo run lint typecheck --filter=client-app --filter=admin --filter=backoffice
+echo "[check-frontend-full] Installing dependencies..."
+pnpm install --frozen-lockfile
+
+echo "[check-frontend-full] Running validation..."
+pnpm turbo run typecheck --filter=client-app --filter=admin --filter=backoffice
 
 echo "[check-frontend-full] Frontend validation passed"
