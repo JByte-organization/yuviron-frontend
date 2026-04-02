@@ -33,9 +33,13 @@ jobs:
             set -Eeuo pipefail
             cd /opt/yuviron-server/src/yuviron-frontend
 
-            APPS=$(bash .github/scripts/get-affected-apps.sh "$BASE_SHA")
-
+            if APPS=$(bash .github/scripts/get-affected-apps.sh "$BASE_SHA"); then
             echo "apps=$APPS" >> "$GITHUB_OUTPUT"
+            else
+            echo "Affected detection failed, fallback to all frontend apps"
+            APPS='["admin","backoffice","client-app"]'
+            echo "apps=$APPS" >> "$GITHUB_OUTPUT"
+            fi
 
             if [ "$APPS" = "[]" ]; then
             echo "has_apps=false" >> "$GITHUB_OUTPUT"
