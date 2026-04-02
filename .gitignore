@@ -40,3 +40,4 @@ yarn-error.log*
 *.pem
 
 turbo-dry-run.json
+*.tsbuildinfo
