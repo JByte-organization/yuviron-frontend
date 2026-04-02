@@ -76,7 +76,7 @@ jobs:
       - name: Validate frontend source
         run: |
           set -Eeuo pipefail
-          cd /opt/yuviron-server/scripts
+          cd /opt/yuviron-server
           chmod +x ./scripts/check-frontend-full.sh
           ./scripts/check-frontend-full.sh
 
