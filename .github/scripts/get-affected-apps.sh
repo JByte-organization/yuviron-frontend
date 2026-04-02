@@ -7,8 +7,12 @@ if [ -z "${BASE_REF}" ] || [ "${BASE_REF}" = "0000000000000000000000000000000000
   BASE_REF="HEAD~1"
 fi
 
-if ! git rev-parse "${BASE_REF}" >/dev/null 2>&1; then
-  echo "Base ref '${BASE_REF}' is not available" >&2
+echo "[affected] BASE_REF=${BASE_REF}" >&2
+echo "[affected] HEAD=$(git rev-parse HEAD)" >&2
+
+if ! git cat-file -e "${BASE_REF}^{commit}" 2>/dev/null; then
+  echo "[affected] Base ref '${BASE_REF}' is not available locally" >&2
+  git log --oneline -n 10 >&2 || true
   exit 1
 fi
 
