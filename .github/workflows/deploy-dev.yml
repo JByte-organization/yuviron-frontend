@@ -2,7 +2,8 @@ name: Deploy frontend dev
 
 on:
   push:
-    branches: [dev]
+    branches:
+      - dev
 
 concurrency:
   group: deploy-frontend-dev
@@ -15,6 +16,8 @@ jobs:
     outputs:
       apps: ${{ steps.affected.outputs.apps }}
       has_apps: ${{ steps.affected.outputs.has_apps }}
+      fallback_used: ${{ steps.affected.outputs.fallback_used }}
+      reason: ${{ steps.affected.outputs.reason }}
 
     steps:
       - name: Sync frontend source
@@ -33,15 +36,91 @@ jobs:
           set -Eeuo pipefail
           cd /opt/yuviron-server/src/yuviron-frontend
 
-          if APPS=$(bash .github/scripts/get-affected-apps.sh "$BASE_SHA"); then
-            echo "apps=$APPS" >> "$GITHUB_OUTPUT"
+          FALLBACK_APPS='["admin","backoffice","client-app"]'
+
+          resolve_base_sha() {
+            local base_sha="${BASE_SHA:-}"
+
+            if [ -z "$base_sha" ] || [ "$base_sha" = "0000000000000000000000000000000000000000" ]; then
+              echo "BASE_SHA is empty or zeroed, trying HEAD~1" >&2
+              if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+                base_sha="$(git rev-parse HEAD~1)"
+              else
+                return 1
+              fi
+            fi
+
+            if ! git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
+              echo "BASE_SHA commit does not exist locally: $base_sha" >&2
+              return 1
+            fi
+
+            printf '%s\n' "$base_sha"
+          }
+
+          FALLBACK_USED=false
+          REASON="selective deploy"
+
+          if RESOLVED_BASE_SHA="$(resolve_base_sha)"; then
+            echo "Using BASE_SHA=${RESOLVED_BASE_SHA}"
+
+            if APPS_RAW="$(bash .github/scripts/get-affected-apps.sh "$RESOLVED_BASE_SHA")"; then
+              if [ -z "${APPS_RAW}" ]; then
+                echo "Affected script returned empty output. Controlled fallback to all frontend apps."
+                APPS_RAW="$FALLBACK_APPS"
+                FALLBACK_USED=true
+                REASON="affected script returned empty output"
+              fi
+            else
+              echo "Affected detection failed. Controlled fallback to all frontend apps."
+              APPS_RAW="$FALLBACK_APPS"
+              FALLBACK_USED=true
+              REASON="affected detection script failed"
+            fi
           else
-            echo "Affected detection failed, fallback to all frontend apps"
-            APPS='["admin","backoffice","client-app"]'
-            echo "apps=$APPS" >> "$GITHUB_OUTPUT"
+            echo "Unable to determine valid BASE_SHA. Controlled fallback to all frontend apps."
+            APPS_RAW="$FALLBACK_APPS"
+            FALLBACK_USED=true
+            REASON="unable to resolve valid BASE_SHA"
           fi
 
-          if [ "$APPS" = "[]" ]; then
+          echo "Detected apps raw: ${APPS_RAW}"
+
+          APPS="$(APPS_RAW="$APPS_RAW" python3 - <<'PY'
+          import json, os, sys
+
+          raw = os.environ["APPS_RAW"]
+          allowed = ["admin", "backoffice", "client-app"]
+
+          try:
+              data = json.loads(raw)
+          except Exception:
+              print(json.dumps(allowed))
+              sys.exit(0)
+
+          if not isinstance(data, list):
+              print(json.dumps(allowed))
+              sys.exit(0)
+
+          result = []
+          for app in data:
+              if app in allowed and app not in result:
+                  result.append(app)
+
+          print(json.dumps(result))
+          PY
+          )"
+
+          if [ -z "${APPS}" ]; then
+            APPS="[]"
+          fi
+
+          echo "Normalized apps: ${APPS}"
+          echo "apps=${APPS}" >> "$GITHUB_OUTPUT"
+          echo "fallback_used=${FALLBACK_USED}" >> "$GITHUB_OUTPUT"
+          echo "reason=${REASON}" >> "$GITHUB_OUTPUT"
+
+          if [ "${APPS}" = "[]" ]; then
             echo "has_apps=false" >> "$GITHUB_OUTPUT"
           else
             echo "has_apps=true" >> "$GITHUB_OUTPUT"
@@ -49,13 +128,24 @@ jobs:
 
       - name: Print affected apps
         run: |
-          echo "Affected apps:"
-          echo "${{ steps.affected.outputs.apps }}"
+          echo "Affected apps: ${{ steps.affected.outputs.apps }}"
+          echo "Has apps: ${{ steps.affected.outputs.has_apps }}"
+          echo "Fallback used: ${{ steps.affected.outputs.fallback_used }}"
+          echo "Reason: ${{ steps.affected.outputs.reason }}"
 
   deploy:
     needs: detect-affected
     if: needs.detect-affected.outputs.has_apps == 'true'
     runs-on: [self-hosted, yuviron]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJson(needs.detect-affected.outputs.apps) }}
+
+    env:
+      FALLBACK_USED: ${{ needs.detect-affected.outputs.fallback_used }}
+      DETECT_REASON: ${{ needs.detect-affected.outputs.reason }}
 
     steps:
       - name: Sync frontend source
@@ -65,6 +155,18 @@ jobs:
           git fetch origin dev
           git reset --hard origin/dev
           git clean -fdx
+
+      - name: Print deploy mode
+        run: |
+          echo "Deploy mode reason: ${DETECT_REASON}"
+          echo "Fallback used: ${FALLBACK_USED}"
+          echo "Current app: ${{ matrix.app }}"
+
+          if [ "${FALLBACK_USED}" = "true" ]; then
+            echo "WARNING: affected detection fallback was used. Deploying app intentionally from fallback set."
+          else
+            echo "Selective deploy mode."
+          fi
 
       - name: Preflight check
         run: |
@@ -79,93 +181,65 @@ jobs:
           cd /opt/yuviron-server/src/yuviron-frontend
           pnpm install --frozen-lockfile
 
-      - name: Run frontend typecheck
+      - name: Typecheck affected app
         run: |
           set -Eeuo pipefail
           cd /opt/yuviron-server/src/yuviron-frontend
-          pnpm turbo run typecheck --filter=client-app --filter=admin --filter=backoffice
+          pnpm --filter "${{ matrix.app }}" run typecheck
 
-      # Временно можно отключить, пока admin не станет зелёным по lint
-      # - name: Run frontend lint
+      # Включи обратно, когда lint станет стабильным.
+      # - name: Lint affected app
       #   run: |
       #     set -Eeuo pipefail
       #     cd /opt/yuviron-server/src/yuviron-frontend
-      #     pnpm turbo run lint --filter=client-app --filter=admin --filter=backoffice
+      #     pnpm --filter "${{ matrix.app }}" run lint
 
-      - name: Build affected frontend services
-        env:
-          AFFECTED_APPS: ${{ needs.detect-affected.outputs.apps }}
+      - name: Build affected frontend service
         run: |
           set -Eeuo pipefail
           cd /opt/yuviron-server
 
-          SERVICES=$(python3 - <<'PY'
-          import json, os
-          apps = json.loads(os.environ["AFFECTED_APPS"])
-          allowed = {"admin", "backoffice", "client-app"}
-          services = [app for app in apps if app in allowed]
-          print(" ".join(services))
-          PY
-          )
-
-          if [ -z "$SERVICES" ]; then
-            echo "No deployable frontend services affected."
-            exit 0
-          fi
-
-          echo "Building services: $SERVICES"
+          echo "Building frontend service: ${{ matrix.app }}"
 
           docker compose \
+            --env-file ./env/dev.env \
             -p yuviron-dev \
             -f ./infra/compose.base.yml \
             -f ./infra/compose.dev.yml \
-            build $SERVICES
+            build "${{ matrix.app }}"
 
-      - name: Restart affected frontend services
-        env:
-          AFFECTED_APPS: ${{ needs.detect-affected.outputs.apps }}
+      - name: Restart affected frontend service
         run: |
           set -Eeuo pipefail
           cd /opt/yuviron-server
 
-          SERVICES=$(python3 - <<'PY'
-          import json, os
-          apps = json.loads(os.environ["AFFECTED_APPS"])
-          allowed = {"admin", "backoffice", "client-app"}
-          services = [app for app in apps if app in allowed]
-          print(" ".join(services))
-          PY
-          )
-
-          if [ -z "$SERVICES" ]; then
-            echo "No deployable frontend services affected."
-            exit 0
-          fi
-
-          echo "Restarting services: $SERVICES"
+          echo "Restarting frontend service: ${{ matrix.app }}"
 
           docker compose \
+            --env-file ./env/dev.env \
             -p yuviron-dev \
             -f ./infra/compose.base.yml \
             -f ./infra/compose.dev.yml \
-            up -d --no-deps $SERVICES
+            up -d --no-deps "${{ matrix.app }}"
 
       - name: Show running services
         run: |
           set -Eeuo pipefail
           cd /opt/yuviron-server
           docker compose \
+            --env-file ./env/dev.env \
             -p yuviron-dev \
             -f ./infra/compose.base.yml \
             -f ./infra/compose.dev.yml \
             ps
 
-  skip-deploy:
+  no-changes:
     needs: detect-affected
     if: needs.detect-affected.outputs.has_apps != 'true'
     runs-on: [self-hosted, yuviron]
 
     steps:
-      - name: Nothing to deploy
+      - name: No affected frontend apps
         run: |
           echo "No affected frontend apps detected. Skipping deploy."
+          echo "Reason: ${{ needs.detect-affected.outputs.reason }}"
