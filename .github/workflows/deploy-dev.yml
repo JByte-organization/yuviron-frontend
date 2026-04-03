@@ -24,7 +24,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           cd /opt/yuviron-server/src/yuviron-frontend
-          git fetch origin dev
+          git fetch --prune origin dev
           git reset --hard origin/dev
           git clean -fdx
 
@@ -36,71 +36,63 @@ jobs:
           set -Eeuo pipefail
           cd /opt/yuviron-server/src/yuviron-frontend
 
-          FALLBACK_APPS='["admin","backoffice","client-app"]'
-
           resolve_base_sha() {
             local base_sha="${BASE_SHA:-}"
 
             if [ -z "$base_sha" ] || [ "$base_sha" = "0000000000000000000000000000000000000000" ]; then
               echo "BASE_SHA is empty or zeroed, trying HEAD~1" >&2
-              if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
-                base_sha="$(git rev-parse HEAD~1)"
-              else
-                return 1
-              fi
+              git rev-parse --verify HEAD~1 >/dev/null 2>&1 || return 1
+              base_sha="$(git rev-parse HEAD~1)"
             fi
 
             if ! git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
-              echo "BASE_SHA commit does not exist locally: $base_sha" >&2
-              return 1
+              echo "BASE_SHA is missing locally, trying to fetch it: $base_sha" >&2
+              git fetch origin "${base_sha}" --depth=1 || true
             fi
 
+            git cat-file -e "${base_sha}^{commit}" 2>/dev/null || return 1
             printf '%s\n' "$base_sha"
           }
 
           FALLBACK_USED=false
           REASON="selective deploy"
 
-          if RESOLVED_BASE_SHA="$(resolve_base_sha)"; then
-            echo "Using BASE_SHA=${RESOLVED_BASE_SHA}"
+          RESOLVED_BASE_SHA="$(resolve_base_sha)" || {
+            echo "Failed to resolve valid BASE_SHA" >&2
+            exit 1
+          }
 
-            if APPS_RAW="$(bash .github/scripts/get-affected-apps.sh "$RESOLVED_BASE_SHA")"; then
-              if [ -z "${APPS_RAW}" ]; then
-                echo "Affected script returned empty output. Controlled fallback to all frontend apps."
-                APPS_RAW="$FALLBACK_APPS"
-                FALLBACK_USED=true
-                REASON="affected script returned empty output"
-              fi
-            else
-              echo "Affected detection failed. Controlled fallback to all frontend apps."
-              APPS_RAW="$FALLBACK_APPS"
-              FALLBACK_USED=true
-              REASON="affected detection script failed"
-            fi
-          else
-            echo "Unable to determine valid BASE_SHA. Controlled fallback to all frontend apps."
-            APPS_RAW="$FALLBACK_APPS"
-            FALLBACK_USED=true
-            REASON="unable to resolve valid BASE_SHA"
+          echo "Using BASE_SHA=${RESOLVED_BASE_SHA}"
+
+          APPS_RAW="$(bash .github/scripts/get-affected-apps.sh "$RESOLVED_BASE_SHA")" || {
+            echo "Affected detection script failed" >&2
+            exit 1
+          }
+
+          if [ -z "${APPS_RAW}" ]; then
+            APPS_RAW="[]"
+            REASON="no affected apps"
           fi
 
           echo "Detected apps raw: ${APPS_RAW}"
 
           APPS="$(APPS_RAW="$APPS_RAW" python3 - <<'PY'
-          import json, os, sys
+          import json
+          import os
+          import sys
 
           raw = os.environ["APPS_RAW"]
           allowed = ["admin", "backoffice", "client-app"]
 
           try:
               data = json.loads(raw)
-          except Exception:
-              print(json.dumps(allowed))
-              sys.exit(0)
+          except Exception as e:
+              print(f"Invalid JSON from affected script: {e}", file=sys.stderr)
+              sys.exit(1)
 
           if not isinstance(data, list):
-              print(json.dumps(allowed))
-              sys.exit(0)
+              print("Affected script returned non-list JSON", file=sys.stderr)
+              sys.exit(1)
 
           result = []
           for app in data:
@@ -110,10 +102,6 @@ jobs:
           print(json.dumps(result))
           PY
           )"
-
-          if [ -z "${APPS}" ]; then
-            APPS="[]"
-          fi
 
           echo "Normalized apps: ${APPS}"
           echo "apps=${APPS}" >> "$GITHUB_OUTPUT"
