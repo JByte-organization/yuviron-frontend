@@ -23,11 +23,6 @@ trap 'rm -f "$TMP_FILE" "$ERR_FILE"' EXIT
 if ! pnpm turbo run build --dry=json --filter="...[${BASE_REF}]" >"$TMP_FILE" 2>"$ERR_FILE"; then
   echo "[affected] turbo command failed" >&2
   cat "$ERR_FILE" >&2 || true
-
-  if [ ! -s "$TMP_FILE" ]; then
-    echo "[]" 
-    exit 0
-  fi
 fi
 
 node - "$TMP_FILE" <<'EOF'
@@ -36,7 +31,7 @@ const fs = require('fs');
 const filePath = process.argv[2];
 const raw = fs.readFileSync(filePath, 'utf8').trim();
 
-if (!raw) {
+if (!raw || raw === 'undefined') {
   process.stdout.write('[]');
   process.exit(0);
 }
