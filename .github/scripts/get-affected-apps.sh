@@ -17,16 +17,39 @@ if ! git cat-file -e "${BASE_REF}^{commit}" 2>/dev/null; then
 fi
 
 TMP_FILE="$(mktemp)"
-trap 'rm -f "$TMP_FILE"' EXIT
+ERR_FILE="$(mktemp)"
+trap 'rm -f "$TMP_FILE" "$ERR_FILE"' EXIT
 
-pnpm turbo run build --dry=json --filter="...[${BASE_REF}]" > "$TMP_FILE"
+if ! pnpm turbo run build --dry=json --filter="...[${BASE_REF}]" >"$TMP_FILE" 2>"$ERR_FILE"; then
+  echo "[affected] turbo command failed" >&2
+  cat "$ERR_FILE" >&2 || true
+
+  if [ ! -s "$TMP_FILE" ]; then
+    echo "[]" 
+    exit 0
+  fi
+fi
 
 node - "$TMP_FILE" <<'EOF'
 const fs = require('fs');
 
 const filePath = process.argv[2];
-const raw = fs.readFileSync(filePath, 'utf8');
-const data = JSON.parse(raw);
+const raw = fs.readFileSync(filePath, 'utf8').trim();
+
+if (!raw) {
+  process.stdout.write('[]');
+  process.exit(0);
+}
+
+let data;
+try {
+  data = JSON.parse(raw);
+} catch (e) {
+  console.error('[affected] Failed to parse turbo dry json:', e.message);
+  console.error('[affected] Raw output:');
+  console.error(raw);
+  process.exit(1);
+}
 
 const appNames = new Set(['admin', 'backoffice', 'client-app']);
 const affectedApps = new Set();
