@@ -16,7 +16,6 @@ jobs:
     outputs:
       apps: ${{ steps.affected.outputs.apps }}
       has_apps: ${{ steps.affected.outputs.has_apps }}
-      fallback_used: ${{ steps.affected.outputs.fallback_used }}
       reason: ${{ steps.affected.outputs.reason }}
 
     steps:
@@ -27,6 +26,12 @@ jobs:
           git fetch --prune origin dev
           git reset --hard origin/dev
           git clean -fdx
+
+      - name: Install frontend dependencies for detection
+        run: |
+          set -Eeuo pipefail
+          cd /opt/yuviron-server/src/yuviron-frontend
+          pnpm install --frozen-lockfile
 
       - name: Detect affected apps
         id: affected
@@ -54,7 +59,6 @@ jobs:
             printf '%s\n' "$base_sha"
           }
 
-          FALLBACK_USED=false
           REASON="selective deploy"
 
           RESOLVED_BASE_SHA="$(resolve_base_sha)" || {
@@ -105,7 +109,6 @@ jobs:
 
           echo "Normalized apps: ${APPS}"
           echo "apps=${APPS}" >> "$GITHUB_OUTPUT"
-          echo "fallback_used=${FALLBACK_USED}" >> "$GITHUB_OUTPUT"
           echo "reason=${REASON}" >> "$GITHUB_OUTPUT"
 
           if [ "${APPS}" = "[]" ]; then
@@ -118,7 +121,6 @@ jobs:
         run: |
           echo "Affected apps: ${{ steps.affected.outputs.apps }}"
           echo "Has apps: ${{ steps.affected.outputs.has_apps }}"
-          echo "Fallback used: ${{ steps.affected.outputs.fallback_used }}"
           echo "Reason: ${{ steps.affected.outputs.reason }}"
 
   deploy:
@@ -132,7 +134,6 @@ jobs:
         app: ${{ fromJson(needs.detect-affected.outputs.apps) }}
 
     env:
-      FALLBACK_USED: ${{ needs.detect-affected.outputs.fallback_used }}
       DETECT_REASON: ${{ needs.detect-affected.outputs.reason }}
 
     steps:
@@ -140,21 +141,15 @@ jobs:
         run: |
           set -Eeuo pipefail
           cd /opt/yuviron-server/src/yuviron-frontend
-          git fetch origin dev
+          git fetch --prune origin dev
           git reset --hard origin/dev
           git clean -fdx
 
       - name: Print deploy mode
         run: |
           echo "Deploy mode reason: ${DETECT_REASON}"
-          echo "Fallback used: ${FALLBACK_USED}"
           echo "Current app: ${{ matrix.app }}"
-
-          if [ "${FALLBACK_USED}" = "true" ]; then
-            echo "WARNING: affected detection fallback was used. Deploying app intentionally from fallback set."
-          else
-            echo "Selective deploy mode."
-          fi
+          echo "Selective deploy mode."
 
       - name: Preflight check
         run: |
