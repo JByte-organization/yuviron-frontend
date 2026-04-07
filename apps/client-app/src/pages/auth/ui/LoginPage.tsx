@@ -1,12 +1,22 @@
-'use client';
+import { LoginForm } from '@/features/auth/login';
 
 export const LoginPage = () => {
     return (
-        <div className="container d-flex align-items-center justify-content-center vh-100">
-            <div className="card bg-dark border-secondary p-4 shadow-lg" style={{ width: '400px' }}>
-                <h3 className="text-white fw-bold mb-3 text-center"></h3>
+        <section className="client-auth-page client-auth-page--login">
+            <div className="client-auth-page__panel">
+                <div className="client-auth-page__content">
+                    <div className="client-auth-logo">
+                        <img
+                            src="/Logo.svg"
+                            alt="Yuviron"
+                            className="client-auth-logo__image"
+                        />
+                    </div>
+
+                    <LoginForm />
+                </div>
             </div>
-        </div>
+        </section>
     );
 };
 
