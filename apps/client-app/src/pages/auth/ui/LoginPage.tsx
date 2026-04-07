@@ -2,14 +2,15 @@ import { LoginForm } from '@/features/auth/login';
 
 export const LoginPage = () => {
     return (
-        <section className="client-auth-page client-auth-page--login">
-            <div className="client-auth-page__panel">
-                <div className="client-auth-page__content">
-                    <div className="client-auth-logo">
+        <section className="client-login-page">
+
+            <div className="client-login-page__panel">
+                <div className="client-login-page__content">
+                    <div className="client-login-page__logo">
                         <img
                             src="/Logo.svg"
                             alt="Yuviron"
-                            className="client-auth-logo__image"
+                            className="client-login-page__logo-image"
                         />
                     </div>
 

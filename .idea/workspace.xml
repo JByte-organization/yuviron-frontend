@@ -5,12 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0eed3bb5-5ebd-4d8f-9bcc-82b3e949c59e" name="Changes" comment="fix">
-      <change afterPath="$PROJECT_DIR$/apps/client-app/public/Logo.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/login/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/app/(auth)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/app/(auth)/layout.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/login/ui/LoginForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/login/ui/LoginForm.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/LoginPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/LoginPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/RegisterPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/RegisterPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/ui/src/styles/components/_client.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui/src/styles/components/_client.scss" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -68,7 +66,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "SCRUM-128-As-an-Admin-I-want-to-Login2",
+    "git-widget-placeholder": "SCRUM-131-As-an-Admin-I-want-to-Register2",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "C:/Users/Admin/WebstormProjects/yuviron-frontend/apps/client-app",
