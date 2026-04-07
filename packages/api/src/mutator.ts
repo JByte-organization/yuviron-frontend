@@ -1,11 +1,18 @@
-export const customInstance = async <T>(
-    url: string,
-    options: RequestInit
-): Promise<T> => {
+export const customInstance = async <T>(url: string, options: RequestInit): Promise<T> => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    const headers = new Headers(options.headers);
 
-    if (token) {
+    const isAuthRoute = url.includes('/auth/login') || url.includes('/auth/register');
+
+    // Создаём чистые заголовки
+    const headers = new Headers();
+
+    // Content-Type только если есть body
+    if (options.body) {
+        headers.set('Content-Type', 'application/json');
+    }
+
+    // Authorization — только для не-auth роутов
+    if (token && !isAuthRoute) {
         headers.set('Authorization', `Bearer ${token}`);
     }
 
@@ -14,10 +21,14 @@ export const customInstance = async <T>(
         headers,
     });
 
-    // 401
-    if (response.status === 401 && typeof window !== 'undefined') {
-        // localStorage.removeItem('auth_token');
-        // window.location.href = '/login';
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw error;
+    }
+
+    // Для 204 No Content — не парсим JSON
+    if (response.status === 204) {
+        return {} as T;
     }
 
     return response.json();
