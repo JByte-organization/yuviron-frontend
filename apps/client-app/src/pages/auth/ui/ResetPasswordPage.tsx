@@ -1,12 +1,22 @@
-'use client';
+import { ResetPasswordForm } from '@/features/auth/restore-password';
 
 export const ResetPasswordPage = () => {
     return (
-        <div className="container d-flex align-items-center justify-content-center vh-100">
-            <div className="card bg-dark border-secondary p-4 shadow-lg" style={{ width: '400px' }}>
-                <h3 className="text-white fw-bold mb-3 text-center">Reset Password</h3>
+        <section className="client-reset-page">
+            <div className="client-reset-page__panel">
+                <div className="client-reset-page__content">
+                    <div className="client-reset-page__logo">
+                        <img
+                            src="/Logo.svg"
+                            alt="Yuviron"
+                            className="client-reset-page__logo-image"
+                        />
+                    </div>
+
+                    <ResetPasswordForm />
+                </div>
             </div>
-        </div>
+        </section>
     );
 };
 
