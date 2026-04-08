@@ -3,5 +3,5 @@
 import type { ReactNode } from 'react';
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
-    return <main className="auth-shell">{children}</main>;
+    return <main className="client-auth-shell">{children}</main>;
 }

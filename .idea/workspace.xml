@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0eed3bb5-5ebd-4d8f-9bcc-82b3e949c59e" name="Changes" comment="fix">
+    <list default="true" id="0eed3bb5-5ebd-4d8f-9bcc-82b3e949c59e" name="Changes" comment="reset password">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/ResetPasswordForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/ResetPasswordForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/ResetPasswordPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/ResetPasswordPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/app/(auth)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/app/(auth)/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/login/ui/LoginForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/login/ui/LoginForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/LoginPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/LoginPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/ui/src/styles/components/_client.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui/src/styles/components/_client.scss" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -66,7 +66,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "SCRUM-133-As-an-Admin-I-Reset-Password2",
+    "git-widget-placeholder": "SCRUM-137-As-an-Client-I-want-to-Login",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "C:/Users/Admin/WebstormProjects/yuviron-frontend/apps/client-app",
@@ -109,6 +109,8 @@
       <workItem from="1773498469748" duration="2212000" />
       <workItem from="1775044419309" duration="637000" />
       <workItem from="1775594656711" duration="6538000" />
+      <workItem from="1775648066899" duration="1369000" />
+      <workItem from="1775662023446" duration="777000" />
     </task>
     <task id="LOCAL-00001" summary="Add Login page">
       <option name="closed" value="true" />
@@ -158,7 +160,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775592205188</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="reset password">
+      <option name="closed" value="true" />
+      <created>1775607386587</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1775607386587</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -171,6 +181,7 @@
     <MESSAGE value="Add Forgot Password page" />
     <MESSAGE value="fix auth" />
     <MESSAGE value="fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix" />
+    <MESSAGE value="reset password" />
+    <option name="LAST_COMMIT_MESSAGE" value="reset password" />
   </component>
 </project>
