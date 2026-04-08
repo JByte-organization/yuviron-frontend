@@ -1,76 +1,61 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
 
 export const RegisterForm = () => {
-    const [showPassword, setShowPassword] = useState(false);
-    const [showRepeatPassword, setShowRepeatPassword] = useState(false);
-
     return (
         <form className="client-register-form">
             <div className="mb-4">
                 <label htmlFor="email" className="form-label client-register-form__label">
-                    Email Address
+                    Електронна пошта
                 </label>
                 <input
                     id="email"
                     type="email"
                     className="form-control client-register-form__input"
-                    placeholder="admin@gmail.com"
+                    placeholder="@gmail.com"
                 />
             </div>
 
-            <div className="mb-4">
-                <label htmlFor="password" className="form-label client-register-form__label">
-                    Password
-                </label>
-
-                <div className="client-register-form__password-wrap">
-                    <input
-                        id="password"
-                        type={showPassword ? 'text' : 'password'}
-                        className="form-control client-register-form__input client-register-form__input--password"
-                        placeholder="********************"
-                    />
-
-                    <button
-                        type="button"
-                        className="client-register-form__toggle"
-                        onClick={() => setShowPassword((prev) => !prev)}
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                        {showPassword ? 'Hide' : 'Show'}
-                    </button>
-                </div>
-            </div>
-
-            <div className="mb-4">
-                <label htmlFor="repeatPassword" className="form-label client-register-form__label">
-                    Repeat Password
-                </label>
-
-                <div className="client-register-form__password-wrap">
-                    <input
-                        id="repeatPassword"
-                        type={showRepeatPassword ? 'text' : 'password'}
-                        className="form-control client-register-form__input client-register-form__input--password"
-                        placeholder="********************"
-                    />
-
-                    <button
-                        type="button"
-                        className="client-register-form__toggle"
-                        onClick={() => setShowRepeatPassword((prev) => !prev)}
-                        aria-label={showRepeatPassword ? 'Hide password' : 'Show password'}
-                    >
-                        {showRepeatPassword ? 'Hide' : 'Show'}
-                    </button>
-                </div>
-            </div>
-
             <button type="submit" className="btn client-register-form__submit w-100">
-                Sign In
+                Далі
             </button>
+
+            <div className="client-register-form__divider">
+                <span>або</span>
+            </div>
+
+            <div className="client-register-form__socials">
+                <button type="button" className="client-register-form__social-btn">
+                    <span className="client-register-form__social-icon client-register-form__social-icon--facebook">
+                        f
+                    </span>
+                    <span>Увійти з Facebook</span>
+                </button>
+
+                <button type="button" className="client-register-form__social-btn">
+                    <span className="client-register-form__social-icon client-register-form__social-icon--google">
+                        G
+                    </span>
+                    <span>Увійти з Google</span>
+                </button>
+
+                <button type="button" className="client-register-form__social-btn">
+                    <span className="client-register-form__social-icon client-register-form__social-icon--apple">
+                        
+                    </span>
+                    <span>Увійти з Apple</span>
+                </button>
+            </div>
+
+            <div className="client-register-form__bottom-divider" />
+
+            <div className="client-register-form__login text-center">
+                <span>Є акаунт?</span>
+                <Link href="/login" className="client-register-form__login-link text-decoration-none">
+                    Увійти до повного
+                </Link>
+            </div>
         </form>
     );
 };
