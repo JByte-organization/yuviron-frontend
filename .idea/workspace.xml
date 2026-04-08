@@ -6,13 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="0eed3bb5-5ebd-4d8f-9bcc-82b3e949c59e" name="Changes" comment="reset password">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/register/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/register/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/register/ui/RegisterForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/register/ui/RegisterForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/register/ui/RegisterForm/Step1Details.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/register/ui/RegisterForm/Step1Details.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/register/ui/RegisterForm/Step2Profile.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/register/ui/RegisterForm/Step2Profile.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/RegisterDetailsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/RegisterDetailsPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/RegisterPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/RegisterPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/RegisterProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/RegisterProfilePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/ForgotPasswordForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/ForgotPasswordForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/ResetPasswordForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/ResetPasswordForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/VerifyCodeForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/VerifyCodeForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/ForgotPasswordPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/ForgotPasswordPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/ResetPasswordPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/ResetPasswordPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/VerifyCodePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/VerifyCodePage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/ui/src/styles/components/_client.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui/src/styles/components/_client.scss" afterDir="false" />
     </list>
@@ -71,7 +70,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "SCRUM-138-As-an-Client-I-want-to-Register",
+    "git-widget-placeholder": "SCRUM-139-As-an-Client-I-want-to-Forgot-Password",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "C:/Users/Admin/WebstormProjects/yuviron-frontend/apps/client-app",
@@ -173,7 +172,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775607386587</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="register+">
+      <option name="closed" value="true" />
+      <created>1775665234737</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1775665234737</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -198,6 +205,7 @@
     <MESSAGE value="fix auth" />
     <MESSAGE value="fix" />
     <MESSAGE value="reset password" />
-    <option name="LAST_COMMIT_MESSAGE" value="reset password" />
+    <MESSAGE value="register+" />
+    <option name="LAST_COMMIT_MESSAGE" value="register+" />
   </component>
 </project>
