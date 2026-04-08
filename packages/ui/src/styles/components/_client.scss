@@ -299,3 +299,161 @@
     font-size: 14px;
   }
 }
+
+/* =========================
+   FORGOT PASSWORD PAGE
+========================= */
+
+.client-forgot-page {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+
+  &__label {
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 16px;
+    line-height: 1.2;
+    font-weight: 400;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+
+  &__panel {
+    width: 100%;
+    min-height: 100vh;
+    background: #232d3d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 32px;
+  }
+
+  &__content {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  &__logo {
+    margin: 0 auto 42px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &__logo-image {
+    display: block;
+    width: 96px;
+    height: auto;
+    object-fit: contain;
+  }
+}
+
+.client-forgot-form {
+  width: 100%;
+
+  &__label {
+    display: block;
+    margin-bottom: 12px;
+    color: #ffffff;
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 600;
+  }
+
+  &__input {
+    height: 44px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(180, 190, 205, 0.55);
+    background: #141b25;
+    color: #ffffff;
+    font-size: 14px;
+    box-shadow: none;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.42);
+      opacity: 1;
+    }
+
+    &:focus {
+      background: #141b25;
+      color: #ffffff;
+      border-color: rgba(148, 183, 220, 0.95);
+      box-shadow: none;
+    }
+  }
+
+  &__code-wrap {
+    position: relative;
+  }
+
+  &__input--code {
+    padding-right: 110px;
+  }
+
+  &__send-code {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover,
+    &:focus {
+      color: #ffffff;
+      outline: none;
+    }
+  }
+
+  &__submit {
+    margin-top: 10px;
+    height: 42px;
+    border: 0;
+    border-radius: 6px;
+    background: #5f88ae;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+
+    &:hover,
+    &:focus {
+      background: #6f97bc;
+      color: #ffffff;
+    }
+  }
+}
+
+@media (max-width: 991.98px) {
+  .client-forgot-page__panel {
+    padding: 48px 24px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .client-forgot-page__panel {
+    padding: 36px 18px;
+  }
+
+  .client-forgot-form {
+    &__label {
+      font-size: 18px;
+    }
+
+    &__input--code {
+      padding-right: 96px;
+    }
+
+    &__send-code {
+      font-size: 10px;
+      right: 12px;
+    }
+  }
+}
