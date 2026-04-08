@@ -1,46 +1,65 @@
 'use client';
 
+import Link from 'next/link';
+
 export const ForgotPasswordForm = () => {
     return (
-        <form className="client-forgot-form">
-            <div className="mb-4">
-                <label htmlFor="email" className="form-label client-forgot-form__label">
-                    Email Address
-                </label>
-                <input
-                    id="email"
-                    type="email"
-                    className="form-control client-forgot-form__input"
-                    placeholder="admin@gmail.com"
+        <div className="client-forgot-form">
+            <div className="client-forgot-form__top">
+                <Link
+                    href="/login"
+                    className="client-forgot-form__back text-decoration-none"
+                >
+                    Назад
+                </Link>
+            </div>
+
+            <div className="client-forgot-form__logo">
+                <img
+                    src="/Logo.svg"
+                    alt="LumiTune"
+                    className="client-forgot-form__logo-image"
                 />
             </div>
 
-            <div className="mb-4">
-                <label htmlFor="code" className="form-label client-forgot-form__label">
-                    Code
-                </label>
+            <h1 className="client-forgot-form__title">Забули пароль?</h1>
 
-                <div className="client-forgot-form__code-wrap">
-                    <input
-                        id="code"
-                        type="text"
-                        className="form-control client-forgot-form__input client-forgot-form__input--code"
-                        placeholder="********************"
-                    />
-
-                    <button
-                        type="button"
-                        className="client-forgot-form__send-code"
+            <form>
+                <div className="mb-4">
+                    <label
+                        htmlFor="email"
+                        className="form-label client-forgot-form__label"
                     >
-                        Send Code
-                    </button>
-                </div>
-            </div>
+                        Електронна пошта
+                    </label>
 
-            <button type="submit" className="btn client-forgot-form__submit w-100">
-                Continue
-            </button>
-        </form>
+                    <input
+                        id="email"
+                        type="email"
+                        className="form-control client-forgot-form__input"
+                        placeholder="@gmail.com"
+                    />
+                </div>
+
+                <button type="submit" className="btn client-forgot-form__submit w-100">
+                    Продовжити
+                </button>
+
+                <div className="client-forgot-form__divider">
+                    <span>або</span>
+                </div>
+
+                <div className="client-forgot-form__bottom text-center">
+                    <span>Згадали пароль?</span>
+                    <Link
+                        href="/login"
+                        className="client-forgot-form__login-link text-decoration-none"
+                    >
+                        Увійдіть до аккаунту
+                    </Link>
+                </div>
+            </form>
+        </div>
     );
 };
 
