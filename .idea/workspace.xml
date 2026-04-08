@@ -5,10 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0eed3bb5-5ebd-4d8f-9bcc-82b3e949c59e" name="Changes" comment="fix">
-      <change afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/ForgotPasswordForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/ForgotPasswordForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/ForgotPasswordPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/ForgotPasswordPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/ResetPasswordForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/features/auth/restore-password/ui/ResetPasswordForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/ResetPasswordPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/client-app/src/pages/auth/ui/ResetPasswordPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/ui/src/styles/components/_client.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui/src/styles/components/_client.scss" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -66,7 +66,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "SCRUM-132-As-an-Admin-I-Lost-Password2",
+    "git-widget-placeholder": "SCRUM-133-As-an-Admin-I-Reset-Password2",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "C:/Users/Admin/WebstormProjects/yuviron-frontend/apps/client-app",
