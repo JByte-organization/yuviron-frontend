@@ -1,12 +1,22 @@
-'use client';
+import { LoginForm } from '@/features/auth/login';
 
 export const LoginPage = () => {
     return (
-        <div className="container d-flex align-items-center justify-content-center vh-100">
-            <div className="card bg-dark border-secondary p-4 shadow-lg" style={{ width: '400px' }}>
-                <h3 className="text-white fw-bold mb-3 text-center"></h3>
+        <section className="client-login-page">
+            <div className="client-login-page__card">
+                <div className="client-login-page__logo">
+                    <img
+                        src="/Logo.svg"
+                        alt="LumiTune"
+                        className="client-login-page__logo-image"
+                    />
+                </div>
+
+                <h1 className="client-login-page__title">Пориньте у LumiTune</h1>
+
+                <LoginForm />
             </div>
-        </div>
+        </section>
     );
 };
 

@@ -1,16 +1,13 @@
-'use client';
+import { VerifyCodeForm } from '@/features/auth/restore-password';
 
 export const VerifyCodePage = () => {
-
     return (
-        <div className="container d-flex align-items-center justify-content-center vh-100">
-            <div className="card bg-dark border-secondary p-4 shadow-lg" style={{ width: '400px' }}>
-                <h3 className="text-white fw-bold mb-3 text-center">Verify Code</h3>
-
+        <section className="client-verify-page">
+            <div className="client-verify-page__card">
+                <VerifyCodeForm />
             </div>
-        </div>
+        </section>
     );
 };
-
 
 export default VerifyCodePage;
