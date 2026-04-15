@@ -1,144 +1,135 @@
 import React from 'react';
-import { UserDetailsDto } from '@repo/api';
-import { RoleSimpleDto } from '@repo/api';
-import { AccountState } from '@repo/api';
+import { AccountState, type UserListItemDto } from '@repo/api';
 
-interface UserRowProps {
-    user: UserDetailsDto;
+interface Props {
+    user: UserListItemDto;
+    onEdit: (user: UserListItemDto) => void;
+    onDelete: (user: UserListItemDto) => void;
+    isSelected: boolean;
+    onSelect: () => void;
 }
 
-export const UserRow = ({ user }: UserRowProps) => {
-    // Хелпер для дат
-    const formatDate = (dateString?: string | null) => {
-        if (!dateString) return 'Never';
-        return new Date(dateString).toLocaleDateString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
+const formatDate = (dateString?: string | null): string => {
+    if (!dateString) return '—';
+    return new Date(dateString).toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+};
 
-    const renderRoles = () => {
-        const roles = user.roles || [];
+const RoleBadge = ({ roles }: { roles?: string[] | null }) => {
+    const list = roles ?? [];
+    if (list.includes('Admin')) return <span className="badge bg-danger">ADMIN</span>;
+    if (list.includes('ManagementUser')) return <span className="badge bg-info text-dark">MANAGER</span>;
+    return <span className="badge bg-secondary">USER</span>;
+};
 
-        const hasRole = (roleName: string) => {
-            return roles.some(role => {
-                if (typeof role === 'string') return role === roleName;
-                return role?.name === roleName;
-            });
-        };
+const StateBadge = ({ state }: { state?: AccountState | string | number }) => {
+    // Приводим всё к строке для надёжного сравнения
+    const s = String(state);
 
-        if (hasRole('Admin')) {
-            return <span className="badge bg-danger">ADMIN</span>;
-        }
+    // Проверяем и строковое значение, и числовой ID из контракта [cite: 808, 809]
+    const isActive = s === 'Active' || s === '1';
+    const isBanned = s === 'Banned' || s === '3';
+    const isDeleted = s === 'Deleted' || s === '4';
 
-        if (hasRole('ManagementUser')) {
-            return <span className="badge bg-info text-dark">MANAGER</span>;
-        }
-
-        return <span className="badge bg-secondary text-white-50">USER</span>;
-    };
-
-    // Состояние аккаунта (Active / Blocked)
-    const renderAccountState = () => {
-        const isActive = user.accountState === AccountState.Active;
-        const isBanned = user.accountState === AccountState.Banned;
-        const isDeleted = user.accountState === AccountState.Deleted;
-
-        let statusText: string = user.accountState || 'Unknown';
-
-        // Логика выбора цвета (Bootstrap классы)
-        let dotClass = 'bg-secondary';
-        let textClass = 'text-secondary';
-
-        if (isActive) {
-            dotClass = 'bg-success';
-            textClass = 'text-success';
-        } else if (isBanned || isDeleted) {
-            dotClass = 'bg-danger';
-            textClass = 'text-danger';
-        } else if (user.accountState === 'Suspended' as any) {
-            // Suspended
-            dotClass = 'bg-warning';
-            textClass = 'text-warning';
-            statusText = 'Suspended';
-        }
-
-        return (
-            <div className="d-flex align-items-center gap-2">
-            <span
-                className={`rounded-circle ${dotClass}`}
-                style={{ width: '8px', height: '8px' }}
-            ></span>
-                <span className={`small ${textClass}`}>
-                {statusText}
-            </span>
-            </div>
-        );
-    };
+    // Маппинг стилей
+    const styles = (() => {
+        if (isActive) return { dot: 'bg-success', text: 'text-success', label: 'Active' };
+        if (isBanned) return { dot: 'bg-danger', text: 'text-danger', label: 'Banned' };
+        if (isDeleted) return { dot: 'bg-warning', text: 'text-warning', label: 'Deleted' };
+        return { dot: 'bg-secondary', text: 'text-secondary', label: state ?? 'Unknown' };
+    })();
 
     return (
-        <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>
+        <div className="d-flex align-items-center gap-2">
+            <span
+                className={`rounded-circle ${styles.dot}`}
+                style={{ width: '8px', height: '8px', flexShrink: 0 }}
+            />
+            <span className={`${styles.text} small`}>{styles.label}</span>
+        </div>
+    );
+};
+
+export const UserRow = ({ user, onEdit, onDelete, isSelected, onSelect }: Props) => {
+    const avatarSrc = user.avatarUrl
+        ? `https://api.yuviron.com/storage/${user.avatarUrl}`
+        : null;
+
+    return (
+        <tr className="border-bottom border-secondary align-middle" style={{backgroundColor: '#212631'}}>
+
+            {/* Checkbox */}
             <td className="px-4">
-                <input type="checkbox" className="form-check-input bg-dark border-secondary shadow-none" />
+                <input
+                    type="checkbox"
+                    className="form-check-input bg-dark border-secondary"
+                    checked={isSelected}
+                    onChange={onSelect}
+                />
             </td>
 
-            {/* Юзер: Аватар + Имя */}
-            <td className="py-3">
+            {/* Avatar + Name */}
+            <td className="py-3 ">
                 <div className="d-flex align-items-center gap-3">
                     <div
-                        className="rounded-circle bg-secondary d-flex align-items-center justify-content-center overflow-hidden"
-                        style={{ width: '35px', height: '35px', flexShrink: 0 }}
+                        className="rounded-circle bg-secondary d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0"
+                        style={{width: '36px', height: '36px'}}
                     >
-                        {user.avatarUrl ? (
-                            <img src={user.avatarUrl} alt="avatar" className="w-100 h-100 object-fit-cover" />
-                        ) : (
-                            <span className="text-white-50 small">{user.displayName?.charAt(0)}</span>
-                        )}
+                        {avatarSrc
+                            ? <img src={avatarSrc} alt="avatar" className="w-100 h-100 object-fit-cover"/>
+                            : <span className="text-white-50 small fw-bold">
+                                {user.firstName?.charAt(0)?.toUpperCase() || '?'}
+                            </span>
+                        }
                     </div>
-                    <div className="text-white fw-bold text-nowrap">
-                        {user.displayName || 'No Name'}
-                    </div>
+                    <span className="text-white fw-semibold text-nowrap">
+                        {user.firstName || '—'}
+                    </span>
                 </div>
             </td>
 
             {/* Email */}
-            <td className="text-secondary small">
-                {user.email}
+            <td className="text-secondary small">{user.email}</td>
+
+            {/* Role */}
+            <td><RoleBadge roles={user.roles}/></td>
+
+            {/* State */}
+            <td><StateBadge state={user.accountState}/></td>
+
+            {/* Created At */}
+            <td className="text-secondary small text-nowrap">{formatDate(user.createdAt)}</td>
+
+            {/* Last Login */}
+            <td className="text-secondary small text-nowrap">{formatDate(user.lastLoginAt)}</td>
+
+            {/* ID (truncated) */}
+            <td className="text-secondary small font-monospace" title={user.id}>
+                {user.id ? `${user.id.slice(0, 8)}…` : '—'}
             </td>
 
-            {/* Роли */}
-            <td>
-                {renderRoles()}
-            </td>
-
-            {/* Состояние (Active/Blocked) */}
-            <td className="small">
-                {renderAccountState()}
-            </td>
-
-            {/* Дата регистрации */}
-            <td className="text-secondary small text-nowrap">
-                {formatDate(user.createdAt)}
-            </td>
-
-            {/* Последний вход */}
-            <td className="text-secondary small text-nowrap">
-                {formatDate(user.lastLoginAt)}
-            </td>
-
-            {/* ID */}
-            <td className="text-secondary small font-monospace" title={user.id || ''}>
-                {user.id ? `${user.id.slice(0, 8)}...` : 'N/A'}
-            </td>
-
-            {/* Действия */}
-            <td className="text-end px-4">
-                <div className="d-flex justify-content-end gap-2">
-                    <button className="btn btn-sm btn-outline-info border-0 shadow-none" title="Edit">✏️</button>
-                    <button className="btn btn-sm btn-outline-danger border-0 shadow-none" title="Delete">❌</button>
+            {/* Actions */}
+            <td className="px-4">
+                <div className="d-flex justify-content-end gap-1">
+                    <button
+                        className="btn btn-sm btn-outline-warning border-0 shadow-none px-2"
+                        title="Edit"
+                        onClick={() => onEdit(user)}
+                    >
+                        ✏️
+                    </button>
+                    <button
+                        className="btn btn-sm btn-outline-danger border-0 shadow-none px-2"
+                        title="Delete"
+                        onClick={() => onDelete(user)}
+                    >
+                        🗑️
+                    </button>
                 </div>
             </td>
         </tr>

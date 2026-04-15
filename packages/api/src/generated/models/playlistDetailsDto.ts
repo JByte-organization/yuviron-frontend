@@ -4,6 +4,7 @@
  * Yuviron.Api
  * OpenAPI spec version: 1.0
  */
+import type { PlaylistCreatorDto } from "./playlistCreatorDto";
 import type { PlaylistVisibility } from "./playlistVisibility";
 
 export interface PlaylistDetailsDto {
@@ -16,10 +17,7 @@ export interface PlaylistDetailsDto {
   coverUrl?: string | null;
   visibility?: PlaylistVisibility;
   isEditorial?: boolean;
-  /** @nullable */
-  creatorName?: string | null;
-  /** @nullable */
-  creatorId?: string | null;
+  creator?: PlaylistCreatorDto;
   tracksCount?: number;
   createdAt?: string;
   updatedAt?: string;

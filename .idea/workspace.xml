@@ -4,7 +4,166 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0eed3bb5-5ebd-4d8f-9bcc-82b3e949c59e" name="Changes" comment="fix" />
+    <list default="true" id="0eed3bb5-5ebd-4d8f-9bcc-82b3e949c59e" name="Changes" comment="fix">
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/entities/album/model/columns.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/entities/album/ui/AlbumRow.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/entities/genre/model/columns.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/entities/genre/ui/GenreRow.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/entities/mood/model/columns.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/entities/mood/ui/MoodRow.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/entities/session/model/store.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/album/create/ui/CreateAlbumModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/album/delete/ui/DeleteAlbumModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/album/edit/ui/EditAlbumModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/artist/delete/ui/DeleteArtistModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/artist/edit/ui/EditArtistModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/genre/create/ui/CreateGenreModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/genre/delete/ui/DeleteGenreModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/genre/edit/ui/EditGenreModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/mood/create/ui/CreateMoodModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/mood/delete/ui/DeleteMoodModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/mood/edit/ui/EditMoodModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/track/delete/ui/DeleteTrackModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/track/edit/ui/EditTrackModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/user/delete/ui/DeleteUserModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/features/user/edit/ui/EditUserModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/shared/api/apiClient.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/shared/ui/AsyncSelect/AsyncSelect.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/views/genres/ui/GenresPage.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/admin/src/views/moods/ui/MoodsPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/next.config.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/next.config.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/albums/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/albums/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/genres/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/genres/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/moods/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/moods/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/entities/artist/model/columns.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/entities/artist/model/columns.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/entities/artist/ui/ArtistRow.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/entities/artist/ui/ArtistRow.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/entities/track/model/columns.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/entities/track/model/columns.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/entities/track/ui/TrackRow.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/entities/track/ui/TrackRow.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/entities/user/model/constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/entities/user/model/constants.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/entities/user/ui/UserRow.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/entities/user/ui/UserRow.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/features/artist/create/ui/CreateArtistModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/features/artist/create/ui/CreateArtistModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/features/auth-by-email/ui/LoginForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/features/auth-by-email/ui/LoginForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/features/track/create/ui/CreateTrackModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/features/track/create/ui/CreateTrackModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/features/user/create/ui/CreateUserModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/features/user/create/ui/CreateUserModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/shared/ui/Table/BaseTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/shared/ui/Table/BaseTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/views/albums/ui/AlbumsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/views/albums/ui/AlbumsPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/views/artists/ui/ArtistsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/views/artists/ui/ArtistsPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/views/tracks/ui/TrackForm.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/views/tracks/ui/TracksPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/views/tracks/ui/TracksPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/views/tracks/ui/TracksTable.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/views/users/ui/UsersPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/views/users/ui/UsersPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/client-app/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/providers/ApiClientProvider.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/endpoints/admin-albums.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/endpoints/admin-artists.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/endpoints/admin-dashboard.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/endpoints/admin-genres.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/endpoints/admin-moods.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/endpoints/admin-playlists.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/endpoints/admin-roles.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/endpoints/admin-tracks.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/endpoints/admin-users.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/endpoints/auth.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/endpoints/files.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/accountState.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/addTeamMemberCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/addTrackToPlaylistCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/adminDashboardDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/albumDetailsDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/albumListItemDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/albumListItemDtoPaginatedList.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/appPermission.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/artistDetailsDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/artistListItemDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/artistListItemDtoPaginatedList.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/artistOwnerDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/artistRole.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/artistSimpleDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/artistTeamMemberDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/artistTeamRole.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/blockType.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/blockUserCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/changePasswordCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/changeTrackPositionCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/checkEmailQuery.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/checkEmailResponse.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createAlbumCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createAlbumResponse.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createArtistCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createArtistResponse.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createGenreCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createGenreResponse.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createMoodCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createMoodResponse.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createPlaylistCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createPlaylistResponse.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createTrackCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createTrackResponse.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createUserCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/createUserResponse.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/dashboardSummaryDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/gender.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/genreDetailsDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/genreListItemDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/genreListItemDtoPaginatedList.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/getApiAdminAlbumsParams.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/getApiAdminArtistsParams.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/getApiAdminGenresParams.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/getApiAdminMoodsParams.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/getApiAdminPlaylistsIdTracksParams.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/getApiAdminPlaylistsParams.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/getApiAdminTracksParams.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/getApiAdminUsersParams.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/getMoodByIdDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/loginCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/loginResponse.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/loginWithCodeCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/moodDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/moodDtoPaginatedList.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/playlistDetailsDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/playlistDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/playlistDtoPaginatedList.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/playlistTrackItemDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/playlistTrackItemDtoPaginatedList.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/playlistVisibility.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/popularAlbumDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/postApiFilesUploadBody.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/problemDetails.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/recentUserDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/registerCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/roleDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/roleSimpleDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/sendLoginCodeCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/topEntityDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/trackArtistSimpleDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/trackDetailsDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/trackGenreSimpleDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/trackListItemDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/trackListItemDtoPaginatedList.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/trackMoodSimpleDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/updateAlbumCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/updateArtistCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/updateGenreCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/updateMoodCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/updatePlaylistCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/updateTeamMemberRoleCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/updateTrackCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/updateUserCommand.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/uploadResponse.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/userDetailsDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/userListItemDto.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/userListItemDtoPaginatedList.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/verificationStatus.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/generated/models/visibilityStatus.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/api/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/mutator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/api/src/mutator.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/src/styles/abstract/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui/src/styles/abstract/_variables.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/src/styles/components/_admin.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui/src/styles/components/_admin.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/ui/src/styles/main.scss" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui/src/styles/main.scss" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -46,37 +205,43 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "git-widget-placeholder": "dev",
-    "javascript.preferred.runtime.type.id": "node",
-    "last_opened_file_path": "C:/Users/Admin/WebstormProjects/yuviron-frontend/apps/client-app",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
-    "ts.external.directory.path": "C:\\Users\\Admin\\WebstormProjects\\yuviron-frontend\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;SCRUM-118-As-an-Admin-I-want-to-go-to-the-Tracks-section&quot;,
+    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Admin/WebstormProjects/yuviron-frontend/apps/admin/src/features/artist&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\Admin\\WebstormProjects\\yuviron-frontend\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin\src\features\artist" />
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin\src\features\artist\delete\ui" />
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin\src\features\user\delete\ui" />
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin\src\features\user\edit\ui" />
       <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\client-app" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin\src\features\genre\create\ui" />
+      <recent name="C:\Users\Admin\WebstormProjects\yuviron-frontend\apps\admin" />
       <recent name="C:\Users\MISHA\WebstormProjects\yuviron-frontend\apps\admin\public\Logo" />
     </key>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-WS-253.31033.133" />
+        <option value="bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-WS-241.15989.105" />
       </set>
     </attachedChunks>
   </component>
@@ -91,6 +256,10 @@
       <workItem from="1773244248827" duration="5999000" />
       <workItem from="1773498469748" duration="2212000" />
       <workItem from="1775044419309" duration="637000" />
+      <workItem from="1775658083607" duration="1466000" />
+      <workItem from="1775659918866" duration="1116000" />
+      <workItem from="1775663158381" duration="6108000" />
+      <workItem from="1776243194869" duration="329000" />
     </task>
     <task id="LOCAL-00001" summary="Add Login page">
       <option name="closed" value="true" />
@@ -140,7 +309,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775592205188</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="fix">
+      <option name="closed" value="true" />
+      <created>1775592316159</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1775592316159</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -154,5 +331,16 @@
     <MESSAGE value="fix auth" />
     <MESSAGE value="fix" />
     <option name="LAST_COMMIT_MESSAGE" value="fix" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/apps/admin/src/entities/artist/ui/ArtistRow.tsx</url>
+          <line>2</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

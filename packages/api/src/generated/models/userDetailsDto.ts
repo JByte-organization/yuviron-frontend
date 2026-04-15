@@ -16,7 +16,7 @@ export interface UserDetailsDto {
   acceptMarketing?: boolean;
   acceptTerms?: boolean;
   /** @nullable */
-  displayName?: string | null;
+  firstName?: string | null;
   /** @nullable */
   avatarUrl?: string | null;
   /** @nullable */

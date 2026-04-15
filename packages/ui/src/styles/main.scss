@@ -1,9 +1,8 @@
 @import "./abstract/variables";
 @import "./abstract/typography";
 
-
-
 $primary: $cyan;
+$danger: $red;
 $body-bg: $black;
 
 @import "bootstrap/scss/bootstrap";

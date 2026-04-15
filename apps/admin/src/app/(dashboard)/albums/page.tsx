@@ -1,7 +1,5 @@
-export default function AlbumsPage() {
-    return (
-        <div>
-            <h1>Страница альбомов</h1>
-        </div>
-    );
+import { AlbumsPage } from '@/views/albums/ui/AlbumsPage';
+
+export default function Page() {
+    return <AlbumsPage />;
 }
