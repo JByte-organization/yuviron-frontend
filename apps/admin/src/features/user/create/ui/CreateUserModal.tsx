@@ -98,6 +98,21 @@ export const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
         }
     };
 
+    const handleClose = () => {
+        setForm({
+            email: '',
+            password: '',
+            displayName: '',
+            dateOfBirth: '',
+            gender: Gender.NotSpecified, // И здесь тоже
+            acceptTerms: true,
+            acceptMarketing: false,
+            accountState: AccountState.Active,
+            roleIds: [],
+        });
+        onClose();
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -156,7 +171,6 @@ export const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
                                     />
                                     {errors.password && <div className="invalid-feedback">{errors.password.message}</div>}
                                 </div>
-                            </div>
 
                             {/* Display Name + Date of Birth */}
                             <div className="row">
@@ -188,7 +202,6 @@ export const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
                                     />
                                     {errors.dateOfBirth && <div className="invalid-feedback">{errors.dateOfBirth.message}</div>}
                                 </div>
-                            </div>
 
                             {/* Gender + Account State */}
                             <div className="row">

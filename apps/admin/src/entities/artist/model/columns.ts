@@ -10,4 +10,8 @@ export const ARTIST_COLUMNS_MAP: Partial<Record<keyof ArtistListItemDto, string>
     createdAt: 'Created',
 };
 
-export const artistTableColumns = Object.values(ARTIST_COLUMNS_MAP);
+// Экспортируем массив строк для заголовков BaseTable
+export const artistTableColumns = Object.values(ARTIST_COLUMNS_MAP) as string[];
+
+// Экспортируем ключи для рендера строк
+export const artistTableColumnKeys = Object.keys(ARTIST_COLUMNS_MAP) as Array<keyof ArtistListItemDto | 'actions'>;

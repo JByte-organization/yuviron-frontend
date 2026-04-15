@@ -1,12 +1,12 @@
-'use client';
+import { Step1Details } from '@/features/auth/register';
 
 export const RegisterDetailsPage = () => {
     return (
-        <div className="container d-flex align-items-center justify-content-center vh-100">
-            <div className="card bg-dark border-secondary p-4 shadow-lg" style={{ width: '400px' }}>
-                <h3 className="text-white fw-bold mb-3 text-center"></h3>
+        <section className="client-register-details-page">
+            <div className="client-register-details-page__card">
+                <Step1Details />
             </div>
-        </div>
+        </section>
     );
 };
 
