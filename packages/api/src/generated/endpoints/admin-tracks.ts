@@ -20,7 +20,9 @@ import type {
 import type {
   CreateTrackCommand,
   CreateTrackResponse,
+  GetApiAdminTracksAutocompleteParams,
   GetApiAdminTracksParams,
+  TrackAutocompleteDto,
   TrackDetailsDto,
   TrackListItemDtoPaginatedList,
   UpdateTrackCommand,
@@ -686,3 +688,203 @@ export const useDeleteApiAdminTracksId = <
 > => {
   return useMutation(getDeleteApiAdminTracksIdMutationOptions(options));
 };
+export type getApiAdminTracksAutocompleteResponse200TextPlain = {
+  data: TrackAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminTracksAutocompleteResponse200ApplicationJson = {
+  data: TrackAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminTracksAutocompleteResponse200TextJson = {
+  data: TrackAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminTracksAutocompleteResponseSuccess = (
+  | getApiAdminTracksAutocompleteResponse200TextPlain
+  | getApiAdminTracksAutocompleteResponse200ApplicationJson
+  | getApiAdminTracksAutocompleteResponse200TextJson
+) & {
+  headers: Headers;
+};
+export type getApiAdminTracksAutocompleteResponse =
+  getApiAdminTracksAutocompleteResponseSuccess;
+
+export const getGetApiAdminTracksAutocompleteUrl = (
+  params?: GetApiAdminTracksAutocompleteParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/admin/tracks/autocomplete?${stringifiedParams}`
+    : `/api/admin/tracks/autocomplete`;
+};
+
+export const getApiAdminTracksAutocomplete = async (
+  params?: GetApiAdminTracksAutocompleteParams,
+  options?: RequestInit,
+): Promise<getApiAdminTracksAutocompleteResponse> => {
+  return customInstance<getApiAdminTracksAutocompleteResponse>(
+    getGetApiAdminTracksAutocompleteUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetApiAdminTracksAutocompleteInfiniteQueryKey = (
+  params?: GetApiAdminTracksAutocompleteParams,
+) => {
+  return [
+    "infinite",
+    `/api/admin/tracks/autocomplete`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetApiAdminTracksAutocompleteQueryKey = (
+  params?: GetApiAdminTracksAutocompleteParams,
+) => {
+  return [
+    `/api/admin/tracks/autocomplete`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetApiAdminTracksAutocompleteInfiniteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminTracksAutocompleteParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetApiAdminTracksAutocompleteInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>
+  > = ({ signal }) =>
+    getApiAdminTracksAutocomplete(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetApiAdminTracksAutocompleteInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>
+>;
+export type GetApiAdminTracksAutocompleteInfiniteQueryError = unknown;
+
+export function useGetApiAdminTracksAutocompleteInfinite<
+  TData = Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminTracksAutocompleteParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetApiAdminTracksAutocompleteInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<
+    TData,
+    TError
+  > & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiAdminTracksAutocompleteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminTracksAutocompleteParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiAdminTracksAutocompleteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>
+  > = ({ signal }) =>
+    getApiAdminTracksAutocomplete(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetApiAdminTracksAutocompleteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>
+>;
+export type GetApiAdminTracksAutocompleteQueryError = unknown;
+
+export function useGetApiAdminTracksAutocomplete<
+  TData = Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminTracksAutocompleteParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminTracksAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetApiAdminTracksAutocompleteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

@@ -21,8 +21,10 @@ import type {
   BlockUserCommand,
   CreateUserCommand,
   CreateUserResponse,
+  GetApiAdminUsersAutocompleteParams,
   GetApiAdminUsersParams,
   UpdateUserCommand,
+  UserAutocompleteDto,
   UserDetailsDto,
   UserListItemDtoPaginatedList,
 } from "../models";
@@ -864,3 +866,203 @@ export const usePostApiAdminUsersIdUnblock = <
 > => {
   return useMutation(getPostApiAdminUsersIdUnblockMutationOptions(options));
 };
+export type getApiAdminUsersAutocompleteResponse200TextPlain = {
+  data: UserAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminUsersAutocompleteResponse200ApplicationJson = {
+  data: UserAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminUsersAutocompleteResponse200TextJson = {
+  data: UserAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminUsersAutocompleteResponseSuccess = (
+  | getApiAdminUsersAutocompleteResponse200TextPlain
+  | getApiAdminUsersAutocompleteResponse200ApplicationJson
+  | getApiAdminUsersAutocompleteResponse200TextJson
+) & {
+  headers: Headers;
+};
+export type getApiAdminUsersAutocompleteResponse =
+  getApiAdminUsersAutocompleteResponseSuccess;
+
+export const getGetApiAdminUsersAutocompleteUrl = (
+  params?: GetApiAdminUsersAutocompleteParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/admin/users/autocomplete?${stringifiedParams}`
+    : `/api/admin/users/autocomplete`;
+};
+
+export const getApiAdminUsersAutocomplete = async (
+  params?: GetApiAdminUsersAutocompleteParams,
+  options?: RequestInit,
+): Promise<getApiAdminUsersAutocompleteResponse> => {
+  return customInstance<getApiAdminUsersAutocompleteResponse>(
+    getGetApiAdminUsersAutocompleteUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetApiAdminUsersAutocompleteInfiniteQueryKey = (
+  params?: GetApiAdminUsersAutocompleteParams,
+) => {
+  return [
+    "infinite",
+    `/api/admin/users/autocomplete`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetApiAdminUsersAutocompleteQueryKey = (
+  params?: GetApiAdminUsersAutocompleteParams,
+) => {
+  return [
+    `/api/admin/users/autocomplete`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetApiAdminUsersAutocompleteInfiniteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminUsersAutocompleteParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetApiAdminUsersAutocompleteInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>
+  > = ({ signal }) =>
+    getApiAdminUsersAutocomplete(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetApiAdminUsersAutocompleteInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>
+>;
+export type GetApiAdminUsersAutocompleteInfiniteQueryError = unknown;
+
+export function useGetApiAdminUsersAutocompleteInfinite<
+  TData = Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminUsersAutocompleteParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetApiAdminUsersAutocompleteInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<
+    TData,
+    TError
+  > & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiAdminUsersAutocompleteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminUsersAutocompleteParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiAdminUsersAutocompleteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>
+  > = ({ signal }) =>
+    getApiAdminUsersAutocomplete(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetApiAdminUsersAutocompleteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>
+>;
+export type GetApiAdminUsersAutocompleteQueryError = unknown;
+
+export function useGetApiAdminUsersAutocomplete<
+  TData = Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminUsersAutocompleteParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminUsersAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetApiAdminUsersAutocompleteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

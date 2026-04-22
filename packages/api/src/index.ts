@@ -3,8 +3,16 @@ export * from './generated/endpoints/admin-tracks';
 export * from './generated/endpoints/admin-users';
 export * from './generated/endpoints/auth';
 export * from './generated/endpoints/admin-artists';
+export * from './generated/endpoints/admin-roles';
+export * from './generated/endpoints/admin-genres';
+export * from './generated/endpoints/admin-moods';
+export * from './generated/endpoints/admin-albums';
+export * from './generated/endpoints/admin-dashboard';
+export * from './generated/endpoints/admin-playlists';
 
 export * from './generated/endpoints/files';
 
 // модели
 export * from './generated/models';
+
+export { configureApiClient } from './mutator';

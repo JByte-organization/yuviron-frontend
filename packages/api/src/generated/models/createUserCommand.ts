@@ -14,7 +14,7 @@ export interface CreateUserCommand {
   /** @nullable */
   password?: string | null;
   /** @nullable */
-  displayName?: string | null;
+  firstName?: string | null;
   dateOfBirth?: string;
   gender?: Gender;
   acceptMarketing?: boolean;
