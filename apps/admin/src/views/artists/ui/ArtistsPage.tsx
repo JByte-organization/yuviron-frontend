@@ -1,26 +1,24 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useGetApiAdminArtists } from '@repo/api';
+import { useGetApiAdminArtists, type ArtistListItemDto } from '@repo/api';
 import { BaseTable } from '@/shared/ui/Table/BaseTable';
 import { ArtistRow } from '@/entities/artist/ui/ArtistRow';
 import { artistTableColumns } from '@/entities/artist/model/columns';
 import { CreateArtistModal } from '@/features/artist/create/ui/CreateArtistModal';
+import { EditArtistModal } from '@/features/artist/edit/ui/EditArtistModal';
 
 export const ArtistsPage = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [editingArtist, setEditingArtist] = useState<ArtistListItemDto | null>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [currentPage, setCurrentPage] = useState(1);
 
-
     const { data, isLoading, isError, refetch } = useGetApiAdminArtists({
-        // @ts-ignore - если Orval требует PascalCase, а ты хочешь уверенности
         Page: currentPage,
-        PageSize: 20
+        PageSize: 20,
     } as any);
 
-    /**
-     * Обработка ответа PaginatedList.
-     */
     const responseData = data as any;
     const artists = responseData?.Items || responseData?.items || [];
     const totalPages = responseData?.TotalPages || responseData?.totalPages || 1;
@@ -28,13 +26,21 @@ export const ArtistsPage = () => {
     const hasPrev = responseData?.HasPreviousPage || responseData?.hasPreviousPage || false;
     const totalCount = responseData?.TotalCount || responseData?.totalCount || 0;
 
+    const handleToggleSelect = (id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    };
+
     return (
         <>
             <BaseTable
                 title="Artists"
                 subtitle={`Manage creators (Total: ${totalCount})`}
                 columns={artistTableColumns}
-                onNewClick={() => setIsModalOpen(true)}
+                onNewClick={() => setIsCreateOpen(true)}
                 pagination={
                     <nav>
                         <ul className="pagination pagination-sm mb-0">
@@ -75,15 +81,30 @@ export const ArtistsPage = () => {
                     </tr>
                 ) : (
                     artists.map((artist: any) => (
-                        <ArtistRow key={artist.id || artist.Id} artist={artist} />
+                        <ArtistRow
+                            key={artist.id || artist.Id}
+                            artist={artist}
+                            isSelected={selectedIds.has(artist.id || artist.Id)}
+                            onSelect={() => handleToggleSelect(artist.id || artist.Id)}
+                            onEdit={setEditingArtist}     // ← передаём
+                            onDelete={(a) => console.log('delete', a)} // ← заглушка до DeleteModal
+                        />
                     ))
                 )}
             </BaseTable>
 
             <CreateArtistModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                isOpen={isCreateOpen}
+                onClose={() => setIsCreateOpen(false)}
                 onSuccess={refetch}
+            />
+
+            {/* Модалка редактирования */}
+            <EditArtistModal
+                artist={editingArtist}
+                isOpen={!!editingArtist}
+                onClose={() => setEditingArtist(null)}
+                onSuccess={() => { refetch(); setEditingArtist(null); }}
             />
         </>
     );

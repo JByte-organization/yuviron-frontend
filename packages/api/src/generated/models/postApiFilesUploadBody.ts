@@ -7,5 +7,4 @@
 
 export type PostApiFilesUploadBody = {
   file?: Blob;
-  folder?: string;
 };

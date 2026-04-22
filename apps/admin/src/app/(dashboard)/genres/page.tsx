@@ -1,7 +1,5 @@
-export default function GenresPage() {
-    return (
-        <div>
-            <h1>Страница жанров</h1>
-        </div>
-    );
+import { GenresPage } from '@/views/genres/ui/GenresPage';
+
+export default function Page() {
+    return <GenresPage />;
 }

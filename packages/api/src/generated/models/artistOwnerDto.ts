@@ -10,5 +10,5 @@ export interface ArtistOwnerDto {
   /** @nullable */
   email?: string | null;
   /** @nullable */
-  displayName?: string | null;
+  firstName?: string | null;
 }

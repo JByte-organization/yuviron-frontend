@@ -3,6 +3,20 @@
 $hover-bg: rgba(255, 255, 255, 0.05);
 $active-blue: #40A2FF;
 
+
+@include media-breakpoint-up(lg) {
+  :root {
+    --sidebar-width: 260px;
+  }
+}
+
+@include media-breakpoint-down(lg) {
+  :root {
+    --sidebar-width: 0px;
+  }
+}
+
+
 .bg-admin-primary{ background-color: $admin-secondary}
 .bg-admin-secondary{ background-color: $admin-bg}
 

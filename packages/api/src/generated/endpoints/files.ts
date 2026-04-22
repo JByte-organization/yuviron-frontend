@@ -53,9 +53,6 @@ export const postApiFilesUpload = async (
   if (postApiFilesUploadBody.file !== undefined) {
     formData.append(`file`, postApiFilesUploadBody.file);
   }
-  if (postApiFilesUploadBody.folder !== undefined) {
-    formData.append(`folder`, postApiFilesUploadBody.folder);
-  }
 
   return customInstance<postApiFilesUploadResponse>(
     getPostApiFilesUploadUrl(),

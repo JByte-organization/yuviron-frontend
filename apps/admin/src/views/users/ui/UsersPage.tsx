@@ -1,33 +1,31 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useGetApiAdminUsers } from '@repo/api';
+import { useGetApiAdminUsers, type UserListItemDto } from '@repo/api';
 import { BaseTable } from '@/shared/ui/Table/BaseTable';
 import { UserRow } from '@/entities/user/ui/UserRow';
 import { CreateUserModal } from '@/features/user/create/ui/CreateUserModal';
+import { EditUserModal } from '@/features/user/edit/ui/EditUserModal';     // добавить
+import { DeleteUserModal } from '@/features/user/delete/ui/DeleteUserModal'; // добавить
 
-import { tableColumns, tableColumnKeys } from '@/entities/user/model/constants';
+import { tableColumns } from '@/entities/user/model/constants';
 
 export const UsersPage = () => {
-    // Модальное окно
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState<UserListItemDto | null>(null);
+    const [deletingUser, setDeletingUser] = useState<UserListItemDto | null>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const { data, isLoading, isError, refetch } = useGetApiAdminUsers();
     const response = data as any;
+    const users: UserListItemDto[] = response?.items || response?.data?.items || [];
 
-    const users = response?.items || response?.data?.items || [];
-
-    // Проверки
-    // console.log('Итоговый массив users:', users);
-    // console.log('Данные из API:', response?.data);
-    // console.log('Список юзеров (items):', users);
-
-    const handleOpenModal = () => {
-        setIsModalOpen(true);
-    };
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
+    const handleToggleSelect = (id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
     };
 
     return (
@@ -35,7 +33,7 @@ export const UsersPage = () => {
             <BaseTable
                 title="Users"
                 subtitle="Manage system users and access levels"
-                onNewClick={handleOpenModal}
+                onNewClick={() => setIsCreateModalOpen(true)}
                 searchPlaceholder="Search by ID, product, or others..."
                 columns={tableColumns}
                 pagination={
@@ -56,37 +54,57 @@ export const UsersPage = () => {
             >
                 {isLoading ? (
                     <tr>
-                        <td colSpan={6} className="text-center py-5">
-                            <div className="spinner-border text-primary" role="status"></div>
+                        <td colSpan={9} className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status" />
                             <div className="text-secondary mt-2">Fetching users...</div>
                         </td>
                     </tr>
                 ) : isError ? (
                     <tr>
-                        <td colSpan={6} className="text-center py-5 text-danger">
+                        <td colSpan={9} className="text-center py-5 text-danger">
                             Error loading users. Check your API connection.
                         </td>
                     </tr>
                 ) : users.length === 0 ? (
                     <tr>
-                        <td colSpan={6} className="text-center py-5 text-secondary">
+                        <td colSpan={9} className="text-center py-5 text-secondary">
                             No users found in the database.
                         </td>
                     </tr>
                 ) : (
-                    users.map((user: any) => (
-                        <UserRow key={user.id} user={user} />
+                    users.map((user) => (
+                        <UserRow
+                            key={user.id}
+                            user={user}
+                            onEdit={setEditingUser}       // ← передаём
+                            onDelete={setDeletingUser}    // ← передаём
+                            isSelected={selectedIds.has(user.id!)}
+                            onSelect={() => handleToggleSelect(user.id!)}
+                        />
                     ))
                 )}
             </BaseTable>
 
-            {/* Внедряем модалку создания пользователя */}
             <CreateUserModal
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                onSuccess={() => {
-                    refetch();
-                }}
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={refetch}
+            />
+
+            {/* Модалка редактирования */}
+            <EditUserModal
+                user={editingUser}
+                isOpen={!!editingUser}
+                onClose={() => setEditingUser(null)}
+                onSuccess={() => { refetch(); setEditingUser(null); }}
+            />
+
+            {/* Модалка удаления */}
+            <DeleteUserModal
+                user={deletingUser}
+                isOpen={!!deletingUser}
+                onClose={() => setDeletingUser(null)}
+                onSuccess={() => { refetch(); setDeletingUser(null); }}
             />
         </>
     );

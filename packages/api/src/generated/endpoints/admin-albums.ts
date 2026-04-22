@@ -18,10 +18,12 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AlbumAutocompleteDto,
   AlbumDetailsDto,
   AlbumListItemDtoPaginatedList,
   CreateAlbumCommand,
   CreateAlbumResponse,
+  GetApiAdminAlbumsAutocompleteParams,
   GetApiAdminAlbumsParams,
   UpdateAlbumCommand,
 } from "../models";
@@ -686,3 +688,203 @@ export const useDeleteApiAdminAlbumsId = <
 > => {
   return useMutation(getDeleteApiAdminAlbumsIdMutationOptions(options));
 };
+export type getApiAdminAlbumsAutocompleteResponse200TextPlain = {
+  data: AlbumAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminAlbumsAutocompleteResponse200ApplicationJson = {
+  data: AlbumAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminAlbumsAutocompleteResponse200TextJson = {
+  data: AlbumAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminAlbumsAutocompleteResponseSuccess = (
+  | getApiAdminAlbumsAutocompleteResponse200TextPlain
+  | getApiAdminAlbumsAutocompleteResponse200ApplicationJson
+  | getApiAdminAlbumsAutocompleteResponse200TextJson
+) & {
+  headers: Headers;
+};
+export type getApiAdminAlbumsAutocompleteResponse =
+  getApiAdminAlbumsAutocompleteResponseSuccess;
+
+export const getGetApiAdminAlbumsAutocompleteUrl = (
+  params?: GetApiAdminAlbumsAutocompleteParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/admin/albums/autocomplete?${stringifiedParams}`
+    : `/api/admin/albums/autocomplete`;
+};
+
+export const getApiAdminAlbumsAutocomplete = async (
+  params?: GetApiAdminAlbumsAutocompleteParams,
+  options?: RequestInit,
+): Promise<getApiAdminAlbumsAutocompleteResponse> => {
+  return customInstance<getApiAdminAlbumsAutocompleteResponse>(
+    getGetApiAdminAlbumsAutocompleteUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetApiAdminAlbumsAutocompleteInfiniteQueryKey = (
+  params?: GetApiAdminAlbumsAutocompleteParams,
+) => {
+  return [
+    "infinite",
+    `/api/admin/albums/autocomplete`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetApiAdminAlbumsAutocompleteQueryKey = (
+  params?: GetApiAdminAlbumsAutocompleteParams,
+) => {
+  return [
+    `/api/admin/albums/autocomplete`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetApiAdminAlbumsAutocompleteInfiniteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminAlbumsAutocompleteParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetApiAdminAlbumsAutocompleteInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>
+  > = ({ signal }) =>
+    getApiAdminAlbumsAutocomplete(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetApiAdminAlbumsAutocompleteInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>
+>;
+export type GetApiAdminAlbumsAutocompleteInfiniteQueryError = unknown;
+
+export function useGetApiAdminAlbumsAutocompleteInfinite<
+  TData = Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminAlbumsAutocompleteParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetApiAdminAlbumsAutocompleteInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<
+    TData,
+    TError
+  > & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiAdminAlbumsAutocompleteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminAlbumsAutocompleteParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiAdminAlbumsAutocompleteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>
+  > = ({ signal }) =>
+    getApiAdminAlbumsAutocomplete(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetApiAdminAlbumsAutocompleteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>
+>;
+export type GetApiAdminAlbumsAutocompleteQueryError = unknown;
+
+export function useGetApiAdminAlbumsAutocomplete<
+  TData = Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminAlbumsAutocompleteParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminAlbumsAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetApiAdminAlbumsAutocompleteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

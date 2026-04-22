@@ -1,7 +1,5 @@
-export default function DashboardPage() {
-    return (
-        <div>
-            <h1>Страница статистики</h1>
-        </div>
-    );
+import { DashboardPage } from '@/views/dashboard/ui/DashboardPage';
+
+export default function Page() {
+    return <DashboardPage />;
 }

@@ -25,5 +25,7 @@ export interface UpdateTrackCommand {
   genreIds?: string[] | null;
   /** @nullable */
   moodIds?: string[] | null;
+  /** @nullable */
+  isrc?: string | null;
   requiredPermission?: AppPermission;
 }
