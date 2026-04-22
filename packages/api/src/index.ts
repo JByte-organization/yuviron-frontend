@@ -7,6 +7,8 @@ export * from './generated/endpoints/admin-roles';
 export * from './generated/endpoints/admin-genres';
 export * from './generated/endpoints/admin-moods';
 export * from './generated/endpoints/admin-albums';
+export * from './generated/endpoints/admin-dashboard';
+export * from './generated/endpoints/admin-playlists';
 
 export * from './generated/endpoints/files';
 
