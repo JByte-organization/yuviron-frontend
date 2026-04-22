@@ -1,14 +1,13 @@
-'use client';
+import { Step2Profile } from '@/features/auth/register';
 
 export const RegisterProfilePage = () => {
     return (
-        <div className="container d-flex align-items-center justify-content-center vh-100">
-            <div className="card bg-dark border-secondary p-4 shadow-lg" style={{ width: '400px' }}>
-                <h3 className="text-white fw-bold mb-3 text-center"></h3>
+        <section className="client-register-profile-page">
+            <div className="client-register-profile-page__card">
+                <Step2Profile />
             </div>
-        </div>
+        </section>
     );
 };
-
 
 export default RegisterProfilePage;

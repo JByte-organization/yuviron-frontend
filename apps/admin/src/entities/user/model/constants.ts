@@ -16,8 +16,8 @@ export const USER_COLUMNS_MAP: Partial<Record<keyof UserDetailsDto, string>> = {
     id: 'ID'
 };
 
-// Экспортируем готовый массив заголовков для пропса columns в BaseTable
-export const tableColumns = Object.values(USER_COLUMNS_MAP);
+// Исправление: Добавляем as string[], чтобы убрать undefined из типа
+export const tableColumns = Object.values(USER_COLUMNS_MAP) as string[];
 
 // Экспортируем ключи, чтобы UserRow знал, в каком порядке рендерить ячейки
 export const tableColumnKeys = Object.keys(USER_COLUMNS_MAP) as Array<keyof UserDetailsDto>;
