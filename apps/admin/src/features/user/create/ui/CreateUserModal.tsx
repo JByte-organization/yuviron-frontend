@@ -98,17 +98,7 @@ export const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
     };
 
     const handleClose = () => {
-        setForm({
-            email: '',
-            password: '',
-            displayName: '',
-            dateOfBirth: '',
-            gender: Gender.NotSpecified, // И здесь тоже
-            acceptTerms: true,
-            acceptMarketing: false,
-            accountState: AccountState.Active,
-            roleIds: [],
-        });
+        reset();
         onClose();
     };
 
@@ -124,7 +114,7 @@ export const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
                         <button
                             type="button"
                             className="btn-close btn-close-white"
-                            onClick={() => { onClose(); reset(); }}
+                            onClick={() => { handleClose(); }}
                         />
                     </div>
 
@@ -286,7 +276,7 @@ export const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
                             <button
                                 type="button"
                                 className="btn btn-admin-dark px-4"
-                                onClick={() => { onClose(); reset(); }}
+                                onClick={() => { handleClose(); }}
                             >
                                 Cancel
                             </button>
