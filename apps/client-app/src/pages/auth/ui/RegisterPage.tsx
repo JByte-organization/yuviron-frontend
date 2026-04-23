@@ -6,7 +6,7 @@ export const RegisterPage = () => {
             <div className="client-register-page__card">
                 <div className="client-register-page__logo">
                     <img
-                        src="/Logo.svg"
+                        src="/logo.svg"
                         alt="LumiTune"
                         className="client-register-page__logo-image"
                     />

@@ -122,7 +122,12 @@ $active-blue: #40A2FF;
 }
 
 // Контентная область
-main {
+//main {
+//  background-color: $admin-bg;
+//  color: $white;
+//}
+
+.admin-layout main {
   background-color: $admin-bg;
   color: $white;
 }

@@ -6,7 +6,7 @@ export const LoginPage = () => {
             <div className="client-login-page__card">
                 <div className="client-login-page__logo">
                     <img
-                        src="/Logo.svg"
+                        src="/logo.svg"
                         alt="LumiTune"
                         className="client-login-page__logo-image"
                     />

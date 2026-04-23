@@ -20,7 +20,7 @@ export const ResetPasswordForm = () => {
 
             <div className="client-reset-form__logo">
                 <img
-                    src="/Logo.svg"
+                    src="/logo.svg"
                     alt="LumiTune"
                     className="client-reset-form__logo-image"
                 />
