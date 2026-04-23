@@ -17,7 +17,6 @@ interface Props {
     onSuccess: () => void;
 }
 
-// Форма использует строковые значения енамов — именно то, что ждёт бэкенд
 type FormValues = {
     email: string;
     password: string;
@@ -171,6 +170,7 @@ export const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
                                     />
                                     {errors.password && <div className="invalid-feedback">{errors.password.message}</div>}
                                 </div>
+                            </div>
 
                             {/* Display Name + Date of Birth */}
                             <div className="row">
@@ -202,6 +202,7 @@ export const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
                                     />
                                     {errors.dateOfBirth && <div className="invalid-feedback">{errors.dateOfBirth.message}</div>}
                                 </div>
+                            </div>
 
                             {/* Gender + Account State */}
                             <div className="row">

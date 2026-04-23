@@ -16,7 +16,7 @@ export const VerifyCodeForm = () => {
 
             <div className="client-verify-form__logo">
                 <img
-                    src="/Logo.svg"
+                    src="/logo.svg"
                     alt="LumiTune"
                     className="client-verify-form__logo-image"
                 />

@@ -41,6 +41,21 @@ $admin-header: #325B76;
 $admin-btn-primary: #7AE0FF;
 $admin-text: #718096;
 
+
+// CLIENT APP
+$client-bg:           #000000;
+$client-surface:      #0D1520;
+$client-surface-2:    #111D2E;
+$client-border:       rgba(119, 145, 178, 0.2);
+$client-accent:       $cyan;
+$client-accent-hover: #29BBFF;
+$client-text:         $white;
+$client-text-muted:   rgba(206, 216, 227, 0.55);
+
+$header-height:  56px;
+$sidebar-width:  240px;
+$sidebar-margin: 12px;   // відступ від країв (floating ефект)
+
 // Buttons
 $admin-approve:   #8EE6CC;
 $admin-cancel:    #FFCACB;
