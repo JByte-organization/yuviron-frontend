@@ -13,13 +13,6 @@ interface AlbumCardProps {
     onClick?: (id: string) => void;
 }
 
-/**
- * Карточка альбому.
- * Розмір контролюється Bootstrap колонками в батьківському компоненті.
- *
- * Підключення даних:
- * coverUrl — ключ з БД, формат: storage_url/coverUrl
- */
 export const AlbumCard = ({ album, onClick }: AlbumCardProps) => {
     const coverSrc = album.coverUrl
         ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${album.coverUrl}`
