@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
     usePostApiAdminArtists,
@@ -51,11 +51,8 @@ export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
         Search: searchQuery,
         PageSize: 5
     } as any, {
-        query: {
-            enabled: searchQuery.length > 2,
-            keepPreviousData: true
-        }
-    });
+        enabled: searchQuery.length > 2,
+    } as any);
 
     const { mutateAsync: createArtist, isPending } = usePostApiAdminArtists();
 
