@@ -19,7 +19,7 @@ const MOCK_TRACKS: TrackCardData[] = [
     { id: '3', title: 'Superman',          artistNames: ['Eminem'],                      coverUrl: null },
     { id: '4', title: 'Sweater Weather',   artistNames: ['The Neighbourhood'],           coverUrl: null },
     { id: '5', title: 'Cry Me A River',    artistNames: ['Justin Timberlake'],           coverUrl: null },
-    { id: '3', title: 'Superman',          artistNames: ['Eminem'],                      coverUrl: null },
+    { id: '6', title: 'Superman',          artistNames: ['Eminem'],                      coverUrl: null },
 ];
 
 /**

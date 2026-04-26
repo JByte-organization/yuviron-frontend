@@ -5,7 +5,6 @@ import "@repo/ui/styles";
 
 export const metadata: Metadata = {
     title: "Yuviron - Музика для кожного",
-    description: "Клон Spotify на стеку Next.js + FSD",
 };
 
 export default function RootLayout({

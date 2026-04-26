@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, {useState, useRef, useCallback, useEffect} from 'react';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { MoodCard, type MoodCardData } from '@/entities/mood/ui/MoodCard';
+
 
 export type MoodFilterType = 'mood' | 'genre';
 
