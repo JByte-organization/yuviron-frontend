@@ -6,6 +6,7 @@ import { ArtistCard, type ArtistCardData } from '@/entities/artist/ui/ArtistCard
 
 interface FavoriteArtistsSectionProps {
     /** TODO: заменить на хук — useGetApiHomeFavoriteArtists() */
+    sectionTitle?: string;
     artists?: ArtistCardData[];
     isLoading?: boolean;
     showAllHref?: string;

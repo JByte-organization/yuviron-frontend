@@ -7,6 +7,7 @@ import { TrackCard, type TrackCardData } from '@/entities/track/ui/TrackCard';
 
 interface TopTracksSectionProps {
     /** TODO: замінити на хук — useGetApiHomeTopTracks() */
+    sectionTitle?: string;
     tracks?: TrackCardData[];
     isLoading?: boolean;
     showAllHref?: string;
@@ -20,6 +21,7 @@ const MOCK_TRACKS: TrackCardData[] = [
     { id: '4', title: 'Sweater Weather',   artistNames: ['The Neighbourhood'],           coverUrl: null },
     { id: '5', title: 'Cry Me A River',    artistNames: ['Justin Timberlake'],           coverUrl: null },
     { id: '6', title: 'Superman',          artistNames: ['Eminem'],                      coverUrl: null },
+    { id: '7', title: 'Superman',          artistNames: ['Eminem'],                      coverUrl: null },
 ];
 
 /**
@@ -30,6 +32,7 @@ const MOCK_TRACKS: TrackCardData[] = [
  * 2. <TopTracksSection tracks={data?.items} isLoading={isLoading} />
  */
 export const TopTracksSection = ({
+                                     sectionTitle,
                                      tracks = MOCK_TRACKS,
                                      isLoading = false,
                                      showAllHref = '/tracks',
@@ -46,7 +49,7 @@ export const TopTracksSection = ({
     return (
         <section className="mb-4">
             <SectionHeader
-                title="Топ ВАША музика сьогодні!"
+                title={sectionTitle ?? "Топ ВАША музика сьогодні!"}
                 highlightedWord="музика"
                 onPrev={() => scroll('prev')}
                 onNext={() => scroll('next')}
@@ -54,7 +57,7 @@ export const TopTracksSection = ({
 
             {isLoading ? (
                 <div className="row g-3">
-                    {Array.from({ length: 5 }).map((_, i) => (
+                    {Array.from({ length: 7 }).map((_, i) => (
                         <div key={i} className="col-6 col-md-4 col-lg-2">
                             <TrackCardSkeleton />
                         </div>
@@ -89,7 +92,7 @@ export const TopTracksSection = ({
 
 const TrackCardSkeleton = () => (
     <div>
-        <div className="skeleton skeleton--rounded mb-2" style={{ aspectRatio: '1/1', width: '100%' }} />
+        <div className="skeleton skeleton--rounded mb-2" style={{ aspectRatio: '1/1'}} />
         <div className="skeleton mb-1" style={{ height: 13, width: '75%' }} />
         <div className="skeleton" style={{ height: 11, width: '55%' }} />
     </div>
