@@ -1,4 +1,5 @@
 import React from 'react';
+import { MediaCard } from '@/entities/shared/ui/MediaCard';
 
 export interface AlbumCardData {
     id: string;
@@ -13,23 +14,22 @@ interface AlbumCardProps {
     onClick?: (id: string) => void;
 }
 
+/**
+ * Картка альбому.
+ * Розмір контролюється Bootstrap колонками в батьківському компоненті.
+ */
 export const AlbumCard = ({ album, onClick }: AlbumCardProps) => {
-    const coverSrc = album.coverUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${album.coverUrl}`
-        : `https://picsum.photos/seed/album-${album.id}/300/300`;
+    const subtitle = album.tracksCount !== undefined
+        ? `by ${album.artistName} • ${album.tracksCount} tracks`
+        : `by ${album.artistName}`;
 
     return (
-        <div className="album-card" onClick={() => onClick?.(album.id)}>
-            <div className="album-card__cover">
-                <img src={coverSrc} alt={album.title} />
-            </div>
-            <div className="album-card__info">
-                <p className="album-card__title">{album.title}</p>
-                <p className="album-card__artist">by {album.artistName}</p>
-                {album.tracksCount !== undefined && (
-                    <p className="album-card__tracks">{album.tracksCount} tracks</p>
-                )}
-            </div>
-        </div>
+        <MediaCard
+            title={album.title}
+            subtitle={subtitle}
+            coverUrl={album.coverUrl}
+            coverSeed={`album-${album.id}`}
+            onClick={() => onClick?.(album.id)}
+        />
     );
 };

@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useRef } from 'react';
-import Link from 'next/link';
+import { ShowAllButton } from '@/shared/ui/ShowAllButton';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { TrackCard, type TrackCardData } from '@/entities/track/ui/TrackCard';
 
 interface TopTracksSectionProps {
     /** TODO: замінити на хук — useGetApiHomeTopTracks() */
+    sectionTitle?: string;
     tracks?: TrackCardData[];
     isLoading?: boolean;
     showAllHref?: string;
@@ -19,7 +20,7 @@ const MOCK_TRACKS: TrackCardData[] = [
     { id: '3', title: 'Superman',          artistNames: ['Eminem'],                      coverUrl: null },
     { id: '4', title: 'Sweater Weather',   artistNames: ['The Neighbourhood'],           coverUrl: null },
     { id: '5', title: 'Cry Me A River',    artistNames: ['Justin Timberlake'],           coverUrl: null },
-    { id: '3', title: 'Superman',          artistNames: ['Eminem'],                      coverUrl: null },
+    { id: '6', title: 'Superman',          artistNames: ['Eminem'],                      coverUrl: null },
 ];
 
 /**
@@ -30,6 +31,7 @@ const MOCK_TRACKS: TrackCardData[] = [
  * 2. <TopTracksSection tracks={data?.items} isLoading={isLoading} />
  */
 export const TopTracksSection = ({
+                                     sectionTitle,
                                      tracks = MOCK_TRACKS,
                                      isLoading = false,
                                      showAllHref = '/tracks',
@@ -46,7 +48,7 @@ export const TopTracksSection = ({
     return (
         <section className="mb-4">
             <SectionHeader
-                title="Топ ВАША музика сьогодні!"
+                title={sectionTitle ?? "Топ ВАША музика сьогодні!"}
                 highlightedWord="музика"
                 onPrev={() => scroll('prev')}
                 onNext={() => scroll('next')}
@@ -70,16 +72,12 @@ export const TopTracksSection = ({
                             key={track.id}
                             className="col-6 col-md-4 col-lg-2"
                         >
-                            <TrackCard track={track} onClick={onTrackClick} />
+                            <TrackCard track={track} onClick={onTrackClick}/>
                         </div>
                     ))}
 
-                    {/* Кнопка "Все тут" */}
                     <div className="col-auto d-flex align-items-center">
-                        <Link href={showAllHref} className="show-all-btn">
-                            <i className="bi bi-plus" />
-                            <span>Все тут</span>
-                        </Link>
+                        <ShowAllButton href="/tracks"/>
                     </div>
                 </div>
             )}
@@ -89,8 +87,8 @@ export const TopTracksSection = ({
 
 const TrackCardSkeleton = () => (
     <div>
-        <div className="skeleton skeleton--rounded mb-2" style={{ aspectRatio: '1/1', width: '100%' }} />
-        <div className="skeleton mb-1" style={{ height: 13, width: '75%' }} />
+    <div className="skeleton skeleton--rounded mb-2" style={{aspectRatio: '1/1'}}/>
+        <div className="skeleton mb-1" style={{height: 13, width: '75%'}}/>
         <div className="skeleton" style={{ height: 11, width: '55%' }} />
     </div>
 );

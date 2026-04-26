@@ -1406,3 +1406,151 @@
     }
   }
 }
+
+
+// ══════════════════════════════════════════════════════════
+// TRACK PAGE
+// ══════════════════════════════════════════════════════════
+.track-page {
+  padding: 0 1.5rem 2rem;
+
+  &__subtitle {
+    font-size: 13px;
+    color: $client-text-muted;
+    margin: 0 0 12px;
+  }
+
+  &__show-more {
+    background: transparent;
+    border: none;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 12px 0;
+    transition: color 0.2s ease;
+
+    &:hover { color: $client-text; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// TRACK PAGE HEADER
+// ══════════════════════════════════════════════════════════
+.track-page-header {
+  padding: 24px 0 32px;
+
+  // ─── Обкладинка ───────────────────────────────────────
+  &__cover {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+    @media (min-width: 768px) {
+      width: 160px;
+      height: 160px;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // ─── Тип ──────────────────────────────────────────────
+  &__type {
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 8px;
+  }
+
+  // ─── Назва ────────────────────────────────────────────
+  &__title {
+    font-size: 36px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 12px;
+    line-height: 1.1;
+
+    @media (min-width: 768px) { font-size: 52px; }
+  }
+
+  // ─── Мета інфо ────────────────────────────────────────
+  &__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 14px;
+    color: $client-text-muted;
+  }
+
+  &__artist {
+    color: $client-text;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  &__dot {
+    opacity: 0.5;
+  }
+
+  // ─── Кнопки дій ───────────────────────────────────────
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  &__btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+
+    // Play — велика кругла кнопка
+    &--play {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: $client-accent;
+      color: $white;
+      font-size: 22px;
+
+      &:hover {
+        background: $client-accent-hover;
+        transform: scale(1.05);
+      }
+    }
+
+    // Іконки — прозорі
+    &--icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: $client-text-muted;
+      font-size: 22px;
+
+      &:hover { color: $client-text; }
+    }
+
+    // Активний лайк
+    &--liked {
+      color: $client-accent !important;
+    }
+  }
+}

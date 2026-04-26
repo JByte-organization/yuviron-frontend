@@ -1,3 +1,4 @@
+@import "bootstrap-icons/font/bootstrap-icons.css";
 @import "./abstract/variables";
 @import "./abstract/typography";
 
@@ -11,3 +12,4 @@ $body-bg: $black;
 @import "./components/client";
 @import "./components/layout";
 @import "./components/home";
+@import "./components/favorites";

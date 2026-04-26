@@ -1,38 +1,62 @@
+'use client';
+
 import React from 'react';
+import Link from 'next/link';
 
 export interface TrackCardData {
     id: string;
     title: string;
     artistNames: string[];
+    artistId?: string;  // ← додати
     coverUrl?: string | null;
     durationMs?: number;
 }
 
 interface TrackCardProps {
     track: TrackCardData;
+    /** Викликається при кліку на картку — програє трек */
     onClick?: (id: string) => void;
 }
 
-/**
- * Карточка треку.
- * Розмір контролюється Bootstrap колонками в батьківському компоненті.
- *
- * Підключення даних:
- * coverUrl — ключ з БД, формат: storage_url/coverUrl
- */
 export const TrackCard = ({ track, onClick }: TrackCardProps) => {
     const coverSrc = track.coverUrl
         ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${track.coverUrl}`
         : `https://picsum.photos/seed/track-${track.id}/300/300`;
 
     return (
-        <div className="track-card" onClick={() => onClick?.(track.id)}>
+        <div
+            className="track-card"
+            onClick={() => onClick?.(track.id)} // клік на картку = програти
+        >
             <div className="track-card__cover">
                 <img src={coverSrc} alt={track.title} />
             </div>
             <div className="track-card__info">
-                <p className="track-card__title">{track.title}</p>
-                <p className="track-card__artist">{track.artistNames.join(' & ')}</p>
+
+                {/* Назва — веде на сторінку треку */}
+                <Link
+                    href={`/tracks/${track.id}`}
+                    className="track-card__title"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {track.title}
+                </Link>
+
+                {/* Артист — веде на сторінку артиста */}
+                {track.artistId ? (
+                    <Link
+                        href={`/artists/${track.artistId}`}
+                        className="track-card__artist"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {track.artistNames.join(' & ')}
+                    </Link>
+                ) : (
+                    <span className="track-card__artist">
+                        {track.artistNames.join(' & ')}
+                    </span>
+                )}
+
             </div>
         </div>
     );

@@ -7,40 +7,40 @@ import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/widgets/layout/ui/ClientLayout';
 
 const MOCK_PLAYLISTS = [
-    { id: '1', name: 'Lisa',         type: 'Виконавець', avatarUrl: 'https://picsum.photos/seed/pl1/40/40' },
-    { id: '2', name: 'Lady Gaga',    type: 'Виконавець', avatarUrl: 'https://picsum.photos/seed/pl2/40/40' },
-    { id: '3', name: 'Bruno Mars',   type: 'Виконавець', avatarUrl: 'https://picsum.photos/seed/pl3/40/40' },
-    { id: '4', name: 'BTS',          type: 'Виконавець', avatarUrl: 'https://picsum.photos/seed/pl4/40/40' },
-    { id: '5', name: 'Lana Del Rey', type: 'Плейліст',   avatarUrl: 'https://picsum.photos/seed/pl5/40/40' },
+    { id: '1', name: 'Lisa',         type: 'Плейліст', avatarUrl: 'https://picsum.photos/seed/pl1/40/40' },
+    { id: '2', name: 'Lady Gaga',    type: 'Плейліст', avatarUrl: 'https://picsum.photos/seed/pl2/40/40' },
+    { id: '3', name: 'Bruno Mars',   type: 'Плейліст', avatarUrl: 'https://picsum.photos/seed/pl3/40/40' },
+    { id: '4', name: 'BTS',          type: 'Плейліст', avatarUrl: 'https://picsum.photos/seed/pl4/40/40' },
+    { id: '5', name: 'Lana Del Rey', type: 'Плейліст', avatarUrl: 'https://picsum.photos/seed/pl5/40/40' },
 ];
 
-/**
- * Іконки — public/images/icons/
- *   home.svg, library.svg, heart.svg, plus-square.svg,
- *   list.svg, refresh.svg, chevron-left.svg, chevron-right.svg
- */
 
-const NavItem = ({
-                     href, icon, label, isActive,
-                 }: { href: string; icon: string; label: string; isActive: boolean }) => (
-    <Link href={href} className={`client-sidebar__nav-item${isActive ? ' client-sidebar__nav-item--active' : ''}`}>
-        <span className="client-sidebar__nav-icon">
-            <Image src={`/images/icons/${icon}.svg`} alt={label} width={18} height={18} />
-        </span>
-        <span className="client-sidebar__nav-label">{label}</span>
-    </Link>
-);
+interface NavItemProps {
+    label: string;
+    icon: string;
+    isActive?: boolean;
+    href?: string;        // href —  Link
+    onClick?: () => void; // onClick —  button
+}
 
-const NavButton = ({
-                       icon, label, onClick,
-                   }: { icon: string; label: string; onClick?: () => void }) => (
-    <button className="client-sidebar__nav-item client-sidebar__nav-item--btn" onClick={onClick}>
-        <span className="client-sidebar__nav-icon">
-            <Image src={`/images/icons/${icon}.svg`} alt={label} width={18} height={18} />
-        </span>
-        <span className="client-sidebar__nav-label">{label}</span>
-    </button>
-);
+const NavItem = ({ label, icon, isActive, href, onClick }: NavItemProps) => {
+    const className = `client-sidebar__nav-item${isActive ? ' client-sidebar__nav-item--active' : ''}`;
+
+    const content = (
+        <>
+            <span className="client-sidebar__nav-icon">
+                <Image src={`/images/icons/${icon}.svg`} alt={label} width={18} height={18} />
+            </span>
+            <span className="client-sidebar__nav-label">{label}</span>
+        </>
+    );
+
+    if (href) {
+        return <Link href={href} className={className}>{content}</Link>;
+    }
+
+    return <button className={className} onClick={onClick}>{content}</button>;
+};
 
 export const Sidebar = () => {
     const pathname = usePathname();
@@ -56,32 +56,28 @@ export const Sidebar = () => {
                     <div className="client-sidebar__section">
                         <p className="client-sidebar__section-title">Меню</p>
                         <nav className="client-sidebar__nav">
-                            <NavItem href="/home"    icon="home"    label="Головна"       isActive={isActive('/home')} />
-                            <NavItem href="/library" icon="library" label="Моя медіатека" isActive={isActive('/library')} />
+                            <NavItem href="/home" icon="home" label="Головна" isActive={isActive('/home')}/>
+                            <NavItem href="/library" icon="library" label="Моя медіатека"
+                                     isActive={isActive('/library')}/>
+                            <NavItem href="/favorites" icon="heart" label="Улюблені треки"
+                                     isActive={isActive('/favorites')}/>
+                            <NavItem icon="plus-square" label="Створити плейліст" onClick={() => {
+                            }}/>
                         </nav>
-                    </div>
-
-                    {/* Плейлисти */}
-                    <div className="client-sidebar__section">
-                        <p className="client-sidebar__section-title">Плейлисти</p>
-                        <nav className="client-sidebar__nav">
-                            <NavItem href="/favorites" icon="heart"       label="Улюблені треки"    isActive={isActive('/favorites')} />
-                            <NavButton                  icon="plus-square" label="Створити плейліст" />
-                        </nav>
+                        <hr/>
                     </div>
 
                     {/* Ваші плейлисти */}
-                    <div className="client-sidebar__section client-sidebar__section--grow">
+
+                    <div className="client-sidebar__section">
                         <div className="client-sidebar__sub-header">
                             <p className="client-sidebar__sub-title">Ваші плейлисти</p>
-                            <button className="client-sidebar__icon-btn" aria-label="Manage">
-                                <Image src="/images/icons/list.svg" alt="list" width={16} height={16} />
-                            </button>
+                            <Image src="/images/icons/list.svg" alt="list" width={18} height={18}/>
                         </div>
                         <div className="client-sidebar__playlist-list">
                             {MOCK_PLAYLISTS.map((pl) => (
                                 <Link key={pl.id} href={`/playlist/${pl.id}`} className="client-sidebar__playlist-item">
-                                    <img src={pl.avatarUrl} alt={pl.name} className="client-sidebar__playlist-avatar" />
+                                    <img src={pl.avatarUrl} alt={pl.name} className="client-sidebar__playlist-avatar"/>
                                     <div className="client-sidebar__playlist-info">
                                         <span className="client-sidebar__playlist-name">{pl.name}</span>
                                         <span className="client-sidebar__playlist-type">{pl.type}</span>
@@ -89,15 +85,14 @@ export const Sidebar = () => {
                                 </Link>
                             ))}
                         </div>
+                        <hr/>
                     </div>
 
                     {/* Нещодавно прослухані */}
                     <div className="client-sidebar__section">
                         <div className="client-sidebar__sub-header">
                             <p className="client-sidebar__sub-title">Нещодавно прослухані</p>
-                            <button className="client-sidebar__icon-btn" aria-label="Refresh">
-                                <Image src="/images/icons/refresh.svg" alt="refresh" width={16} height={16} />
-                            </button>
+                            <Image src="/images/icons/refresh.svg" alt="refresh" width={18} height={18} />
                         </div>
                         <div className="client-sidebar__current-track">
                             <div className="client-sidebar__vinyl" />

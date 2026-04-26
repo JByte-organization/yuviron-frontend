@@ -7,6 +7,8 @@ import { AlbumCard, type AlbumCardData } from '@/entities/album/ui/AlbumCard';
 
 interface NewReleasesSectionProps {
     /** TODO: замінити на хук — useGetApiHomeNewReleases() */
+    sectionTitle?: string;
+    highlightedWord?: string;
     albums?: AlbumCardData[];
     isLoading?: boolean;
     showAllHref?: string;
@@ -30,6 +32,8 @@ const MOCK_ALBUMS: AlbumCardData[] = [
  * 2. <NewReleasesSection albums={data?.items} isLoading={isLoading} />
  */
 export const NewReleasesSection = ({
+                                       sectionTitle,
+                                       highlightedWord,
                                        albums = MOCK_ALBUMS,
                                        isLoading = false,
                                        showAllHref = '/albums',
@@ -46,8 +50,8 @@ export const NewReleasesSection = ({
     return (
         <section className="mb-4">
             <SectionHeader
-                title="Нові музичні релізи"
-                highlightedWord="музичні"
+                title={sectionTitle ?? 'Нові музичні релізи'}
+                highlightedWord={highlightedWord ?? 'музичні'}
                 onPrev={() => scroll('prev')}
                 onNext={() => scroll('next')}
             />

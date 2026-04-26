@@ -198,63 +198,6 @@
   }
 }
 
-// ─── TrackCard ────────────────────────────────────────────
-.track-card {
-  cursor: pointer;
-  min-width: 0;
-
-  &__cover {
-    position: relative;
-    aspect-ratio: 1 / 1;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 8px;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
-
-  &__add-btn {
-    position: absolute;
-    bottom: 6px;
-    right: 6px;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: none;
-    background: $client-accent;
-    color: $white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    transition: 0.2s ease;
-
-    &:hover { background: $client-accent-hover; }
-  }
-
-  &__title {
-    font-size: 13px;
-    font-weight: 600;
-    color: $client-text;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__artist {
-    font-size: 12px;
-    color: $client-text-muted;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-}
 
 // ─── AlbumCard ────────────────────────────────────────────
 .album-card {
@@ -390,29 +333,50 @@
   }
 }
 
-// ─── "Все тут" кнопка ─────────────────────────────────────
 .show-all-btn {
-  flex-shrink: 0;
-  width: 80px;
-  aspect-ratio: 1 / 1;
-  border-radius: 8px;
-  border: 1px solid $client-border;
-  background: $client-surface;
-  color: $client-text-muted;
-  font-size: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  gap: 10px;
   text-decoration: none;
   transition: 0.2s ease;
 
-  i { font-size: 20px; }
+  // ─── Коло ─────────────────────────────────────────────
+  &__circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;        // ← рівне коло
+    border: 1px solid $client-border;
+    background: $client-surface;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+
+    i {
+      font-size: 22px;
+      color: $client-text-muted;
+      transition: color 0.2s ease;
+    }
+  }
+
+  // ─── Текст під колом ──────────────────────────────────
+  &__label {
+    font-size: 13px;
+    color: $client-text-muted;
+    transition: color 0.2s ease;
+  }
 
   &:hover {
-    border-color: $client-accent;
-    color: $client-accent;
+    text-decoration: none;
+
+    .show-all-btn__circle {
+      border-color: $client-accent;
+    }
+
+    i, .show-all-btn__label {
+      color: $client-accent;
+    }
   }
 }
 
@@ -553,10 +517,11 @@
   // width: 100% від колонки, aspect-ratio робить висоту = ширині
   &__circle-wrap {
     width: 100%;
+    max-height: 200px;
+    max-width: 200px;
     aspect-ratio: 1 / 1;
   }
 
-  // ─── Саме коло — займає весь __circle-wrap ────────────
   &__circle {
     width: 100%;
     height: 100%;
@@ -618,7 +583,7 @@
 
   // ─── Назва ────────────────────────────────────────────
   &__name {
-    font-size: 13px;
+    font-size: $h6-font-size;
     font-weight: 600;
     color: $client-text-muted;
     transition: color 0.2s ease;
@@ -733,72 +698,6 @@
 }
 
 
-
-// ══════════════════════════════════════════════════════════
-// ALBUM CARD
-// ══════════════════════════════════════════════════════════
-.album-card {
-  cursor: pointer;
-  border-radius: 12px;
-  background: $client-surface-2;
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  }
-
-  // ─── Обкладинка — квадратна, займає всю ширину карточки
-  &__cover {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.3s ease;
-    }
-  }
-
-  &:hover &__cover img {
-    transform: scale(1.04);
-  }
-
-  // ─── Текстовий блок під обкладинкою ───────────────────
-  &__info {
-    padding: 10px 12px 12px;
-  }
-
-  &__title {
-    font-size: 14px;
-    font-weight: 600;
-    color: $client-text;
-    margin: 0 0 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__artist {
-    font-size: 12px;
-    color: $client-text-muted;
-    margin: 0 0 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__tracks {
-    font-size: 11px;
-    color: $client-text-muted;
-    margin: 0;
-  }
-}
-
 // ══════════════════════════════════════════════════════════
 // NEW RELEASES — слайдер
 // ══════════════════════════════════════════════════════════
@@ -831,9 +730,9 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   }
 
-  // ─── Обкладинка — квадратна, займає всю ширину карточки
   &__cover {
     width: 100%;
+    height: 180px;
     aspect-ratio: 1 / 1;
     overflow: hidden;
 
@@ -859,19 +758,33 @@
     font-size: 14px;
     font-weight: 600;
     color: $client-text;
-    margin: 0 0 4px;
+    text-decoration: none;
+    display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $client-text;
+      text-decoration: underline;
+    }
   }
 
   &__artist {
     font-size: 12px;
     color: $client-text-muted;
-    margin: 0;
+    text-decoration: none;
+    display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $client-text;
+      text-decoration: underline;
+    }
   }
 }
 
@@ -887,4 +800,87 @@
   .col-6 {
     min-width: 160px;
   }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// MEDIA CARD — базовий компонент для AlbumCard і PlaylistCard
+// ══════════════════════════════════════════════════════════
+.media-card {
+  cursor: pointer;
+  border-radius: 12px;
+  background: $client-surface-2;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  &__cover {
+    width: 100%;
+    height: 180px;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+  }
+
+  &:hover &__cover img {
+    transform: scale(1.04);
+  }
+
+  &__info {
+    padding: 10px 12px 12px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $client-text;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    color: $client-text-muted;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// LIBRARY PAGE
+// ══════════════════════════════════════════════════════════
+.library-page {
+  padding: 1.5rem 2rem 2rem;
+
+  &__title {
+    font-size: 32px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 32px;
+  }
+}
+
+// Слайдер — спільний для всіх секцій медіатеки
+.library-slider {
+  scrollbar-width: none;
+  padding-bottom: 8px;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .col-6 { min-width: 160px; }
 }
