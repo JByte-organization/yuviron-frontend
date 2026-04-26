@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useRef } from 'react';
-import Link from 'next/link';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { PlaylistCard, type PlaylistCardData } from '@/entities/playlist/ui/PlaylistCard';
+import {ShowAllButton} from "@/shared/ui/ShowAllButton";
 
 interface LibraryPlaylistsSectionProps {
     /** TODO: замінити на хук — useGetApiUserPlaylists() */
@@ -78,10 +78,7 @@ export const LibraryPlaylistsSection = ({
                         </div>
                     ))}
                     <div className="col-auto d-flex align-items-center">
-                        <Link href={showAllHref} className="show-all-btn">
-                            <i className="bi bi-plus" />
-                            <span>Все тут</span>
-                        </Link>
+                        <ShowAllButton href="/tracks"/>
                     </div>
                 </div>
             )}

@@ -33,6 +33,22 @@
     .track-row__index { color: $client-accent; }
   }
 
+  &__album-link {
+    font-size: 13px;
+    color: $client-text-muted;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $client-text;
+      text-decoration: underline;
+    }
+  }
+
   // ─── Індекс ───────────────────────────────────────────
   &__index {
     font-size: 14px;
