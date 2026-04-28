@@ -4,8 +4,11 @@ import React, { createContext, useContext, useState } from 'react';
 import { Header } from '@/widgets/header/ui/Header';
 import { Sidebar } from '@/widgets/sidebar/ui/Sidebar';
 import { Footer } from '@/widgets/footer/ui/Footer';
+import { RightSidebar } from '@/widgets/right-sidebar/ui/RightSidebar';
 
-// ─── Context щоб Sidebar міг повідомити Layout про стан ───
+// ══════════════════════════════════════════════════════════
+// LEFT SIDEBAR CONTEXT
+// ══════════════════════════════════════════════════════════
 interface SidebarContextValue {
     collapsed: boolean;
     setCollapsed: (v: boolean) => void;
@@ -18,38 +21,83 @@ export const SidebarContext = createContext<SidebarContextValue>({
 
 export const useSidebar = () => useContext(SidebarContext);
 
-// ─── Layout ───────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// RIGHT SIDEBAR CONTEXT
+// ══════════════════════════════════════════════════════════
+interface RightSidebarContextValue {
+    isOpen: boolean;
+    userClosed: boolean;
+    open: () => void;
+    close: () => void;
+}
+
+export const RightSidebarContext = createContext<RightSidebarContextValue>({
+    isOpen: false,
+    userClosed: false,
+    open: () => {},
+    close: () => {},
+});
+
+export const useRightSidebar = () => useContext(RightSidebarContext);
+
+// ══════════════════════════════════════════════════════════
+// CLIENT LAYOUT
+// ══════════════════════════════════════════════════════════
 interface ClientLayoutProps {
     children: React.ReactNode;
 }
 
 export const ClientLayout = ({ children }: ClientLayoutProps) => {
+    // Лівий сайдбар
     const [collapsed, setCollapsed] = useState(false);
+
+    // Правий сайдбар
+    const [isOpen, setIsOpen] = useState(false);
+    const [userClosed, setUserClosed] = useState(false);
+
+    const open = () => {
+        // Відкриваємо тільки якщо користувач не закрив вручну
+        if (!userClosed) {
+            setIsOpen(true);
+        }
+    };
+
+    const close = () => {
+        setIsOpen(false);
+        setUserClosed(true); // запам'ятовуємо що користувач закрив
+    };
+
+    // Відкрити вручну (скидає userClosed)
+    const openManually = () => {
+        setUserClosed(false);
+        setIsOpen(true);
+    };
 
     return (
         <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
-            <div
-                className="client-layout"
-                style={{
-                    backgroundImage: "url('/images/bg-linear.svg')",
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center top',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundAttachment: 'fixed',
-                }}
-            >
-                <Header/>
+            <RightSidebarContext.Provider value={{ isOpen, userClosed, open, close }}>
+                <div className="client-layout">
+                    <Header />
 
-                <div className="client-layout__body">
-                    <Sidebar/>
+                    <div className="client-layout__body">
+                        {/* Лівий сайдбар */}
+                        <Sidebar />
 
-                    <main
-                        className={`client-layout__main${collapsed ? ' client-layout__main--sidebar-collapsed' : ''}`}>
-                        {children}
-                        <Footer/>
-                    </main>
+                        {/* Основний контент */}
+                        <main className={[
+                            'client-layout__main',
+                            collapsed ? 'client-layout__main--left-collapsed' : '',
+                            isOpen    ? 'client-layout__main--right-open' : '',
+                        ].filter(Boolean).join(' ')}>
+                            {children}
+                            <Footer />
+                        </main>
+
+                        {/* Правий сайдбар */}
+                        <RightSidebar onOpenManually={openManually} />
+                    </div>
                 </div>
-            </div>
+            </RightSidebarContext.Provider>
         </SidebarContext.Provider>
     );
 };

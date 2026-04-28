@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
+export type TrackRowVariant = 'default' | 'artist';
+
 export interface TrackRowData {
     id: string;
     index: number;
@@ -14,15 +16,14 @@ export interface TrackRowData {
     addedAt?: string | null;
     durationMs?: number | null;
     coverUrl?: string | null;
+    playsCount?: number; // для variant="artist"
 }
 
 interface TrackRowProps {
     track: TrackRowData;
-    /** TODO: підключити до глобального плеєра */
     isPlaying?: boolean;
-    /** Викликається при кліку на рядок — програє трек */
+    variant?: TrackRowVariant;
     onClick?: (id: string) => void;
-    /** Викликається при кліку на серце */
     onLike?: (id: string) => void;
 }
 
@@ -39,20 +40,20 @@ const formatDate = (dateStr?: string | null): string => {
     const date = new Date(dateStr);
     const today = new Date();
     const diffDays = Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-
     if (diffDays === 0) return 'Сьогодні';
     if (diffDays === 1) return 'Вчора';
+    return date.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' });
+};
 
-    return date.toLocaleDateString('uk-UA', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-    });
+const formatPlays = (count?: number): string => {
+    if (!count) return '—';
+    return count.toLocaleString('uk-UA');
 };
 
 export const TrackRow = ({
                              track,
                              isPlaying = false,
+                             variant = 'default',
                              onClick,
                              onLike,
                          }: TrackRowProps) => {
@@ -64,15 +65,14 @@ export const TrackRow = ({
 
     return (
         <div
-            className={`track-row${isPlaying ? ' track-row--playing' : ''}${isHovered ? ' track-row--hovered' : ''}`}
+            className={`track-row track-row--${variant}${isPlaying ? ' track-row--playing' : ''}${isHovered ? ' track-row--hovered' : ''}`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            onClick={() => onClick?.(track.id)} // клік на рядок = програти
+            onClick={() => onClick?.(track.id)}
         >
-            {/* ─── Номер / анімація / play іконка ──────────── */}
+            {/* ─── Номер / play ─────────────────────────── */}
             <div className="track-row__index">
                 {isPlaying ? (
-                    // TODO: замінити на CSS анімацію equalizer
                     <i className="bi bi-volume-up-fill track-row__playing-icon" />
                 ) : isHovered ? (
                     <i className="bi bi-play-fill" />
@@ -81,13 +81,12 @@ export const TrackRow = ({
                 )}
             </div>
 
-            {/* ─── Обкладинка + назва + артист ─────────────── */}
+            {/* ─── Обкладинка + назва + артист ─────────── */}
             <div className="track-row__info">
                 <div className="track-row__cover">
                     <img src={coverSrc} alt={track.title} />
                 </div>
                 <div className="track-row__meta">
-                    {/* Назва — веде на сторінку треку */}
                     <Link
                         href={`/tracks/${track.id}`}
                         className={`track-row__title${isPlaying ? ' track-row__title--playing' : ''}`}
@@ -95,8 +94,6 @@ export const TrackRow = ({
                     >
                         {track.title}
                     </Link>
-
-                    {/* Артист — веде на сторінку артиста */}
                     {track.artistId ? (
                         <Link
                             href={`/artists/${track.artistId}`}
@@ -113,7 +110,7 @@ export const TrackRow = ({
                 </div>
             </div>
 
-            {/* ─── Альбом — веде на сторінку альбому ──────── */}
+            {/* ─── Альбом ───────────────────────────────── */}
             <div className="track-row__album d-none d-md-block">
                 {track.albumId ? (
                     <Link
@@ -128,19 +125,19 @@ export const TrackRow = ({
                 )}
             </div>
 
-            {/* ─── Дата додавання ───────────────────────────── */}
-            <div className="track-row__date d-none d-lg-block">
-                {formatDate(track.addedAt)}
+            {/* ─── Дата або прослуховування ─────────────── */}
+            <div className="track-row__context d-none d-lg-block ">
+                {variant === 'artist'
+                    ? <span>{formatPlays(track.playsCount)}</span>
+                    : <span>{formatDate(track.addedAt)}</span>
+                }
             </div>
 
-            {/* ─── Дії + тривалість ─────────────────────────── */}
+            {/* ─── Дії + тривалість ─────────────────────── */}
             <div className="track-row__actions">
                 <button
                     className="track-row__like-btn"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onLike?.(track.id);
-                    }}
+                    onClick={(e) => { e.stopPropagation(); onLike?.(track.id); }}
                     aria-label="Like"
                 >
                     <i className="bi bi-heart" />
