@@ -1554,3 +1554,260 @@
     }
   }
 }
+
+
+
+// ══════════════════════════════════════════════════════════
+// ARTIST PAGE
+// ══════════════════════════════════════════════════════════
+.artist-page {
+  padding: 0 1.5rem 2rem;
+}
+
+// ══════════════════════════════════════════════════════════
+// ARTIST PAGE HEADER
+// ══════════════════════════════════════════════════════════
+.artist-page-header {
+  padding: 24px 0 32px;
+
+  &__breadcrumb {
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 8px;
+  }
+
+  // ─── Аватар ───────────────────────────────────────────
+  &__avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+    @media (min-width: 768px) {
+      width: 130px;
+      height: 130px;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // ─── Верифікація ──────────────────────────────────────
+  &__verified {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-accent;
+    margin-bottom: 8px;
+
+    i { font-size: 14px; }
+  }
+
+  // ─── Назва ────────────────────────────────────────────
+  &__name {
+    font-size: 40px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 8px;
+    line-height: 1.1;
+
+    @media (min-width: 768px) { font-size: 56px; }
+  }
+
+  // ─── Слухачі ──────────────────────────────────────────
+  &__listeners {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  // ─── Кнопки дій ───────────────────────────────────────
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  &__btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+
+    &--play {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: $client-accent;
+      color: $white;
+      font-size: 22px;
+
+      &:hover {
+        background: $client-accent-hover;
+        transform: scale(1.05);
+      }
+    }
+
+    &--follow {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid $client-border;
+      color: $client-text-muted;
+      font-size: 18px;
+      transition: 0.2s ease;
+
+      &:hover {
+        border-color: $client-text;
+        color: $client-text;
+      }
+    }
+
+    &--following {
+      border-color: $client-accent;
+      color: $client-accent;
+
+      &:hover {
+        border-color: $client-accent-hover;
+        color: $client-accent-hover;
+      }
+    }
+
+    &--icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: $client-text-muted;
+      font-size: 22px;
+
+      &:hover { color: $client-text; }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// ARTIST MUSIC TABS
+// ══════════════════════════════════════════════════════════
+.artist-music-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  &__btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      border-color: $client-text;
+      color: $client-text;
+    }
+
+    &--active {
+      background: $white;
+      border-color: $white;
+      color: $black;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.9);
+        border-color: rgba(255, 255, 255, 0.9);
+        color: $black;
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// ARTIST ABOUT SECTION
+// ══════════════════════════════════════════════════════════
+.artist-about {
+  &__card {
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  &__banner {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 7;
+
+    @media (min-width: 768px) {
+      aspect-ratio: 16 / 6;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // Градієнт знизу
+  &__overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 32px 28px 28px;
+    background: linear-gradient(
+                    to top,
+                    rgba(0, 0, 0, 0.85) 0%,
+                    rgba(0, 0, 0, 0.4)  60%,
+                    transparent         100%
+    );
+  }
+
+  &__listeners {
+    font-size: 16px;
+    font-weight: 700;
+    color: $white;
+    margin: 0 0 12px;
+  }
+
+  &__bio {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    line-height: 1.6;
+    max-width: 600px;
+
+    // Обрізаємо довгий текст
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// Спільний клас слайдера для сторінки артиста
+.artist-slider {
+  scrollbar-width: none;
+  padding-bottom: 8px;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .col-6 { min-width: 160px; }
+}

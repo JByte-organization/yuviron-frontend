@@ -12,10 +12,17 @@ interface ArtistTopTracksSectionProps {
     isLoading?: boolean;
 }
 
+// В ArtistTopTracksSection.tsx — виправити MOCK_TOP_TRACKS
 const MOCK_TOP_TRACKS: TrackRowData[] = [
-    { id: '1', index: 1, title: 'LALISA',              artistNames: ['LISA'], albumTitle: 'Сінгл',       addedAt: null, durationMs: 186000, coverUrl: null },
-    { id: '2', index: 2, title: 'Moonlit Floor (Kiss Me)', artistNames: ['LISA'], albumTitle: 'Сінгл',  addedAt: null, durationMs: 162000, coverUrl: null },
-    { id: '3', index: 3, title: 'Rockstar',            artistNames: ['LISA'], albumTitle: 'Alter Ego',  addedAt: null, durationMs: 166000, coverUrl: null },
+    { id: '1', index: 1, title: 'LALISA',    artistNames: ['LISA'], artistId: 'lisa',
+        albumTitle: 'Сінгл', addedAt: null, durationMs: 186000, coverUrl: null,
+        playsCount: 264724658 }, // ← ось тут
+    { id: '2', index: 2, title: 'Moonlit Floor', artistNames: ['LISA'], artistId: 'lisa',
+        albumTitle: 'Сінгл', addedAt: null, durationMs: 162000, coverUrl: null,
+        playsCount: 130465796 },
+    { id: '3', index: 3, title: 'Rockstar',  artistNames: ['LISA'], artistId: 'lisa',
+        albumTitle: 'Alter Ego', addedAt: null, durationMs: 166000, coverUrl: null,
+        playsCount: 98234512 },
 ];
 
 /**
@@ -63,6 +70,7 @@ export const ArtistTopTracksSection = ({
                         <TrackRow
                             key={track.id}
                             track={track}
+                            variant="artist"
                             onClick={(id) => console.log('play', id)} // TODO: плеєр
                             onLike={(id) => console.log('like', id)}  // TODO: хук лайку
                         />
