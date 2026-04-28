@@ -1,9 +1,13 @@
+// app/(client)/artists/[id]/page.tsx
+
 import { ArtistPage } from '@/views/artist/ArtistPage';
+import { use } from 'react';
 
 interface PageProps {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }
 
 export default function Page({ params }: PageProps) {
-    return <ArtistPage artistId={params.id} />;
+    const { id } = use(params); // ← розгортаємо Promise через React.use()
+    return <ArtistPage artistId={id} />;
 }

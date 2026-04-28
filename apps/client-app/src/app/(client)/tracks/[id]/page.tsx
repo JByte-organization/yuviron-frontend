@@ -1,9 +1,11 @@
 import { TrackPage } from '@/views/track/TrackPage';
+import { use } from 'react';
 
 interface PageProps {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }
 
 export default function Page({ params }: PageProps) {
-    return <TrackPage trackId={params.id} />;
+    const { id } = use(params);
+    return <TrackPage trackId={id} />;
 }

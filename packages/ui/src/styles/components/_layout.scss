@@ -587,3 +587,368 @@
     &:hover { color: $client-text; }
   }
 }
+
+
+
+// ══════════════════════════════════════════════════════════
+// RIGHT SIDEBAR
+// Стиль симетричний до лівого сайдбара —
+// floating картка з border-radius і box-shadow
+// ══════════════════════════════════════════════════════════
+
+$right-sidebar-width: 280px;
+$sidebar-margin: 12px;
+
+.right-sidebar {
+  display: none;
+
+  @media (min-width: 1200px) {
+    display: block;
+    position: fixed;
+    top: $header-height + $sidebar-margin;
+    right: $sidebar-margin;
+    bottom: $sidebar-margin;
+    width: $right-sidebar-width;
+    z-index: 100;
+
+    // Floating картка — як лівий сайдбар
+    background: $client-surface;
+    border: 1px solid $client-border;
+    border-radius: 16px;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
+
+    // Початково закритий — виїжджає вправо
+    transform: translateX(calc(100% + #{$sidebar-margin}));
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  // ─── Відкритий стан ───────────────────────────────────
+  &--open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  // ─── Внутрішній скрол ─────────────────────────────────
+  &__inner {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px 16px 24px;
+    border-radius: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: $client-border transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+  }
+
+  // ─── Кнопка закрити ───────────────────────────────────
+  &__close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid $client-border;
+    background: $client-surface-2;
+    color: $client-text-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    z-index: 1;
+
+    &:hover {
+      border-color: $client-accent;
+      color: $client-accent;
+    }
+  }
+
+  // ─── Обкладинка ───────────────────────────────────────
+  &__cover {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 8px; // відступ від кнопки закрити
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // ─── Назва треку + артист + дії ───────────────────────
+  &__track-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__track-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__track-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__track-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: $client-text;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $client-text;
+      text-decoration: underline;
+    }
+  }
+
+  &__track-artist {
+    font-size: 13px;
+    color: $client-text-muted;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $client-text;
+      text-decoration: underline;
+    }
+  }
+
+  // ─── Кнопки дій (лайк, плейліст) ─────────────────────
+  &__track-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  &__action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    &:hover { color: $client-text; }
+
+    &--active { color: $client-accent; }
+  }
+
+  // ─── Поділитися ───────────────────────────────────────
+  &__share {
+    display: flex;
+    justify-content: center;
+  }
+
+  &__share-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    width: 100%;
+    justify-content: center;
+
+    i { font-size: 15px; }
+
+    &:hover {
+      border-color: $client-accent;
+      color: $client-accent;
+    }
+  }
+
+  // ─── Роздільник ───────────────────────────────────────
+  &__divider {
+    border-color: $client-border;
+    opacity: 1;
+    margin: 0;
+  }
+
+  // ─── Про артиста ──────────────────────────────────────
+  &__about {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: $client-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0;
+  }
+
+  &__artist-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__artist-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  &__artist-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__artist-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: $client-text;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__artist-listeners {
+    font-size: 11px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  &__follow-btn {
+    flex-shrink: 0;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      border-color: $client-text;
+      color: $client-text;
+    }
+  }
+
+  &__artist-bio {
+    font-size: 13px;
+    color: $client-text-muted;
+    line-height: 1.6;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  // ─── Порожній стан ────────────────────────────────────
+  &__empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: $client-text-muted;
+
+    i { font-size: 36px; }
+    p { font-size: 14px; margin: 0; text-align: center; }
+  }
+}
+
+// ─── Кнопка відкрити (коли сайдбар закритий) ─────────────
+.right-sidebar__restore-btn {
+  display: none;
+
+  @media (min-width: 1200px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 50%;
+    right: $sidebar-margin;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid $client-border;
+    background: $client-surface-2;
+    cursor: pointer;
+    z-index: 101;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    transition: border-color 0.2s, background 0.2s;
+
+    i {
+      font-size: 13px;
+      color: $client-text-muted;
+      transition: color 0.2s;
+    }
+
+    &:hover {
+      border-color: $client-accent;
+      background: rgba(0, 166, 255, 0.12);
+
+      i { color: $client-accent; }
+    }
+  }
+}
