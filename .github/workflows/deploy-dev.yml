@@ -153,9 +153,9 @@ jobs:
 
       - name: Preflight check
         run: |
-           set -Eeuo pipefail
-           cd /opt/yuviron-server
-           python3 ./scripts/cli.py stack preflight dev
+            set -Eeuo pipefail
+            cd /opt/yuviron-server
+            python3 ./scripts/cli.py stack preflight dev
 
       - name: Install frontend dependencies
         run: |
