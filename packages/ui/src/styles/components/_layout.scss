@@ -52,21 +52,26 @@
   border-bottom: 1px solid $client-border;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   padding: 0 16px;
 
   @media (min-width: 992px) { padding: 0 24px; }
 
+  // ─── Лого ─────────────────────────────────────────────
   &__logo {
     flex-shrink: 0;
     display: flex;
     align-items: center;
     text-decoration: none;
+
+    img { display: block; }
   }
 
+  // ─── Пошук — по центру ────────────────────────────────
   &__search-wrap {
     flex: 1;
     max-width: 480px;
+    margin: 0 auto; // ← центрування
     position: relative;
     display: flex;
     align-items: center;
@@ -78,17 +83,18 @@
     color: $client-text-muted;
     font-size: 14px;
     pointer-events: none;
+    z-index: 1;
   }
 
   &__search {
     width: 100%;
-    height: 36px;
+    height: 38px;
     border-radius: 20px;
     border: 1px solid $client-border;
     background: $client-surface;
     color: $client-text;
     font-size: 13px;
-    padding: 0 40px 0 36px;
+    padding: 0 72px 0 38px;
     outline: none;
     transition: border-color 0.2s;
 
@@ -96,9 +102,9 @@
     &:focus { border-color: $client-accent; }
   }
 
-  &__mic-btn {
+  &__search-clear {
     position: absolute;
-    right: 10px;
+    right: 38px;
     background: transparent;
     border: none;
     color: $client-text-muted;
@@ -108,16 +114,59 @@
     display: flex;
     align-items: center;
     transition: color 0.2s;
+
+    &:hover { color: $client-text; }
+  }
+
+  &__mic-btn {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: $client-text-muted;
+    font-size: 16px;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+
     &:hover { color: $client-accent; }
   }
 
+  // ─── Праві дії ────────────────────────────────────────
   &__actions {
-    margin-left: auto;
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto;
   }
 
+  // Кнопка Premium
+  &__premium-btn {
+    display: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: transparent;
+    color: $white;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: 0.2s ease;
+
+    @media (min-width: 1024px) { display: flex; align-items: center; }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: $white;
+      text-decoration: none;
+    }
+  }
+
+  // Іконки-кнопки
   &__icon-btn {
     width: 36px;
     height: 36px;
@@ -125,14 +174,61 @@
     border: 1px solid $client-border;
     background: transparent;
     color: $client-text-muted;
-    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: 0.2s;
+    text-decoration: none;
 
-    &:hover { border-color: $client-accent; color: $client-accent; }
+    &:hover {
+      border-color: $client-accent;
+      color: $client-accent;
+    }
+  }
+
+  // Перемикач теми
+  &__theme-btn {
+    color: $client-text-muted;
+
+    svg { display: block; }
+  }
+
+  // Повідомлення
+  &__notif-btn {
+    position: relative;
+  }
+
+  &__notif-icon {
+    display: block;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    filter: invert(1); // для світлої SVG іконки
+
+    .client-header__notif-btn:hover & { opacity: 1; }
+  }
+
+  &__notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: $client-accent;
+    color: $white;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid $client-bg;
+  }
+
+  // Аватар
+  &__user {
+    position: relative;
   }
 
   &__avatar-btn {
@@ -140,6 +236,9 @@
     border: none;
     padding: 0;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   &__avatar {
@@ -158,6 +257,217 @@
       color: $client-text-muted;
       font-size: 18px;
     }
+  }
+
+  &__premium-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #FFD700;
+    letter-spacing: 0.05em;
+  }
+
+  // Auth кнопки (незареєстрований)
+  &__auth-btn {
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s ease;
+    white-space: nowrap;
+
+    &--ghost {
+      border: none;
+      background: transparent;
+      color: $client-text-muted;
+
+      &:hover { color: $client-text; text-decoration: none; }
+    }
+
+    &--primary {
+      border: none;
+      background: $white;
+      color: $black;
+
+      &:hover { background: rgba(255,255,255,0.9); text-decoration: none; }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// SEARCH DROPDOWN
+// ══════════════════════════════════════════════════════════
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: $client-surface-2;
+  border: 1px solid $client-border;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 300;
+  overflow: hidden;
+
+  &__loading,
+  &__empty {
+    padding: 16px;
+    font-size: 13px;
+    color: $client-text-muted;
+    text-align: center;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      text-decoration: none;
+    }
+  }
+
+  &__cover {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    &--round { border-radius: 50%; }
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 500;
+    color: $client-text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    color: $client-text-muted;
+  }
+
+  &__type-icon {
+    font-size: 14px;
+    color: $client-text-muted;
+    flex-shrink: 0;
+  }
+
+  &__see-all {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: $client-accent;
+    text-decoration: none;
+    border-top: 1px solid $client-border;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: rgba(0, 166, 255, 0.06);
+      text-decoration: none;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// USER DROPDOWN
+// ══════════════════════════════════════════════════════════
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: $client-surface-2;
+  border: 1px solid $client-border;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 300;
+  overflow: hidden;
+
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 299;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: $client-text-muted;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: $client-text;
+      text-decoration: none;
+    }
+
+    &--accent {
+      color: #FFD700;
+
+      &:hover { color: #FFD700; background: rgba(255, 215, 0, 0.08); }
+    }
+
+    &--logout {
+      color: rgba(255, 80, 80, 0.8);
+
+      &:hover { color: #ff5050; background: rgba(255, 80, 80, 0.08); }
+    }
+  }
+
+  &__item-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  &__divider {
+    height: 1px;
+    background: $client-border;
+    margin: 4px 0;
   }
 }
 

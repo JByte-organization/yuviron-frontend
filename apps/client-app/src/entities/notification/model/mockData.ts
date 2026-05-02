@@ -1,0 +1,148 @@
+import type { NotificationItem } from './types';
+
+export const MOCK_NOTIFICATIONS: NotificationItem[] = [
+    // ─── Сьогодні ─────────────────────────────────────────
+    {
+        id: '1',
+        type: 'new_track',
+        isRead: false,
+        createdAt: new Date(Date.now() - 3 * 3600000).toISOString(),
+        group: 'today',
+        track: {
+            id: 't1',
+            title: 'THE CONTORTIONIST',
+            artistName: 'Melanie Martinez',
+            artistId: 'melanie',
+            coverUrl: null,
+        },
+    },
+    {
+        id: '2',
+        type: 'new_track',
+        isRead: false,
+        createdAt: new Date(Date.now() - 4 * 3600000).toISOString(),
+        group: 'today',
+        track: {
+            id: 't2',
+            title: 'Вади',
+            artistName: 'Alyona Alyona',
+            artistId: 'alyona',
+            coverUrl: null,
+        },
+    },
+    {
+        id: '3',
+        type: 'new_track',
+        isRead: true,
+        createdAt: new Date(Date.now() - 5 * 3600000).toISOString(),
+        group: 'today',
+        track: {
+            id: 't3',
+            title: 'ЦЕЙ ДЖАЗ',
+            artistName: 'Alyona Alyona',
+            artistId: 'alyona',
+            coverUrl: null,
+        },
+    },
+    {
+        id: '4',
+        type: 'new_track',
+        isRead: true,
+        createdAt: new Date(Date.now() - 7 * 3600000).toISOString(),
+        group: 'today',
+        track: {
+            id: 't4',
+            title: 'Bite Me',
+            artistName: 'ENHYPEN',
+            artistId: 'enhypen',
+            coverUrl: null,
+        },
+    },
+    // ─── Цього тижня ──────────────────────────────────────
+    {
+        id: '5',
+        type: 'new_release',
+        isRead: true,
+        createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+        group: 'this_week',
+        album: {
+            id: 'a1',
+            title: 'HOPE DARE',
+            artistName: 'Nxde',
+            artistId: 'nxde',
+            coverUrl: null,
+            releaseDate: new Date(Date.now() - 86400000).toISOString(),
+        },
+    },
+    {
+        id: '6',
+        type: 'new_release',
+        isRead: true,
+        createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+        group: 'this_week',
+        album: {
+            id: 'a2',
+            title: 'Капризи',
+            artistName: 'Влєнтір Тхай',
+            artistId: 'valentir',
+            coverUrl: null,
+            releaseDate: new Date(Date.now() - 3 * 86400000).toISOString(),
+        },
+    },
+    {
+        id: '7',
+        type: 'upcoming_release',
+        isRead: true,
+        createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+        group: 'this_week',
+        album: {
+            id: 'a3',
+            title: 'Mine Jazz',
+            artistName: 'Friday Log',
+            artistId: 'friday',
+            coverUrl: null,
+            releaseDate: new Date(Date.now() + 7 * 86400000).toISOString(), // майбутній реліз
+        },
+    },
+    {
+        id: '8',
+        type: 'new_track',
+        isRead: true,
+        createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+        group: 'this_week',
+        track: {
+            id: 't5',
+            title: 'День перший',
+            artistName: 'Данагоспода',
+            artistId: 'dana',
+            coverUrl: null,
+        },
+    },
+    // ─── Друзі ────────────────────────────────────────────
+    {
+        id: '9',
+        type: 'friend_request',
+        isRead: false,
+        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+        group: 'this_week',
+        user: {
+            id: 'u1',
+            name: 'Oleksandr Kovalenko',
+            avatarUrl: null,
+            isFriend: false,
+        },
+    },
+    {
+        id: '10',
+        type: 'friend_request',
+        isRead: true,
+        createdAt: new Date(Date.now() - 10 * 86400000).toISOString(),
+        group: 'this_month',
+        user: {
+            id: 'u2',
+            name: 'Daryna Shevchenko',
+            avatarUrl: null,
+            isFriend: true,
+        },
+    },
+];

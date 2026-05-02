@@ -58,7 +58,12 @@ $client-text-muted:   rgba(206, 216, 227, 0.55);
 
 $header-height:  56px;
 $sidebar-width:  240px;
-$sidebar-margin: 12px;   // відступ від країв (floating ефект)
+$sidebar-margin: 12px;
+
+
+[data-theme="light"] {
+  // TODO: визначити кольори світлої теми
+}
 
 // Buttons
 $admin-approve:   #8EE6CC;

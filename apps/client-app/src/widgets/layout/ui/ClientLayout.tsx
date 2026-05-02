@@ -5,6 +5,7 @@ import { Header } from '@/widgets/header/ui/Header';
 import { Sidebar } from '@/widgets/sidebar/ui/Sidebar';
 import { Footer } from '@/widgets/footer/ui/Footer';
 import { RightSidebar } from '@/widgets/right-sidebar/ui/RightSidebar';
+import { ThemeProvider } from '@/shared/lib/ThemeProvider';
 
 // ══════════════════════════════════════════════════════════
 // LEFT SIDEBAR CONTEXT
@@ -74,6 +75,7 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
     };
 
     return (
+        <ThemeProvider>
         <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
             <RightSidebarContext.Provider value={{ isOpen, userClosed, open, close }}>
                 <div className="client-layout">
@@ -99,5 +101,6 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
                 </div>
             </RightSidebarContext.Provider>
         </SidebarContext.Provider>
+        </ThemeProvider>
     );
 };
