@@ -186,19 +186,17 @@ jobs:
             -f ./generated/dev/compose.frontends.yml \
             build "${{ matrix.app }}"
 
-      - name: Restart affected frontend service
+      - name: Start full dev stack
         run: |
           set -Eeuo pipefail
           cd /opt/yuviron-server
+          timeout 1200 python3 ./scripts/cli.py stack up dev
 
-          echo "Restarting frontend service: ${{ matrix.app }}"
-
-          docker compose \
-            --env-file ./generated/dev/deploy.env \
-            -p yuviron-dev \
-            -f ./infra/compose.yml \
-            -f ./generated/dev/compose.frontends.yml \
-            up -d --no-deps "${{ matrix.app }}"
+      - name: Smoke test dev stack
+        run: |
+          set -Eeuo pipefail
+          cd /opt/yuviron-server
+          python3 ./scripts/cli.py stack smoke dev
 
       - name: Show running services
         if: always()
@@ -212,6 +210,18 @@ jobs:
             -f ./infra/compose.yml \
             -f ./generated/dev/compose.frontends.yml \
             ps
+
+      - name: Show affected frontend logs
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          docker logs --tail=160 "yuviron-dev-${{ matrix.app }}" || true
+
+      - name: Show nginx logs
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          docker logs --tail=160 yuviron-dev-nginx || true
 
   no-changes:
     needs: detect-affected
