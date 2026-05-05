@@ -55,7 +55,7 @@ export const RegisterForm = () => {
             <div className="client-register-form__login text-center">
                 <span>Є акаунт?</span>
                 <Link href="/login" className="client-register-form__login-link text-decoration-none">
-                    Увійти до повного
+                    Перейти до входу
                 </Link>
             </div>
         </form>

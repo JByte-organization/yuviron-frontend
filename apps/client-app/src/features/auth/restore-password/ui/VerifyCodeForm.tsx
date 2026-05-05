@@ -60,7 +60,7 @@ export const VerifyCodeForm = () => {
                 <div className="client-verify-form__bottom text-center">
                     <span>Згадали пароль?</span>
                     <Link href="/login" className="client-verify-form__login-link text-decoration-none">
-                        Увійдіть до аккаунту
+                        Зайдіть до акаунту
                     </Link>
                 </div>
             </form>

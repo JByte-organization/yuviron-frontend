@@ -6,8 +6,12 @@ import { useState } from 'react';
 export const LoginForm = () => {
     const [showPassword, setShowPassword] = useState(false);
 
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+    };
+
     return (
-        <form className="client-login-form">
+        <form className="client-login-form" onSubmit={handleSubmit}>
             <div className="client-login-form__socials">
                 <button type="button" className="client-login-form__social-btn">
                     <span className="client-login-form__social-icon client-login-form__social-icon--facebook">
@@ -48,7 +52,7 @@ export const LoginForm = () => {
             <div className="mb-4">
                 <div className="client-login-form__password-head">
                     <label htmlFor="password" className="form-label client-login-form__label mb-0">
-                        Пар
+                        Пароль
                     </label>
 
                     <Link

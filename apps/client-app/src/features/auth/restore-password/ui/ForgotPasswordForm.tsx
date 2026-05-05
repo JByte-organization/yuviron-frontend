@@ -50,7 +50,7 @@ export const ForgotPasswordForm = () => {
                 <div className="client-forgot-form__bottom text-center">
                     <span>Згадали пароль?</span>
                     <Link href="/login" className="client-forgot-form__login-link text-decoration-none">
-                        Увійдіть до аккаунту
+                        Зайдіть до акаунту
                     </Link>
                 </div>
             </form>
