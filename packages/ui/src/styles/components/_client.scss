@@ -863,45 +863,6 @@
    FORM ERROR STATES
 ========================= */
 
-.client-login-form__error,
-.client-register-form__error,
-.client-register-details-form__error,
-.client-register-profile-form__error,
-.client-forgot-form__error,
-.client-reset-form__error {
-  color: #ff6b6b;
-  font-size: 10px;
-  line-height: 1.3;
-  margin-top: 4px;
-}
-
-.client-login-form__input.is-invalid,
-.client-register-form__input.is-invalid,
-.client-register-details-form__input.is-invalid,
-.client-register-profile-form__input.is-invalid,
-.client-register-profile-form__select.is-invalid,
-.client-forgot-form__input.is-invalid,
-.client-reset-form__input.is-invalid {
-  border-color: #ff6b6b;
-
-  &:focus {
-    border-color: #ff6b6b;
-  }
-}
-
-.client-register-details-form__rules-list li.is-valid {
-  color: #19aaf5;
-
-  &::before {
-    border-color: #19aaf5;
-    background: #19aaf5;
-  }
-}
-
-/* =========================
-   FORGOT / VERIFY PAGE
-========================= */
-
 .client-forgot-page {
   width: 100%;
   display: flex;

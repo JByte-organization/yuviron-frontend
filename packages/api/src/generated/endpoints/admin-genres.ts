@@ -20,8 +20,10 @@ import type {
 import type {
   CreateGenreCommand,
   CreateGenreResponse,
+  GenreAutocompleteDto,
   GenreDetailsDto,
   GenreListItemDtoPaginatedList,
+  GetApiAdminGenresAutocompleteParams,
   GetApiAdminGenresParams,
   UpdateGenreCommand,
 } from "../models";
@@ -686,3 +688,203 @@ export const useDeleteApiAdminGenresId = <
 > => {
   return useMutation(getDeleteApiAdminGenresIdMutationOptions(options));
 };
+export type getApiAdminGenresAutocompleteResponse200TextPlain = {
+  data: GenreAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminGenresAutocompleteResponse200ApplicationJson = {
+  data: GenreAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminGenresAutocompleteResponse200TextJson = {
+  data: GenreAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminGenresAutocompleteResponseSuccess = (
+  | getApiAdminGenresAutocompleteResponse200TextPlain
+  | getApiAdminGenresAutocompleteResponse200ApplicationJson
+  | getApiAdminGenresAutocompleteResponse200TextJson
+) & {
+  headers: Headers;
+};
+export type getApiAdminGenresAutocompleteResponse =
+  getApiAdminGenresAutocompleteResponseSuccess;
+
+export const getGetApiAdminGenresAutocompleteUrl = (
+  params?: GetApiAdminGenresAutocompleteParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/admin/genres/autocomplete?${stringifiedParams}`
+    : `/api/admin/genres/autocomplete`;
+};
+
+export const getApiAdminGenresAutocomplete = async (
+  params?: GetApiAdminGenresAutocompleteParams,
+  options?: RequestInit,
+): Promise<getApiAdminGenresAutocompleteResponse> => {
+  return customInstance<getApiAdminGenresAutocompleteResponse>(
+    getGetApiAdminGenresAutocompleteUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetApiAdminGenresAutocompleteInfiniteQueryKey = (
+  params?: GetApiAdminGenresAutocompleteParams,
+) => {
+  return [
+    "infinite",
+    `/api/admin/genres/autocomplete`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetApiAdminGenresAutocompleteQueryKey = (
+  params?: GetApiAdminGenresAutocompleteParams,
+) => {
+  return [
+    `/api/admin/genres/autocomplete`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetApiAdminGenresAutocompleteInfiniteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminGenresAutocompleteParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetApiAdminGenresAutocompleteInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>
+  > = ({ signal }) =>
+    getApiAdminGenresAutocomplete(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetApiAdminGenresAutocompleteInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>
+>;
+export type GetApiAdminGenresAutocompleteInfiniteQueryError = unknown;
+
+export function useGetApiAdminGenresAutocompleteInfinite<
+  TData = Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminGenresAutocompleteParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetApiAdminGenresAutocompleteInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<
+    TData,
+    TError
+  > & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiAdminGenresAutocompleteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminGenresAutocompleteParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiAdminGenresAutocompleteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>
+  > = ({ signal }) =>
+    getApiAdminGenresAutocomplete(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetApiAdminGenresAutocompleteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>
+>;
+export type GetApiAdminGenresAutocompleteQueryError = unknown;
+
+export function useGetApiAdminGenresAutocomplete<
+  TData = Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminGenresAutocompleteParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminGenresAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetApiAdminGenresAutocompleteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

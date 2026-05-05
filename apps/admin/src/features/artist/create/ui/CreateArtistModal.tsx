@@ -4,12 +4,9 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
     usePostApiAdminArtists,
-    usePostApiFilesUpload,
     useGetApiAdminUsers,
     VerificationStatus,
-    CreateArtistCommand
 } from '@repo/api';
-import { useDebounce } from '@/shared/lib/hooks/useDebounce';
 
 interface Props {
     isOpen: boolean;
@@ -17,189 +14,245 @@ interface Props {
     onSuccess: () => void;
 }
 
+type FormValues = {
+    name: string;
+    ownerEmail: string;
+    ownerUserId: string;
+    bio: string;
+    country: string;
+    verificationStatus: VerificationStatus;
+};
+
 export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
-    // 1. Инициализация формы через React Hook Form
-    const { register, handleSubmit, setValue, watch, reset, setError, formState: { errors } } = useForm<CreateArtistCommand>({
+    const {
+        register,
+        handleSubmit,
+        setError,
+        setValue,
+        clearErrors,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<FormValues>({
         defaultValues: {
             name: '',
+            ownerEmail: '',
+            ownerUserId: '',
             bio: '',
-            avatarUrl: '',
-            bannerUrl: '',
-            verificationStatus: VerificationStatus.None,
-            ownerUserId: ''
-        }
+            country: '',
+            verificationStatus: 'Pending' as VerificationStatus,
+        },
     });
 
-    // Следим за значениями для UI
-    const ownerUserId = watch('ownerUserId');
-    const avatarUrl = watch('avatarUrl');
-    const bannerUrl = watch('bannerUrl');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    // 2. Поиск владельца (Owner)
-    const [userSearch, setUserSearch] = useState('');
-    const debouncedSearch = useDebounce(userSearch, 500);
-
-    const { data: usersData, isLoading: isUsersLoading } = useGetApiAdminUsers({
-        // @ts-ignore - Используем PascalCase для параметров запроса
-        SearchTerm: debouncedSearch,
+    // Поиск пользователей по Search или Email (зависит от API)
+    const { data: usersData, isLoading: isSearching } = useGetApiAdminUsers({
+        Search: searchQuery,
         PageSize: 5
+    } as any, {
+        enabled: searchQuery.length > 2,
     } as any);
 
-    // Извлекаем список юзеров, учитывая возможный PascalCase в ответе
-    const users = (usersData as any)?.Items || (usersData as any)?.items || [];
+    const { mutateAsync: createArtist, isPending } = usePostApiAdminArtists();
 
-    // 3. Загрузка файлов (Паттерн Временной Зоны)
-    const { mutateAsync: uploadFile, isPending: isUploading } = usePostApiFilesUpload();
+    // Извлекаем айтемы (учитываем, что они в корне объекта)
+    const foundUsers = (usersData as any)?.items ?? [];
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'avatarUrl' | 'bannerUrl') => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    const handleSelectUser = (user: any) => {
+        setValue('ownerEmail', user.email, { shouldValidate: true });
+        setValue('ownerUserId', user.id, { shouldValidate: true });
+        clearErrors(['ownerEmail', 'ownerUserId']);
+        setIsDropdownOpen(false);
+        setSearchQuery('');
+    };
+
+    const onSubmit = async (values: FormValues) => {
+        if (!values.ownerUserId) {
+            setError('ownerEmail', { type: 'manual', message: 'Please select a user from the results list' });
+            return;
+        }
+
+        const body = {
+            Name: values.name,
+            OwnerUserId: values.ownerUserId,
+            Bio: values.bio || "",
+            Country: values.country || "",
+            VerificationStatus: values.verificationStatus,
+        };
 
         try {
-            // Мутатор возвращает данные напрямую
-            const response = await uploadFile({ data: { file, folder: 'artists' } });
-            // Проверяем PascalCase (.Path) согласно твоим ошибкам
-            const path = (response as any).Path || (response as any).path;
+            await createArtist({ data: body } as any);
+            onSuccess();
+            onClose();
+            handleReset();
+        } catch (error: any) {
+            const status = error.response?.status;
+            const detail = error.response?.data?.detail || "";
+            const serverErrors = error.response?.data?.errors;
 
-            if (path) {
-                setValue(field, path); // Записываем temp/... в форму
+            // Проверка правила: 1 Юзер = 1 Артист
+            if (status === 400 || status === 409) {
+                // Ищем в ошибках валидации или в тексте ошибки
+                if (detail.includes('already has an artist') || serverErrors?.OwnerUserId) {
+                    setError('ownerEmail', {
+                        type: 'manual',
+                        message: 'This user already has an artist profile. Multiple artists per user are not allowed.'
+                    });
+                    return;
+                }
             }
-        } catch (err) {
-            console.error("Upload error:", err);
-            alert("Ошибка сети при загрузке. Проверьте NEXT_PUBLIC_API_URL и CORS.");
+
+            // Маппинг остальных серверных ошибок
+            if (serverErrors) {
+                Object.keys(serverErrors).forEach((field) => {
+                    const key = (field.charAt(0).toLowerCase() + field.slice(1)) as keyof FormValues;
+                    setError(key, { type: 'server', message: serverErrors[field]?.[0] });
+                });
+            } else {
+                alert(`Error: ${detail || 'Failed to create artist'}`);
+            }
         }
     };
 
-    // 4. Создание артиста
-    const { mutate: createArtist, isPending: isSaving } = usePostApiAdminArtists({
-        mutation: {
-            onSuccess: () => {
-                onSuccess();
-                handleClose();
-            },
-            onError: (error: any) => {
-                // Обработка ошибок валидации 400 Bad Request
-                if (error.response?.status === 400 && error.response.data?.errors) {
-                    const backendErrors = error.response.data.errors;
-                    Object.keys(backendErrors).forEach((field) => {
-                        // Маппим PascalCase бэкенда в camelCase формы
-                        const fieldName = (field.charAt(0).toLowerCase() + field.slice(1)) as any;
-                        setError(fieldName, { type: 'server', message: backendErrors[field][0] });
-                    });
-                } else {
-                    alert(error.response?.data?.title || "Ошибка при сохранении");
-                }
-            }
-        }
-    });
-
-    const handleClose = () => {
+    const handleReset = () => {
         reset();
-        setUserSearch('');
-        onClose();
+        setSearchQuery('');
+        setIsDropdownOpen(false);
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="modal d-block shadow" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050 }}>
+        <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050 }}>
             <div className="modal-dialog modal-lg modal-dialog-centered">
-                <div className="modal-content bg-dark border-secondary text-white">
+                <div className="modal-content bg-admin-primary border border-secondary shadow-lg text-white">
                     <div className="modal-header border-secondary p-4">
-                        <h5 className="modal-title fw-bold">Create Artist Profile</h5>
-                        <button type="button" className="btn-close btn-close-white" onClick={handleClose}></button>
+                        <h5 className="modal-title fw-bold">
+                            <span className="text-info me-2">●</span>
+                            Create New Artist
+                        </h5>
+                        <button
+                            type="button"
+                            className="btn-close btn-close-white"
+                            onClick={() => { onClose(); handleReset(); }}
+                        />
                     </div>
 
-                    <form onSubmit={handleSubmit((data) => createArtist({ data }))}>
+                    <form onSubmit={handleSubmit(onSubmit)}>
                         <div className="modal-body p-4">
-                            <div className="row g-4">
-                                <div className="col-md-7">
-                                    {/* OWNER SEARCH */}
-                                    <div className="mb-4 position-relative">
-                                        <label className="form-label small fw-bold text-secondary">OWNER (SEARCH BY EMAIL)</label>
-                                        <input
-                                            type="text"
-                                            className={`form-control bg-transparent border-secondary text-white ${errors.ownerUserId ? 'is-invalid' : ''}`}
-                                            placeholder="Type email to search..."
-                                            value={userSearch}
-                                            onChange={e => setUserSearch(e.target.value)}
-                                        />
-                                        {/* Dropdown результатов */}
-                                        {userSearch.length > 2 && users.length > 0 && (
-                                            <div className="list-group position-absolute w-100 shadow-lg mt-1" style={{ zIndex: 1100 }}>
-                                                {users.map((user: any) => (
-                                                    <button
-                                                        key={user.Id || user.id} type="button"
-                                                        className={`list-group-item list-group-item-action bg-secondary text-white border-dark ${ownerUserId === (user.Id || user.id) ? 'active bg-primary' : ''}`}
-                                                        onClick={() => {
-                                                            setValue('ownerUserId', user.Id || user.id);
-                                                            setUserSearch(user.Email || user.email);
-                                                        }}
-                                                    >
-                                                        {user.DisplayName || user.displayName} <small className="opacity-50">({user.Email || user.email})</small>
-                                                    </button>
-                                                ))}
-                                            </div>
+
+                            {/* Artist Name */}
+                            <div className="mb-4">
+                                <label className="form-label admin-text small fw-bold text-uppercase">Artist Name *</label>
+                                <input
+                                    type="text"
+                                    className={`form-control admin-login__input ${errors.name ? 'is-invalid' : ''}`}
+                                    placeholder="e.g. The Rock Band"
+                                    {...register('name', { required: 'Artist name is required' })}
+                                />
+                                {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
+                            </div>
+
+                            {/* Owner Search */}
+                            <div className="mb-4 position-relative">
+                                <label className="form-label admin-text small fw-bold text-uppercase">Owner Email (Linked User) *</label>
+                                <div className="input-group">
+                                    <input
+                                        type="text"
+                                        autoComplete="off"
+                                        className={`form-control admin-login__input ${errors.ownerEmail ? 'border-danger' : ''}`}
+                                        placeholder="Start typing email to search user..."
+                                        {...register('ownerEmail', {
+                                            onChange: (e) => {
+                                                setSearchQuery(e.target.value);
+                                                setIsDropdownOpen(true);
+                                                setValue('ownerUserId', ''); // Сброс ID при изменении
+                                            }
+                                        })}
+                                    />
+                                </div>
+
+                                {/* Красивое сообщение об ошибке (например, если юзер уже занят) */}
+                                {errors.ownerEmail && (
+                                    <div className="text-danger small mt-2 fw-medium d-flex align-items-center">
+                                        <span className="me-1">⚠️</span> {errors.ownerEmail.message}
+                                    </div>
+                                )}
+
+                                {/* Dropdown результатов */}
+                                {isDropdownOpen && searchQuery.length > 2 && (
+                                    <div className="list-group position-absolute w-100 shadow-lg z-3 mt-1" style={{ maxHeight: '250px', overflowY: 'auto', border: '1px solid #444' }}>
+                                        {isSearching ? (
+                                            <div className="list-group-item bg-dark text-info border-secondary small">Searching users...</div>
+                                        ) : foundUsers.length > 0 ? (
+                                            foundUsers.map((user: any) => (
+                                                <button
+                                                    key={user.id}
+                                                    type="button"
+                                                    className="list-group-item list-group-item-action bg-dark text-white border-secondary small py-2"
+                                                    onClick={() => handleSelectUser(user)}
+                                                >
+                                                    <div className="fw-bold">{user.firstName || 'User'}</div>
+                                                    <div className="text-secondary small">{user.email}</div>
+                                                </button>
+                                            ))
+                                        ) : (
+                                            <div className="list-group-item bg-dark text-danger border-secondary small">No users found for "{searchQuery}"</div>
                                         )}
-                                        {errors.ownerUserId && <div className="invalid-feedback">{errors.ownerUserId.message}</div>}
                                     </div>
+                                )}
+                                <input type="hidden" {...register('ownerUserId')} />
+                            </div>
 
-                                    <div className="mb-4">
-                                        <label className="form-label small fw-bold text-secondary">ARTIST NAME</label>
-                                        <input
-                                            {...register('name', { required: 'Имя обязательно' })}
-                                            className={`form-control bg-transparent border-secondary text-white ${errors.name ? 'is-invalid' : ''}`}
-                                        />
-                                        {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
-                                    </div>
-
-                                    <div className="mb-0">
-                                        <label className="form-label small fw-bold text-secondary">BIOGRAPHY</label>
-                                        <textarea
-                                            {...register('bio')}
-                                            className="form-control bg-transparent border-secondary text-white" rows={4}
-                                        />
-                                    </div>
+                            <div className="row">
+                                <div className="col-md-6 mb-4">
+                                    <label className="form-label admin-text small fw-bold text-uppercase">Country</label>
+                                    <input
+                                        type="text"
+                                        className="form-control admin-login__input"
+                                        placeholder="Ukraine"
+                                        {...register('country')}
+                                    />
                                 </div>
 
-                                <div className="col-md-5">
-                                    {/* FILES */}
-                                    <div className="mb-4">
-                                        <label className="form-label small fw-bold text-secondary">AVATAR</label>
-                                        <input type="file" className="form-control form-control-sm bg-transparent border-secondary text-white"
-                                               accept="image/*" onChange={e => handleFileUpload(e, 'avatarUrl')} />
-                                        {avatarUrl && <div className="text-success small mt-1">✓ Image uploaded to temp</div>}
-                                    </div>
-
-                                    <div className="mb-4">
-                                        <label className="form-label small fw-bold text-secondary">BANNER</label>
-                                        <input type="file" className="form-control form-control-sm bg-transparent border-secondary text-white"
-                                               accept="image/*" onChange={e => handleFileUpload(e, 'bannerUrl')} />
-                                    </div>
-
-                                    <div className="mb-0">
-                                        <label className="form-label small fw-bold text-secondary">VERIFICATION STATUS</label>
-                                        <select
-                                            {...register('verificationStatus')}
-                                            className="form-select bg-transparent border-secondary text-white"
-                                        >
-                                            <option value={VerificationStatus.None} className="bg-dark text-white">None</option>
-                                            <option value={VerificationStatus.Pending} className="bg-dark text-white">Pending</option>
-                                            <option value={VerificationStatus.Verified} className="bg-dark text-white">Verified</option>
-                                        </select>
-                                    </div>
+                                <div className="col-md-6 mb-4">
+                                    <label className="form-label admin-text small fw-bold text-uppercase">Status</label>
+                                    <select className="form-select admin-login__input text-white" {...register('verificationStatus')}>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Verified">Verified</option>
+                                        <option value="Rejected">Rejected</option>
+                                    </select>
                                 </div>
+                            </div>
+
+                            <div className="mb-0">
+                                <label className="form-label admin-text small fw-bold text-uppercase">Biography</label>
+                                <textarea
+                                    className="form-control admin-login__input h-auto py-3"
+                                    rows={3}
+                                    placeholder="Write something about the artist..."
+                                    {...register('bio')}
+                                />
                             </div>
                         </div>
 
-                        <div className="modal-footer border-secondary p-4">
-                            <button type="button" className="btn btn-outline-secondary px-4" onClick={handleClose}>Cancel</button>
+                        <div className="modal-footer border-0 p-4">
+                            <button
+                                type="button"
+                                className="btn btn-admin-dark px-4 shadow-none"
+                                onClick={() => { onClose(); handleReset(); }}
+                            >
+                                Cancel
+                            </button>
                             <button
                                 type="submit"
-                                className="btn btn-primary px-5 fw-bold"
-                                disabled={isSaving || isUploading || !ownerUserId}
+                                className="btn btn-primary px-5 fw-bold shadow-sm"
+                                disabled={isPending || isSubmitting}
                             >
-                                {isSaving ? 'Creating...' : 'Create Artist'}
+                                {isPending ? (
+                                    <><span className="spinner-border spinner-border-sm me-2" />Creating...</>
+                                ) : 'Create Artist'}
                             </button>
                         </div>
                     </form>

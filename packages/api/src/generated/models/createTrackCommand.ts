@@ -24,5 +24,7 @@ export interface CreateTrackCommand {
   genreIds?: string[] | null;
   /** @nullable */
   moodIds?: string[] | null;
+  /** @nullable */
+  isrc?: string | null;
   requiredPermission?: AppPermission;
 }

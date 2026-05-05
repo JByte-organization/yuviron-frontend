@@ -19,11 +19,13 @@ import type {
 
 import type {
   AddTeamMemberCommand,
+  ArtistAutocompleteDto,
   ArtistDetailsDto,
   ArtistListItemDtoPaginatedList,
   ArtistTeamMemberDto,
   CreateArtistCommand,
   CreateArtistResponse,
+  GetApiAdminArtistsAutocompleteParams,
   GetApiAdminArtistsParams,
   UpdateArtistCommand,
   UpdateTeamMemberRoleCommand,
@@ -1165,3 +1167,203 @@ export const useDeleteApiAdminArtistsIdTeamUserId = <
     getDeleteApiAdminArtistsIdTeamUserIdMutationOptions(options),
   );
 };
+export type getApiAdminArtistsAutocompleteResponse200TextPlain = {
+  data: ArtistAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminArtistsAutocompleteResponse200ApplicationJson = {
+  data: ArtistAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminArtistsAutocompleteResponse200TextJson = {
+  data: ArtistAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminArtistsAutocompleteResponseSuccess = (
+  | getApiAdminArtistsAutocompleteResponse200TextPlain
+  | getApiAdminArtistsAutocompleteResponse200ApplicationJson
+  | getApiAdminArtistsAutocompleteResponse200TextJson
+) & {
+  headers: Headers;
+};
+export type getApiAdminArtistsAutocompleteResponse =
+  getApiAdminArtistsAutocompleteResponseSuccess;
+
+export const getGetApiAdminArtistsAutocompleteUrl = (
+  params?: GetApiAdminArtistsAutocompleteParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/admin/artists/autocomplete?${stringifiedParams}`
+    : `/api/admin/artists/autocomplete`;
+};
+
+export const getApiAdminArtistsAutocomplete = async (
+  params?: GetApiAdminArtistsAutocompleteParams,
+  options?: RequestInit,
+): Promise<getApiAdminArtistsAutocompleteResponse> => {
+  return customInstance<getApiAdminArtistsAutocompleteResponse>(
+    getGetApiAdminArtistsAutocompleteUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetApiAdminArtistsAutocompleteInfiniteQueryKey = (
+  params?: GetApiAdminArtistsAutocompleteParams,
+) => {
+  return [
+    "infinite",
+    `/api/admin/artists/autocomplete`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetApiAdminArtistsAutocompleteQueryKey = (
+  params?: GetApiAdminArtistsAutocompleteParams,
+) => {
+  return [
+    `/api/admin/artists/autocomplete`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetApiAdminArtistsAutocompleteInfiniteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminArtistsAutocompleteParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetApiAdminArtistsAutocompleteInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>
+  > = ({ signal }) =>
+    getApiAdminArtistsAutocomplete(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetApiAdminArtistsAutocompleteInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>
+>;
+export type GetApiAdminArtistsAutocompleteInfiniteQueryError = unknown;
+
+export function useGetApiAdminArtistsAutocompleteInfinite<
+  TData = Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminArtistsAutocompleteParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetApiAdminArtistsAutocompleteInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<
+    TData,
+    TError
+  > & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiAdminArtistsAutocompleteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminArtistsAutocompleteParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiAdminArtistsAutocompleteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>
+  > = ({ signal }) =>
+    getApiAdminArtistsAutocomplete(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetApiAdminArtistsAutocompleteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>
+>;
+export type GetApiAdminArtistsAutocompleteQueryError = unknown;
+
+export function useGetApiAdminArtistsAutocomplete<
+  TData = Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminArtistsAutocompleteParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminArtistsAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetApiAdminArtistsAutocompleteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

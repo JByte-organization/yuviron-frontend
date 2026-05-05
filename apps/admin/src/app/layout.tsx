@@ -1,13 +1,16 @@
-import { QueryProvider } from '@/app/providers/QueryProvider';
+import { ApiClientProvider } from './providers/ApiClientProvider';
+import { QueryProvider } from './providers/QueryProvider';
 import "@repo/ui/styles";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="en">
+        <html>
         <body>
-        <QueryProvider>
-            {children}
-        </QueryProvider>
+        <ApiClientProvider>      {/* ← должен быть снаружи QueryProvider */}
+            <QueryProvider>
+                {children}
+            </QueryProvider>
+        </ApiClientProvider>
         </body>
         </html>
     );

@@ -3,54 +3,60 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePostApiAuthLogin } from '@repo/api';
+import { useSessionStore } from '@/entities/session/model/store';
 
 export const LoginForm = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const router = useRouter();
+    const setAccessToken = useSessionStore((state) => state.setAccessToken);
 
     const { mutate, isPending } = usePostApiAuthLogin({
         mutation: {
             onSuccess: (response: any) => {
-                const data = response?.data || response;
-                const token = data?.token;
-                const permissions = data?.permissions;
-
-                console.log('Token received:', token);
+                const data = response?.data ?? response;
+                const token = data?.token; // Бэкенд прислал именно "token"
 
                 if (token) {
-                    // токен для Mutator
-                    localStorage.setItem('auth_token', token);
-
-                    // права
-                    localStorage.setItem('user_permissions', JSON.stringify(permissions));
-
+                    setAccessToken(token); // Сохраняем в Zustand [cite: 897, 1418]
                     router.push('/users');
-                } else {
-                    alert('Ошибка: Токен не найден в ответе сервера.');
                 }
+
+                // if (!token) {
+                //     setErrorMessage('Ошибка: токен не найден в ответе сервера.');
+                //     return;
+                // }
+
+                // Храним ТОЛЬКО в Zustand — не в localStorage
+                setAccessToken(token);
+                router.push('/users');
             },
-            onError: (error) => {
-                console.error('Ошибка мутации!', error);
-            }
-        }
+            onError: (error: any) => {
+                const message =
+                    error?.message ??
+                    error?.title ??
+                    'Неверный email или пароль.';
+                setErrorMessage(message);
+            },
+        },
     });
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Кнопка нажата! Данные формы:', { email, password });
-
-        mutate({
-            data: {
-                email: email,
-                password: password
-            }
-        });
+        setErrorMessage(null);
+        mutate({ data: { email, password } });
     };
 
     return (
         <form onSubmit={handleLogin}>
+            {errorMessage && (
+                <div className="alert alert-danger py-2 mb-3 small" role="alert">
+                    {errorMessage}
+                </div>
+            )}
+
             <div className="mb-4">
                 <label htmlFor="email" className="form-label admin-login__form-label mb-2">
                     Email Address
@@ -90,7 +96,6 @@ export const LoginForm = () => {
                 </div>
             </div>
 
-            {/* Заменили <a> на <button type="submit"> для работы формы */}
             <button
                 type="submit"
                 className="btn btn-primary py-3 w-100 mb-4 fw-bold"

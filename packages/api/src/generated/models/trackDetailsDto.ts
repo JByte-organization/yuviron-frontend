@@ -23,6 +23,8 @@ export interface TrackDetailsDto {
   coverUrl?: string | null;
   /** @nullable */
   audioStorageKey?: string | null;
+  /** @nullable */
+  hlsPlaylistUrl?: string | null;
   playCount?: number;
   visibilityStatus?: VisibilityStatus;
   createdAt?: string;

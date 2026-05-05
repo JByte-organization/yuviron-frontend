@@ -1,12 +1,15 @@
+@import "bootstrap-icons/font/bootstrap-icons.css";
 @import "./abstract/variables";
 @import "./abstract/typography";
 
-
-
 $primary: $cyan;
+$danger: $red;
 $body-bg: $black;
 
 @import "bootstrap/scss/bootstrap";
 
 @import "./components/admin";
 @import "./components/client";
+@import "./components/layout";
+@import "./components/home";
+@import "./components/favorites";

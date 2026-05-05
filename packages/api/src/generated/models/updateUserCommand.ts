@@ -17,7 +17,7 @@ export interface UpdateUserCommand {
   accountState?: AccountState;
   acceptMarketing?: boolean;
   /** @nullable */
-  displayName?: string | null;
+  firstName?: string | null;
   dateOfBirth?: string;
   gender?: Gender;
   /** @nullable */

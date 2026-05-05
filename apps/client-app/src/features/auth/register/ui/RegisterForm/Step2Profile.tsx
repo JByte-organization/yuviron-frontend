@@ -112,7 +112,7 @@ export const Step2Profile = () => {
 
             <div className="client-register-profile-form__logo">
                 <img
-                    src="/Logo.svg"
+                    src="/logo.svg"
                     alt="LumiTune"
                     className="client-register-profile-form__logo-image"
                 />

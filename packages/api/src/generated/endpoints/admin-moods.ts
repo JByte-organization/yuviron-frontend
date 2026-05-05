@@ -20,8 +20,10 @@ import type {
 import type {
   CreateMoodCommand,
   CreateMoodResponse,
+  GetApiAdminMoodsAutocompleteParams,
   GetApiAdminMoodsParams,
   GetMoodByIdDto,
+  MoodAutocompleteDto,
   MoodDtoPaginatedList,
   UpdateMoodCommand,
 } from "../models";
@@ -676,3 +678,203 @@ export const useDeleteApiAdminMoodsId = <
 > => {
   return useMutation(getDeleteApiAdminMoodsIdMutationOptions(options));
 };
+export type getApiAdminMoodsAutocompleteResponse200TextPlain = {
+  data: MoodAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminMoodsAutocompleteResponse200ApplicationJson = {
+  data: MoodAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminMoodsAutocompleteResponse200TextJson = {
+  data: MoodAutocompleteDto[];
+  status: 200;
+};
+
+export type getApiAdminMoodsAutocompleteResponseSuccess = (
+  | getApiAdminMoodsAutocompleteResponse200TextPlain
+  | getApiAdminMoodsAutocompleteResponse200ApplicationJson
+  | getApiAdminMoodsAutocompleteResponse200TextJson
+) & {
+  headers: Headers;
+};
+export type getApiAdminMoodsAutocompleteResponse =
+  getApiAdminMoodsAutocompleteResponseSuccess;
+
+export const getGetApiAdminMoodsAutocompleteUrl = (
+  params?: GetApiAdminMoodsAutocompleteParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/admin/moods/autocomplete?${stringifiedParams}`
+    : `/api/admin/moods/autocomplete`;
+};
+
+export const getApiAdminMoodsAutocomplete = async (
+  params?: GetApiAdminMoodsAutocompleteParams,
+  options?: RequestInit,
+): Promise<getApiAdminMoodsAutocompleteResponse> => {
+  return customInstance<getApiAdminMoodsAutocompleteResponse>(
+    getGetApiAdminMoodsAutocompleteUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetApiAdminMoodsAutocompleteInfiniteQueryKey = (
+  params?: GetApiAdminMoodsAutocompleteParams,
+) => {
+  return [
+    "infinite",
+    `/api/admin/moods/autocomplete`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetApiAdminMoodsAutocompleteQueryKey = (
+  params?: GetApiAdminMoodsAutocompleteParams,
+) => {
+  return [
+    `/api/admin/moods/autocomplete`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetApiAdminMoodsAutocompleteInfiniteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminMoodsAutocompleteParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetApiAdminMoodsAutocompleteInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>
+  > = ({ signal }) =>
+    getApiAdminMoodsAutocomplete(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetApiAdminMoodsAutocompleteInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>
+>;
+export type GetApiAdminMoodsAutocompleteInfiniteQueryError = unknown;
+
+export function useGetApiAdminMoodsAutocompleteInfinite<
+  TData = Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminMoodsAutocompleteParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetApiAdminMoodsAutocompleteInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<
+    TData,
+    TError
+  > & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getGetApiAdminMoodsAutocompleteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminMoodsAutocompleteParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiAdminMoodsAutocompleteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>
+  > = ({ signal }) =>
+    getApiAdminMoodsAutocomplete(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetApiAdminMoodsAutocompleteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>
+>;
+export type GetApiAdminMoodsAutocompleteQueryError = unknown;
+
+export function useGetApiAdminMoodsAutocomplete<
+  TData = Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>,
+  TError = unknown,
+>(
+  params?: GetApiAdminMoodsAutocompleteParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getApiAdminMoodsAutocomplete>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetApiAdminMoodsAutocompleteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

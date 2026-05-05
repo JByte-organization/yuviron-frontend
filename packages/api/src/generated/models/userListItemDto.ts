@@ -11,7 +11,7 @@ export interface UserListItemDto {
   /** @nullable */
   email?: string | null;
   /** @nullable */
-  displayName?: string | null;
+  firstName?: string | null;
   /** @nullable */
   avatarUrl?: string | null;
   accountState?: AccountState;

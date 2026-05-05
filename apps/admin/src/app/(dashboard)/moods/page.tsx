@@ -1,7 +1,5 @@
-export default function MoodsPage() {
-    return (
-        <div>
-            <h1>Страница настроения</h1>
-        </div>
-    );
+import { MoodsPage } from '@/views/moods/ui/MoodsPage';
+
+export default function Page() {
+    return <MoodsPage />;
 }
