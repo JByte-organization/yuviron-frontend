@@ -44,7 +44,7 @@ export const Step1Details = () => {
 
             <div className="client-register-details-form__logo">
                 <img
-                    src="/Logo.svg"
+                    src="/logo.svg"
                     alt="LumiTune"
                     className="client-register-details-form__logo-image"
                 />

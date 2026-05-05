@@ -1,7 +1,5 @@
-export default function PlaylistsPage() {
-    return (
-        <div>
-            <h1>Страница плейлистов</h1>
-        </div>
-    );
+import { PlaylistsPage } from '@/views/playlists/ui/PlaylistsPage';
+
+export default function Page() {
+    return <PlaylistsPage />;
 }

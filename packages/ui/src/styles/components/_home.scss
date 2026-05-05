@@ -1,0 +1,886 @@
+// views/home styles
+@import "../abstract/variables";
+
+// ─── HomePage wrapper ────────────────────────────────────
+.home-page {
+  padding: 1rem 1.25rem;
+
+  @media (min-width: 768px) {
+    padding: 1.5rem 2rem;
+  }
+}
+
+
+// ─── SectionHeader ───────────────────────────────────────
+.section-header {
+  &__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: $client-text;
+  }
+
+  &__accent {
+    color: $client-accent;
+  }
+
+  &__nav-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+
+    &:hover {
+      border-color: $client-accent;
+      color: $client-accent;
+    }
+  }
+}
+
+// ─── HeroBannerSection ───────────────────────────────────
+.hero-banner-section {
+  &__slide {
+    height: 260px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(to top, $client-bg, transparent);
+  }
+
+  &__dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  &__dot {
+    height: 8px;
+    border-radius: 999px;
+    border: none;
+    background: $client-border;
+    transition: all 0.3s ease;
+    padding: 0;
+
+    &--active {
+      width: 20px;
+      background: $client-accent;
+    }
+
+    &:not(&--active) {
+      width: 8px;
+    }
+  }
+}
+
+// ─── MoodSection ─────────────────────────────────────────
+.mood-section {
+  &__scroll {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  &__filter-btn {
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 6px;
+    border: 1px solid $client-border;
+    background: $client-surface;
+    color: $client-text-muted;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s ease;
+
+    &:hover {
+      border-color: $client-accent;
+      color: $client-text;
+    }
+  }
+
+  &__dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    min-width: 120px;
+    background: $client-surface-2;
+    border: 1px solid $client-border;
+    border-radius: 8px;
+    padding: 4px 0;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  &__dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 14px;
+    border: none;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    transition: 0.15s ease;
+
+    &:hover, &--active {
+      color: $client-accent;
+    }
+  }
+}
+
+// ─── MoodCard ─────────────────────────────────────────────
+.mood-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  min-width: 80px;
+  text-align: center;
+
+  &__circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid $client-border;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+
+    img, i { color: $client-text-muted; font-size: 28px; }
+  }
+
+  &__name {
+    font-size: 13px;
+    font-weight: 500;
+    color: $client-text-muted;
+    transition: color 0.2s ease;
+  }
+
+  &--active {
+    .mood-card__circle {
+      border-color: $client-accent;
+      background: rgba(0, 166, 255, 0.12);
+
+      i { color: $client-accent; }
+    }
+
+    .mood-card__name {
+      color: $client-accent;
+    }
+  }
+}
+
+
+// ─── AlbumCard ────────────────────────────────────────────
+.album-card {
+  cursor: pointer;
+  min-width: 0;
+
+  &__cover {
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: $client-text;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__artist {
+    font-size: 12px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  &__tracks {
+    font-size: 11px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  // Мобильный горизонтальный вариант
+  &--horizontal {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid $client-border;
+
+    .album-card__cover {
+      flex-shrink: 0;
+      width: 52px;
+      height: 52px;
+      aspect-ratio: unset;
+      margin-bottom: 0;
+    }
+
+    .album-card__info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .album-card__actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+  }
+
+  &__action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: 0.2s ease;
+
+    &--outline {
+      border: 1px solid $client-border;
+      background: transparent;
+      color: $client-text;
+
+      &:hover { border-color: $client-accent; color: $client-accent; }
+    }
+
+    &--play {
+      border: none;
+      background: $client-accent;
+      color: $white;
+
+      &:hover { background: $client-accent-hover; }
+    }
+  }
+}
+
+// ─── ArtistCard ───────────────────────────────────────────
+.artist-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-align: center;
+
+  &__avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(20%);
+    }
+  }
+
+  &__name {
+    font-size: 14px;
+    font-weight: 600;
+    color: $client-text;
+    margin: 0;
+  }
+
+  &__listeners {
+    font-size: 12px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+}
+
+.show-all-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  transition: 0.2s ease;
+
+  // ─── Коло ─────────────────────────────────────────────
+  &__circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;        // ← рівне коло
+    border: 1px solid $client-border;
+    background: $client-surface;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+
+    i {
+      font-size: 22px;
+      color: $client-text-muted;
+      transition: color 0.2s ease;
+    }
+  }
+
+  // ─── Текст під колом ──────────────────────────────────
+  &__label {
+    font-size: 13px;
+    color: $client-text-muted;
+    transition: color 0.2s ease;
+  }
+
+  &:hover {
+    text-decoration: none;
+
+    .show-all-btn__circle {
+      border-color: $client-accent;
+    }
+
+    i, .show-all-btn__label {
+      color: $client-accent;
+    }
+  }
+}
+
+// ─── Горизонтальный скролл (общий) ───────────────────────
+.h-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+// ─── Skeleton ────────────────────────────────────────────
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.skeleton {
+  background: $client-surface-2;
+  animation: skeleton-pulse 1.5s ease infinite;
+  border-radius: 6px;
+
+  &--circle { border-radius: 50%; }
+  &--rounded { border-radius: 8px; }
+}
+
+// ══════════════════════════════════════════════════════════
+// MOOD SECTION
+// ══════════════════════════════════════════════════════════
+.mood-section {
+
+  // ─── Фільтр дропдаун ──────────────────────────────────
+  &__filter-wrap {
+    position: relative;
+  }
+
+  &__filter-btn {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid $client-border;
+    background: $client-surface;
+    color: $client-text-muted;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    white-space: nowrap;
+
+    i { font-size: 11px; }
+
+    &:hover {
+      border-color: $client-accent;
+      color: $client-text;
+    }
+  }
+
+  &__dropdown-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+  }
+
+  &__dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    min-width: 130px;
+    background: $client-surface-2;
+    border: 1px solid $client-border;
+    border-radius: 10px;
+    padding: 4px;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  &__dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.15s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: $client-text;
+    }
+
+    &--active {
+      color: $client-accent;
+      background: rgba(0, 166, 255, 0.08);
+    }
+  }
+
+  // ─── Слайдер ──────────────────────────────────────────
+  // Bootstrap row flex-nowrap + overflow-x для скролу на mobile
+  &__slider {
+    overflow-x: auto;
+    padding-bottom: 8px;
+    cursor: grab;
+    user-select: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+    &:active { cursor: grabbing; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// MOOD CARD
+// ══════════════════════════════════════════════════════════
+.mood-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  text-align: center;
+  padding: 0;             // відступи між картками — через Bootstrap g-* на row
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  // ─── Обгортка — задає квадратні пропорції ─────────────
+  // width: 100% від колонки, aspect-ratio робить висоту = ширині
+  &__circle-wrap {
+    width: 100%;
+    max-height: 200px;
+    max-width: 200px;
+    aspect-ratio: 1 / 1;
+  }
+
+  &__circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    padding: 2px;
+
+    background: linear-gradient(
+                    145deg,
+                    rgba(0, 166, 255, 0.65) 0%,
+                    rgba(0, 80, 180, 0.25)  50%,
+                    rgba(0, 166, 255, 0.12) 100%
+    );
+
+    box-shadow: none;
+    transition: background 0.25s ease;
+  }
+
+  // ─── Внутрішнє коло — темно-синій радіальний градієнт ─
+  &__circle-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(
+                    circle at 35% 30%,
+                    rgba(0, 55, 115, 0.92) 0%,
+                    rgba(0, 20, 55, 0.96)  55%,
+                    rgba(0, 8,  25, 1)     100%
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+
+    // Тонкий блик зверху-зліва
+    &::after {
+      content: '';
+      position: absolute;
+      top: 8%;
+      left: 12%;
+      width: 38%;
+      height: 28%;
+      border-radius: 50%;
+      background: radial-gradient(
+                      circle,
+                      rgba(100, 180, 255, 0.14) 0%,
+                      transparent 70%
+      );
+      pointer-events: none;
+    }
+  }
+
+  &__icon {
+    width: 45%;
+    height: 45%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 100, 200, 0.3));
+  }
+
+  // ─── Назва ────────────────────────────────────────────
+  &__name {
+    font-size: $h6-font-size;
+    font-weight: 600;
+    color: $client-text-muted;
+    transition: color 0.2s ease;
+  }
+
+  // ─── Hover ────────────────────────────────────────────
+  &:hover {
+    .mood-card__circle {
+      background: linear-gradient(
+                      145deg,
+                      rgba(0, 166, 255, 0.85) 0%,
+                      rgba(0, 80,  180, 0.45) 50%,
+                      rgba(0, 166, 255, 0.25) 100%
+      );
+    }
+
+    .mood-card__name {
+      color: $client-text;
+    }
+  }
+
+  // ─── Активний ─────────────────────────────────────────
+  &--active {
+    .mood-card__circle {
+      background: linear-gradient(
+                      145deg,
+                      rgba(0, 166, 255, 1)    0%,
+                      rgba(0, 100, 220, 0.65) 50%,
+                      rgba(0, 166, 255, 0.35) 100%
+      );
+    }
+
+    .mood-card__circle-inner {
+      background: radial-gradient(
+                      circle at 35% 30%,
+                      rgba(0, 75,  155, 0.96) 0%,
+                      rgba(0, 28,  75,  0.98) 55%,
+                      rgba(0, 8,   30,  1)    100%
+      );
+    }
+
+    .mood-card__name {
+      color: $client-accent;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// FOOTER
+// ══════════════════════════════════════════════════════════
+.client-footer {
+  background: $client-surface;
+  border-top: 1px solid $client-border;
+  margin-top: auto;
+  border-radius: 20px;
+
+  // ─── Лого ─────────────────────────────────────────────
+  &__logo {
+    width: auto;
+    height: auto;
+    max-width: 200px;
+    object-fit: contain;
+  }
+
+  // ─── Контакти ─────────────────────────────────────────
+  &__contact-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: $client-text;
+    margin: 0;
+  }
+
+  &__contact-icon {
+    color: $client-accent;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  // ─── Соцмережі ────────────────────────────────────────
+  &__social-link {
+    color: $client-text;
+    font-size: 18px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $client-accent;
+    }
+  }
+
+  // ─── Розділювач ───────────────────────────────────────
+  &__divider {
+    border-color: $client-border;
+    opacity: 1;
+    margin: 0;
+  }
+
+  // ─── Нижні лінки ──────────────────────────────────────
+  &__bottom-link {
+    font-size: 13px;
+    color: $client-text-muted;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      color: $client-text;
+    }
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// NEW RELEASES — слайдер
+// ══════════════════════════════════════════════════════════
+.new-releases-slider {
+  scrollbar-width: none;
+  padding-bottom: 8px;
+
+  &::-webkit-scrollbar { display: none; }
+
+  // Фіксуємо мінімальну ширину колонки на мобайлі
+  // щоб bootstrap col-6 не стискався нижче ніж треба
+  .col-6 {
+    min-width: 160px;
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// TRACK CARD
+// ══════════════════════════════════════════════════════════
+.track-card {
+  cursor: pointer;
+  border-radius: 12px;
+  background: $client-surface-2;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  &__cover {
+    width: 100%;
+    height: 180px;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+  }
+
+  &:hover &__cover img {
+    transform: scale(1.04);
+  }
+
+  // ─── Текстовий блок ───────────────────────────────────
+  &__info {
+    padding: 10px 12px 12px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $client-text;
+    text-decoration: none;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $client-text;
+      text-decoration: underline;
+    }
+  }
+
+  &__artist {
+    font-size: 12px;
+    color: $client-text-muted;
+    text-decoration: none;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $client-text;
+      text-decoration: underline;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// TOP TRACKS — слайдер
+// ══════════════════════════════════════════════════════════
+.top-tracks-slider {
+  scrollbar-width: none;
+  padding-bottom: 8px;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .col-6 {
+    min-width: 160px;
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// MEDIA CARD — базовий компонент для AlbumCard і PlaylistCard
+// ══════════════════════════════════════════════════════════
+.media-card {
+  cursor: pointer;
+  border-radius: 12px;
+  background: $client-surface-2;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  &__cover {
+    width: 100%;
+    height: 180px;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+  }
+
+  &:hover &__cover img {
+    transform: scale(1.04);
+  }
+
+  &__info {
+    padding: 10px 12px 12px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $client-text;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    color: $client-text-muted;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// LIBRARY PAGE
+// ══════════════════════════════════════════════════════════
+.library-page {
+  padding: 1.5rem 2rem 2rem;
+
+  &__title {
+    font-size: 32px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 32px;
+  }
+}
+
+// Слайдер — спільний для всіх секцій медіатеки
+.library-slider {
+  scrollbar-width: none;
+  padding-bottom: 8px;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .col-6 { min-width: 160px; }
+}

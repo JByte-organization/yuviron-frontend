@@ -8,11 +8,16 @@ interface BaseTableProps {
     columns: string[];
     children: React.ReactNode;
     pagination?: React.ReactNode;
+    onDeleteSelected?: () => void;
+    isAllSelected?: boolean;
+    onSelectAll?: () => void;
+    selectedCount?: number;
 }
 
-export const BaseTable = ({ title, subtitle, onNewClick, searchPlaceholder, columns, children, pagination}: BaseTableProps) => {
+export const BaseTable = ({ title, subtitle, onNewClick, searchPlaceholder, columns, children, pagination,
+                              onDeleteSelected, isAllSelected, onSelectAll, selectedCount}: BaseTableProps) => {
     return (
-        <div className="p-3 bg-admin-primary" style={{ minHeight: '100vh' }}>
+        <div className="p-3 bg-admin-primary" style={{minHeight: '100vh'}}>
             {/* Header Section */}
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div className="">
@@ -54,15 +59,18 @@ export const BaseTable = ({ title, subtitle, onNewClick, searchPlaceholder, colu
                 <table className="table table-dark table-striped table-hover mb-0 align-middle">
                     <thead className="bg-admin-primary">
                     <tr className="border-bottom border-secondary">
-                        <th className="" style={{ width: '40px' }}>
-                            <input type="checkbox" className="form-check-input bg-dark border-secondary" />
+                        <th className="px-4" style={{width: '40px'}}>
+                            <input
+                                type="checkbox"
+                                className="form-check-input bg-dark border-secondary"
+                                checked={isAllSelected}
+                                onChange={onSelectAll}
+                            />
                         </th>
                         {columns.map((col, idx) => (
-                            <th key={idx} className="text-white h5 fw-medium text-start">
-                                {col}
-                            </th>
+                            <th key={idx} className="text-white h5 fw-medium">{col}</th>
                         ))}
-                        <th className="text-white h5 fw-medium text-start">Action</th>
+                        <th className="text-white h5 fw-medium text-end px-4">Action</th>
                     </tr>
                     </thead>
                     <tbody>{children}</tbody>
@@ -71,9 +79,13 @@ export const BaseTable = ({ title, subtitle, onNewClick, searchPlaceholder, colu
 
             {/* Footer Section */}
             <div className="d-flex justify-content-between align-items-center mt-4">
-                <div className="pagination-container">{pagination}</div>
-                <button className="btn bg-admin-secondary admin-text rounded-3 btn-dark fw-medium py-2 px-4">
-                    Delete Selected
+                <div>{pagination}</div>
+                <button
+                    className="btn bg-admin-secondary admin-text rounded-3 btn-dark fw-medium py-2 px-4"
+                    disabled={!selectedCount}
+                    onClick={onDeleteSelected}
+                >
+                    Delete Selected {selectedCount ? `(${selectedCount})` : ''}
                 </button>
             </div>
         </div>
