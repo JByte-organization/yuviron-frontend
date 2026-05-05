@@ -1,10 +1,18 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export const RegisterForm = () => {
+    const router = useRouter();
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        router.push('/register/details');
+    };
+
     return (
-        <form className="client-register-form">
+        <form className="client-register-form" onSubmit={handleSubmit}>
             <div className="mb-4">
                 <label htmlFor="email" className="form-label client-register-form__label">
                     Електронна пошта
@@ -27,23 +35,17 @@ export const RegisterForm = () => {
 
             <div className="client-register-form__socials">
                 <button type="button" className="client-register-form__social-btn">
-                    <span className="client-register-form__social-icon client-register-form__social-icon--facebook">
-                        f
-                    </span>
+                    <span className="client-register-form__social-icon client-register-form__social-icon--facebook">f</span>
                     <span>Увійти з Facebook</span>
                 </button>
 
                 <button type="button" className="client-register-form__social-btn">
-                    <span className="client-register-form__social-icon client-register-form__social-icon--google">
-                        G
-                    </span>
+                    <span className="client-register-form__social-icon client-register-form__social-icon--google">G</span>
                     <span>Увійти з Google</span>
                 </button>
 
                 <button type="button" className="client-register-form__social-btn">
-                    <span className="client-register-form__social-icon client-register-form__social-icon--apple">
-                        
-                    </span>
+                    <span className="client-register-form__social-icon client-register-form__social-icon--apple"></span>
                     <span>Увійти з Apple</span>
                 </button>
             </div>

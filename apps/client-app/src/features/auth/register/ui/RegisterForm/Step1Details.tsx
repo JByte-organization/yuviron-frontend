@@ -1,28 +1,28 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export const Step1Details = () => {
     const [showPassword, setShowPassword] = useState(false);
+    const router = useRouter();
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        router.push('/register/profile');
+    };
 
     return (
         <div className="client-register-details-form">
             <div className="client-register-details-form__top">
-                <Link
-                    href="/register"
-                    className="client-register-details-form__back text-decoration-none"
-                >
+                <Link href="/register" className="client-register-details-form__back text-decoration-none">
                     Назад
                 </Link>
             </div>
 
             <div className="client-register-details-form__logo">
-                <img
-                    src="/Logo.svg"
-                    alt="LumiTune"
-                    className="client-register-details-form__logo-image"
-                />
+                <img src="/Logo.svg" alt="LumiTune" className="client-register-details-form__logo-image" />
             </div>
 
             <h1 className="client-register-details-form__title">Створіть профіль</h1>
@@ -32,12 +32,9 @@ export const Step1Details = () => {
                 <span className="client-register-details-form__progress-fill" />
             </div>
 
-            <form>
+            <form onSubmit={handleSubmit}>
                 <div className="mb-4">
-                    <label
-                        htmlFor="password"
-                        className="form-label client-register-details-form__label"
-                    >
+                    <label htmlFor="password" className="form-label client-register-details-form__label">
                         Пароль
                     </label>
 

@@ -1,39 +1,36 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export const ResetPasswordForm = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+    const router = useRouter();
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        router.push('/login');
+    };
 
     return (
         <div className="client-reset-form">
             <div className="client-reset-form__top">
-                <Link
-                    href="/verify-code"
-                    className="client-reset-form__back text-decoration-none"
-                >
+                <Link href="/verify-code" className="client-reset-form__back text-decoration-none">
                     Назад
                 </Link>
             </div>
 
             <div className="client-reset-form__logo">
-                <img
-                    src="/Logo.svg"
-                    alt="LumiTune"
-                    className="client-reset-form__logo-image"
-                />
+                <img src="/Logo.svg" alt="LumiTune" className="client-reset-form__logo-image" />
             </div>
 
             <h1 className="client-reset-form__title">Придумайте новий пароль</h1>
 
-            <form>
+            <form onSubmit={handleSubmit}>
                 <div className="mb-4">
-                    <label
-                        htmlFor="newPassword"
-                        className="form-label client-reset-form__label"
-                    >
+                    <label htmlFor="newPassword" className="form-label client-reset-form__label">
                         Пароль
                     </label>
 
@@ -60,10 +57,7 @@ export const ResetPasswordForm = () => {
                 </div>
 
                 <div className="mb-4">
-                    <label
-                        htmlFor="repeatPassword"
-                        className="form-label client-reset-form__label"
-                    >
+                    <label htmlFor="repeatPassword" className="form-label client-reset-form__label">
                         Повторіть пароль
                     </label>
 
@@ -97,19 +91,13 @@ export const ResetPasswordForm = () => {
                     <span>або</span>
                 </div>
 
-                <button
-                    type="button"
-                    className="btn client-reset-form__secondary w-100"
-                >
+                <button type="button" className="btn client-reset-form__secondary w-100">
                     Отримайте новий код
                 </button>
 
                 <div className="client-reset-form__bottom text-center">
                     <span>Згадали пароль?</span>
-                    <Link
-                        href="/login"
-                        className="client-reset-form__login-link text-decoration-none"
-                    >
+                    <Link href="/login" className="client-reset-form__login-link text-decoration-none">
                         Увійдіть до аккаунту
                     </Link>
                 </div>
