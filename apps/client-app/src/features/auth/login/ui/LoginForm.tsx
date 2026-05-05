@@ -26,6 +26,7 @@ const validate = (identifier: string, password: string): LoginErrors => {
     return errors;
 };
 
+
 export const LoginForm = () => {
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
