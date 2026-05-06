@@ -1,10 +1,35 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { type FormEvent, useState } from 'react';
+
+const checkLetter = (value: string) => /[A-Za-zА-Яа-яЇїІіЄєҐґ]/.test(value);
+const checkNumberOrSymbol = (value: string) => /[\d!@#$%^&*()_+\-={}[\]:;"'<>,.?/\\|`~]/.test(value);
+const checkLength = (value: string) => value.length >= 8;
 
 export const Step1Details = () => {
+    const router = useRouter();
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState<string | undefined>();
+    const [submitted, setSubmitted] = useState(false);
+
+    const hasLetter = checkLetter(password);
+    const hasNumberOrSymbol = checkNumberOrSymbol(password);
+    const hasLength = checkLength(password);
+    const isValid = hasLetter && hasNumberOrSymbol && hasLength;
+
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setSubmitted(true);
+        if (!isValid) {
+            setError('Пароль не відповідає правилам');
+            return;
+        }
+        setError(undefined);
+        router.push('/register/profile');
+    };
 
     return (
         <div className="client-register-details-form">
@@ -32,7 +57,7 @@ export const Step1Details = () => {
                 <span className="client-register-details-form__progress-fill" />
             </div>
 
-            <form>
+            <form onSubmit={handleSubmit} noValidate>
                 <div className="mb-4">
                     <label
                         htmlFor="password"
@@ -45,8 +70,13 @@ export const Step1Details = () => {
                         <input
                             id="password"
                             type={showPassword ? 'text' : 'password'}
-                            className="form-control client-register-details-form__input client-register-details-form__input--password"
+                            className={`form-control client-register-details-form__input client-register-details-form__input--password${submitted && !isValid ? ' is-invalid' : ''}`}
                             placeholder="****************"
+                            value={password}
+                            onChange={(event) => {
+                                setPassword(event.target.value);
+                                if (submitted) setError(undefined);
+                            }}
                         />
 
                         <button
@@ -61,6 +91,9 @@ export const Step1Details = () => {
                             </svg>
                         </button>
                     </div>
+                    {error && (
+                        <div className="client-register-details-form__error">{error}</div>
+                    )}
                 </div>
 
                 <div className="client-register-details-form__rules">
@@ -69,9 +102,11 @@ export const Step1Details = () => {
                     </div>
 
                     <ul className="client-register-details-form__rules-list">
-                        <li>1 літеру</li>
-                        <li>1 число або 1 спеціальний символ (наприклад, !7&#38;#)</li>
-                        <li>8 символів</li>
+                        <li className={hasLetter ? 'is-valid' : undefined}>1 літеру</li>
+                        <li className={hasNumberOrSymbol ? 'is-valid' : undefined}>
+                            1 число або 1 спеціальний символ (наприклад, !?&#)
+                        </li>
+                        <li className={hasLength ? 'is-valid' : undefined}>8 символів</li>
                     </ul>
                 </div>
 
