@@ -4,8 +4,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/shared/lib/ThemeProvider';
-import { SearchDropdown } from './SearchDropdown';
+// import { SearchDropdown } from './SearchDropdown';
 import { UserDropdown } from './UserDropdown';
+
 
 interface HeaderUser {
     id: string;
@@ -103,14 +104,14 @@ export const Header = ({ user, unreadCount = 0 }: HeaderProps) => {
                 </button>
 
                 {/* Дропдаун результатів */}
-                {showDropdown && (
-                    <SearchDropdown
-                        query={query}
-                        results={searchResults}
-                        isLoading={isSearchLoading}
-                        onClose={() => setShowDropdown(false)}
-                    />
-                )}
+                {/*{showDropdown && (*/}
+                {/*    <SearchDropdown*/}
+                {/*        query={query}*/}
+                {/*        results={searchResults}*/}
+                {/*        isLoading={isSearchLoading}*/}
+                {/*        onClose={() => setShowDropdown(false)}*/}
+                {/*    />*/}
+                {/*)}*/}
             </div>
 
             {/* ─── Праві дії ────────────────────────── */}

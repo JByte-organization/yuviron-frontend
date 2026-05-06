@@ -54,11 +54,13 @@ export const NotificationCard = ({
     const itemHref = isAlbum ? `/albums/${item.id}` : `/tracks/${item.id}`;
     const artistHref = item.artistId ? `/artists/${item.artistId}` : '#';
 
-    const typeLabel = {
+    const TYPE_LABELS: Partial<Record<typeof type, string>> = {
         new_track:        'Трек',
         new_release:      'Альбом',
         upcoming_release: 'Майбутній реліз',
-    }[type] ?? 'Трек';
+    };
+
+    const typeLabel = TYPE_LABELS[type] ?? 'Трек';
 
     return (
         <div
