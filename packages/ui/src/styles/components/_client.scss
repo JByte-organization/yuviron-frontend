@@ -1222,3 +1222,786 @@
     }
   }
 }
+
+
+// ══════════════════════════════════════════════════════════
+// TRACK PAGE
+// ══════════════════════════════════════════════════════════
+.track-page {
+  padding: 0 1.5rem 2rem;
+
+  &__subtitle {
+    font-size: 13px;
+    color: $client-text-muted;
+    margin: 0 0 12px;
+  }
+
+  &__show-more {
+    background: transparent;
+    border: none;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 12px 0;
+    transition: color 0.2s ease;
+
+    &:hover { color: $client-text; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// TRACK PAGE HEADER
+// ══════════════════════════════════════════════════════════
+.track-page-header {
+  padding: 24px 0 32px;
+
+  // ─── Обкладинка ───────────────────────────────────────
+  &__cover {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+    @media (min-width: 768px) {
+      width: 160px;
+      height: 160px;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // ─── Тип ──────────────────────────────────────────────
+  &__type {
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 8px;
+  }
+
+  // ─── Назва ────────────────────────────────────────────
+  &__title {
+    font-size: 36px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 12px;
+    line-height: 1.1;
+
+    @media (min-width: 768px) { font-size: 52px; }
+  }
+
+  // ─── Мета інфо ────────────────────────────────────────
+  &__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 14px;
+    color: $client-text-muted;
+  }
+
+  &__artist {
+    color: $client-text;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  &__dot {
+    opacity: 0.5;
+  }
+
+  // ─── Кнопки дій ───────────────────────────────────────
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  &__btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+
+    // Play — велика кругла кнопка
+    &--play {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: $client-accent;
+      color: $white;
+      font-size: 22px;
+
+      &:hover {
+        background: $client-accent-hover;
+        transform: scale(1.05);
+      }
+    }
+
+    // Іконки — прозорі
+    &--icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: $client-text-muted;
+      font-size: 22px;
+
+      &:hover { color: $client-text; }
+    }
+
+    // Активний лайк
+    &--liked {
+      color: $client-accent !important;
+    }
+  }
+}
+
+
+
+// ══════════════════════════════════════════════════════════
+// ARTIST PAGE
+// ══════════════════════════════════════════════════════════
+.artist-page {
+  padding: 0 1.5rem 2rem;
+}
+
+// ══════════════════════════════════════════════════════════
+// ARTIST PAGE HEADER
+// ══════════════════════════════════════════════════════════
+.artist-page-header {
+  padding: 24px 0 32px;
+
+  &__breadcrumb {
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 8px;
+  }
+
+  // ─── Аватар ───────────────────────────────────────────
+  &__avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+    @media (min-width: 768px) {
+      width: 130px;
+      height: 130px;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // ─── Верифікація ──────────────────────────────────────
+  &__verified {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-accent;
+    margin-bottom: 8px;
+
+    i { font-size: 14px; }
+  }
+
+  // ─── Назва ────────────────────────────────────────────
+  &__name {
+    font-size: 40px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 8px;
+    line-height: 1.1;
+
+    @media (min-width: 768px) { font-size: 56px; }
+  }
+
+  // ─── Слухачі ──────────────────────────────────────────
+  &__listeners {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  // ─── Кнопки дій ───────────────────────────────────────
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  &__btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+
+    &--play {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: $client-accent;
+      color: $white;
+      font-size: 22px;
+
+      &:hover {
+        background: $client-accent-hover;
+        transform: scale(1.05);
+      }
+    }
+
+    &--follow {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid $client-border;
+      color: $client-text-muted;
+      font-size: 18px;
+      transition: 0.2s ease;
+
+      &:hover {
+        border-color: $client-text;
+        color: $client-text;
+      }
+    }
+
+    &--following {
+      border-color: $client-accent;
+      color: $client-accent;
+
+      &:hover {
+        border-color: $client-accent-hover;
+        color: $client-accent-hover;
+      }
+    }
+
+    &--icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: $client-text-muted;
+      font-size: 22px;
+
+      &:hover { color: $client-text; }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// ARTIST MUSIC TABS
+// ══════════════════════════════════════════════════════════
+.artist-music-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  &__btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      border-color: $client-text;
+      color: $client-text;
+    }
+
+    &--active {
+      background: $white;
+      border-color: $white;
+      color: $black;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.9);
+        border-color: rgba(255, 255, 255, 0.9);
+        color: $black;
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// ARTIST ABOUT SECTION
+// ══════════════════════════════════════════════════════════
+.artist-about {
+  &__card {
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  &__banner {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 7;
+
+    @media (min-width: 768px) {
+      aspect-ratio: 16 / 6;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // Градієнт знизу
+  &__overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 32px 28px 28px;
+    background: linear-gradient(
+                    to top,
+                    rgba(0, 0, 0, 0.85) 0%,
+                    rgba(0, 0, 0, 0.4)  60%,
+                    transparent         100%
+    );
+  }
+
+  &__listeners {
+    font-size: 16px;
+    font-weight: 700;
+    color: $white;
+    margin: 0 0 12px;
+  }
+
+  &__bio {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    line-height: 1.6;
+    max-width: 600px;
+
+    // Обрізаємо довгий текст
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// Спільний клас слайдера для сторінки артиста
+.artist-slider {
+  scrollbar-width: none;
+  padding-bottom: 8px;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .col-6 { min-width: 160px; }
+}
+
+
+
+// ══════════════════════════════════════════════════════════
+// NOTIFICATIONS PAGE
+// ══════════════════════════════════════════════════════════
+.notifications-page {
+  padding: 1.5rem 2rem 2rem;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    font-size: 32px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 8px;
+  }
+
+  &__description {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+    max-width: 560px;
+    line-height: 1.6;
+  }
+
+  &__read-all-btn {
+    background: transparent;
+    border: 1px solid $client-border;
+    border-radius: 20px;
+    color: $client-text-muted;
+    font-size: 13px;
+    padding: 8px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      border-color: $client-accent;
+      color: $client-accent;
+    }
+  }
+
+  // ─── Фільтр-таби ──────────────────────────────────────
+  &__filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  &__filter-btn {
+    padding: 6px 20px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    &:hover {
+      border-color: $client-text;
+      color: $client-text;
+    }
+
+    &--active {
+      background: $white;
+      border-color: $white;
+      color: $black;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.9);
+        color: $black;
+      }
+    }
+  }
+
+  &__divider {
+    border-color: $client-border;
+    opacity: 1;
+    margin-bottom: 24px;
+  }
+
+  // ─── Групи ────────────────────────────────────────────
+  &__group {
+    margin-bottom: 32px;
+  }
+
+  &__group-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: $client-text;
+    margin-bottom: 16px;
+  }
+
+  // ─── Порожній стан ────────────────────────────────────
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0;
+    gap: 16px;
+    color: $client-text-muted;
+
+    i { font-size: 48px; }
+    p { font-size: 16px; margin: 0; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// NOTIFICATION CARD — трек/альбом
+// ══════════════════════════════════════════════════════════
+.notification-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: $client-surface;
+  border: 1px solid $client-border;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  position: relative;
+  height: 100%;
+
+  &:hover { background: $client-surface-2; }
+
+  // ─── Непрочитане ──────────────────────────────────────
+  &--unread {
+    border-color: rgba(0, 166, 255, 0.25);
+    background: rgba(0, 166, 255, 0.04);
+  }
+
+  &__unread-dot {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $client-accent;
+    flex-shrink: 0;
+  }
+
+  // ─── Обкладинка ───────────────────────────────────────
+  &__cover {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // ─── Інфо ─────────────────────────────────────────────
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $client-text;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  &__artist {
+    font-size: 12px;
+    color: $client-text-muted;
+    text-decoration: none;
+    display: block;
+
+    &:hover { color: $client-text; text-decoration: underline; }
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  &__type {
+    font-size: 11px;
+    color: $client-text-muted;
+    background: $client-surface-2;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  &__time {
+    font-size: 11px;
+    color: $client-text-muted;
+  }
+
+  &__release-date {
+    font-size: 12px;
+    color: $client-accent;
+    margin: 4px 0 0;
+  }
+
+  // ─── Кнопки дій ───────────────────────────────────────
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  &__action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    &:hover { color: $client-text; }
+
+    &--play {
+      font-size: 20px;
+      color: $client-accent;
+
+      &:hover { color: $client-accent-hover; }
+    }
+  }
+
+  &__remind-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: 0.2s ease;
+
+    &:hover {
+      border-color: $client-accent;
+      color: $client-accent;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// FRIEND REQUEST CARD
+// ══════════════════════════════════════════════════════════
+.friend-request-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: $client-surface;
+  border: 1px solid $client-border;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  position: relative;
+
+  &:hover { background: $client-surface-2; }
+
+  &--unread {
+    border-color: rgba(0, 166, 255, 0.25);
+    background: rgba(0, 166, 255, 0.04);
+  }
+
+  &__unread-dot {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $client-accent;
+  }
+
+  &__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__text {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0 0 4px;
+  }
+
+  &__name {
+    font-weight: 600;
+    color: $client-text;
+  }
+
+  &__time {
+    font-size: 12px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: $client-accent;
+      color: $client-accent;
+    }
+
+    &--added {
+      border-color: rgba(0, 166, 255, 0.3);
+      color: $client-accent;
+      cursor: default;
+    }
+  }
+}
