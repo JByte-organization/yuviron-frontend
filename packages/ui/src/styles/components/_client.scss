@@ -2005,3 +2005,183 @@
     }
   }
 }
+
+
+// ══════════════════════════════════════════════════════════
+// SEARCH PAGE
+// ══════════════════════════════════════════════════════════
+.search-page {
+  padding: 1.5rem 2rem 2rem;
+
+  &__header {
+    margin-bottom: 24px;
+  }
+
+  &__title {
+    font-size: 28px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 4px;
+  }
+
+  &__count {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  // ─── Фільтр таби ──────────────────────────────────────
+  &__filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  &__filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 18px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      border-color: $client-text;
+      color: $client-text;
+    }
+
+    &--active {
+      background: $white;
+      border-color: $white;
+      color: $black;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.9);
+        color: $black;
+      }
+
+      .search-page__filter-count {
+        background: rgba(0, 0, 0, 0.15);
+        color: $black;
+      }
+    }
+  }
+
+  &__filter-count {
+    background: $client-surface-2;
+    color: $client-text-muted;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  // ─── Секції результатів ───────────────────────────────
+  &__results {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  &__section {
+    // нічого — відступи через gap на results
+  }
+
+  &__section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: $client-text;
+    margin-bottom: 16px;
+  }
+
+  &__tracks {
+    // TrackRow вже має свої стилі
+  }
+
+  // ─── Порожній стан ────────────────────────────────────
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0;
+    gap: 12px;
+    text-align: center;
+
+    i {
+      font-size: 48px;
+      color: $client-text-muted;
+    }
+
+    p {
+      font-size: 18px;
+      font-weight: 600;
+      color: $client-text;
+      margin: 0;
+    }
+
+    span {
+      font-size: 14px;
+      color: $client-text-muted;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// GENRE CARD
+// ══════════════════════════════════════════════════════════
+.genre-card {
+  display: block;
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  position: relative;
+  aspect-ratio: 1 / 1;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.02);
+    text-decoration: none;
+  }
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+
+  &__cover {
+    width: 60%;
+    height: 60%;
+    object-fit: cover;
+    border-radius: 6px;
+    transform: rotate(20deg) translate(10%, 10%);
+    box-shadow: -4px 4px 16px rgba(0, 0, 0, 0.4);
+    display: block;
+  }
+
+  &__name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: $white;
+    background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 100%);
+  }
+}
