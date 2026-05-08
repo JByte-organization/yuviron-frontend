@@ -2,8 +2,7 @@ name: Deploy frontend dev
 
 on:
   push:
-    branches:
-      - dev
+    branches: [dev]
 
 concurrency:
   group: yuviron-dev-deploy
@@ -128,6 +127,7 @@ jobs:
     needs: detect-affected
     if: needs.detect-affected.outputs.has_apps == 'true'
     runs-on: [self-hosted, yuviron]
+    environment: dev
 
     strategy:
       fail-fast: false
@@ -154,6 +154,12 @@ jobs:
           echo "Current app: ${{ matrix.app }}"
           echo "Selective deploy mode."
 
+      - name: Docker disk usage before deploy
+        run: |
+          set -Eeuo pipefail
+          cd /opt/yuviron-server
+          python3 ./scripts/cli.py tools docker-clean --mode report
+
       - name: Preflight check
         run: |
           set -Eeuo pipefail
@@ -171,6 +177,13 @@ jobs:
           set -Eeuo pipefail
           cd /opt/yuviron-server/src/yuviron-frontend
           pnpm --filter "${{ matrix.app }}" run typecheck
+
+      # Включи обратно, когда lint станет стабильным.
+      # - name: Lint affected app
+      #   run: |
+      #     set -Eeuo pipefail
+      #     cd /opt/yuviron-server/src/yuviron-frontend
+      #     pnpm --filter "${{ matrix.app }}" run lint
 
       - name: Build affected frontend service
         run: |
@@ -197,6 +210,20 @@ jobs:
           set -Eeuo pipefail
           cd /opt/yuviron-server
           python3 ./scripts/cli.py stack smoke dev
+
+      - name: Trim Docker build cache
+        if: success()
+        run: |
+          set -Eeuo pipefail
+          cd /opt/yuviron-server
+          python3 ./scripts/cli.py tools docker-clean --mode build-cache --reserved-space 10gb --yes
+
+      - name: Docker disk usage after cleanup
+        if: always()
+        run: |
+          set -Eeuo pipefail
+          cd /opt/yuviron-server
+          python3 ./scripts/cli.py tools docker-clean --mode report
 
       - name: Show running services
         if: always()
@@ -227,6 +254,7 @@ jobs:
     needs: detect-affected
     if: needs.detect-affected.outputs.has_apps != 'true'
     runs-on: [self-hosted, yuviron]
+    environment: dev
 
     steps:
       - name: No affected frontend apps
