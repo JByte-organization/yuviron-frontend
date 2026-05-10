@@ -16,7 +16,7 @@ export interface TrackRowData {
     addedAt?: string | null;
     durationMs?: number | null;
     coverUrl?: string | null;
-    playsCount?: number; // для variant="artist"
+    playsCount?: number;
 }
 
 interface TrackRowProps {
@@ -25,6 +25,8 @@ interface TrackRowProps {
     variant?: TrackRowVariant;
     onClick?: (id: string) => void;
     onLike?: (id: string) => void;
+    onAddToPlaylist?: (id: string) => void; // ← додано
+    showAddToPlaylist?: boolean;             // ← додано
 }
 
 const formatDuration = (ms?: number | null): string => {
@@ -56,6 +58,8 @@ export const TrackRow = ({
                              variant = 'default',
                              onClick,
                              onLike,
+                             onAddToPlaylist,
+                             showAddToPlaylist = false,
                          }: TrackRowProps) => {
     const [isHovered, setIsHovered] = useState(false);
 
@@ -126,7 +130,7 @@ export const TrackRow = ({
             </div>
 
             {/* ─── Дата або прослуховування ─────────────── */}
-            <div className="track-row__context d-none d-lg-block ">
+            <div className="track-row__context d-none d-lg-block">
                 {variant === 'artist'
                     ? <span>{formatPlays(track.playsCount)}</span>
                     : <span>{formatDate(track.addedAt)}</span>
@@ -135,6 +139,7 @@ export const TrackRow = ({
 
             {/* ─── Дії + тривалість ─────────────────────── */}
             <div className="track-row__actions">
+                {/* Лайк */}
                 <button
                     className="track-row__like-btn"
                     onClick={(e) => { e.stopPropagation(); onLike?.(track.id); }}
@@ -142,9 +147,22 @@ export const TrackRow = ({
                 >
                     <i className="bi bi-heart" />
                 </button>
+
                 <span className="track-row__duration">
                     {formatDuration(track.durationMs)}
                 </span>
+
+                {/* Додати до плейліста — показується тільки якщо showAddToPlaylist */}
+                {showAddToPlaylist && (
+                    <button
+                        className="track-row__add-btn"
+                        onClick={(e) => { e.stopPropagation(); onAddToPlaylist?.(track.id); }}
+                        aria-label="Додати до плейліста"
+                        title="Додати до плейліста"
+                    >
+                        <i className="bi bi-plus-circle" />
+                    </button>
+                )}
             </div>
         </div>
     );
