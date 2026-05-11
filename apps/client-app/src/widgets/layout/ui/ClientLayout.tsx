@@ -6,6 +6,7 @@ import { Sidebar } from '@/widgets/sidebar/ui/Sidebar';
 import { Footer } from '@/widgets/footer/ui/Footer';
 import { RightSidebar } from '@/widgets/right-sidebar/ui/RightSidebar';
 import { ThemeProvider } from '@/shared/lib/ThemeProvider';
+import { PlaylistToastProvider } from '@/shared/ui/PlaylistToast';
 
 // ══════════════════════════════════════════════════════════
 // LEFT SIDEBAR CONTEXT
@@ -91,7 +92,9 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
                             collapsed ? 'client-layout__main--left-collapsed' : '',
                             isOpen    ? 'client-layout__main--right-open' : '',
                         ].filter(Boolean).join(' ')}>
-                            {children}
+                                <PlaylistToastProvider>
+                                    {children}
+                                </PlaylistToastProvider>
                             <Footer />
                         </main>
 

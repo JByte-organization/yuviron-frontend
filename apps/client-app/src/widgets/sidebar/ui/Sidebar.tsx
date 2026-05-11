@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/widgets/layout/ui/ClientLayout';
+import { CreatePlaylistModal } from '@/features/playlist/create/ui/CreatePlaylistModal';
 
 const MOCK_PLAYLISTS = [
     { id: '1', name: 'Lisa',         type: 'Плейліст', avatarUrl: 'https://picsum.photos/seed/pl1/40/40' },
@@ -14,13 +15,12 @@ const MOCK_PLAYLISTS = [
     { id: '5', name: 'Lana Del Rey', type: 'Плейліст', avatarUrl: 'https://picsum.photos/seed/pl5/40/40' },
 ];
 
-
 interface NavItemProps {
     label: string;
     icon: string;
     isActive?: boolean;
-    href?: string;        // href —  Link
-    onClick?: () => void; // onClick —  button
+    href?: string;
+    onClick?: () => void;
 }
 
 const NavItem = ({ label, icon, isActive, href, onClick }: NavItemProps) => {
@@ -47,6 +47,9 @@ export const Sidebar = () => {
     const { collapsed, setCollapsed } = useSidebar();
     const isActive = (href: string) => pathname === href;
 
+    // ─── Стан модалки ─────────────────────────────────────
+    const [createPlaylistOpen, setCreatePlaylistOpen] = useState(false);
+
     return (
         <>
             <aside className={`client-sidebar${collapsed ? ' client-sidebar--collapsed' : ''}`}>
@@ -56,28 +59,28 @@ export const Sidebar = () => {
                     <div className="client-sidebar__section">
                         <p className="client-sidebar__section-title">Меню</p>
                         <nav className="client-sidebar__nav">
-                            <NavItem href="/home" icon="home" label="Головна" isActive={isActive('/home')}/>
-                            <NavItem href="/library" icon="library" label="Моя медіатека"
-                                     isActive={isActive('/library')}/>
-                            <NavItem href="/favorites" icon="heart" label="Улюблені треки"
-                                     isActive={isActive('/favorites')}/>
-                            <NavItem icon="plus-square" label="Створити плейліст" onClick={() => {
-                            }}/>
+                            <NavItem href="/home"      icon="home"        label="Головна"          isActive={isActive('/home')} />
+                            <NavItem href="/library"   icon="library"     label="Моя медіатека"    isActive={isActive('/library')} />
+                            <NavItem href="/favorites" icon="heart"       label="Улюблені треки"   isActive={isActive('/favorites')} />
+                            <NavItem
+                                icon="plus-square"
+                                label="Створити плейліст"
+                                onClick={() => setCreatePlaylistOpen(true)}
+                            />
                         </nav>
-                        <hr/>
+                        <hr />
                     </div>
 
                     {/* Ваші плейлисти */}
-
                     <div className="client-sidebar__section">
                         <div className="client-sidebar__sub-header">
                             <p className="client-sidebar__sub-title">Ваші плейлисти</p>
-                            <Image src="/images/icons/list.svg" alt="list" width={18} height={18}/>
+                            <Image src="/images/icons/list.svg" alt="list" width={18} height={18} />
                         </div>
                         <div className="client-sidebar__playlist-list">
                             {MOCK_PLAYLISTS.map((pl) => (
                                 <Link key={pl.id} href={`/playlist/${pl.id}`} className="client-sidebar__playlist-item">
-                                    <img src={pl.avatarUrl} alt={pl.name} className="client-sidebar__playlist-avatar"/>
+                                    <img src={pl.avatarUrl} alt={pl.name} className="client-sidebar__playlist-avatar" />
                                     <div className="client-sidebar__playlist-info">
                                         <span className="client-sidebar__playlist-name">{pl.name}</span>
                                         <span className="client-sidebar__playlist-type">{pl.type}</span>
@@ -85,7 +88,7 @@ export const Sidebar = () => {
                                 </Link>
                             ))}
                         </div>
-                        <hr/>
+                        <hr />
                     </div>
 
                     {/* Нещодавно прослухані */}
@@ -101,7 +104,6 @@ export const Sidebar = () => {
 
                 </div>
 
-                {/* Кнопка collapse — виступає за правий край картки */}
                 <button
                     className="client-sidebar__toggle"
                     onClick={() => setCollapsed(true)}
@@ -111,7 +113,6 @@ export const Sidebar = () => {
                 </button>
             </aside>
 
-            {/* Кнопка відкрити — з'являється коли collapsed */}
             {collapsed && (
                 <button
                     className="client-sidebar__restore-btn"
@@ -121,6 +122,16 @@ export const Sidebar = () => {
                     <Image src="/images/icons/chevron-right.svg" alt="open" width={14} height={14} />
                 </button>
             )}
+
+            {/* ─── Модальне вікно створення плейліста ─────── */}
+            <CreatePlaylistModal
+                isOpen={createPlaylistOpen}
+                onClose={() => setCreatePlaylistOpen(false)}
+                onSuccess={() => {
+                    setCreatePlaylistOpen(false);
+                    // TODO: refetch плейлистів після підключення хука
+                }}
+            />
         </>
     );
 };
