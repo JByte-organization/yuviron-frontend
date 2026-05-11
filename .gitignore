@@ -41,3 +41,4 @@ yarn-error.log*
 
 turbo-dry-run.json
 *.tsbuildinfo
+/.github/
