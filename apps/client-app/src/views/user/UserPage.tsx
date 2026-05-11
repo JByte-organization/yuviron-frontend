@@ -159,5 +159,6 @@ export const UserPage = ({ userId }: UserPageProps) => {
                 user={{ name: user.name, avatarUrl: user.avatarUrl }}
             />
         </div>
+
     );
 };
