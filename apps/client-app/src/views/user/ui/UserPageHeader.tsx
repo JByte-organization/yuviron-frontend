@@ -52,6 +52,7 @@ export const UserPageHeader = ({
         // TODO: usePostApiUsersIdFollow()
     };
 
+
     return (
         <div className="user-page-header">
             {/* Градієнтний фон */}
