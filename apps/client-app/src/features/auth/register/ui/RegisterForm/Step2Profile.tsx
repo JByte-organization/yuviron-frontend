@@ -3,6 +3,13 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
+import { usePostApiAuthRegister, postApiAuthLogin } from '@repo/api';
+import { useSessionStore } from '@/entities/session/model/store';
+import {
+    clearRegisterDraft,
+    getRegisterDraft,
+    setRegisterDraft,
+} from '../../model/registerDraft';
 
 type ProfileErrors = {
     name?: string;
@@ -33,6 +40,7 @@ const COUNTRIES = ['Україна', 'Польща', 'Німеччина'];
 const CITIES = ['Київ', 'Львів', 'Одеса'];
 
 const CURRENT_YEAR = new Date().getFullYear();
+const MIN_AGE_YEARS = 16;
 
 type ProfileState = {
     name: string;
@@ -44,21 +52,38 @@ type ProfileState = {
     role: string;
 };
 
+const isAtLeastMinAge = (year: number, month: number, day: number): boolean => {
+    const dob = new Date(Date.UTC(year, month - 1, day));
+    const today = new Date();
+    const cutoff = new Date(
+        Date.UTC(today.getUTCFullYear() - MIN_AGE_YEARS, today.getUTCMonth(), today.getUTCDate()),
+    );
+    return dob.getTime() <= cutoff.getTime();
+};
+
 const validate = (state: ProfileState): ProfileErrors => {
     const errors: ProfileErrors = {};
 
     if (!state.name.trim()) errors.name = 'Введіть ім’я';
+    else if (state.name.trim().length > 50) errors.name = 'Ім’я не може бути довшим за 50 символів';
 
     const day = Number(state.day);
     if (!state.day) errors.day = '—';
     else if (!Number.isInteger(day) || day < 1 || day > 31) errors.day = 'День 1–31';
 
+    const month = Number(state.month);
     if (!state.month) errors.month = '—';
 
     const year = Number(state.year);
     if (!state.year) errors.year = '—';
     else if (!Number.isInteger(year) || year < 1900 || year > CURRENT_YEAR) {
         errors.year = `Рік 1900–${CURRENT_YEAR}`;
+    }
+
+    if (!errors.day && !errors.month && !errors.year) {
+        if (!isAtLeastMinAge(year, month, day)) {
+            errors.year = `Реєстрація доступна з ${MIN_AGE_YEARS} років`;
+        }
     }
 
     if (!state.country) errors.country = 'Оберіть країну';
@@ -70,17 +95,22 @@ const validate = (state: ProfileState): ProfileErrors => {
 
 export const Step2Profile = () => {
     const router = useRouter();
-    const [state, setState] = useState<ProfileState>({
-        name: '',
-        day: '',
-        month: '',
-        year: '',
-        country: '',
-        city: '',
-        role: '',
+    const setAccessToken = useSessionStore((s) => s.setAccessToken);
+    const [state, setState] = useState<ProfileState>(() => {
+        const draft = getRegisterDraft();
+        return {
+            name: draft.firstName ?? '',
+            day: draft.day ?? '',
+            month: draft.month ?? '',
+            year: draft.year ?? '',
+            country: draft.country ?? '',
+            city: draft.city ?? '',
+            role: draft.role ?? '',
+        };
     });
     const [errors, setErrors] = useState<ProfileErrors>({});
     const [submitted, setSubmitted] = useState(false);
+    const [serverError, setServerError] = useState<string | null>(null);
 
     const update = <K extends keyof ProfileState>(key: K, value: ProfileState[K]) => {
         const next = { ...state, [key]: value };
@@ -88,13 +118,90 @@ export const Step2Profile = () => {
         if (submitted) setErrors(validate(next));
     };
 
+    const { mutate, isPending } = usePostApiAuthRegister({
+        mutation: {
+            onSuccess: async (_response, variables) => {
+                const { email, password } = variables.data;
+                clearRegisterDraft();
+                try {
+                    const loginRes: any = await postApiAuthLogin({ email, password });
+                    const token = loginRes?.data?.token ?? loginRes?.token;
+                    if (token) {
+                        setAccessToken(token);
+                        router.push('/');
+                    } else {
+                        router.push('/login');
+                    }
+                } catch {
+                    router.push('/login');
+                }
+            },
+            onError: (error: any) => {
+                console.log('[register] status:', error?.response?.status);
+                console.log('[register] data:', JSON.stringify(error?.response?.data, null, 2));
+                const data = error?.response?.data;
+                const fieldErrors = data?.errors
+                    ? Object.values(data.errors).flat().join(' ')
+                    : null;
+                const message =
+                    fieldErrors ||
+                    data?.detail ||
+                    data?.title ||
+                    data?.message ||
+                    data?.error ||
+                    (typeof data === 'string' ? data : null) ||
+                    'Не вдалося зареєструватися. Спробуйте ще раз.';
+                setServerError(message);
+            },
+        },
+    });
+
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitted(true);
+        setServerError(null);
         const next = validate(state);
         setErrors(next);
         if (Object.keys(next).length > 0) return;
-        router.push('/login');
+
+        setRegisterDraft({
+            firstName: state.name,
+            day: state.day,
+            month: state.month,
+            year: state.year,
+            country: state.country,
+            city: state.city,
+            role: state.role as 'listener' | 'author',
+        });
+
+        const draft = getRegisterDraft();
+        if (!draft.email || !draft.password) {
+            router.push('/register');
+            return;
+        }
+
+        const dateOfBirth = new Date(
+            Date.UTC(
+                Number(state.year),
+                Number(state.month) - 1,
+                Number(state.day),
+            ),
+        ).toISOString();
+        const isArtist = state.role === 'author';
+
+        mutate({
+            data: {
+                email: draft.email,
+                password: draft.password,
+                firstName: state.name.trim(),
+                dateOfBirth,
+                gender: 0 as any,
+                acceptMarketing: false,
+                acceptTerms: true,
+                isArtist,
+                artistName: isArtist ? state.name.trim() : null,
+            },
+        });
     };
 
     const dateInvalid = errors.day || errors.month || errors.year;
@@ -178,8 +285,8 @@ export const Step2Profile = () => {
                                 onChange={(event) => update('month', event.target.value)}
                             >
                                 <option value="">Місяць</option>
-                                {MONTHS.map((month) => (
-                                    <option key={month} value={month}>
+                                {MONTHS.map((month, idx) => (
+                                    <option key={month} value={String(idx + 1)}>
                                         {month}
                                     </option>
                                 ))}
@@ -309,8 +416,16 @@ export const Step2Profile = () => {
                     )}
                 </div>
 
-                <button type="submit" className="btn client-register-profile-form__submit w-100">
-                    Зареєструватися
+                {serverError && (
+                    <div className="client-register-profile-form__error mb-3">{serverError}</div>
+                )}
+
+                <button
+                    type="submit"
+                    className="btn client-register-profile-form__submit w-100"
+                    disabled={isPending}
+                >
+                    {isPending ? 'Реєстрація…' : 'Зареєструватися'}
                 </button>
             </form>
         </div>

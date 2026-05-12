@@ -7,6 +7,9 @@ node_modules
 
 .idea
 
+# Claude Code local settings
+.claude/
+
 # Local env files
 .env
 .env.local

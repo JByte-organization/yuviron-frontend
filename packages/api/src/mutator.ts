@@ -43,6 +43,9 @@ const refreshAccessToken = async (): Promise<string> => {
     const response = await fetch('/api-proxy/auth/refresh', {
         method: 'POST',
         credentials: 'include',
+        headers: {
+            'X-CSRF-Protection': '1',
+        },
     });
 
     if (!response.ok) throw new Error('Refresh failed');
@@ -144,8 +147,16 @@ export const customInstance = async <T>(
 
     // --- Ошибки с телом ответа (400, 409, 404, 500 и т.д.) ---
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        // Бросаем весь объект ошибки, чтобы React Hook Form мог распарсить поля
+        const rawText = await response.text();
+        let errorData: any = {};
+        if (rawText) {
+            try {
+                errorData = JSON.parse(rawText);
+            } catch {
+                errorData = { rawText };
+            }
+        }
+        console.log('[api] error', response.status, url, rawText || '<empty body>');
         const err: any = new Error('API Error');
         err.response = { status: response.status, data: errorData };
         throw err;

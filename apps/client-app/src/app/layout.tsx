@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ApiClientProvider } from "./providers/ApiClientProvider";
 import { QueryProvider } from "./providers/QueryProvider";
 
 import "@repo/ui/styles";
@@ -16,9 +17,11 @@ export default function RootLayout({
         <html lang="uk">
         <body className={`bg-dark text-white`}>
         {/* Оборачиваем приложение в QueryProvider для работы хуков Orval [cite: 1568] */}
-        <QueryProvider>
-            {children}
-        </QueryProvider>
+        <ApiClientProvider>
+            <QueryProvider>
+                {children}
+            </QueryProvider>
+        </ApiClientProvider>
         </body>
         </html>
     );
