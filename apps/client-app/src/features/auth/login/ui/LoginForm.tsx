@@ -1,7 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
+import { usePostApiAuthLogin } from '@repo/api';
+import { useSessionStore } from '@/entities/session/model/store';
 
 type LoginErrors = {
     identifier?: string;
@@ -27,11 +30,53 @@ const validate = (identifier: string, password: string): LoginErrors => {
 };
 
 export const LoginForm = () => {
+    const router = useRouter();
+    const setAccessToken = useSessionStore((state) => state.setAccessToken);
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState<LoginErrors>({});
     const [submitted, setSubmitted] = useState(false);
+    const [serverError, setServerError] = useState<string | null>(null);
+
+    const { mutate, isPending } = usePostApiAuthLogin({
+        mutation: {
+            onSuccess: (response: any) => {
+                const data = response?.data ?? response;
+                const token = data?.token;
+
+                if (!token) {
+                    setServerError('Не вдалося отримати токен. Спробуйте ще раз.');
+                    return;
+                }
+
+                setAccessToken(token);
+                router.push('/');
+            },
+            onError: (error: any) => {
+                console.log('[login] status:', error?.response?.status);
+                console.log('[login] data:', JSON.stringify(error?.response?.data, null, 2));
+                const status = error?.response?.status;
+                if (status === 401) {
+                    setServerError('Невірний email або пароль');
+                    return;
+                }
+                const data = error?.response?.data;
+                const fieldErrors = data?.errors
+                    ? Object.values(data.errors).flat().join(' ')
+                    : null;
+                const message =
+                    fieldErrors ||
+                    data?.detail ||
+                    data?.title ||
+                    data?.message ||
+                    data?.error ||
+                    (typeof data === 'string' ? data : null) ||
+                    'Не вдалося увійти. Спробуйте ще раз.';
+                setServerError(message);
+            },
+        },
+    });
 
     const runValidation = (next: { identifier?: string; password?: string }) => {
         if (!submitted) return;
@@ -41,9 +86,12 @@ export const LoginForm = () => {
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitted(true);
+        setServerError(null);
         const nextErrors = validate(identifier, password);
         setErrors(nextErrors);
         if (Object.keys(nextErrors).length > 0) return;
+
+        mutate({ data: { email: identifier.trim(), password } });
     };
 
     return (
@@ -137,8 +185,16 @@ export const LoginForm = () => {
                 )}
             </div>
 
-            <button type="submit" className="btn client-login-form__submit w-100">
-                Увійти
+            {serverError && (
+                <div className="client-login-form__error mb-3">{serverError}</div>
+            )}
+
+            <button
+                type="submit"
+                className="btn client-login-form__submit w-100"
+                disabled={isPending}
+            >
+                {isPending ? 'Вхід…' : 'Увійти'}
             </button>
 
             <div className="client-login-form__bottom-divider" />

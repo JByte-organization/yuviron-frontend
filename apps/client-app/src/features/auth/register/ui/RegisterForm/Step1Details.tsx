@@ -3,31 +3,41 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
+import { getRegisterDraft, setRegisterDraft } from '../../model/registerDraft';
 
-const checkLetter = (value: string) => /[A-Za-zА-Яа-яЇїІіЄєҐґ]/.test(value);
-const checkNumberOrSymbol = (value: string) => /[\d!@#$%^&*()_+\-={}[\]:;"'<>,.?/\\|`~]/.test(value);
+const checkUppercase = (value: string) => /[A-Z]/.test(value);
+const checkLowercase = (value: string) => /[a-z]/.test(value);
+const checkDigit = (value: string) => /\d/.test(value);
 const checkLength = (value: string) => value.length >= 8;
+const checkMaxLength = (value: string) => value.length <= 100;
 
 export const Step1Details = () => {
     const router = useRouter();
-    const [password, setPassword] = useState('');
+    const [password, setPassword] = useState(() => getRegisterDraft().password ?? '');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | undefined>();
     const [submitted, setSubmitted] = useState(false);
 
-    const hasLetter = checkLetter(password);
-    const hasNumberOrSymbol = checkNumberOrSymbol(password);
+    const hasUppercase = checkUppercase(password);
+    const hasLowercase = checkLowercase(password);
+    const hasDigit = checkDigit(password);
     const hasLength = checkLength(password);
-    const isValid = hasLetter && hasNumberOrSymbol && hasLength;
+    const withinMax = checkMaxLength(password);
+    const isValid = hasUppercase && hasLowercase && hasDigit && hasLength && withinMax;
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitted(true);
         if (!isValid) {
-            setError('Пароль не відповідає правилам');
+            setError(
+                withinMax
+                    ? 'Пароль не відповідає правилам'
+                    : 'Пароль не може бути довшим за 100 символів',
+            );
             return;
         }
         setError(undefined);
+        setRegisterDraft({ password });
         router.push('/register/profile');
     };
 
@@ -102,10 +112,9 @@ export const Step1Details = () => {
                     </div>
 
                     <ul className="client-register-details-form__rules-list">
-                        <li className={hasLetter ? 'is-valid' : undefined}>1 літеру</li>
-                        <li className={hasNumberOrSymbol ? 'is-valid' : undefined}>
-                            1 число або 1 спеціальний символ (наприклад, !?&#)
-                        </li>
+                        <li className={hasUppercase ? 'is-valid' : undefined}>1 велику літеру</li>
+                        <li className={hasLowercase ? 'is-valid' : undefined}>1 малу літеру</li>
+                        <li className={hasDigit ? 'is-valid' : undefined}>1 цифру</li>
                         <li className={hasLength ? 'is-valid' : undefined}>8 символів</li>
                     </ul>
                 </div>

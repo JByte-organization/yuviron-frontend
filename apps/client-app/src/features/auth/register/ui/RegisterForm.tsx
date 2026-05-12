@@ -3,18 +3,21 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
+import { getRegisterDraft, setRegisterDraft } from '../model/registerDraft';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const validateEmail = (email: string): string | undefined => {
-    if (!email.trim()) return 'Введіть електронну пошту';
-    if (!EMAIL_REGEX.test(email.trim())) return 'Некоректний формат пошти';
+    const trimmed = email.trim();
+    if (!trimmed) return 'Введіть електронну пошту';
+    if (!EMAIL_REGEX.test(trimmed)) return 'Некоректний формат пошти';
+    if (trimmed.length > 320) return 'Пошта не може бути довшою за 320 символів';
     return undefined;
 };
 
 export const RegisterForm = () => {
     const router = useRouter();
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState(() => getRegisterDraft().email ?? '');
     const [error, setError] = useState<string | undefined>();
     const [submitted, setSubmitted] = useState(false);
 
@@ -24,6 +27,7 @@ export const RegisterForm = () => {
         const next = validateEmail(email);
         setError(next);
         if (next) return;
+        setRegisterDraft({ email: email.trim() });
         router.push('/register/details');
     };
 
