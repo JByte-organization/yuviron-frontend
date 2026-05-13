@@ -1,3 +1,5 @@
+'use client';
+
 import { Step2Profile } from '@/features/auth/register';
 
 export const RegisterProfilePage = () => {

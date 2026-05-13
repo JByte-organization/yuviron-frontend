@@ -1,4 +1,6 @@
-import { RegisterPage } from '@/pages/auth/ui/RegisterPage';
+'use client';
+
+import { RegisterPage } from '@/views/auth/ui/RegisterPage';
 
 export default function Register() {
     return <RegisterPage />;

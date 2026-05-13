@@ -1,4 +1,4 @@
-import { VerifyCodePage } from '@/pages/auth/ui/VerifyCodePage';
+import { VerifyCodePage } from '@/views/auth/ui/VerifyCodePage';
 
 export default function VerifyCode() {
     return <VerifyCodePage />;
