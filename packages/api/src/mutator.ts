@@ -37,10 +37,19 @@ const processQueue = (error: unknown, token: string | null = null) => {
 };
 
 /**
+ * Базовый URL для API:
+ * - Локально (.env.local):     NEXT_PUBLIC_API_URL=/api-proxy  → запросы через Route Handler
+ * - На сервере (.env.production): NEXT_PUBLIC_API_URL=https://dev-api.yuviron.com/api → напрямую
+ */
+const getBaseUrl = (): string => {
+    return process.env.NEXT_PUBLIC_API_URL ?? '/api-proxy';
+};
+
+/**
  * Запрашивает новую пару токенов через HttpOnly Cookie с Refresh токеном.
  */
 const refreshAccessToken = async (): Promise<string> => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://dev-api.yuviron.com/api';
+    const baseUrl = getBaseUrl();
     const response = await fetch(`${baseUrl}/auth/refresh`, {
         method: 'POST',
         credentials: 'include',
@@ -70,6 +79,9 @@ const isAuthRoute = (url: string) =>
 /**
  * Кастомный инстанс для Orval.
  * Вместо Axios использует Fetch с логикой Refresh Token и очередью запросов.
+ *
+ * Локально:  запросы идут через /api-proxy (Next.js Route Handler) → обходит CORS и DNS
+ * На сервере: запросы идут напрямую на https://dev-api.yuviron.com/api → CORS разрешён
  */
 export const customInstance = async <T>(
     url: string,
@@ -80,17 +92,19 @@ export const customInstance = async <T>(
     const makeRequest = async (token: string | null): Promise<Response> => {
         const headers = new Headers(options.headers);
 
+        // JSON content-type для тела, кроме FormData
         if (options.body && !(options.body instanceof FormData)) {
             headers.set('Content-Type', 'application/json');
         }
 
+        // Bearer токен для всех не-публичных роутов
         if (token && !authRoute) {
             headers.set('Authorization', `Bearer ${token}`);
         }
 
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://dev-api.yuviron.com/api';
+        const baseUrl = getBaseUrl();
 
-        // url вже містить /api/auth/login — просто прибираємо /api з початку
+        // Убираем /api из пути — baseUrl уже содержит /api или /api-proxy
         const path = url.startsWith('/api') ? url.slice(4) : url;
 
         return fetch(`${baseUrl}${path}`, {
