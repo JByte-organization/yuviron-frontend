@@ -5,7 +5,7 @@
 
 import { NextRequest } from 'next/server';
 
-const BACKEND_BASE = 'https://dev-api.yuviron.com/api';
+const BACKEND_BASE = process.env.BACKEND_URL ?? 'https://dev-api.yuviron.com/api';
 
 const HOP_BY_HOP_REQUEST_HEADERS = new Set([
     'host',
