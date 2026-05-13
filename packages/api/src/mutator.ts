@@ -40,7 +40,8 @@ const processQueue = (error: unknown, token: string | null = null) => {
  * Запрашивает новую пару токенов через HttpOnly Cookie с Refresh токеном.
  */
 const refreshAccessToken = async (): Promise<string> => {
-    const response = await fetch('/api-proxy/auth/refresh', {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://dev-api.yuviron.com/api';
+    const response = await fetch(`${baseUrl}/auth/refresh`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -87,13 +88,9 @@ export const customInstance = async <T>(
             headers.set('Authorization', `Bearer ${token}`);
         }
 
-        const path = url.startsWith('/api') ? url.slice(4) : url;
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://dev-api.yuviron.com/api';
 
-        // На продакшні — напряму на бекенд
-        // На локалці — через проксі
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? '/api-proxy';
-
-        return fetch(`${baseUrl}${path}`, {
+        return fetch(`${baseUrl}${url}`, {
             ...options,
             headers,
             credentials: 'include',
