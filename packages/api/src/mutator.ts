@@ -79,20 +79,21 @@ export const customInstance = async <T>(
     const makeRequest = async (token: string | null): Promise<Response> => {
         const headers = new Headers(options.headers);
 
-        // JSON content-type для тела, кроме FormData
         if (options.body && !(options.body instanceof FormData)) {
             headers.set('Content-Type', 'application/json');
         }
 
-        // Bearer токен для всех не-публичных роутов
         if (token && !authRoute) {
             headers.set('Authorization', `Bearer ${token}`);
         }
 
-        // Убираем /api из пути, так как /api-proxy в next.config уже его содержит
         const path = url.startsWith('/api') ? url.slice(4) : url;
 
-        return fetch(`/api-proxy${path}`, {
+        // На продакшні — напряму на бекенд
+        // На локалці — через проксі
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? '/api-proxy';
+
+        return fetch(`${baseUrl}${path}`, {
             ...options,
             headers,
             credentials: 'include',
