@@ -37,12 +37,12 @@ const processQueue = (error: unknown, token: string | null = null) => {
 };
 
 /**
- * Базовый URL для API:
- * - Локально (.env.local):     NEXT_PUBLIC_API_URL=/api-proxy  → запросы через Route Handler
- * - На сервере (.env.production): NEXT_PUBLIC_API_URL=https://dev-api.yuviron.com/api → напрямую
+ * Базовый URL для API.
+ * Локально и на сервере запросы идут напрямую на бэкенд.
+ * NEXT_PUBLIC_API_URL задаётся в .env.local / .env.production
  */
 const getBaseUrl = (): string => {
-    return process.env.NEXT_PUBLIC_API_URL ?? '/api-proxy';
+    return process.env.NEXT_PUBLIC_API_URL ?? 'https://dev-api.yuviron.com/api';
 };
 
 /**
@@ -78,10 +78,7 @@ const isAuthRoute = (url: string) =>
 
 /**
  * Кастомный инстанс для Orval.
- * Вместо Axios использует Fetch с логикой Refresh Token и очередью запросов.
- *
- * Локально:  запросы идут через /api-proxy (Next.js Route Handler) → обходит CORS и DNS
- * На сервере: запросы идут напрямую на https://dev-api.yuviron.com/api → CORS разрешён
+ * Запросы идут напрямую на бэкенд — CORS разрешён на стороне бэкенда.
  */
 export const customInstance = async <T>(
     url: string,
@@ -104,7 +101,7 @@ export const customInstance = async <T>(
 
         const baseUrl = getBaseUrl();
 
-        // Убираем /api из пути — baseUrl уже содержит /api или /api-proxy
+        // Убираем /api из пути — baseUrl уже содержит /api
         const path = url.startsWith('/api') ? url.slice(4) : url;
 
         return fetch(`${baseUrl}${path}`, {
@@ -120,7 +117,6 @@ export const customInstance = async <T>(
     // --- 401: токен истёк, пробуем обновить ---
     if (response.status === 401 && !authRoute) {
         if (isRefreshing) {
-            // Встаём в очередь — ждём пока другой запрос обновит токен
             return new Promise((resolve, reject) => {
                 failedQueue.push({
                     resolve: async (newToken: string) => {
@@ -141,18 +137,11 @@ export const customInstance = async <T>(
 
         try {
             const newToken = await refreshAccessToken();
-
-            // Сохраняем новый токен в Zustand стор через колбэк
             onTokenRefresh(newToken);
-
-            // Отдаём новый токен всем запросам из очереди
             processQueue(null, newToken);
-
-            // Повторяем оригинальный запрос с новым токеном
             response = await makeRequest(newToken);
         } catch (refreshError) {
             processQueue(refreshError, null);
-            // Refresh провалился — разлогиниваем пользователя
             onUnauthorized();
             throw refreshError;
         } finally {
@@ -160,7 +149,7 @@ export const customInstance = async <T>(
         }
     }
 
-    // --- Ошибки с телом ответа (400, 409, 404, 500 и т.д.) ---
+    // --- Ошибки с телом ответа ---
     if (!response.ok) {
         const rawText = await response.text();
         let errorData: any = {};
