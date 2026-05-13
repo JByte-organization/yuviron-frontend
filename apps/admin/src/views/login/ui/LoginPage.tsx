@@ -21,11 +21,6 @@ export const LoginPage = () => {
 
                     <LoginForm />
 
-                    <div className="text-center">
-                        <Link href="#" className="admin-login__link text-decoration-none small text-secondary">
-                            Lost your password?
-                        </Link>
-                    </div>
                 </div>
             </div>
         </div>

@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
+import { useRouter } from 'next/navigation';
+import { useSessionStore } from '@/entities/session/model/store';
+
 interface Props {
     isOpen: boolean;
     onClose: () => void;
@@ -14,6 +17,14 @@ const SIDEBAR_WIDTH = 260;
 export const Sidebar = ({ isOpen, onClose }: Props) => {
     const pathname = usePathname();
     const [elementsOpen, setElementsOpen] = useState(true);
+
+    const router = useRouter();
+    const setAuth = useSessionStore((state) => state.setAuth);
+
+    const handleLogout = () => {
+        setAuth(null, null); // очищає токен, роль і куки
+        router.replace('/login');
+    };
 
     // Закрываем на мобиле при переходе
     useEffect(() => {
@@ -104,7 +115,10 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
 
             {/* Footer */}
             <div className="sidebar-footer p-3 border-top border-secondary">
-                <button className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                <button
+                    className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2"
+                    onClick={handleLogout}
+                >
                     <span>⇥</span> Exit
                 </button>
             </div>

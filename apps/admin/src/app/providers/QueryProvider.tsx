@@ -8,14 +8,15 @@ export const QueryProvider = ({ children }: { children: React.ReactNode }) => {
         defaultOptions: {
             queries: {
                 staleTime: 5 * 60 * 1000,
-                retry: 1,
+                // Если ошибка 401 или 403, ретрить не нужно — сразу кидаем в лог/редирект
+                retry: (failureCount, error: any) => {
+                    const status = error?.response?.status || error?.status;
+                    if (status === 401 || status === 403) return false;
+                    return failureCount < 1;
+                },
             },
         },
     }));
 
-    return (
-        <QueryClientProvider client={queryClient}>
-            {children}
-        </QueryClientProvider>
-    );
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 };

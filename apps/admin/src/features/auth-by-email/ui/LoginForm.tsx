@@ -11,33 +11,33 @@ export const LoginForm = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const router = useRouter();
-    const setAccessToken = useSessionStore((state) => state.setAccessToken);
+
+    // Используем наш новый метод setAuth
+    const setAuth = useSessionStore((state) => state.setAuth);
 
     const { mutate, isPending } = usePostApiAuthLogin({
         mutation: {
             onSuccess: (response: any) => {
                 const data = response?.data ?? response;
-                const token = data?.token; // Бэкенд прислал именно "token"
+                const token = data?.token;
+                const permissions = data?.permissions || [];
 
-                if (token) {
-                    setAccessToken(token); // Сохраняем в Zustand [cite: 897, 1418]
-                    router.push('/users');
+                // Перевіряємо наявність права на вхід в адмінку
+                const isAdmin = permissions.includes('AccessAdminPanel');
+
+                if (token && isAdmin) {
+                    // Записуємо роль як 'admin', щоб наш Middleware її розпізнав
+                    setAuth(token, 'admin');
+                    router.push('/dashboard');
+                } else if (token && !isAdmin) {
+                    setErrorMessage('У вас немає прав для доступу до адмін-панелі.');
+                    setAuth(null, null);
+                } else {
+                    setErrorMessage('Помилка авторизації: токен не отримано.');
                 }
-
-                // if (!token) {
-                //     setErrorMessage('Ошибка: токен не найден в ответе сервера.');
-                //     return;
-                // }
-
-                // Храним ТОЛЬКО в Zustand — не в localStorage
-                setAccessToken(token);
-                router.push('/users');
             },
             onError: (error: any) => {
-                const message =
-                    error?.message ??
-                    error?.title ??
-                    'Неверный email или пароль.';
+                const message = error?.message ?? 'Неверный email или пароль.';
                 setErrorMessage(message);
             },
         },
