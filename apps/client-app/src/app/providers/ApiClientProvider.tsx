@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { configureApiClient } from '@repo/api';
+import { configureApiClient, postApiAuthRefresh } from '@repo/api';
 import { useSessionStore } from '@/entities/session/model/store';
 
 export const ApiClientProvider = ({ children }: { children: React.ReactNode }) => {
@@ -17,7 +17,21 @@ export const ApiClientProvider = ({ children }: { children: React.ReactNode }) =
             },
             onTokenRefresh: (token) => useSessionStore.getState().setAccessToken(token),
         });
-    }, [router]);
+
+        const restoreSession = async () => {
+            try {
+                const data = await postApiAuthRefresh();
+                const token = (data as any)?.accessToken ?? (data as any)?.token;
+                if (token) {
+                    useSessionStore.getState().setAccessToken(token);
+                }
+            } catch {
+            }
+        };
+
+        restoreSession();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return <>{children}</>;
 };

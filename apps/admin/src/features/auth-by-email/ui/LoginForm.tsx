@@ -12,7 +12,6 @@ export const LoginForm = () => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const router = useRouter();
 
-    // Используем наш новый метод setAuth
     const setAuth = useSessionStore((state) => state.setAuth);
 
     const { mutate, isPending } = usePostApiAuthLogin({
@@ -21,14 +20,19 @@ export const LoginForm = () => {
                 const data = response?.data ?? response;
                 const token = data?.token;
                 const permissions = data?.permissions || [];
-
-                // Перевіряємо наявність права на вхід в адмінку
                 const isAdmin = permissions.includes('AccessAdminPanel');
 
+                // console.log('[login] isAdmin:', isAdmin);
+                // console.log('[login] token exists:', !!token);
+
+
                 if (token && isAdmin) {
-                    // Записуємо роль як 'admin', щоб наш Middleware її розпізнав
+                    // console.log('[login] calling setAuth...');
                     setAuth(token, 'admin');
+                    // console.log('[login] cookie after setAuth:', document.cookie);
+                    // console.log('[login] pushing to /dashboard...');
                     router.push('/dashboard');
+                    // console.log('[login] push called');
                 } else if (token && !isAdmin) {
                     setErrorMessage('У вас немає прав для доступу до адмін-панелі.');
                     setAuth(null, null);

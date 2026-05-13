@@ -1,7 +1,8 @@
 'use client';
+
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { configureApiClient } from '@repo/api';
+import { configureApiClient, postApiAuthRefresh } from '@repo/api';
 import { useSessionStore } from '@/entities/session/model/store';
 
 export const ApiClientProvider = ({ children }: { children: React.ReactNode }) => {
@@ -10,6 +11,7 @@ export const ApiClientProvider = ({ children }: { children: React.ReactNode }) =
     const setAuth = useSessionStore((state) => state.setAuth);
 
     useEffect(() => {
+        // 1. Налаштовуємо API клієнт
         configureApiClient({
             getToken: () => useSessionStore.getState().accessToken,
             onUnauthorized: () => {
@@ -18,7 +20,22 @@ export const ApiClientProvider = ({ children }: { children: React.ReactNode }) =
             },
             onTokenRefresh: (token) => setAccessToken(token),
         });
-    }, [router, setAccessToken, setAuth]);
+
+        // 2. Відновлюємо сесію при завантаженні через refresh token (HttpOnly Cookie)
+        const restoreSession = async () => {
+            try {
+                const data = await postApiAuthRefresh();
+                const token = (data as any)?.accessToken ?? (data as any)?.token;
+                if (token) {
+                    setAccessToken(token);
+                }
+            } catch {
+            }
+        };
+
+        restoreSession();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return <>{children}</>;
 };

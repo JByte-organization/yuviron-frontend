@@ -1,3 +1,4 @@
+// src/entities/session/model/store.ts
 import { create } from 'zustand';
 
 interface SessionState {
