@@ -16,12 +16,12 @@ export default function RootLayout({
     return (
         <html lang="uk">
         <body className={`bg-dark text-white`}>
-        {/* Оборачиваем приложение в QueryProvider для работы хуков Orval [cite: 1568] */}
-        <ApiClientProvider>
-            <QueryProvider>
+        {/* QueryProvider должен быть САМЫМ ВЕРХНИМ, чтобы ApiClientProvider и Orval имели доступ к кэшу */}
+        <QueryProvider>
+            <ApiClientProvider>
                 {children}
-            </QueryProvider>
-        </ApiClientProvider>
+            </ApiClientProvider>
+        </QueryProvider>
         </body>
         </html>
     );
