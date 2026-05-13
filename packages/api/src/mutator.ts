@@ -90,7 +90,10 @@ export const customInstance = async <T>(
 
         const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://dev-api.yuviron.com/api';
 
-        return fetch(`${baseUrl}${url}`, {
+        // url вже містить /api/auth/login — просто прибираємо /api з початку
+        const path = url.startsWith('/api') ? url.slice(4) : url;
+
+        return fetch(`${baseUrl}${path}`, {
             ...options,
             headers,
             credentials: 'include',
