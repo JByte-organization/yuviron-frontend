@@ -3,14 +3,17 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from '@/widgets/sidebar';
 import { AdminHeader } from '@/widgets/header';
+import { SIDEBAR_WIDTH } from '@/shared/config/constants';
 import "@repo/ui/styles";
 
-const SIDEBAR_WIDTH = 260;
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-    // На десктопе открыт по умолчанию, на мобиле — закрыт
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isDesktop, setIsDesktop] = useState(false);
+
+    useEffect(() => {
+        import('bootstrap');
+    }, []);
 
     useEffect(() => {
         const check = () => {
@@ -24,6 +27,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         return () => window.removeEventListener('resize', check);
     }, []);
 
+
+
     const showOverlay = sidebarOpen && !isDesktop;
     const contentShift = sidebarOpen && isDesktop ? SIDEBAR_WIDTH : 0;
 
@@ -35,7 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 onClose={() => setSidebarOpen(false)}
             />
 
-            {/* Overlay — только мобил */}
+            {/* Overlay — только моб */}
             {showOverlay && (
                 <div
                     onClick={() => setSidebarOpen(false)}

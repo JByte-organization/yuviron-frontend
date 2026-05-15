@@ -1,18 +1,18 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
 
-import { useRouter } from 'next/navigation';
 import { useSessionStore } from '@/entities/session/model/store';
+import Image from "next/image";
+import Link from 'next/link';
+import { SIDEBAR_WIDTH } from '@/shared/config/constants';
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
 }
 
-const SIDEBAR_WIDTH = 260;
 
 export const Sidebar = ({ isOpen, onClose }: Props) => {
     const pathname = usePathname();
@@ -26,7 +26,7 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
         router.replace('/login');
     };
 
-    // Закрываем на мобиле при переходе
+    // Закрываем на моб при переходе
     useEffect(() => {
         if (window.innerWidth < 992) {
             onClose();
@@ -60,19 +60,27 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
             }}
         >
             {/* Header */}
-            <div className="sidebar-header d-flex align-items-center justify-content-between p-4">
-                <div className="d-flex align-items-center gap-2">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 2L14.5 9H21L15.5 13.5L18 21L12 16.5L6 21L8.5 13.5L3 9H9.5L12 2Z" fill="#40A2FF" />
-                    </svg>
-                    <p className="m-0 fw-medium text-white h6 mb-0">Admin Dashboard</p>
+            <div className="sidebar-header d-flex align-items-center justify-content-between justify-content-lg-start p-3">
+                <div className="d-flex align-items-center gap-2 justify-content-center">
+                    <Image
+                        src="/images/Logo/logo-element.svg"
+                        width={50}
+                        height={40}
+                        alt="logo"
+                    />
+                    <p className="m-0 fw-medium text-white h5 mb-0">Admin Dashboard</p>
                 </div>
                 <button
-                    className="btn btn-sm btn-outline-secondary border-0"
+                    className="btn btn-sm btn-outline-secondary border-0 d-flex d-lg-none"
                     onClick={onClose}
                     title="Close sidebar"
                 >
-                    ✕
+                    <Image
+                        src="/images/icons/delete-btn.svg"
+                        width={16}
+                        height={16}
+                        alt="close"
+                    />
                 </button>
             </div>
 
@@ -108,8 +116,6 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
                             </ul>
                         )}
                     </li>
-
-                    {navLink('/settings', 'Settings')}
                 </ul>
             </nav>
 

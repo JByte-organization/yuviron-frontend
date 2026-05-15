@@ -19,6 +19,26 @@ $active-blue: #40A2FF;
 
 .bg-admin-primary{ background-color: $admin-secondary}
 .bg-admin-secondary{ background-color: $admin-bg}
+.bg-admin-tr-1{ background-color: $admin-tr-bg-1}
+
+.table-admin {
+  .table.table-dark {
+    --bs-table-bg:             #2A323E;
+    --bs-table-border-color:   #4d5154;
+    --bs-table-striped-bg:     #3B4452;
+    --bs-table-striped-color:  #fff;
+    --bs-table-hover-bg:       #222731;
+    --bs-table-hover-color:    #fff;
+    --bs-table-active-bg:      #373b3e;
+    --bs-table-active-color:   #fff;
+    --bs-table-color:          #fff;
+  }
+
+  thead.bg-admin-secondary th {
+    background-color: var(--admin-secondary) !important;
+  }
+
+}
 
 .admin-text{ color: $admin-text!important;}
 
@@ -298,6 +318,10 @@ $active-blue: #40A2FF;
   padding: 8px 16px;
   width: 100%;
 
+  @include media-breakpoint-up(md) {
+    max-width: 280px;
+  }
+
   .search-input {
     background: transparent !important;
     border: none !important;
@@ -481,4 +505,90 @@ $active-blue: #40A2FF;
     }
   }
 
+}
+
+
+// ══════════════════════════════════════════════════════════
+// ADMIN PAGINATION
+// ══════════════════════════════════════════════════════════
+.admin-pagination {
+
+  &__btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: $admin-secondary;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    padding: 0;
+    line-height: 1;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    // Активна сторінка
+    &--active {
+      background: $admin-primary;
+      border-color: $admin-primary;
+      color: #fff;
+      font-weight: 600;
+
+      &:hover:not(:disabled) {
+        background: $admin-text;
+        border-color: $admin-text;
+        color: #fff;
+      }
+    }
+  }
+
+  &__ellipsis {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--admin-text-muted, rgba(255, 255, 255, 0.4));
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// ADMIN LAYOUT
+// ══════════════════════════════════════════════════════════
+.admin-layout {
+  min-height: 100vh;
+  background-color: #151921;
+
+  // ─── Overlay (мобайл) ─────────────────────────────────
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1040;
+  }
+
+  // ─── Основний контент ─────────────────────────────────
+  &__content {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.25s ease;
+  }
 }
