@@ -199,7 +199,7 @@ export const Step2Profile = () => {
                 acceptMarketing: false,
                 acceptTerms: true,
                 isArtist,
-                artistName: isArtist ? state.name.trim() : null,
+                //artistName: isArtist ? state.name.trim() : null,
             },
         });
     };
