@@ -66,7 +66,7 @@ export const AlbumRow = ({ album, isSelected, onSelect, onEdit, onDelete }: Prop
 
             {/* Artists */}
             <td className="text-secondary small text-nowrap">
-                {album.artistNames?.join(', ') || '—'}
+                {album.artists?.join(', ') || '—'}
             </td>
 
             {/* Tracks */}

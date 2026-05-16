@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { usePostApiAdminTracks, VisibilityStatus } from '@repo/api';
+import {ArtistRole, usePostApiAdminTracks, VisibilityStatus} from '@repo/api';
 import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
 
 interface Props {
@@ -64,7 +64,11 @@ export const CreateTrackModal = ({
                     coverUrl:         values.coverUrl || null,
                     explicit:         values.explicit,
                     visibilityStatus: values.visibilityStatus as any,
-                    artistIds: artists.map(a => a.id),
+                    artists: artists.map(a => ({
+                        id:   a.id,
+                        name: a.label ?? null,
+                        role: ArtistRole.Main,
+                    })),
                     genreIds:  genres.map(g => g.id),
                     moodIds:   moods.map(m => m.id),
                 },

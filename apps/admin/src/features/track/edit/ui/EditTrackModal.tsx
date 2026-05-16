@@ -7,7 +7,7 @@ import {
     getGetApiAdminTracksIdQueryKey,
     usePutApiAdminTracksId,
     VisibilityStatus,
-    type TrackListItemDto,
+    type TrackListItemDto, ArtistRole, TrackGenreSimpleDto, TrackMoodSimpleDto, TrackArtistSimpleDto, TrackDetailsDto,
 } from '@repo/api';
 import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
 
@@ -58,25 +58,46 @@ export const EditTrackModal = ({
 
     useEffect(() => {
         if (!details) return;
-        const d = (details as any).data || details;
+
+        // Orval повертає { data: TrackDetailsDto, status: 200 }
+        const d = (details as { data?: TrackDetailsDto }).data ?? details as TrackDetailsDto;
+
+        const newAlbum: SelectOption[] = d.albumId && d.albumTitle
+            ? [{ id: d.albumId, label: d.albumTitle }]
+            : [];
+
+        const newArtists: SelectOption[] = (d.artists ?? [])
+            .map((a: TrackArtistSimpleDto) => ({
+                id:    a.artistId ?? '',
+                label: a.name     ?? '',
+            }));
+
+        const newGenres: SelectOption[] = (d.genres ?? [])
+            .map((g: TrackGenreSimpleDto) => ({
+                id:    g.genreId ?? '',
+                label: g.name    ?? '',
+            }));
+
+        const newMoods: SelectOption[] = (d.moods ?? [])
+            .map((m: TrackMoodSimpleDto) => ({
+                id:    m.moodId ?? '',
+                label: m.name   ?? '',
+            }));
+
+        // Всі setState разом — один ре-рендер
+        setAlbum(newAlbum);
+        setArtists(newArtists);
+        setGenres(newGenres);
+        setMoods(newMoods);
 
         reset({
-            title:            d.title ?? '',
-            albumPosition:    d.albumPosition && d.albumPosition > 0 ? d.albumPosition : 1,
-            audioStorageKey:  d.audioStorageKey ?? '',
-            coverUrl:         d.coverUrl ?? '',
-            explicit:         d.explicit ?? false,
+            title:            d.title            ?? '',
+            albumPosition:    (d.albumPosition ?? 0) > 0 ? d.albumPosition! : 1,
+            audioStorageKey:  d.audioStorageKey  ?? '',
+            coverUrl:         d.coverUrl         ?? '',
+            explicit:         d.explicit         ?? false,
             visibilityStatus: d.visibilityStatus ?? VisibilityStatus.Draft,
         });
-
-        // Предзаполняем альбом
-        if (d.albumId && d.albumTitle) {
-            setAlbum([{ id: d.albumId, label: d.albumTitle }]);
-        }
-
-        setArtists((d.artists ?? []).map((a: any) => ({ id: a.artistId, label: a.name })));
-        setGenres( (d.genres  ?? []).map((g: any) => ({ id: g.genreId,  label: g.name })));
-        setMoods(  (d.moods   ?? []).map((m: any) => ({ id: m.moodId,   label: m.name })));
     }, [details, reset]);
 
     const onSubmit = async (values: FormValues) => {
@@ -101,7 +122,11 @@ export const EditTrackModal = ({
                     coverUrl:         values.coverUrl || null,
                     explicit:         values.explicit,
                     visibilityStatus: values.visibilityStatus as any,
-                    artistIds: artists.map(a => a.id),
+                    artists: artists.map(a => ({
+                        id:   a.id,
+                        name: a.label ?? null,
+                        role: ArtistRole.Main,
+                    })),
                     genreIds:  genres.map(g => g.id),
                     moodIds:   moods.map(m => m.id),
                 },
