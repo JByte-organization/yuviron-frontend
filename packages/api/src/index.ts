@@ -1,18 +1,21 @@
-// все эндпоинты
-export * from './generated/endpoints/admin-tracks';
-export * from './generated/endpoints/admin-users';
-export * from './generated/endpoints/auth';
-export * from './generated/endpoints/admin-artists';
-export * from './generated/endpoints/admin-roles';
-export * from './generated/endpoints/admin-genres';
-export * from './generated/endpoints/admin-moods';
-export * from './generated/endpoints/admin-albums';
-export * from './generated/endpoints/admin-dashboard';
-export * from './generated/endpoints/admin-playlists';
+// Адмінка
+export * from './generated/admin/endpoints/admin-tracks';
+export * from './generated/admin/endpoints/admin-users';
+export * from './generated/admin/endpoints/admin-artists';
+export * from './generated/admin/endpoints/admin-roles';
+export * from './generated/admin/endpoints/admin-genres';
+export * from './generated/admin/endpoints/admin-moods';
+export * from './generated/admin/endpoints/admin-albums';
+export * from './generated/admin/endpoints/admin-dashboard';
+export * from './generated/admin/endpoints/admin-playlists';
 
-export * from './generated/endpoints/files';
+
+// Клієнт
+export * from './generated/client/endpoints/files';
+export * from './generated/client/endpoints/auth';
 
 // модели
-export * from './generated/models';
+export * from './generated/admin/models';
+
 
 export { configureApiClient } from './mutator';
