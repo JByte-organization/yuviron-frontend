@@ -7,9 +7,6 @@ node_modules
 
 .idea
 
-# Claude Code local settings
-.claude/
-
 # Local env files
 .env
 .env.local
@@ -46,4 +43,3 @@ turbo-dry-run.json
 *.tsbuildinfo
 /.github/
 /apps/admin/.env.production
-/packages/api/src/generated/
