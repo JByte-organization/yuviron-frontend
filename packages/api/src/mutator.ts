@@ -39,7 +39,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
 /**
  * Базовый URL для API.
  * Локально и на сервере запросы идут напрямую на бэкенд.
- * NEXT_PUBLIC_API_URL задаётся в .env.local / .env.production
+ * NEXT_PUBLIC_API_URL задаётся в .env.local
  */
 const getBaseUrl = (): string => {
     return process.env.NEXT_PUBLIC_API_URL ?? 'https://dev-api.yuviron.com/api';
