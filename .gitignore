@@ -43,4 +43,3 @@ turbo-dry-run.json
 *.tsbuildinfo
 /.github/
 /apps/admin/.env.production
-/packages/api/src/generated/
