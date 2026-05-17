@@ -96,7 +96,7 @@ export const UsersPage = () => {
     const { data, isLoading, isError, refetch } = useGetApiAdminUsers(queryParams);
 
     const responseData = data as UserListItemDtoPaginatedList | undefined;
-    console.log(responseData);
+    //console.log(responseData);
     const allUsers   = responseData?.items ?? [];
     const totalPages = responseData?.totalPages ?? 1;
     const totalCount = responseData?.totalCount ?? 0;
