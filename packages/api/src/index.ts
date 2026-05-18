@@ -2,6 +2,7 @@
 export * from './generated/admin/endpoints/admin-tracks';
 export * from './generated/admin/endpoints/admin-users';
 export * from './generated/admin/endpoints/admin-artists';
+export * from './generated/admin/endpoints/admin-banners';
 export * from './generated/admin/endpoints/admin-roles';
 export * from './generated/admin/endpoints/admin-genres';
 export * from './generated/admin/endpoints/admin-moods';
