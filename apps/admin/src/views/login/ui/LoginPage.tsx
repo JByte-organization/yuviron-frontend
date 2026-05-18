@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { LoginForm } from '@/features/auth-by-email/ui/LoginForm';
+import Image from "next/image";
 
 export const LoginPage = () => {
     return (
@@ -10,8 +10,8 @@ export const LoginPage = () => {
             <div className="admin-login__panel flex-grow-1 d-flex align-items-center justify-content-center">
                 <div className="admin-login__content w-100 px-3 px-md-4" style={{ maxWidth: '450px' }}>
                     <div className="text-center mb-5">
-                        <img
-                            src="/Logo/logo.svg"
+                        <Image
+                            src="/images/Logo/logo.svg"
                             alt="Logo"
                             width={180}
                             height={180}
@@ -20,7 +20,6 @@ export const LoginPage = () => {
                     </div>
 
                     <LoginForm />
-
                 </div>
             </div>
         </div>
