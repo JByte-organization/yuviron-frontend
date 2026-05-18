@@ -29,6 +29,8 @@ out/
 build
 dist
 
+# Generated API hooks (regenerated at build time via pnpm api:gen)
+packages/api/src/generated
 
 # Debug
 npm-debug.log*
