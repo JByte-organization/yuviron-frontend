@@ -104,13 +104,21 @@ export const Step2Profile = () => {
     const setAccessToken = useSessionStore((s) => s.setAccessToken);
     const [state, setState] = useState<ProfileState>(() => {
         const draft = getRegisterDraft();
+        // Защита от старых черновиков, где country хранился как полное название
+        // ("Україна") до того, как мы перешли на ISO-коды ("UA"). Если значение
+        // не входит в текущий список — сбрасываем, иначе селект выглядит
+        // заполненным, а на бэк уезжает мусор.
+        const draftCountry = draft.country ?? '';
+        const country = COUNTRIES.some((c) => c.code === draftCountry) ? draftCountry : '';
+        const draftCity = draft.city ?? '';
+        const city = CITIES.includes(draftCity) ? draftCity : '';
         return {
             name: draft.firstName ?? '',
             day: draft.day ?? '',
             month: draft.month ?? '',
             year: draft.year ?? '',
-            country: draft.country ?? '',
-            city: draft.city ?? '',
+            country,
+            city,
             role: draft.role ?? '',
         };
     });
