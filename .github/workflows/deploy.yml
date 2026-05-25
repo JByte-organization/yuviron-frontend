@@ -219,6 +219,32 @@ jobs:
           cd /opt/yuviron-server/src/yuviron-frontend
           pnpm install --frozen-lockfile
 
+      - name: Ensure backend is running for API generation
+        run: |
+          set -Eeuo pipefail
+          cd /opt/yuviron-server
+
+          is_running() {
+            docker inspect "yuviron-${DEPLOY_ENV}-backend" \
+              --format='{{.State.Running}}' 2>/dev/null | grep -q true
+          }
+
+          if ! is_running; then
+            echo "Backend container not running - starting stack without build or migrate"
+            timeout 600 python3 ./scripts/cli.py stack up "${DEPLOY_ENV}" \
+              --skip-migrate --no-build --skip-swagger
+          fi
+
+          echo "Waiting for backend to become healthy..."
+          for i in $(seq 1 24); do
+            status="$(docker inspect "yuviron-${DEPLOY_ENV}-backend" \
+              --format='{{.State.Health.Status}}' 2>/dev/null || echo 'missing')"
+            echo "  attempt $i: ${status}"
+            [ "$status" = "healthy" ] && break
+            [ "$i" -eq 24 ] && { echo "Backend did not become healthy in time" >&2; exit 1; }
+            sleep 5
+          done
+
       - name: Generate API types
         run: |
           set -Eeuo pipefail
