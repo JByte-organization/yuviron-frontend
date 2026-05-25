@@ -90,7 +90,7 @@ export const ResetPasswordForm = () => {
         <div className="client-reset-form">
             <div className="client-reset-form__top">
                 <Link
-                    href="/verify-code"
+                    href="/login"
                     className="client-reset-form__back text-decoration-none"
                 >
                     Назад

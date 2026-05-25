@@ -3,11 +3,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthRegister, postApiAuthLogin } from '@repo/api';
+import { usePostApiAuthRegister } from '@repo/api';
 import { Gender } from '@repo/api/generated/client/models/gender';
-import { useSessionStore } from '@/entities/session/model/store';
 import {
-    clearRegisterDraft,
     getRegisterDraft,
     setRegisterDraft,
 } from '../../model/registerDraft';
@@ -101,7 +99,6 @@ const validate = (state: ProfileState): ProfileErrors => {
 
 export const Step2Profile = () => {
     const router = useRouter();
-    const setAccessToken = useSessionStore((s) => s.setAccessToken);
     const [state, setState] = useState<ProfileState>(() => {
         const draft = getRegisterDraft();
         // Защита от старых черновиков, где country хранился как полное название
@@ -134,22 +131,12 @@ export const Step2Profile = () => {
 
     const { mutate, isPending } = usePostApiAuthRegister({
         mutation: {
-            onSuccess: async (_response, variables) => {
-                const { email, password, isArtist } = variables.data;
-                clearRegisterDraft();
-                const next = isArtist ? '/artist-onboarding' : '/';
-                try {
-                    const loginRes: any = await postApiAuthLogin({ email, password });
-                    const token = loginRes?.data?.token ?? loginRes?.token;
-                    if (token) {
-                        setAccessToken(token);
-                        router.push(next);
-                    } else {
-                        router.push('/login');
-                    }
-                } catch {
-                    router.push('/login');
-                }
+            onSuccess: (_response, variables) => {
+                // Авто-логин делаем уже на /verify-code после подтверждения email.
+                // Draft (email+password+role) тут НЕ очищаем — он понадобится
+                // confirm-email step'у для auto-login и редиректа.
+                const { email } = variables.data;
+                router.push(`/verify-code?email=${encodeURIComponent(email ?? '')}`);
             },
             onError: (error: any) => {
                 console.log('[register] status:', error?.response?.status);
