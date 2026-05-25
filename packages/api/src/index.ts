@@ -21,8 +21,8 @@ export * from './generated/client/endpoints/tracks';
 export * from './generated/client/endpoints/artists';
 
 
+export * from './generated/client/endpoints/artist-profiles';
 
-// модели
 export * from './generated/admin/models';
 
 export * from './generated/client/models/homeBannerDto';

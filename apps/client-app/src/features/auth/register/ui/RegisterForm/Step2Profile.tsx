@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
 import { usePostApiAuthRegister, postApiAuthLogin } from '@repo/api';
+import { Gender } from '@repo/api/generated/client/models/gender';
 import { useSessionStore } from '@/entities/session/model/store';
 import {
     clearRegisterDraft,
@@ -36,7 +37,12 @@ const MONTHS = [
     'Грудень',
 ];
 
-const COUNTRIES = ['Україна', 'Польща', 'Німеччина'];
+// Бэк хранит код страны в короткой колонке (VARCHAR(2-3)) и ждёт ISO 3166-1 alpha-2.
+const COUNTRIES: ReadonlyArray<{ code: string; label: string }> = [
+    { code: 'UA', label: 'Україна' },
+    { code: 'PL', label: 'Польща' },
+    { code: 'DE', label: 'Німеччина' },
+];
 const CITIES = ['Київ', 'Львів', 'Одеса'];
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -98,13 +104,21 @@ export const Step2Profile = () => {
     const setAccessToken = useSessionStore((s) => s.setAccessToken);
     const [state, setState] = useState<ProfileState>(() => {
         const draft = getRegisterDraft();
+        // Защита от старых черновиков, где country хранился как полное название
+        // ("Україна") до того, как мы перешли на ISO-коды ("UA"). Если значение
+        // не входит в текущий список — сбрасываем, иначе селект выглядит
+        // заполненным, а на бэк уезжает мусор.
+        const draftCountry = draft.country ?? '';
+        const country = COUNTRIES.some((c) => c.code === draftCountry) ? draftCountry : '';
+        const draftCity = draft.city ?? '';
+        const city = CITIES.includes(draftCity) ? draftCity : '';
         return {
             name: draft.firstName ?? '',
             day: draft.day ?? '',
             month: draft.month ?? '',
             year: draft.year ?? '',
-            country: draft.country ?? '',
-            city: draft.city ?? '',
+            country,
+            city,
             role: draft.role ?? '',
         };
     });
@@ -121,14 +135,15 @@ export const Step2Profile = () => {
     const { mutate, isPending } = usePostApiAuthRegister({
         mutation: {
             onSuccess: async (_response, variables) => {
-                const { email, password } = variables.data;
+                const { email, password, isArtist } = variables.data;
                 clearRegisterDraft();
+                const next = isArtist ? '/artist-onboarding' : '/';
                 try {
                     const loginRes: any = await postApiAuthLogin({ email, password });
                     const token = loginRes?.data?.token ?? loginRes?.token;
                     if (token) {
                         setAccessToken(token);
-                        router.push('/');
+                        router.push(next);
                     } else {
                         router.push('/login');
                     }
@@ -194,12 +209,13 @@ export const Step2Profile = () => {
                 email: draft.email,
                 password: draft.password,
                 firstName: state.name.trim(),
+                country: state.country,
+                city: state.city,
                 dateOfBirth,
-                gender: 0 as any,
+                gender: Gender.NotSpecified,
                 acceptMarketing: false,
                 acceptTerms: true,
                 isArtist,
-                //artistName: isArtist ? state.name.trim() : null,
             },
         });
     };
@@ -338,9 +354,9 @@ export const Step2Profile = () => {
                                     onChange={(event) => update('country', event.target.value)}
                                 >
                                     <option value="">Країна</option>
-                                    {COUNTRIES.map((country) => (
-                                        <option key={country} value={country}>
-                                            {country}
+                                    {COUNTRIES.map(({ code, label }) => (
+                                        <option key={code} value={code}>
+                                            {label}
                                         </option>
                                     ))}
                                 </select>
