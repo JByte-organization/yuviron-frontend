@@ -3,5 +3,3 @@ import { ArtistDashboardPage } from '@/views/artist-dashboard/ui/ArtistDashboard
 export default function Page() {
     return <ArtistDashboardPage />;
 }
-
-
