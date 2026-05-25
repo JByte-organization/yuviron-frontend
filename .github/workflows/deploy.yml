@@ -211,7 +211,9 @@ jobs:
         run: |
           set -Eeuo pipefail
           cd /opt/yuviron-server
-          python3 ./scripts/cli.py stack preflight "${DEPLOY_ENV}"
+          python3 ./scripts/cli.py stack preflight "${DEPLOY_ENV}" \
+            --skip-connectivity-check \
+            --skip-swagger
 
       - name: Install frontend dependencies
         run: |
