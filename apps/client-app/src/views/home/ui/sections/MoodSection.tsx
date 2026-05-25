@@ -10,6 +10,7 @@ export type MoodFilterType = 'mood' | 'genre';
 interface MoodSectionProps {
     /** TODO: замінити на хук — useGetApiMoods() */
     moods?: MoodCardData[];
+    title?: string;
     /** TODO: замінити на хук — useGetApiGenres() */
     genres?: MoodCardData[];
     isLoading?: boolean;

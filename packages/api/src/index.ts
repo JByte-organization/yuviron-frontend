@@ -14,16 +14,22 @@ export * from './generated/admin/endpoints/admin-playlists';
 // Клієнт
 export * from './generated/client/endpoints/files';
 export * from './generated/client/endpoints/auth';
+export * from './generated/client/endpoints/home';
+export * from './generated/client/endpoints/genres';
+export * from './generated/client/endpoints/moods';
+export * from './generated/client/endpoints/tracks';
+export * from './generated/client/endpoints/artists';
+
+
 export * from './generated/client/endpoints/artist-profiles';
 
-// модели
-// admin/models экспортируется целиком — это исторически используется в admin-app.
-// client/models не реэкспортируется глобально, потому что многие имена пересекаются
-// с admin (Gender, ProblemDetails, ArtistRole и т.п.) — это разные сгенерированные
-// типы и `export *` дал бы TS2308 ambiguous re-export.
-// Импортируй конкретные client-модели по пути:
-//   import { Gender } from '@repo/api/generated/client/models/gender';
 export * from './generated/admin/models';
+
+export * from './generated/client/models/homeBannerDto';
+export * from './generated/client/models/genreItemDto';
+export * from './generated/client/models/topTrackDto';
+export * from './generated/client/models/topArtistDto';
+export * from './generated/client/models/moodItemDto';
 
 
 export { configureApiClient } from './mutator';
