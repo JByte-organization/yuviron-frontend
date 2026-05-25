@@ -186,7 +186,7 @@ export const ArtistAnalyticsPage = () => {
                                 </Pie>
                                 <Tooltip
                                     contentStyle={{ background: '#0D1520', border: '1px solid rgba(119,145,178,0.2)', borderRadius: 8 }}
-                                    formatter={(value: number) => [`${value}%`, '']}
+                                    formatter={(value) => [`${value}%`, '']}
                                 />
                             </PieChart>
                         </ResponsiveContainer>

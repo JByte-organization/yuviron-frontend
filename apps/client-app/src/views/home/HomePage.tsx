@@ -103,10 +103,10 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
         <div className="home-page">
 
             {/* Баннери */}
-            <HeroBannerSection
-                items={banners}
-                isLoading={bannersLoading}
-            />
+            {/*<HeroBannerSection*/}
+            {/*    items={banners}*/}
+            {/*    isLoading={bannersLoading}*/}
+            {/*/>*/}
 
             {/* Настрій / Жанр */}
             <MoodSection
@@ -121,7 +121,7 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
                 tracks={topTracks.length > 0 ? topTracks : undefined}
                 isLoading={topTracksLoading}
                 sectionTitle={topTracksTitle}
-                highlightedWord={topTracksHighlight}
+                // highlightedWord={topTracksHighlight}
             />
 
             {/* Нові релізи */}

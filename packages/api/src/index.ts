@@ -20,8 +20,16 @@ export * from './generated/client/endpoints/moods';
 export * from './generated/client/endpoints/tracks';
 export * from './generated/client/endpoints/artists';
 
+
+
 // модели
 export * from './generated/admin/models';
+
+export * from './generated/client/models/homeBannerDto';
+export * from './generated/client/models/genreItemDto';
+export * from './generated/client/models/topTrackDto';
+export * from './generated/client/models/topArtistDto';
+export * from './generated/client/models/moodItemDto';
 
 
 export { configureApiClient } from './mutator';
