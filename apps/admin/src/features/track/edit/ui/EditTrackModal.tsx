@@ -26,7 +26,6 @@ interface Props {
 type FormValues = {
     title: string;
     albumPosition: number;
-    audioStorageKey: string;
     explicit: boolean;
     visibilityStatus: string;
 };
@@ -44,8 +43,13 @@ export const EditTrackModal = ({
     const [artists, setArtists] = useState<SelectOption[]>([]);
     const [genres,  setGenres]  = useState<SelectOption[]>([]);
     const [moods,   setMoods]   = useState<SelectOption[]>([]);
+    const [audioFileId,      setAudioFileId]      = useState<string | null>(null);
+    const [isAudioUploading, setIsAudioUploading] = useState(false);
+    const [audioUploadError, setAudioUploadError] = useState<string | null>(null);
+    const audioInputRef = useRef<HTMLInputElement>(null);
+
     const [coverFileId, setCoverFileId] = useState<string | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [previewUrl,  setPreviewUrl]  = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -60,6 +64,23 @@ export const EditTrackModal = ({
     });
 
     const { mutateAsync: updateTrack, isPending } = usePutApiAdminTracksId();
+
+    const handleAudioChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setIsAudioUploading(true);
+        setAudioUploadError(null);
+        try {
+            const res = await postApiFilesUpload({ file });
+            const data = res as { fileId?: string; url?: string };
+            if (!data.fileId) throw new Error('No fileId in response');
+            setAudioFileId(data.fileId);
+        } catch {
+            setAudioUploadError('Failed to upload audio. Please try again.');
+        } finally {
+            setIsAudioUploading(false);
+        }
+    };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -116,7 +137,6 @@ export const EditTrackModal = ({
         reset({
             title:            d.title            ?? '',
             albumPosition:    (d.albumPosition ?? 0) > 0 ? d.albumPosition! : 1,
-            audioStorageKey:  d.audioStorageKey  ?? '',
             explicit:         d.explicit         ?? false,
             visibilityStatus: d.visibilityStatus ?? VisibilityStatus.Draft,
         });
@@ -140,7 +160,7 @@ export const EditTrackModal = ({
                     albumPosition:    Number.isFinite(values.albumPosition) && values.albumPosition > 0
                         ? values.albumPosition
                         : 1,
-                    audioStorageKey:  values.audioStorageKey || null,
+                    audioFileId:      audioFileId ?? null,
                     coverFileId:      coverFileId ?? null,
                     explicit:         values.explicit,
                     visibilityStatus: values.visibilityStatus as any,
@@ -263,14 +283,22 @@ export const EditTrackModal = ({
                                     </div>
                                 </div>
 
-                                {/* Audio key */}
+                                {/* Audio */}
                                 <div className="mb-4">
-                                    <label className="form-label admin-text small fw-bold">AUDIO STORAGE KEY</label>
-                                    <input
-                                        type="text"
-                                        className="form-control admin-login__input text-secondary"
-                                        {...register('audioStorageKey')}
-                                    />
+                                    <label className="form-label admin-text small fw-bold">AUDIO FILE</label>
+                                    <div
+                                        className={`upload-input ${audioFileId ? 'border-success' : ''}`}
+                                        onClick={() => audioInputRef.current?.click()}
+                                        style={{ cursor: 'pointer', minHeight: '38px' }}
+                                    >
+                                        <p className="mb-0 small mt-1 text-center text-secondary">
+                                            {audioFileId ? 'New audio uploaded' : 'Click to replace audio (leave empty to keep current)'}
+                                        </p>
+                                    </div>
+                                    <input ref={audioInputRef} type="file" accept="audio/*" className="d-none" onChange={handleAudioChange} />
+                                    {isAudioUploading && <p className="text-info small mt-1">Uploading...</p>}
+                                    {audioUploadError && <p className="text-danger small mt-1">{audioUploadError}</p>}
+                                    {audioFileId && !audioUploadError && <p className="text-success small mt-1">New audio uploaded</p>}
                                 </div>
 
                                 {/* Cover */}
@@ -333,7 +361,7 @@ export const EditTrackModal = ({
                                 <button
                                     type="submit"
                                     className="btn btn-primary px-5 fw-bold"
-                                    disabled={isPending || isSubmitting || isUploading}
+                                    disabled={isPending || isSubmitting || isAudioUploading || isUploading}
                                 >
                                     {isPending ? 'Saving...' : 'Save Changes'}
                                 </button>

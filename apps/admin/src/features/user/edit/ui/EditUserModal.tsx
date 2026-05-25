@@ -31,7 +31,6 @@ type FormValues = {
     accountState: AccountState;
     acceptMarketing: boolean;
     roleId: string;
-    avatarUrl: string;
 };
 
 const MAX_BIRTH_DATE = (() => {
@@ -85,7 +84,6 @@ export const EditUserModal = ({ user, isOpen, onClose, onSuccess }: Props) => {
             accountState: details.accountState ?? AccountState.Active,
             acceptMarketing: details.acceptMarketing ?? false,
             roleId: currentRoleId,
-            avatarUrl: details.avatarUrl ?? '',
         });
     }, [details, reset]);
 
@@ -101,7 +99,8 @@ export const EditUserModal = ({ user, isOpen, onClose, onSuccess }: Props) => {
             accountState: values.accountState,
             acceptMarketing: values.acceptMarketing,
             roleIds: values.roleId ? [values.roleId] : [],
-            avatarUrl: values.avatarUrl || null,
+            avatarFileId: null,
+            bannerFileId: null,
         };
 
         try {
