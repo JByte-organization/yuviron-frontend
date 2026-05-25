@@ -16,7 +16,6 @@ export default function RootLayout({
     return (
         <html lang="uk">
         <body className={`bg-dark text-white`}>
-        {/* QueryProvider должен быть САМЫМ ВЕРХНИМ, чтобы ApiClientProvider и Orval имели доступ к кэшу */}
         <QueryProvider>
             <ApiClientProvider>
                 {children}

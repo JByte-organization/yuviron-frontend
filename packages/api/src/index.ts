@@ -14,6 +14,11 @@ export * from './generated/admin/endpoints/admin-playlists';
 // Клієнт
 export * from './generated/client/endpoints/files';
 export * from './generated/client/endpoints/auth';
+export * from './generated/client/endpoints/home';
+export * from './generated/client/endpoints/genres';
+export * from './generated/client/endpoints/moods';
+export * from './generated/client/endpoints/tracks';
+export * from './generated/client/endpoints/artists';
 
 // модели
 export * from './generated/admin/models';

@@ -21,17 +21,32 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    // відступ = ширина сайдбара + два margin
-    transition: margin-left 0.3s ease;
+    transition: margin-left 0.3s ease, margin-right 0.3s ease;
 
     @media (min-width: 992px) {
       margin-left: $sidebar-width + $sidebar-margin * 2;
     }
 
-    // коли сайдбар прихований — main розширюється
-    &--sidebar-collapsed {
+    &--left-collapsed {
       @media (min-width: 992px) {
-        margin-left: 32px; // залишаємо місце для кнопки відкрити
+        margin-left: 32px;
+      }
+    }
+
+    // Правий сайдбар відкритий
+    &--right-open {
+      @media (min-width: 1200px) {
+        margin-right: $right-sidebar-width + $sidebar-margin * 2;
+      }
+    }
+
+    // Обидва одночасно
+    &--left-collapsed#{&}--right-open {
+      @media (min-width: 992px) {
+        margin-left: 32px;
+      }
+      @media (min-width: 1200px) {
+        margin-right: $right-sidebar-width + $sidebar-margin * 2;
       }
     }
   }

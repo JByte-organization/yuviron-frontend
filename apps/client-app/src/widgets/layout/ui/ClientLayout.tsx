@@ -90,16 +90,16 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
                         <main className={[
                             'client-layout__main',
                             collapsed ? 'client-layout__main--left-collapsed' : '',
-                            isOpen    ? 'client-layout__main--right-open' : '',
+                            isOpen ? 'client-layout__main--right-open' : '',
                         ].filter(Boolean).join(' ')}>
-                                <PlaylistToastProvider>
-                                    {children}
-                                </PlaylistToastProvider>
-                            <Footer />
+                            <PlaylistToastProvider>
+                                {children}
+                            </PlaylistToastProvider>
+                            <Footer/>
                         </main>
 
                         {/* Правий сайдбар */}
-                        <RightSidebar onOpenManually={openManually} />
+                        <RightSidebar onOpenManually={openManually}/>
                     </div>
                 </div>
             </RightSidebarContext.Provider>
