@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { type FormEvent, useMemo, useState } from 'react';
-import { usePostApiAuthConfirmEmail, postApiAuthLogin } from '@repo/api';
+import { usePostApiAuthLoginWithCode, usePostApiAuthSendCode } from '@repo/api';
 import { useSessionStore } from '@/entities/session/model/store';
 import {
     clearRegisterDraft,
@@ -45,39 +45,24 @@ export const ConfirmEmailForm = () => {
     const [error, setError] = useState<string | undefined>();
     const [submitted, setSubmitted] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
+    const [resendInfo, setResendInfo] = useState<string | null>(null);
 
     const maskedEmail = useMemo(() => (email ? maskEmail(email) : ''), [email]);
 
-    const { mutate, isPending } = usePostApiAuthConfirmEmail({
+    // Проверка кода = вход: login-with-code верифицирует код, логинит и возвращает
+    // тот же payload, что обычный login ({ token, userId, email, permissions })
+    // плюс ставит refresh-куку. Email-у больше подтверждать ссылкой не нужно.
+    const { mutate, isPending } = usePostApiAuthLoginWithCode({
         mutation: {
-            onSuccess: async () => {
+            onSuccess: (res: any) => {
+                const token = res?.token ?? res?.data?.token;
                 const draft = getRegisterDraft();
-                const draftEmail = draft.email ?? email;
-                const password = draft.password;
-                const isArtist = draft.role === 'author';
-                const next = isArtist ? '/artist-onboarding' : '/';
-
-                if (!draftEmail || !password) {
-                    clearRegisterDraft();
-                    router.push('/login');
-                    return;
-                }
-
-                try {
-                    const loginRes: any = await postApiAuthLogin({
-                        email: draftEmail,
-                        password,
-                    });
-                    const token = loginRes?.data?.token ?? loginRes?.token;
-                    clearRegisterDraft();
-                    if (token) {
-                        setAccessToken(token);
-                        router.push(next);
-                    } else {
-                        router.push('/login');
-                    }
-                } catch {
-                    clearRegisterDraft();
+                const next = draft.role === 'author' ? '/artist-onboarding' : '/';
+                clearRegisterDraft();
+                if (token) {
+                    setAccessToken(token);
+                    router.push(next);
+                } else {
                     router.push('/login');
                 }
             },
@@ -91,7 +76,25 @@ export const ConfirmEmailForm = () => {
                         data?.detail ||
                         data?.title ||
                         data?.message ||
-                        'Невірний або застарілий код підтвердження.',
+                        'Невірний або застарілий код. Спробуйте ще раз або надішліть новий.',
+                );
+            },
+        },
+    });
+
+    const { mutate: resend, isPending: isResending } = usePostApiAuthSendCode({
+        mutation: {
+            onSuccess: () => {
+                setServerError(null);
+                setResendInfo('Новий код надіслано на вашу пошту.');
+            },
+            onError: (err: any) => {
+                const data = err?.response?.data;
+                setServerError(
+                    data?.detail ||
+                        data?.title ||
+                        data?.message ||
+                        'Не вдалося надіслати код. Спробуйте ще раз.',
                 );
             },
         },
@@ -101,6 +104,7 @@ export const ConfirmEmailForm = () => {
         event.preventDefault();
         setSubmitted(true);
         setServerError(null);
+        setResendInfo(null);
         const next = validateCode(code);
         setError(next);
         if (next) return;
@@ -108,7 +112,14 @@ export const ConfirmEmailForm = () => {
             setServerError('Втрачено контекст реєстрації. Почніть спочатку.');
             return;
         }
-        mutate({ data: { token: code } });
+        mutate({ data: { email, code } });
+    };
+
+    const handleResend = () => {
+        if (!email || isResending || isPending) return;
+        setResendInfo(null);
+        setServerError(null);
+        resend({ data: { email } });
     };
 
     if (!email) {
@@ -188,6 +199,9 @@ export const ConfirmEmailForm = () => {
                 {serverError && (
                     <div className="client-forgot-form__error mb-3">{serverError}</div>
                 )}
+                {resendInfo && (
+                    <div className="client-forgot-form__subtitle mb-3">{resendInfo}</div>
+                )}
 
                 <button
                     type="submit"
@@ -199,6 +213,15 @@ export const ConfirmEmailForm = () => {
             </form>
 
             <div className="client-forgot-form__bottom-divider" />
+
+            <button
+                type="button"
+                className="btn client-forgot-form__resend w-100"
+                onClick={handleResend}
+                disabled={isResending || isPending}
+            >
+                {isResending ? 'Надсилання…' : 'Надіслати новий код'}
+            </button>
 
             <div className="client-forgot-form__login text-center">
                 <span>Будуть проблеми?</span>
