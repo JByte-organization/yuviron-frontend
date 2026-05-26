@@ -222,6 +222,24 @@
     }
   }
 
+  &__alt-btn {
+    height: 30px;
+    margin-top: 10px;
+    border: 1px solid #1e77c9;
+    border-radius: 6px;
+    background: transparent;
+    color: #6ea8de;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+
+    &:hover,
+    &:focus {
+      background: rgba(20, 60, 110, 0.18);
+      color: #9cc7ef;
+    }
+  }
+
   &__register {
     color: rgba(196, 207, 219, 0.58);
     font-size: 10px;

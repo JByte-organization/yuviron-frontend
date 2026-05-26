@@ -1,13 +1,13 @@
 import { Suspense } from 'react';
-import { LoginWithCodeForm } from '@/features/auth/login-with-code';
+import { CheckEmailNotice } from '@/features/auth/register';
 
-export const VerifyCodePage = () => {
+export const RegisterCheckEmailPage = () => {
     return (
         <section className="client-forgot-page">
             <div className="client-forgot-page__panel">
                 <div className="client-forgot-page__content">
                     <Suspense fallback={null}>
-                        <LoginWithCodeForm />
+                        <CheckEmailNotice />
                     </Suspense>
                 </div>
             </div>
@@ -15,4 +15,4 @@ export const VerifyCodePage = () => {
     );
 };
 
-export default VerifyCodePage;
+export default RegisterCheckEmailPage;

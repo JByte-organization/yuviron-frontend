@@ -7,12 +7,12 @@ export const LoginPage = () => {
                 <div className="client-login-page__logo">
                     <img
                         src="/logo.svg"
-                        alt="LumiTune"
+                        alt="Yuviron"
                         className="client-login-page__logo-image"
                     />
                 </div>
 
-                <h1 className="client-login-page__title">Пориньте у LumiTune</h1>
+                <h1 className="client-login-page__title">Пориньте у Yuviron</h1>
 
                 <LoginForm />
             </div>
