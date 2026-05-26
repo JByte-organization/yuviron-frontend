@@ -1091,6 +1091,38 @@
   }
 }
 
+// Страница «Дані акаунту» внутри клиентской оболочки (header + сайдбары).
+// Карточка по центру контентной области; форма внутри переиспользует
+// .client-reset-form стили инпутов/кнопок. Сообщения error/success скоупим
+// сюда, т.к. в самом .client-reset-form они не определены.
+.client-account-page {
+  padding: 32px 24px;
+  display: flex;
+  justify-content: center;
+
+  &__card {
+    width: 100%;
+    max-width: 460px;
+    background: rgba(7, 10, 15, 0.94);
+    border: 1px solid rgba(119, 145, 178, 0.34);
+    border-radius: 14px;
+    padding: 28px 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  .client-reset-form__error {
+    color: #ff7d7d;
+    font-size: 11px;
+    margin-top: 4px;
+  }
+
+  .client-reset-form__success {
+    color: #5fd08a;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+}
+
 .client-reset-form {
   &__top {
     display: flex;
