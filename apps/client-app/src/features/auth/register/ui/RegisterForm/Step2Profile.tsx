@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthRegister } from '@repo/api';
+import { usePostApiAuthRegister, postApiAuthSendCode } from '@repo/api';
 import { Gender } from '@repo/api/generated/client/models/gender';
 import {
     getRegisterDraft,
@@ -131,11 +131,18 @@ export const Step2Profile = () => {
 
     const { mutate, isPending } = usePostApiAuthRegister({
         mutation: {
-            onSuccess: (_response, variables) => {
-                // Авто-логин делаем уже на /verify-code после подтверждения email.
-                // Draft (email+password+role) тут НЕ очищаем — он понадобится
-                // confirm-email step'у для auto-login и редиректа.
+            onSuccess: async (_response, variables) => {
+                // Регистрация только создаёт аккаунт. Верификация почты + вход
+                // идут по коду: send-code шлёт 6-значный код на почту, а на
+                // /verify-code юзер вводит его и логинится через login-with-code.
+                // Draft (role) тут НЕ очищаем — он нужен на /verify-code, чтобы
+                // выбрать редирект (artist → онбординг).
                 const { email } = variables.data;
+                try {
+                    await postApiAuthSendCode({ email: email ?? '' });
+                } catch {
+                    // Не блокируем переход: на /verify-code есть «Надіслати новий код».
+                }
                 router.push(`/verify-code?email=${encodeURIComponent(email ?? '')}`);
             },
             onError: (error: any) => {
