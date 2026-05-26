@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthRegister, postApiAuthSendCode } from '@repo/api';
+import { usePostApiAuthRegister } from '@repo/api';
 import { Gender } from '@repo/api/generated/client/models/gender';
 import {
+    clearRegisterDraft,
     getRegisterDraft,
     setRegisterDraft,
 } from '../../model/registerDraft';
@@ -131,19 +132,15 @@ export const Step2Profile = () => {
 
     const { mutate, isPending } = usePostApiAuthRegister({
         mutation: {
-            onSuccess: async (_response, variables) => {
-                // Регистрация только создаёт аккаунт. Верификация почты + вход
-                // идут по коду: send-code шлёт 6-значный код на почту, а на
-                // /verify-code юзер вводит его и логинится через login-with-code.
-                // Draft (role) тут НЕ очищаем — он нужен на /verify-code, чтобы
-                // выбрать редирект (artist → онбординг).
+            onSuccess: (_response, variables) => {
+                // Регистрация только создаёт аккаунт. Подтверждение почты идёт по
+                // ССЫЛКЕ из письма (/confirm-email?token=...), а не по коду — поэтому
+                // отсюда ведём на экран «перевірте пошту». Роль (isArtist) уже ушла
+                // на бэк в register, а sessionStorage-draft до клика по ссылке из
+                // письма не доживёт, поэтому чистим его здесь.
                 const { email } = variables.data;
-                try {
-                    await postApiAuthSendCode({ email: email ?? '' });
-                } catch {
-                    // Не блокируем переход: на /verify-code есть «Надіслати новий код».
-                }
-                router.push(`/verify-code?email=${encodeURIComponent(email ?? '')}`);
+                clearRegisterDraft();
+                router.push(`/register/check-email?email=${encodeURIComponent(email ?? '')}`);
             },
             onError: (error: any) => {
                 console.log('[register] status:', error?.response?.status);
@@ -230,7 +227,7 @@ export const Step2Profile = () => {
             <div className="client-register-profile-form__logo">
                 <img
                     src="/logo.svg"
-                    alt="LumiTune"
+                    alt="Yuviron"
                     className="client-register-profile-form__logo-image"
                 />
             </div>
