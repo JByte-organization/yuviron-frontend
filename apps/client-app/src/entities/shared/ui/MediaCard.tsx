@@ -1,4 +1,5 @@
 import React from 'react';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 interface MediaCardProps {
     title: string;
@@ -20,9 +21,11 @@ export const MediaCard = ({
                               coverSeed = 'media',
                               onClick,
                           }: MediaCardProps) => {
-    const src = coverUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${coverUrl}`
-        : `https://picsum.photos/seed/${coverSeed}/300/300`;
+
+    const src = getImageUrl(coverUrl)
+        ?? `https://picsum.photos/seed/track-${coverSeed}/300/300`;
+
+
 
     return (
         <div className="media-card" onClick={onClick}>

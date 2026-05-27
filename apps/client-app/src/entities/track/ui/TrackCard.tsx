@@ -2,31 +2,42 @@
 
 import React from 'react';
 import Link from 'next/link';
+import {useAuthGuard} from '@/shared/lib/useAuthGuard';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 export interface TrackCardData {
     id: string;
     title: string;
     artistNames: string[];
-    artistId?: string;  // ← додати
+    artistId?: string;
     coverUrl?: string | null;
     durationMs?: number;
 }
 
 interface TrackCardProps {
     track: TrackCardData;
-    /** Викликається при кліку на картку — програє трек */
     onClick?: (id: string) => void;
 }
 
 export const TrackCard = ({ track, onClick }: TrackCardProps) => {
-    const coverSrc = track.coverUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${track.coverUrl}`
-        : `https://picsum.photos/seed/track-${track.id}/300/300`;
+
+    const coverSrc = getImageUrl(track.coverUrl)
+        ?? `https://picsum.photos/seed/track-${track.id}/300/300`;
+
+
+
+    const { requireAuth } = useAuthGuard();
+
+    const handleClick = () => {
+        requireAuth(() => onClick?.(track.id));
+    };
 
     return (
         <div
             className="track-card"
-            onClick={() => onClick?.(track.id)} // клік на картку = програти
+            // onClick={() => onClick?.(track.id)} // клік на картку = програти
+            onClick={handleClick}
+
         >
             <div className="track-card__cover">
                 <img src={coverSrc} alt={track.title} />

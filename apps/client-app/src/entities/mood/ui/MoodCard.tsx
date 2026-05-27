@@ -14,9 +14,6 @@ interface MoodCardProps {
 }
 
 export const MoodCard = ({ mood, isActive = false, onClick }: MoodCardProps) => {
-    const iconSrc = mood.iconUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${mood.iconUrl}`
-        : null;
 
     return (
         <div
@@ -27,14 +24,16 @@ export const MoodCard = ({ mood, isActive = false, onClick }: MoodCardProps) => 
             <div className="mood-card__circle-wrap">
                 <div className="mood-card__circle">
                     <div className="mood-card__circle-inner">
-                        {iconSrc && (
+                        {mood.iconUrl ? (
                             <Image
-                                src={iconSrc}
+                                src={mood.iconUrl}
                                 alt={mood.name}
-                                width={52}
-                                height={52}
+                                width={150}
+                                height={150}
                                 className="mood-card__icon"
                             />
+                        ) : (
+                            <i className="bi bi-music-note mood-card__icon-placeholder" />
                         )}
                     </div>
                 </div>

@@ -3,10 +3,12 @@
 import React, { createContext, useContext, useState } from 'react';
 import { Header } from '@/widgets/header/ui/Header';
 import { Sidebar } from '@/widgets/sidebar/ui/Sidebar';
+import { GuestSidebar } from '@/widgets/sidebar/ui/GuestSidebar';
+import { useSessionStore } from '@/entities/session/model/store';
 import { Footer } from '@/widgets/footer/ui/Footer';
 import { RightSidebar } from '@/widgets/right-sidebar/ui/RightSidebar';
-import { ThemeProvider } from '@/shared/lib/ThemeProvider';
 import { PlaylistToastProvider } from '@/shared/ui/PlaylistToast';
+import { AuthGuardProvider } from '@/shared/lib/useAuthGuard';
 
 // ══════════════════════════════════════════════════════════
 // LEFT SIDEBAR CONTEXT
@@ -42,6 +44,7 @@ export const RightSidebarContext = createContext<RightSidebarContextValue>({
 
 export const useRightSidebar = () => useContext(RightSidebarContext);
 
+
 // ══════════════════════════════════════════════════════════
 // CLIENT LAYOUT
 // ══════════════════════════════════════════════════════════
@@ -50,60 +53,58 @@ interface ClientLayoutProps {
 }
 
 export const ClientLayout = ({ children }: ClientLayoutProps) => {
-    // Лівий сайдбар
+    // ─── Лівий сайдбар ────────────────────────────────────
     const [collapsed, setCollapsed] = useState(false);
 
-    // Правий сайдбар
-    const [isOpen, setIsOpen] = useState(false);
-    const [userClosed, setUserClosed] = useState(false);
+    // ─── Правий сайдбар ───────────────────────────────────
+    const [isOpen,    setIsOpen]    = useState(false);
+    const [userClosed,setUserClosed]= useState(false);
 
     const open = () => {
-        // Відкриваємо тільки якщо користувач не закрив вручну
-        if (!userClosed) {
-            setIsOpen(true);
-        }
+        if (!userClosed) setIsOpen(true);
     };
 
     const close = () => {
         setIsOpen(false);
-        setUserClosed(true); // запам'ятовуємо що користувач закрив
+        setUserClosed(true);
     };
 
-    // Відкрити вручну (скидає userClosed)
     const openManually = () => {
         setUserClosed(false);
         setIsOpen(true);
     };
 
+    const accessToken = useSessionStore(s => s.accessToken);
+
     return (
-        <ThemeProvider>
         <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
             <RightSidebarContext.Provider value={{ isOpen, userClosed, open, close }}>
-                <div className="client-layout">
-                    <Header />
+                <AuthGuardProvider>
+                    <div className="client-layout">
+                        <Header />
 
-                    <div className="client-layout__body">
-                        {/* Лівий сайдбар */}
-                        <Sidebar />
+                        <div className="client-layout__body">
+                            {/* Лівий сайдбар */}
+                            {accessToken ? <Sidebar /> : <GuestSidebar />}
 
-                        {/* Основний контент */}
-                        <main className={[
-                            'client-layout__main',
-                            collapsed ? 'client-layout__main--left-collapsed' : '',
-                            isOpen ? 'client-layout__main--right-open' : '',
-                        ].filter(Boolean).join(' ')}>
-                            <PlaylistToastProvider>
-                                {children}
-                            </PlaylistToastProvider>
-                            <Footer/>
-                        </main>
+                            {/* Основний контент */}
+                            <main className={[
+                                'client-layout__main',
+                                collapsed ? 'client-layout__main--left-collapsed' : '',
+                                isOpen    ? 'client-layout__main--right-open'     : '',
+                            ].filter(Boolean).join(' ')}>
+                                <PlaylistToastProvider>
+                                    {children}
+                                </PlaylistToastProvider>
+                                <Footer />
+                            </main>
 
-                        {/* Правий сайдбар */}
-                        <RightSidebar onOpenManually={openManually}/>
+                            {/* Правий сайдбар */}
+                            <RightSidebar onOpenManually={openManually} />
+                        </div>
                     </div>
-                </div>
+                </AuthGuardProvider>
             </RightSidebarContext.Provider>
         </SidebarContext.Provider>
-        </ThemeProvider>
     );
 };

@@ -19,6 +19,7 @@ export * from './generated/client/endpoints/genres';
 export * from './generated/client/endpoints/moods';
 export * from './generated/client/endpoints/tracks';
 export * from './generated/client/endpoints/artists';
+export * from './generated/client/endpoints/me';
 
 
 export * from './generated/client/endpoints/artist-profiles';
@@ -30,6 +31,8 @@ export * from './generated/client/models/genreItemDto';
 export * from './generated/client/models/topTrackDto';
 export * from './generated/client/models/topArtistDto';
 export * from './generated/client/models/moodItemDto';
+export * from './generated/client/models/newReleaseDto';
+export * from './generated/client/models/followedArtistDto';
 
 
 export { configureApiClient } from './mutator';

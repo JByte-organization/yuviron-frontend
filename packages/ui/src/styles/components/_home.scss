@@ -45,7 +45,7 @@
 // ─── HeroBannerSection ───────────────────────────────────
 .hero-banner-section {
   &__slide {
-    height: 260px;
+    height: 500px;
     border-radius: 12px;
     overflow: hidden;
     position: relative;
@@ -482,18 +482,18 @@
     }
   }
 
-  // ─── Слайдер ──────────────────────────────────────────
-  // Bootstrap row flex-nowrap + overflow-x для скролу на mobile
-  &__slider {
-    overflow-x: auto;
-    padding-bottom: 8px;
-    cursor: grab;
-    user-select: none;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar { display: none; }
-    &:active { cursor: grabbing; }
-  }
+  //// ─── Слайдер ──────────────────────────────────────────
+  //// Bootstrap row flex-nowrap + overflow-x для скролу на mobile
+  //&__slider {
+  //  overflow-x: auto;
+  //  padding-bottom: 8px;
+  //  cursor: grab;
+  //  user-select: none;
+  //  scrollbar-width: none;
+  //
+  //  &::-webkit-scrollbar { display: none; }
+  //  &:active { cursor: grabbing; }
+  //}
 }
 
 // ══════════════════════════════════════════════════════════
@@ -503,10 +503,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  //gap: 12px;
   cursor: pointer;
   text-align: center;
-  padding: 0;             // відступи між картками — через Bootstrap g-* на row
+  //padding: 0;             // відступи між картками — через Bootstrap g-* на row
   transition: transform 0.2s ease;
 
   &:hover {
@@ -517,8 +517,8 @@
   // width: 100% від колонки, aspect-ratio робить висоту = ширині
   &__circle-wrap {
     width: 100%;
-    max-height: 200px;
-    max-width: 200px;
+    max-height: 170px;
+    min-height: 170px;
     aspect-ratio: 1 / 1;
   }
 
@@ -575,8 +575,8 @@
   }
 
   &__icon {
-    width: 45%;
-    height: 45%;
+    width: 100px;
+    height: 100px;
     object-fit: contain;
     filter: drop-shadow(0 2px 4px rgba(0, 100, 200, 0.3));
   }
@@ -883,4 +883,16 @@
   &::-webkit-scrollbar { display: none; }
 
   .col-6 { min-width: 160px; }
+}
+
+
+.mood-section {
+  &__swiper {
+    width: 100%;
+    padding-bottom: 8px !important;
+  }
+
+  &__swiper-slide {
+    width: auto !important; // SwiperSlide auto-width
+  }
 }

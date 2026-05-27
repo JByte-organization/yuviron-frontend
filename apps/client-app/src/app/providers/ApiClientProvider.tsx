@@ -12,8 +12,13 @@ export const ApiClientProvider = ({ children }: { children: React.ReactNode }) =
         configureApiClient({
             getToken: () => useSessionStore.getState().accessToken,
             onUnauthorized: () => {
+                // Очищаємо токен якщо він був — але не редіректимо
+                // Редірект тільки якщо користувач був авторизований
+                const wasAuthenticated = !!useSessionStore.getState().accessToken;
                 useSessionStore.getState().clearSession();
-                router.replace('/login');
+                if (wasAuthenticated) {
+                    router.replace('/login');
+                }
             },
             onTokenRefresh: (token) => useSessionStore.getState().setAccessToken(token),
         });
