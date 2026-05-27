@@ -14,10 +14,6 @@ interface AlbumCardProps {
     onClick?: (id: string) => void;
 }
 
-/**
- * Картка альбому.
- * Розмір контролюється Bootstrap колонками в батьківському компоненті.
- */
 export const AlbumCard = ({ album, onClick }: AlbumCardProps) => {
     const subtitle = album.tracksCount !== undefined
         ? `by ${album.artistName} • ${album.tracksCount} tracks`

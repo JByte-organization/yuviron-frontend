@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/widgets/layout/ui/ClientLayout';
+import { GuestSidebarCard } from '@/shared/ui/GuestSidebarCard';
 
 interface NavItemProps {
     label: string;
@@ -25,89 +26,6 @@ const NavItem = ({ label, icon, href, isActive }: NavItemProps) => (
     </Link>
 );
 
-// ══════════════════════════════════════════════════════════
-// AUTH POPOVER
-// ══════════════════════════════════════════════════════════
-interface AuthPopoverProps {
-    title: string;
-    text: string;
-    isOpen: boolean;
-    onClose: () => void;
-}
-
-const AuthPopover = ({ title, text, isOpen, onClose }: AuthPopoverProps) => {
-    if (!isOpen) return null;
-
-    return (
-        <div className="guest-auth-popover">
-            <p className="guest-auth-popover__title">{title}</p>
-            <p className="guest-auth-popover__text">{text}</p>
-            <div className="guest-auth-popover__actions">
-                <button
-                    className="guest-auth-popover__btn guest-auth-popover__btn--ghost"
-                    onClick={onClose}
-                >
-                    Не зараз
-                </button>
-                <Link
-                    href="/login"
-                    className="guest-auth-popover__btn guest-auth-popover__btn--primary"
-                    onClick={onClose}
-                >
-                    Увійти
-                </Link>
-            </div>
-        </div>
-    );
-};
-
-// ══════════════════════════════════════════════════════════
-// GUEST SIDEBAR CARD
-// ══════════════════════════════════════════════════════════
-interface GuestCardProps {
-    title: string;
-    text: string;
-    btnLabel: string;
-    popoverTitle: string;
-    popoverText: string;
-}
-
-const GuestCard = ({ title, text, btnLabel, popoverTitle, popoverText }: GuestCardProps) => {
-    const [popoverOpen, setPopoverOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-
-    // Закрити при кліку поза карткою
-    useEffect(() => {
-        if (!popoverOpen) return;
-        const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) {
-                setPopoverOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, [popoverOpen]);
-
-    return (
-        <div className="guest-sidebar-card" ref={ref}>
-            <p className="guest-sidebar-card__title">{title}</p>
-            <p className="guest-sidebar-card__text">{text}</p>
-            <button
-                className="guest-sidebar-card__btn"
-                onClick={() => setPopoverOpen(v => !v)}
-            >
-                {btnLabel}
-            </button>
-
-            <AuthPopover
-                title={popoverTitle}
-                text={popoverText}
-                isOpen={popoverOpen}
-                onClose={() => setPopoverOpen(false)}
-            />
-        </div>
-    );
-};
 
 // ══════════════════════════════════════════════════════════
 // GUEST SIDEBAR
@@ -135,7 +53,7 @@ export const GuestSidebar = () => {
 
                     {/* CTA картки */}
                     <div className="client-sidebar__section">
-                        <GuestCard
+                        <GuestSidebarCard
                             title="Створи свій перший плейліст"
                             text="Це зовсім не складно! Ми допоможемо."
                             btnLabel="Створити плейліст"
@@ -143,7 +61,7 @@ export const GuestSidebar = () => {
                             popoverText="Щоб створювати плейлісти та ділитися ними, увійди в акаунт."
                         />
 
-                        <GuestCard
+                        <GuestSidebarCard
                             title="Відкрий Premium"
                             text="Слухай без реклами та обмежень."
                             btnLabel="Дізнатися більше"
