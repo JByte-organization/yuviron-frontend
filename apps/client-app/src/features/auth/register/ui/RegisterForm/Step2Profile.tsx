@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthRegister, postApiAuthLogin } from '@repo/api';
+import { usePostApiAuthRegister } from '@repo/api';
 import { Gender } from '@repo/api/generated/client/models/gender';
-import { useSessionStore } from '@/entities/session/model/store';
 import {
     clearRegisterDraft,
     getRegisterDraft,
@@ -101,7 +100,6 @@ const validate = (state: ProfileState): ProfileErrors => {
 
 export const Step2Profile = () => {
     const router = useRouter();
-    const setAccessToken = useSessionStore((s) => s.setAccessToken);
     const [state, setState] = useState<ProfileState>(() => {
         const draft = getRegisterDraft();
         // Защита от старых черновиков, где country хранился как полное название
@@ -134,22 +132,15 @@ export const Step2Profile = () => {
 
     const { mutate, isPending } = usePostApiAuthRegister({
         mutation: {
-            onSuccess: async (_response, variables) => {
-                const { email, password, isArtist } = variables.data;
+            onSuccess: (_response, variables) => {
+                // Регистрация только создаёт аккаунт. Подтверждение почты идёт по
+                // ССЫЛКЕ из письма (/confirm-email?token=...), а не по коду — поэтому
+                // отсюда ведём на экран «перевірте пошту». Роль (isArtist) уже ушла
+                // на бэк в register, а sessionStorage-draft до клика по ссылке из
+                // письма не доживёт, поэтому чистим его здесь.
+                const { email } = variables.data;
                 clearRegisterDraft();
-                const next = isArtist ? '/artist-onboarding' : '/';
-                try {
-                    const loginRes: any = await postApiAuthLogin({ email, password });
-                    const token = loginRes?.data?.token ?? loginRes?.token;
-                    if (token) {
-                        setAccessToken(token);
-                        router.push(next);
-                    } else {
-                        router.push('/login');
-                    }
-                } catch {
-                    router.push('/login');
-                }
+                router.push(`/register/check-email?email=${encodeURIComponent(email ?? '')}`);
             },
             onError: (error: any) => {
                 console.log('[register] status:', error?.response?.status);
@@ -236,7 +227,7 @@ export const Step2Profile = () => {
             <div className="client-register-profile-form__logo">
                 <img
                     src="/logo.svg"
-                    alt="LumiTune"
+                    alt="Yuviron"
                     className="client-register-profile-form__logo-image"
                 />
             </div>

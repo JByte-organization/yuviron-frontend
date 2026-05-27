@@ -179,10 +179,18 @@ export const customInstance = async <T>(
         throw err;
     }
 
-    // --- 204 No Content ---
+    // --- Пустое тело ответа ---
+    // Часть эндпоинтов (send-code, confirm-email и т.п.) отвечают 200 с ПУСТЫМ
+    // телом. response.json() на пустом теле кидает SyntaxError — и успешный
+    // запрос прилетал в onError ("Не вдалося надіслати код" при фактическом 200).
+    // Читаем текст и парсим только непустой; 204 и пустой 200 → {}.
     if (response.status === 204) {
         return {} as T;
     }
 
-    return response.json();
+    const rawText = await response.text();
+    if (!rawText) {
+        return {} as T;
+    }
+    return JSON.parse(rawText) as T;
 };

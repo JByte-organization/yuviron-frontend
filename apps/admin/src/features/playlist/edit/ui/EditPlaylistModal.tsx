@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import {
     useGetApiAdminPlaylistsId,
     getGetApiAdminPlaylistsIdQueryKey,
     usePutApiAdminPlaylistsId,
     PlaylistVisibility,
+    postApiFilesUpload,
     type PlaylistDto,
 } from '@repo/api';
 import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
@@ -22,7 +23,6 @@ interface Props {
 type FormValues = {
     title: string;
     description: string;
-    coverUrl: string;
     visibility: string;
     isEditorial: boolean;
 };
@@ -34,6 +34,11 @@ export const EditPlaylistModal = ({ playlist, isOpen, onClose, onSuccess, onSear
     } = useForm<FormValues>();
 
     const [owner, setOwner] = useState<SelectOption[]>([]);
+    const [coverFileId, setCoverFileId] = useState<string | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const playlistId = playlist?.id ?? '';
 
@@ -53,16 +58,39 @@ export const EditPlaylistModal = ({ playlist, isOpen, onClose, onSuccess, onSear
         reset({
             title:       d.title ?? '',
             description: d.description ?? '',
-            coverUrl:    d.coverUrl ?? '',
             visibility:  d.visibility ?? PlaylistVisibility.Public,
             isEditorial: d.isEditorial ?? false,
         });
 
-        // Предзаполняем владельца
         if (d.creator?.id && d.creator?.name) {
             setOwner([{ id: d.creator.id, label: d.creator.name || d.creator.email }]);
         }
     }, [details, reset]);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setIsUploading(true);
+        setUploadError(null);
+        try {
+            const res = await postApiFilesUpload({ file });
+            const data = res as { fileId?: string; url?: string };
+            if (!data.fileId) throw new Error('No fileId in response');
+            setCoverFileId(data.fileId);
+            setPreviewUrl(data.url ?? null);
+        } catch {
+            setUploadError('Failed to upload image. Please try again.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleClose = () => {
+        setCoverFileId(null);
+        setPreviewUrl(null);
+        setUploadError(null);
+        onClose();
+    };
 
     const onSubmit = async (values: FormValues) => {
         if (!playlistId) return;
@@ -73,14 +101,14 @@ export const EditPlaylistModal = ({ playlist, isOpen, onClose, onSuccess, onSear
                     id:          playlistId,
                     title:       values.title,
                     description: values.description || null,
-                    coverFileId:    values.coverUrl || null,
+                    coverFileId: coverFileId ?? null,
                     visibility:  values.visibility as any,
                     isEditorial: values.isEditorial,
                     ownerUserId: owner[0]?.id || null,
                 },
             });
             onSuccess();
-            onClose();
+            handleClose();
         } catch (error: any) {
             const status = error.response?.status;
             const serverErrors = error.response?.data?.errors;
@@ -122,7 +150,7 @@ export const EditPlaylistModal = ({ playlist, isOpen, onClose, onSuccess, onSear
                                 <small className="text-secondary">ID: {playlist.id}</small>
                             </div>
                         </div>
-                        <button type="button" className="btn-close btn-close-white" onClick={onClose} />
+                        <button type="button" className="btn-close btn-close-white" onClick={handleClose} />
                     </div>
 
                     {isLoading ? (
@@ -160,22 +188,30 @@ export const EditPlaylistModal = ({ playlist, isOpen, onClose, onSuccess, onSear
                                 <div className="row">
                                     <div className="col-md-6 mb-4">
                                         <label className="form-label admin-text small fw-bold">VISIBILITY</label>
-                                        <select
-                                            className="form-select admin-login__input text-white"
-                                            {...register('visibility')}
-                                        >
+                                        <select className="form-select admin-login__input text-white" {...register('visibility')}>
                                             {Object.values(PlaylistVisibility).map(v => (
                                                 <option key={v} value={v}>{v}</option>
                                             ))}
                                         </select>
                                     </div>
+
+                                    {/* Cover upload - leave empty to keep existing */}
                                     <div className="col-md-6 mb-4">
-                                        <label className="form-label admin-text small fw-bold">COVER PATH</label>
-                                        <input
-                                            type="text"
-                                            className="form-control admin-login__input text-secondary"
-                                            {...register('coverUrl')}
-                                        />
+                                        <label className="form-label admin-text small fw-bold">COVER IMAGE</label>
+                                        <div
+                                            className={`upload-input ${coverFileId ? 'border-success' : ''}`}
+                                            onClick={() => fileInputRef.current?.click()}
+                                            style={{ cursor: 'pointer', minHeight: '38px' }}
+                                        >
+                                            {previewUrl
+                                                ? <img src={previewUrl} alt="cover preview" className="img-fluid rounded" style={{ maxHeight: '80px' }} />
+                                                : <p className="mb-0 small mt-1 text-center text-secondary">Click to replace</p>
+                                            }
+                                        </div>
+                                        <input ref={fileInputRef} type="file" accept="image/*" className="d-none" onChange={handleFileChange} />
+                                        {isUploading && <p className="text-info small mt-1">Uploading...</p>}
+                                        {uploadError && <p className="text-danger small mt-1">{uploadError}</p>}
+                                        {coverFileId && !uploadError && <p className="text-success small mt-1">New cover uploaded</p>}
                                     </div>
                                 </div>
 
@@ -202,13 +238,13 @@ export const EditPlaylistModal = ({ playlist, isOpen, onClose, onSuccess, onSear
                             </div>
 
                             <div className="modal-footer border-0 p-4">
-                                <button type="button" className="btn btn-admin-dark px-4" onClick={onClose}>
+                                <button type="button" className="btn btn-admin-dark px-4" onClick={handleClose}>
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     className="btn btn-primary px-5 fw-bold"
-                                    disabled={isPending || isSubmitting}
+                                    disabled={isPending || isSubmitting || isUploading}
                                 >
                                     {isPending ? 'Saving...' : 'Save Changes'}
                                 </button>

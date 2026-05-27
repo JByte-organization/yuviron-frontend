@@ -54,8 +54,8 @@ export const ForgotPasswordForm = () => {
 
             <div className="client-forgot-form__logo">
                 <img
-                    src="/Logo.svg"
-                    alt="LumiTune"
+                    src="/logo.svg"
+                    alt="Yuviron"
                     className="client-forgot-form__logo-image"
                 />
             </div>

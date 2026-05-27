@@ -7,7 +7,7 @@ export const RegisterPage = () => {
                 <div className="client-register-page__logo">
                     <img
                         src="/logo.svg"
-                        alt="LumiTune"
+                        alt="Yuviron"
                         className="client-register-page__logo-image"
                     />
                 </div>
@@ -15,7 +15,7 @@ export const RegisterPage = () => {
                 <h1 className="client-register-page__title">
                     Пориньте вперше
                     <br />
-                    у LumiTune
+                    у Yuviron
                 </h1>
 
                 <RegisterForm />

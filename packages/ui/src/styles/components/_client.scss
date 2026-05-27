@@ -222,6 +222,24 @@
     }
   }
 
+  &__alt-btn {
+    height: 30px;
+    margin-top: 10px;
+    border: 1px solid #1e77c9;
+    border-radius: 6px;
+    background: transparent;
+    color: #6ea8de;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+
+    &:hover,
+    &:focus {
+      background: rgba(20, 60, 110, 0.18);
+      color: #9cc7ef;
+    }
+  }
+
   &__register {
     color: rgba(196, 207, 219, 0.58);
     font-size: 10px;
@@ -1070,6 +1088,38 @@
     width: 64px;
     height: auto;
     display: block;
+  }
+}
+
+// Страница «Дані акаунту» внутри клиентской оболочки (header + сайдбары).
+// Карточка по центру контентной области; форма внутри переиспользует
+// .client-reset-form стили инпутов/кнопок. Сообщения error/success скоупим
+// сюда, т.к. в самом .client-reset-form они не определены.
+.client-account-page {
+  padding: 32px 24px;
+  display: flex;
+  justify-content: center;
+
+  &__card {
+    width: 100%;
+    max-width: 460px;
+    background: rgba(7, 10, 15, 0.94);
+    border: 1px solid rgba(119, 145, 178, 0.34);
+    border-radius: 14px;
+    padding: 28px 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  .client-reset-form__error {
+    color: #ff7d7d;
+    font-size: 11px;
+    margin-top: 4px;
+  }
+
+  .client-reset-form__success {
+    color: #5fd08a;
+    font-size: 12px;
+    margin-top: 4px;
   }
 }
 

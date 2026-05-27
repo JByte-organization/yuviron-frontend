@@ -33,7 +33,7 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
     });
 
     // ─── Upload стан ──────────────────────────────────────
-    const [bannerPath,    setBannerPath]    = useState<string | null>(null);
+    const [bannerFileId,  setBannerFileId]  = useState<string | null>(null);
     const [previewUrl,    setPreviewUrl]    = useState<string | null>(null);
     const [isUploading,   setIsUploading]   = useState(false);
     const [uploadError,   setUploadError]   = useState<string | null>(null);
@@ -51,17 +51,9 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
 
         try {
             const res = await postApiFilesUpload({ file });
-
-            type UploadResponse = { path?: string; url?: string }
-                | { data?: { path?: string; url?: string } };
-
-            const raw = res as UploadResponse;
-            const data = 'data' in raw && raw.data ? raw.data : raw as { path?: string; url?: string };
-
-            if (!data.path) throw new Error('No path in response');
-
-            setBannerPath(data.path);
-            // URL для превью з тимчасового сховища
+            const data = res as { fileId?: string; url?: string };
+            if (!data.fileId) throw new Error('No fileId in response');
+            setBannerFileId(data.fileId);
             setPreviewUrl(data.url ?? null);
         } catch {
             setUploadError('Failed to upload image. Please try again.');
@@ -72,24 +64,24 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
 
     const handleClose = () => {
         reset();
-        setBannerPath(null);
+        setBannerFileId(null);
         setPreviewUrl(null);
         setUploadError(null);
         onClose();
     };
 
     const onSubmit = async (values: FormValues) => {
-        if (!bannerPath) {
+        if (!bannerFileId) {
             setError('root', { message: 'Please upload a banner image.' });
             return;
         }
 
         const body: CreateBannerCommand = {
-            title:     values.title     || null,
-            targetUrl: values.targetUrl || null,
-            bannerFileId: bannerPath,
-            sortOrder: values.sortOrder,
-            isActive:  values.isActive,
+            title:        values.title     || null,
+            targetUrl:    values.targetUrl || null,
+            bannerFileId: bannerFileId,
+            sortOrder:    values.sortOrder,
+            isActive:     values.isActive,
         };
 
         try {
@@ -178,7 +170,7 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
                                     onChange={handleFileChange}
                                 />
 
-                                {bannerPath && (
+                                {bannerFileId && (
                                     <button
                                         type="button"
                                         className="btn btn-sm btn-outline-secondary"
