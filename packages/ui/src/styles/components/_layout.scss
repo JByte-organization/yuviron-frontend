@@ -507,8 +507,6 @@
     border-radius: 16px;
     box-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
 
-    // overflow: hidden НЕ ставимо тут — інакше обрізає кнопку toggle
-    // скрол і rounded corners обробляє __inner
     transition: transform 0.3s ease, opacity 0.3s ease;
   }
 
@@ -522,12 +520,12 @@
   // ─── Внутрішній скролл ────────────────────────────────
   &__inner {
     height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
+    //overflow-y: auto;
+    //overflow-x: auto;
     padding: 24px 12px 20px;
     scrollbar-width: thin;
     scrollbar-color: $client-border transparent;
-    border-radius: 16px; // повторює border-radius батька
+    border-radius: 16px;
 
     display: flex;
     flex-direction: column;

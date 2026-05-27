@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import {useAuthGuard} from '@/shared/lib/useAuthGuard';
 
 export type TrackRowVariant = 'default' | 'artist';
 
@@ -62,6 +63,7 @@ export const TrackRow = ({
                              showAddToPlaylist = false,
                          }: TrackRowProps) => {
     const [isHovered, setIsHovered] = useState(false);
+    const { requireAuth } = useAuthGuard();
 
     const coverSrc = track.coverUrl
         ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${track.coverUrl}`
@@ -72,7 +74,7 @@ export const TrackRow = ({
             className={`track-row track-row--${variant}${isPlaying ? ' track-row--playing' : ''}${isHovered ? ' track-row--hovered' : ''}`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            onClick={() => onClick?.(track.id)}
+            onClick={() => requireAuth(() => onClick?.(track.id))}
         >
             {/* ─── Номер / play ─────────────────────────── */}
             <div className="track-row__index">
@@ -142,7 +144,7 @@ export const TrackRow = ({
                 {/* Лайк */}
                 <button
                     className="track-row__like-btn"
-                    onClick={(e) => { e.stopPropagation(); onLike?.(track.id); }}
+                    onClick={(e) => { e.stopPropagation(); requireAuth(() => onLike?.(track.id)); }}
                     aria-label="Like"
                 >
                     <i className="bi bi-heart" />

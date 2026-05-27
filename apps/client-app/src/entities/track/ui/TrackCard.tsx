@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import {useAuthGuard} from '@/shared/lib/useAuthGuard';
 
 export interface TrackCardData {
     id: string;
@@ -19,14 +20,22 @@ interface TrackCardProps {
 }
 
 export const TrackCard = ({ track, onClick }: TrackCardProps) => {
+
     const coverSrc = track.coverUrl
         ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${track.coverUrl}`
         : `https://picsum.photos/seed/track-${track.id}/300/300`;
 
+    const { requireAuth } = useAuthGuard();
+
+    const handleClick = () => {
+        requireAuth(() => onClick?.(track.id));
+    };
+
     return (
         <div
             className="track-card"
-            onClick={() => onClick?.(track.id)} // клік на картку = програти
+            // onClick={() => onClick?.(track.id)} // клік на картку = програти
+            onClick={handleClick}
         >
             <div className="track-card__cover">
                 <img src={coverSrc} alt={track.title} />

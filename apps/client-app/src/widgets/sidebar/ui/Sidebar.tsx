@@ -57,7 +57,7 @@ export const Sidebar = () => {
 
                     {/* Меню */}
                     <div className="client-sidebar__section">
-                        <p className="client-sidebar__section-title">Меню</p>
+                        {/*<p className="client-sidebar__section-title">Меню</p>*/}
                         <nav className="client-sidebar__nav">
                             <NavItem href="/home"      icon="home"        label="Головна"          isActive={isActive('/home')} />
                             <NavItem href="/library"   icon="library"     label="Моя медіатека"    isActive={isActive('/library')} />
