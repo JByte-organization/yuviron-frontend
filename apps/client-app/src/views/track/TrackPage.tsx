@@ -62,7 +62,7 @@ export const TrackPage = ({ trackId }: TrackPageProps) => {
             {/* Інші альбоми виконавця */}
             <NewReleasesSection
                 sectionTitle={`${track.artistName}: інші альбоми`}
-                highlightedWord="інші"
+                // highlightedWord="інші"
                 showAllHref={`/artists/${track.artistId}/albums`}
             />
         </div>
