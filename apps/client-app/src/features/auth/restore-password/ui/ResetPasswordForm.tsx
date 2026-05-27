@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
+import { usePostApiAuthResetPassword } from '@repo/api';
 
-const checkLetter = (value: string) => /[A-Za-zА-Яа-яЇїІіЄєҐґ]/.test(value);
-const checkNumberOrSymbol = (value: string) => /[\d!@#$%^&*()_+\-={}[\]:;"'<>,.?/\\|`~]/.test(value);
+const checkUppercase = (value: string) => /[A-Z]/.test(value);
+const checkLowercase = (value: string) => /[a-z]/.test(value);
+const checkDigit = (value: string) => /\d/.test(value);
 const checkLength = (value: string) => value.length >= 8;
 
 type ResetErrors = {
@@ -18,8 +20,14 @@ const validate = (password: string, confirm: string): ResetErrors => {
 
     if (!password) {
         errors.password = 'Введіть пароль';
-    } else if (!checkLetter(password) || !checkNumberOrSymbol(password) || !checkLength(password)) {
-        errors.password = 'Пароль не відповідає правилам';
+    } else if (
+        !checkUppercase(password) ||
+        !checkLowercase(password) ||
+        !checkDigit(password) ||
+        !checkLength(password)
+    ) {
+        errors.password =
+            'Пароль має містити велику й малу літери, цифру та бути не коротшим за 8 символів';
     }
 
     if (!confirm) {
@@ -33,20 +41,49 @@ const validate = (password: string, confirm: string): ResetErrors => {
 
 export const ResetPasswordForm = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const token = searchParams.get('token');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [errors, setErrors] = useState<ResetErrors>({});
     const [submitted, setSubmitted] = useState(false);
+    const [serverError, setServerError] = useState<string | null>(null);
+
+    const { mutate, isPending } = usePostApiAuthResetPassword({
+        mutation: {
+            onSuccess: () => {
+                router.push('/login');
+            },
+            onError: (err: any) => {
+                const data = err?.response?.data;
+                const fieldErrors = data?.errors
+                    ? Object.values(data.errors).flat().join(' ')
+                    : null;
+                setServerError(
+                    fieldErrors ||
+                        data?.detail ||
+                        data?.title ||
+                        data?.message ||
+                        'Не вдалося змінити пароль. Можливо, посилання вже не дійсне.',
+                );
+            },
+        },
+    });
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitted(true);
+        setServerError(null);
+        if (!token) {
+            setServerError('Невалідне посилання для скидання паролю.');
+            return;
+        }
         const next = validate(password, confirm);
         setErrors(next);
         if (Object.keys(next).length > 0) return;
-        router.push('/login');
+        mutate({ data: { token, newPassword: password } });
     };
 
     return (
@@ -141,8 +178,16 @@ export const ResetPasswordForm = () => {
                     )}
                 </div>
 
-                <button type="submit" className="btn client-reset-form__submit w-100">
-                    Змінити пароль
+                {serverError && (
+                    <div className="client-reset-form__error mb-3">{serverError}</div>
+                )}
+
+                <button
+                    type="submit"
+                    className="btn client-reset-form__submit w-100"
+                    disabled={isPending}
+                >
+                    {isPending ? 'Зміна паролю…' : 'Змінити пароль'}
                 </button>
             </form>
 

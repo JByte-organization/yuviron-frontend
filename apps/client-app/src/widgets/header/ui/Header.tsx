@@ -3,7 +3,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { usePostApiAuthLogout } from '@repo/api';
 import { useTheme } from '@/shared/lib/ThemeProvider';
+import { useSessionStore } from '@/entities/session/model/store';
 import { SearchDropdown } from './SearchDropdown';
 import { UserDropdown } from './UserDropdown';
 
@@ -18,15 +20,28 @@ interface HeaderUser {
 }
 
 interface HeaderProps {
-    /** TODO: передавати з хука useGetApiCurrentUser() */
+    /** Если передан — переопределяет данные из session-store. */
     user?: HeaderUser | null;
     /** Кількість непрочитаних повідомлень */
     unreadCount?: number;
 }
 
-export const Header = ({ user, unreadCount = 0 }: HeaderProps) => {
+export const Header = ({ user: userProp, unreadCount = 0 }: HeaderProps) => {
     const router = useRouter();
     const { theme, toggleTheme } = useTheme();
+    const sessionUser = useSessionStore((s) => s.user);
+
+    // Пока бэк не отдаёт /me с расширенным профилем — формируем минимальный
+    // user-объект из JWT-клеймов. Полноценный аватар/премиум/артист подцепим
+    // когда будет соответствующий эндпоинт.
+    const user: HeaderUser | null =
+        userProp ??
+        (sessionUser?.id
+            ? {
+                  id: sessionUser.id,
+                  name: sessionUser.email,
+              }
+            : null);
 
     const [query, setQuery]               = useState('');
     const [showDropdown, setShowDropdown] = useState(false);
@@ -57,9 +72,18 @@ export const Header = ({ user, unreadCount = 0 }: HeaderProps) => {
         }
     };
 
+    const clearSession = useSessionStore((s) => s.clearSession);
+    const { mutate: logout } = usePostApiAuthLogout({
+        mutation: {
+            onSettled: () => {
+                clearSession();
+                router.replace('/login');
+            },
+        },
+    });
+
     const handleLogout = () => {
-        // TODO: викликати usePostApiAuthLogout()
-        console.log('logout');
+        logout();
     };
 
     return (

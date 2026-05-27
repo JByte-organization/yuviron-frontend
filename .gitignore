@@ -29,6 +29,8 @@ out/
 build
 dist
 
+# Generated API hooks (regenerated at build time via pnpm api:gen)
+packages/api/src/generated
 
 # Debug
 npm-debug.log*
@@ -41,6 +43,5 @@ yarn-error.log*
 
 turbo-dry-run.json
 *.tsbuildinfo
-/.github/
 /apps/admin/.env.production
 /packages/api/src/generated/
