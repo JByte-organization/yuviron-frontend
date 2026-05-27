@@ -40,7 +40,7 @@ export const CreateAlbumModal = ({ isOpen, onClose, onSuccess, onSearchArtists }
                 data: {
                     title:              values.title,
                     description:        values.description || null,
-                    coverUrl:           values.coverUrl || null,
+                    coverFileId:           values.coverUrl || null,
                     releaseDate:        values.releaseDate || undefined,
                     visibilityStatus:   values.visibilityStatus as any,
                     scheduledPublishAt: values.scheduledPublishAt || null,

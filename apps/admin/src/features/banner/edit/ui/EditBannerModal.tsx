@@ -115,7 +115,7 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
             bannerId,
             title:     values.title     || null,
             targetUrl: values.targetUrl || null,
-            bannerUrl: bannerPath ?? details?.bannerUrl ?? null,
+            bannerFileId: bannerPath ?? details?.bannerUrl ?? null,
             sortOrder: values.sortOrder,
             isActive:  values.isActive,
         };

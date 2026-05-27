@@ -16,13 +16,13 @@ import {
 } from '@repo/api';
 
 interface Props {
-    user: UserListItemDto | null; // передаём из таблицы для быстрого рендера шапки
+    user: UserListItemDto | null;
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-// UpdateUserCommand не содержит пароль — его менять нельзя через этот эндпоинт
+// UpdateUserCommand не содержит пароль
 type FormValues = {
     email: string;
     firstName: string;
@@ -101,7 +101,7 @@ export const EditUserModal = ({ user, isOpen, onClose, onSuccess }: Props) => {
             accountState: values.accountState,
             acceptMarketing: values.acceptMarketing,
             roleIds: values.roleId ? [values.roleId] : [],
-            avatarUrl: values.avatarUrl || null,
+            avatarFileId: values.avatarUrl || null,
         };
 
         try {

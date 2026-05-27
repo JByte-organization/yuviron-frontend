@@ -63,7 +63,7 @@ export const EditGenreModal = ({ genre, isOpen, onClose, onSuccess }: Props) => 
                 data: {
                     genreId,
                     name: values.name,
-                    coverUrl: values.coverUrl || null,
+                    coverFileId: values.coverUrl || null,
                 },
             });
             onSuccess();

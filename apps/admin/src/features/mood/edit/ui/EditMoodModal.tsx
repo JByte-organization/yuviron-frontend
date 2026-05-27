@@ -61,9 +61,9 @@ export const EditMoodModal = ({ mood, isOpen, onClose, onSuccess }: Props) => {
             await updateMood({
                 id: moodId,
                 data: {
-                    id: moodId,        // UpdateMoodCommand использует id, не moodId
+                    id: moodId,
                     name: values.name,
-                    coverUrl: values.coverUrl || null,
+                    coverFileId: values.coverUrl || null,
                 },
             });
             onSuccess();

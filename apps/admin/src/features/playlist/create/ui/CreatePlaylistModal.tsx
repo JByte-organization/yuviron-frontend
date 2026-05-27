@@ -40,7 +40,7 @@ export const CreatePlaylistModal = ({ isOpen, onClose, onSuccess, onSearchUsers 
                 data: {
                     title:       values.title,
                     description: values.description || null,
-                    coverUrl:    values.coverUrl || null,
+                    coverFileId:    values.coverUrl || null,
                     visibility:  values.visibility as any,
                     isEditorial: values.isEditorial,
                     ownerUserId: owner[0]?.id || null,

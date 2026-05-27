@@ -31,7 +31,7 @@ export const CreateGenreModal = ({ isOpen, onClose, onSuccess }: Props) => {
             await createGenre({
                 data: {
                     name: values.name,
-                    coverUrl: values.coverUrl || null,
+                    coverFileId: values.coverUrl || null,
                 },
             });
             reset();

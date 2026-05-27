@@ -82,7 +82,7 @@ export const EditAlbumModal = ({ album, isOpen, onClose, onSuccess, onSearchArti
                     albumId,
                     title:              values.title,
                     description:        values.description || null,
-                    coverUrl:           values.coverUrl || null,
+                    coverFileId:           values.coverUrl || null,
                     releaseDate:        values.releaseDate || undefined,
                     visibilityStatus:   values.visibilityStatus as any,
                     scheduledPublishAt: values.scheduledPublishAt || null,

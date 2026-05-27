@@ -31,7 +31,7 @@ export const CreateMoodModal = ({ isOpen, onClose, onSuccess }: Props) => {
             await createMood({
                 data: {
                     name: values.name,
-                    coverUrl: values.coverUrl || null,
+                    coverFileId: values.coverUrl || null,
                 },
             });
             reset();

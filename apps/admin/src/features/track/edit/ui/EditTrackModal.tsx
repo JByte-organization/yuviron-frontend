@@ -118,8 +118,8 @@ export const EditTrackModal = ({
                     albumPosition:    Number.isFinite(values.albumPosition) && values.albumPosition > 0
                         ? values.albumPosition
                         : 1,
-                    audioStorageKey:  values.audioStorageKey || null,
-                    coverUrl:         values.coverUrl || null,
+                    audioFileId:      values.audioStorageKey || undefined,
+                    coverFileId:      values.coverUrl || null,
                     explicit:         values.explicit,
                     visibilityStatus: values.visibilityStatus as any,
                     artists: artists.map(a => ({

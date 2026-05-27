@@ -87,7 +87,7 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
         const body: CreateBannerCommand = {
             title:     values.title     || null,
             targetUrl: values.targetUrl || null,
-            bannerUrl: bannerPath,
+            bannerFileId: bannerPath,
             sortOrder: values.sortOrder,
             isActive:  values.isActive,
         };

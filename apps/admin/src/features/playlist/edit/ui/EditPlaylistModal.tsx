@@ -73,7 +73,7 @@ export const EditPlaylistModal = ({ playlist, isOpen, onClose, onSuccess, onSear
                     id:          playlistId,
                     title:       values.title,
                     description: values.description || null,
-                    coverUrl:    values.coverUrl || null,
+                    coverFileId:    values.coverUrl || null,
                     visibility:  values.visibility as any,
                     isEditorial: values.isEditorial,
                     ownerUserId: owner[0]?.id || null,

@@ -375,7 +375,7 @@ export const EditArtistModal = ({ artist, isOpen, onClose, onSuccess }: Props) =
             name:               values.name,
             bio:                values.bio || '',
             verificationStatus: values.verificationStatus,
-            avatarUrl:          values.avatarUrl || null,
+            avatarFileId:          values.avatarUrl || null,
             ownerUserId:        details?.owner?.userId ?? null,
         };
 
