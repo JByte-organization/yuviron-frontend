@@ -9,6 +9,8 @@ export * from './generated/admin/endpoints/admin-moods';
 export * from './generated/admin/endpoints/admin-albums';
 export * from './generated/admin/endpoints/admin-dashboard';
 export * from './generated/admin/endpoints/admin-playlists';
+export * from './generated/admin/endpoints/admin-auth';
+export * from './generated/admin/endpoints/admin-ads';
 
 
 // Клієнт
