@@ -28,6 +28,7 @@ export const ArtistRow = ({ artist, isSelected, onSelect, onDelete, onEdit }: Ar
         );
     };
 
+
     // Путь к аватару
     const avatarSrc = getImageUrl(artist.avatarUrl);
 
