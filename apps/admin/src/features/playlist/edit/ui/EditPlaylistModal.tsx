@@ -11,6 +11,7 @@ import {
     type PlaylistDto,
 } from '@repo/api';
 import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
     playlist: PlaylistDto | null;
@@ -125,9 +126,7 @@ export const EditPlaylistModal = ({ playlist, isOpen, onClose, onSuccess, onSear
 
     if (!isOpen || !playlist) return null;
 
-    const coverSrc = playlist.coverUrl
-        ? `https://api.yuviron.com/storage/${playlist.coverUrl}`
-        : null;
+    const coverSrc = getImageUrl(playlist.coverUrl);
 
     return (
         <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050 }}>

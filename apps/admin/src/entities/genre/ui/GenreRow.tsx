@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { type GenreListItemDto } from '@repo/api';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
     genre: GenreListItemDto;
@@ -21,9 +22,7 @@ const formatDate = (dateString?: string): string => {
 };
 
 export const GenreRow = ({ genre, isSelected, onSelect, onEdit, onDelete }: Props) => {
-    const coverSrc = genre.coverUrl
-        ? `https://api.yuviron.com/storage/${genre.coverUrl}`
-        : null;
+    const coverSrc = getImageUrl(genre.coverUrl);
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>
@@ -41,7 +40,7 @@ export const GenreRow = ({ genre, isSelected, onSelect, onEdit, onDelete }: Prop
             {/* Cover */}
             <td className="py-3">
                 <div
-                    className="rounded bg-secondary d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0"
+                    className="rounded bg-dark d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0"
                     style={{ width: '40px', height: '40px' }}
                 >
                     {coverSrc

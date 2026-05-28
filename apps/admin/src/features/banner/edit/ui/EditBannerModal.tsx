@@ -67,6 +67,7 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
             isActive:  details.isActive  ?? true,
         });
 
+        //Image
         setPreviewUrl(getImageUrl(details.bannerUrl));
     }, [details, reset]);
 

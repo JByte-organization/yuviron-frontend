@@ -11,6 +11,7 @@ import {
     type TrackListItemDto, ArtistRole, TrackGenreSimpleDto, TrackMoodSimpleDto, TrackArtistSimpleDto, TrackDetailsDto,
 } from '@repo/api';
 import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
     track: TrackListItemDto | null;
@@ -191,9 +192,8 @@ export const EditTrackModal = ({
 
     if (!isOpen || !track) return null;
 
-    const coverSrc = track.coverUrl
-        ? `https://api.yuviron.com/storage/${track.coverUrl}`
-        : null;
+    //Image
+    const coverSrc = getImageUrl(track.coverUrl);
 
     return (
         <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050 }}>

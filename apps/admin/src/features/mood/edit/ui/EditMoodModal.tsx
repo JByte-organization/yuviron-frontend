@@ -9,6 +9,7 @@ import {
     postApiFilesUpload,
     type MoodDto,
 } from '@repo/api';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
     mood: MoodDto | null;
@@ -107,9 +108,7 @@ export const EditMoodModal = ({ mood, isOpen, onClose, onSuccess }: Props) => {
 
     if (!isOpen || !mood) return null;
 
-    const coverSrc = mood.coverUrl
-        ? `https://api.yuviron.com/storage/${mood.coverUrl}`
-        : null;
+    const coverSrc = getImageUrl(mood.coverUrl);
 
     return (
         <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050 }}>
@@ -119,7 +118,7 @@ export const EditMoodModal = ({ mood, isOpen, onClose, onSuccess }: Props) => {
                     <div className="modal-header border-secondary p-4">
                         <div className="d-flex align-items-center gap-3">
                             <div
-                                className="rounded bg-secondary d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0"
+                                className="rounded bg-dark d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0"
                                 style={{ width: '40px', height: '40px' }}
                             >
                                 {coverSrc

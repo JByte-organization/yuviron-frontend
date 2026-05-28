@@ -14,6 +14,7 @@ import {
     type RoleDto,
     type UserListItemDto,
 } from '@repo/api';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
     user: UserListItemDto | null;
@@ -22,7 +23,6 @@ interface Props {
     onSuccess: () => void;
 }
 
-// UpdateUserCommand не содержит пароль
 type FormValues = {
     email: string;
     firstName: string;
@@ -128,9 +128,8 @@ export const EditUserModal = ({ user, isOpen, onClose, onSuccess }: Props) => {
 
     if (!isOpen || !user) return null;
 
-    const avatarSrc = user.avatarUrl
-        ? `https://api.yuviron.com/storage/${user.avatarUrl}`
-        : null;
+    //Image
+    const avatarSrc = getImageUrl(user.avatarUrl);
 
     return (
         <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050 }}>

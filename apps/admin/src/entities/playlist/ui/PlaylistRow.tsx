@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { type PlaylistDto, PlaylistVisibility } from '@repo/api';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
     playlist: PlaylistDto;
@@ -29,9 +30,8 @@ const VisibilityBadge = ({ visibility }: { visibility?: string }) => {
 };
 
 export const PlaylistRow = ({ playlist, isSelected, onSelect, onEdit, onDelete }: Props) => {
-    const coverSrc = playlist.coverUrl
-        ? `https://api.yuviron.com/storage/${playlist.coverUrl}`
-        : null;
+
+    const coverSrc = getImageUrl(playlist.coverUrl);
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>
