@@ -20,6 +20,7 @@ export * from './generated/client/endpoints/moods';
 export * from './generated/client/endpoints/tracks';
 export * from './generated/client/endpoints/artists';
 export * from './generated/client/endpoints/me';
+export * from './generated/client/endpoints/me-playlists';
 
 
 export * from './generated/client/endpoints/artist-profiles';
@@ -33,6 +34,8 @@ export * from './generated/client/models/topArtistDto';
 export * from './generated/client/models/moodItemDto';
 export * from './generated/client/models/newReleaseDto';
 export * from './generated/client/models/followedArtistDto';
+export * from './generated/client/models/userPlaylistDto';
+export * from './generated/client/models/recentlyPlayedTrackDto';
 
 
 export { configureApiClient } from './mutator';

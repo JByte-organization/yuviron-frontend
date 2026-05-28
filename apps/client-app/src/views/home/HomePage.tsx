@@ -138,7 +138,7 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
     const artistsTitle = isAuthenticated ? 'Твої улюблені виконавці'             : 'Популярні виконавці';
 
     return (
-        <div className="home-page">
+        <div className="home-page container-fluid">
 
             <HeroBannerSection
                 items={banners}

@@ -574,6 +574,28 @@
     &:hover img { opacity: 1; }
   }
 
+  &__playlist-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 4px;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &--rounded { border-radius: 50%; }
+
+    i { font-size: 16px; color: var(--client-text-muted); }
+  }
+
+  &__empty-text {
+    font-size: 13px;
+    color: var(--client-text-muted);
+    padding: 8px 14px;
+  }
+
   // ─── Nav ──────────────────────────────────────────────
   &__nav {
     display: flex;
