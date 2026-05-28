@@ -2,38 +2,35 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { configureApiClient, postApiAuthRefresh } from '@repo/api';
-import { useSessionStore } from '@/entities/session/model/store';
+import { configureApiClient } from '@repo/api';
+import { useAdminSessionStore } from '@/entities/adminSession/model/store';
 
+// ══════════════════════════════════════════════════════════
+// ApiClientProvider (Admin)
+//
+// Відповідає за:
+// 1. Налаштування API клієнта з токеном адміна
+// 2. Автоматичне очищення сесії при 401 (токен протух після 12 годин)
+// 3. Ротацію токена через refresh (поки адмін активний)
+// ══════════════════════════════════════════════════════════
 export const ApiClientProvider = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
-    const setAccessToken = useSessionStore((state) => state.setAccessToken);
-    const setAuth = useSessionStore((state) => state.setAuth);
 
     useEffect(() => {
-        // 1. Налаштовуємо API клієнт
         configureApiClient({
-            getToken: () => useSessionStore.getState().accessToken,
+            getToken: () => useAdminSessionStore.getState().adminAccessToken,
+
             onUnauthorized: () => {
-                setAuth(null, null);
+                // Сесія протухла (12-годинний TTL) або токен невалідний
+                useAdminSessionStore.getState().clearAdminSession();
                 router.replace('/login');
             },
-            onTokenRefresh: (token) => setAccessToken(token),
+
+            onTokenRefresh: token => {
+                // Бекенд видав новий access token через refresh cookie
+                useAdminSessionStore.getState().setAdminAccessToken(token);
+            },
         });
-
-        // 2. Відновлюємо сесію при завантаженні через refresh token (HttpOnly Cookie)
-        const restoreSession = async () => {
-            try {
-                const data = await postApiAuthRefresh();
-                const token = (data as any)?.accessToken ?? (data as any)?.token;
-                if (token) {
-                    setAccessToken(token);
-                }
-            } catch {
-            }
-        };
-
-        restoreSession();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
