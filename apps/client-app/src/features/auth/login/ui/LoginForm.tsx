@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
 import { usePostApiAuthLogin, usePostApiAuthSendCode } from '@repo/api';
 import { useSessionStore } from '@/entities/session/model/store';
+import { useQueryClient } from '@tanstack/react-query';
+import { getGetApiAuthMeQueryKey } from '@repo/api';
 
 type LoginErrors = {
     identifier?: string;
@@ -32,6 +34,7 @@ const validate = (identifier: string, password: string): LoginErrors => {
 export const LoginForm = () => {
     const router = useRouter();
     const setAccessToken = useSessionStore((state) => state.setAccessToken);
+    const queryClient = useQueryClient();
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -51,7 +54,8 @@ export const LoginForm = () => {
                 }
 
                 setAccessToken(token);
-                router.push('/');
+                queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
+                router.push('/home');
             },
             onError: (error: any) => {
                 console.log('[login] status:', error?.response?.status);

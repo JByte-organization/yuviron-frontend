@@ -26,8 +26,8 @@ interface TrackRowProps {
     variant?: TrackRowVariant;
     onClick?: (id: string) => void;
     onLike?: (id: string) => void;
-    onAddToPlaylist?: (id: string) => void; // ← додано
-    showAddToPlaylist?: boolean;             // ← додано
+    onAddToPlaylist?: (id: string) => void;
+    showAddToPlaylist?: boolean;
 }
 
 const formatDuration = (ms?: number | null): string => {
