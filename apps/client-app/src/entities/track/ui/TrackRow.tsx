@@ -2,7 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import {useAuthGuard} from '@/shared/lib/useAuthGuard';
+import { useAuthGuard } from '@/shared/lib/useAuthGuard';
+import { usePlayer } from '@/entities/player/lib/usePlayer';
+import { usePlayerStore } from '@/entities/player/model/playerStore';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 export type TrackRowVariant = 'default' | 'artist';
 
@@ -22,12 +25,16 @@ export interface TrackRowData {
 
 interface TrackRowProps {
     track: TrackRowData;
+    /** Всі треки списку — для черги */
+    allTracks?: TrackRowData[];
     isPlaying?: boolean;
     variant?: TrackRowVariant;
     onClick?: (id: string) => void;
     onLike?: (id: string) => void;
     onAddToPlaylist?: (id: string) => void;
     showAddToPlaylist?: boolean;
+    sourceType?: 'Playlist' | 'Album' | 'Search' | 'ArtistProfile';
+    sourceId?: string | null;
 }
 
 const formatDuration = (ms?: number | null): string => {
@@ -55,30 +62,64 @@ const formatPlays = (count?: number): string => {
 
 export const TrackRow = ({
                              track,
+                             allTracks,
                              isPlaying = false,
                              variant = 'default',
                              onClick,
                              onLike,
                              onAddToPlaylist,
                              showAddToPlaylist = false,
+                             sourceType = 'Search',
+                             sourceId = null,
                          }: TrackRowProps) => {
     const [isHovered, setIsHovered] = useState(false);
     const { requireAuth } = useAuthGuard();
+    const { playQueue } = usePlayer();
+    const currentTrackId = usePlayerStore(s => s.currentTrack?.id);
+    const playerStatus   = usePlayerStore(s => s.status);
 
-    const coverSrc = track.coverUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${track.coverUrl}`
-        : `https://picsum.photos/seed/track-${track.id}/40/40`;
+    const isCurrentlyPlaying = currentTrackId === track.id && playerStatus === 'playing';
+
+    const coverSrc = getImageUrl(track.coverUrl)
+        ?? `https://picsum.photos/seed/track-${track.id}/40/40`;
+
+    const handleClick = () => {
+        requireAuth(() => {
+            if (onClick) {
+                onClick(track.id);
+                return;
+            }
+            // Якщо є черга — запускаємо з поточного треку
+            const queue = allTracks ?? [track];
+            const index = queue.findIndex(t => t.id === track.id);
+            playQueue(
+                queue.map(t => ({
+                    id:          t.id,
+                    title:       t.title,
+                    artistNames: t.artistNames,
+                    artistId:    t.artistId,
+                    albumId:     t.albumId,
+                    albumTitle:  t.albumTitle ?? undefined,
+                    coverUrl:    t.coverUrl,
+                    durationMs:  t.durationMs ?? undefined,
+                })),
+                index >= 0 ? index : 0,
+                sourceType,
+                sourceId,
+            );
+        });
+    };
 
     return (
         <div
-            className={`track-row track-row--${variant}${isPlaying ? ' track-row--playing' : ''}${isHovered ? ' track-row--hovered' : ''}`}
+            className={`track-row track-row--${variant}${isCurrentlyPlaying ? ' track-row--playing' : ''}${isHovered ? ' track-row--hovered' : ''}`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            onClick={() => requireAuth(() => onClick?.(track.id))}
+            onClick={handleClick}
         >
             {/* ─── Номер / play ─────────────────────────── */}
             <div className="track-row__index">
-                {isPlaying ? (
+                {isCurrentlyPlaying ? (
                     <i className="bi bi-volume-up-fill track-row__playing-icon" />
                 ) : isHovered ? (
                     <i className="bi bi-play-fill" />
@@ -95,23 +136,17 @@ export const TrackRow = ({
                 <div className="track-row__meta">
                     <Link
                         href={`/tracks/${track.id}`}
-                        className={`track-row__title${isPlaying ? ' track-row__title--playing' : ''}`}
-                        onClick={(e) => e.stopPropagation()}
+                        className={`track-row__title${isCurrentlyPlaying ? ' track-row__title--playing' : ''}`}
+                        onClick={e => e.stopPropagation()}
                     >
                         {track.title}
                     </Link>
                     {track.artistId ? (
-                        <Link
-                            href={`/artists/${track.artistId}`}
-                            className="track-row__artist"
-                            onClick={(e) => e.stopPropagation()}
-                        >
+                        <Link href={`/artists/${track.artistId}`} className="track-row__artist" onClick={e => e.stopPropagation()}>
                             {track.artistNames.join(', ')}
                         </Link>
                     ) : (
-                        <span className="track-row__artist">
-                            {track.artistNames.join(', ')}
-                        </span>
+                        <span className="track-row__artist">{track.artistNames.join(', ')}</span>
                     )}
                 </div>
             </div>
@@ -119,11 +154,7 @@ export const TrackRow = ({
             {/* ─── Альбом ───────────────────────────────── */}
             <div className="track-row__album d-none d-md-block">
                 {track.albumId ? (
-                    <Link
-                        href={`/albums/${track.albumId}`}
-                        className="track-row__album-link"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                    <Link href={`/albums/${track.albumId}`} className="track-row__album-link" onClick={e => e.stopPropagation()}>
                         {track.albumTitle ?? '—'}
                     </Link>
                 ) : (
@@ -141,10 +172,9 @@ export const TrackRow = ({
 
             {/* ─── Дії + тривалість ─────────────────────── */}
             <div className="track-row__actions">
-                {/* Лайк */}
                 <button
                     className="track-row__like-btn"
-                    onClick={(e) => { e.stopPropagation(); requireAuth(() => onLike?.(track.id)); }}
+                    onClick={e => { e.stopPropagation(); requireAuth(() => onLike?.(track.id)); }}
                     aria-label="Like"
                 >
                     <i className="bi bi-heart" />
@@ -154,13 +184,11 @@ export const TrackRow = ({
                     {formatDuration(track.durationMs)}
                 </span>
 
-                {/* Додати до плейліста — показується тільки якщо showAddToPlaylist */}
                 {showAddToPlaylist && (
                     <button
                         className="track-row__add-btn"
-                        onClick={(e) => { e.stopPropagation(); onAddToPlaylist?.(track.id); }}
+                        onClick={e => { e.stopPropagation(); onAddToPlaylist?.(track.id); }}
                         aria-label="Додати до плейліста"
-                        title="Додати до плейліста"
                     >
                         <i className="bi bi-plus-circle" />
                     </button>

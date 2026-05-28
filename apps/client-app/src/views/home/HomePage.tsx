@@ -29,6 +29,18 @@ import type { TrackCardData } from '@/entities/track/ui/TrackCard';
 import type { AlbumCardData } from '@/entities/album/ui/AlbumCard';
 import type { ArtistCardData } from '@/entities/artist/ui/ArtistCard';
 
+import { AllTracksSection } from './ui/sections/AllTracksSection';
+
+import {TrackRow} from '@/entities/track/ui/TrackRow';
+import type {TrackRowData} from '@/entities/track/ui/TrackRow';
+
+// Прямо в JSX перед закриваючим </div>:
+const TEST_TRACKS: TrackRowData[] = [
+    { id: '7887272f-cbee-4f38-984a-a2e6e3732be7', index: 1, title: 'Тест трек 1', artistNames: ['Артист 1'], coverUrl: null },
+    { id: 'fca53b2d-ac28-497d-9d62-ac6f2eb73e2e', index: 2, title: 'Тест трек 2', artistNames: ['Артист 2'], coverUrl: null },
+];
+
+
 interface HomePageProps {
     isAuthenticated?: boolean;
 }
@@ -146,8 +158,8 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
             />
 
             <MoodSection
-                moods={moods.length   > 0 ? moods   : undefined}
-                genres={genres.length > 0 ? genres  : undefined}
+                moods={moods.length > 0 ? moods : undefined}
+                genres={genres.length > 0 ? genres : undefined}
                 isLoading={moodsLoading || genresLoading}
                 title={moodTitle}
             />
@@ -169,6 +181,15 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
                 sectionTitle={artistsTitle}
             />
 
+            <AllTracksSection/>
+
+            <div style={{padding: '0 24px'}}>
+                {TEST_TRACKS.map(track => (
+                    <TrackRow key={track.id} track={track} allTracks={TEST_TRACKS} sourceType="Search"/>
+                ))}
+            </div>
+
         </div>
     );
 };
+
