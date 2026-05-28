@@ -18,10 +18,10 @@ interface ArtistDashboardLayoutProps {
 
 export const ArtistDashboardLayout = ({ children }: ArtistDashboardLayoutProps) => {
     const [collapsed, setCollapsed] = useState(false);
+    const [sidebarWidth, setSidebarWidth] = useState(260);
 
     return (
-        <ThemeProvider>
-            <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
+            <SidebarContext.Provider value={{ collapsed, setCollapsed, sidebarWidth }}>
                 <RightSidebarContext.Provider value={{
                     isOpen: false,
                     userClosed: false,
@@ -49,6 +49,5 @@ export const ArtistDashboardLayout = ({ children }: ArtistDashboardLayoutProps) 
                     </div>
                 </RightSidebarContext.Provider>
             </SidebarContext.Provider>
-        </ThemeProvider>
     );
 };
