@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import type { GenreCardData } from '../model/types';
 
 interface GenreCardProps {
@@ -9,12 +8,11 @@ interface GenreCardProps {
 
 export const GenreCard = ({ genre }: GenreCardProps) => {
 
-
     return (
         <Link href={`/genres/${genre.id}`} className="genre-card">
             <div className="genre-card__bg" style={{ background: genre.color ?? '#1E3A5F' }}>
                 {genre.coverUrl ? (
-                <Image
+                <img
                     src={genre.coverUrl}
                     width={150}
                     height={150}

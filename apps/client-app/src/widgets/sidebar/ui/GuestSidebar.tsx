@@ -26,17 +26,20 @@ const NavItem = ({ label, icon, href, isActive }: NavItemProps) => (
     </Link>
 );
 
+interface GuestSidebarProps {
+    onResizeStart?: (e: React.MouseEvent) => void;
+}
 
-// ══════════════════════════════════════════════════════════
-// GUEST SIDEBAR
-// ══════════════════════════════════════════════════════════
-export const GuestSidebar = () => {
+export const GuestSidebar = ({ onResizeStart }: GuestSidebarProps) => {
     const pathname = usePathname();
-    const { collapsed, setCollapsed } = useSidebar();
+    const { collapsed, setCollapsed, sidebarWidth } = useSidebar();
 
     return (
         <>
-            <aside className={`client-sidebar${collapsed ? ' client-sidebar--collapsed' : ''}`}>
+            <aside
+                className={`client-sidebar${collapsed ? ' client-sidebar--collapsed' : ''}`}
+                style={{ width: collapsed ? undefined : sidebarWidth }}
+            >
                 <div className="client-sidebar__inner">
 
                     {/* Навігація */}
@@ -71,6 +74,14 @@ export const GuestSidebar = () => {
                     </div>
 
                 </div>
+
+                {/* ─── Resize handle ──────────────────────── */}
+                {!collapsed && (
+                    <div
+                        className="client-sidebar__resize-handle"
+                        onMouseDown={onResizeStart}
+                    />
+                )}
 
                 <button
                     className="client-sidebar__toggle"

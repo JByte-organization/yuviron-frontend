@@ -3,11 +3,7 @@
 
 // ─── HomePage wrapper ────────────────────────────────────
 .home-page {
-  padding: 1rem 1.25rem;
-
-  @media (min-width: 768px) {
-    padding: 1.5rem 2rem;
-  }
+  padding-top: 0.8rem;
 }
 
 
@@ -636,67 +632,147 @@
 // ══════════════════════════════════════════════════════════
 .client-footer {
   background: $client-surface;
-  border-top: 1px solid $client-border;
+  padding: 32px 32px 20px;
   margin-top: auto;
-  border-radius: 20px;
+  margin-bottom: 0.8rem;
+  border-radius: 8px;
+
+  // ─── Верхній блок ─────────────────────────────────────
+  &__top {
+    display: flex;
+    align-items: flex-start;
+    gap: 48px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+
+    @media (max-width: 768px) {
+      gap: 24px;
+      justify-content: center;
+      text-align: center;
+    }
+  }
 
   // ─── Лого ─────────────────────────────────────────────
   &__logo {
-    width: auto;
-    height: auto;
-    max-width: 200px;
-    object-fit: contain;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+
+    img { display: block; }
   }
 
   // ─── Контакти ─────────────────────────────────────────
-  &__contact-item {
+  &__contact-block {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__contact-label {
+    font-size: 12px;
+    font-weight: 600;
     color: $client-text;
     margin: 0;
   }
 
-  &__contact-icon {
-    color: $client-accent;
-    font-size: 15px;
-    flex-shrink: 0;
+  &__contact-text {
+    font-size: 13px;
+    color: $client-text-muted;
+    margin: 0;
+    line-height: 1.5;
   }
 
   // ─── Соцмережі ────────────────────────────────────────
-  &__social-link {
-    color: $client-text;
+  &__socials {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      margin-left: 0;
+      justify-content: center;
+    }
+  }
+
+  &__social {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 18px;
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: opacity 0.2s, transform 0.2s;
+    color: $white;
 
     &:hover {
-      color: $client-accent;
+      opacity: 0.85;
+      transform: scale(1.08);
+      text-decoration: none;
+      color: $white;
     }
+
+    &--fb  { background: #1877F2; }
+    &--tw  { background: #000; }
+    &--pt  { background: #E60023; }
+    &--rss { background: $client-accent; }
   }
 
   // ─── Розділювач ───────────────────────────────────────
   &__divider {
     border-color: $client-border;
     opacity: 1;
-    margin: 0;
+    margin: 0 0 16px;
   }
 
-  // ─── Нижні лінки ──────────────────────────────────────
-  &__bottom-link {
+  // ─── Нижній блок ──────────────────────────────────────
+  &__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  }
+
+  &__links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      justify-content: center;
+    }
+  }
+
+  &__link {
     font-size: 13px;
     color: $client-text-muted;
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color 0.2s;
+
+    &:hover { color: $client-text; text-decoration: none; }
+  }
+
+  &__copy {
+    font-size: 12px;
+    color: $client-text-muted;
+    margin: 0;
     white-space: nowrap;
 
-    &:hover {
-      color: $client-text;
-    }
+    @media (max-width: 768px) { white-space: normal; text-align: center; }
   }
 }
-
 
 // ══════════════════════════════════════════════════════════
 // NEW RELEASES — слайдер
@@ -882,7 +958,7 @@
 
   &::-webkit-scrollbar { display: none; }
 
-  .col-6 { min-width: 160px; }
+  //.col-6 { min-width: 160px; }
 }
 
 
@@ -894,5 +970,42 @@
 
   &__swiper-slide {
     width: auto !important; // SwiperSlide auto-width
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// SIDEBAR RESIZE HANDLE
+// ══════════════════════════════════════════════════════════
+.client-sidebar {
+  // Resize handle — вертикальна смуга справа
+  &__resize-handle {
+    position: absolute;
+    top: 0;
+    right: -4px;
+    width: 8px;
+    height: 100%;
+    cursor: ew-resize;
+    z-index: 102;
+    border-radius: 4px;
+
+    // Видима лінія при hover
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 100%;
+      background: transparent;
+      border-radius: 1px;
+      transition: background 0.2s;
+    }
+
+    &:hover::after,
+    &:active::after {
+      background: $client-accent;
+    }
   }
 }
