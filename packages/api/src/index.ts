@@ -37,6 +37,7 @@ export * from './generated/client/models/followedArtistDto';
 export * from './generated/client/models/userPlaylistDto';
 export * from './generated/client/models/recentlyPlayedTrackDto';
 export * from './generated/client/models/currentUserDto';
+export * from './generated/client/models/userFavoriteTrackDto';
 
 
 export { configureApiClient } from './mutator';
