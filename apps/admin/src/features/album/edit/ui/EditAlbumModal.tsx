@@ -12,6 +12,7 @@ import {
     type AlbumListItemDto,
 } from '@repo/api';
 import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
     album: AlbumListItemDto | null;
@@ -139,9 +140,7 @@ export const EditAlbumModal = ({ album, isOpen, onClose, onSuccess, onSearchArti
 
     if (!isOpen || !album) return null;
 
-    const coverSrc = album.coverUrl
-        ? `https://api.yuviron.com/storage/${album.coverUrl}`
-        : null;
+    const coverSrc = getImageUrl(album.coverUrl);
 
     return (
         <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050 }}>

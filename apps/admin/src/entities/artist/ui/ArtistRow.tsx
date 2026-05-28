@@ -3,6 +3,7 @@
 import React from 'react';
 import {ArtistListItemDto, VerificationStatus} from '@repo/api';
 import Image from "next/image";
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface ArtistRowProps {
     artist: ArtistListItemDto;
@@ -27,10 +28,9 @@ export const ArtistRow = ({ artist, isSelected, onSelect, onDelete, onEdit }: Ar
         );
     };
 
+
     // Путь к аватару
-    const avatarSrc = artist.avatarUrl
-        ? `https://api.yuviron.com/storage/${artist.avatarUrl}`
-        : null;
+    const avatarSrc = getImageUrl(artist.avatarUrl);
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{backgroundColor: '#212631'}}>

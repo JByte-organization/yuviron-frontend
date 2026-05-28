@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { type TrackListItemDto, VisibilityStatus } from '@repo/api';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
     track: TrackListItemDto;
@@ -40,9 +41,9 @@ const StatusBadge = ({ status }: { status?: string }) => {
 };
 
 export const TrackRow = ({ track, isSelected, onSelect, onEdit, onDelete }: Props) => {
-    const coverSrc = track.coverUrl
-        ? `https://api.yuviron.com/storage/${track.coverUrl}`
-        : null;
+
+    const coverSrc = getImageUrl(track.coverUrl);
+
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>

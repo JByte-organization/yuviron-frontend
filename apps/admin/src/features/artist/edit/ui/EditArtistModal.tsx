@@ -21,6 +21,7 @@ import {
     type ArtistTeamMemberDto,
     type UpdateArtistCommand,
 } from '@repo/api';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 // ══════════════════════════════════════════════════════════
 // TYPES
@@ -39,8 +40,8 @@ type FormValues = {
 };
 
 interface MemberOption {
-    userId: string;  // ← userId для API
-    name:   string;  // ← ім'я артиста для відображення
+    userId: string;
+    name:   string;
     email:  string;
 }
 
@@ -60,9 +61,8 @@ interface TeamMemberRowProps {
 }
 
 const TeamMemberRow = ({ member, onRemove, onRoleChange }: TeamMemberRowProps) => {
-    const avatarSrc = member.avatarUrl
-        ? `https://api.yuviron.com/storage/${member.avatarUrl}`
-        : null;
+
+    const avatarSrc = getImageUrl(member.avatarUrl);
 
     return (
         <div className="d-flex align-items-center gap-3 py-2 border-bottom border-secondary">
@@ -449,9 +449,8 @@ export const EditArtistModal = ({ artist, isOpen, onClose, onSuccess }: Props) =
 
     if (!isOpen || !artist) return null;
 
-    const avatarSrc = artist.avatarUrl
-        ? `https://api.yuviron.com/storage/${artist.avatarUrl}`
-        : null;
+    // Путь к аватару
+    const avatarSrc = getImageUrl(artist.avatarUrl);
 
     return (
         <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050 }}>
