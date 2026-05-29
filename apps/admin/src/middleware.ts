@@ -36,7 +36,6 @@ const isTokenExpired = (token: string): boolean => {
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // Пропускаємо системні шляхи
     if (
         pathname.startsWith('/_next') ||
         pathname.startsWith('/api')   ||
@@ -45,27 +44,7 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // Токен зберігається в Zustand (in-memory) — при SSR його немає.
-    // Тому для middleware перевіряємо HttpOnly куку refreshToken як індикатор
-    // що сесія могла бути активна. Реальна валідація — на рівні ApiClientProvider.
-    const adminToken = request.cookies.get('adminToken')?.value;
-
-    const isLoginPage = pathname === '/login';
-
-    if (isLoginPage) {
-        // Якщо є валідний токен з правами — редірект на dashboard
-        if (adminToken && !isTokenExpired(adminToken) && hasAdminPermission(adminToken)) {
-            return NextResponse.redirect(new URL('/dashboard', request.url));
-        }
-        return NextResponse.next();
-    }
-
-    // Захищені маршрути — перевіряємо токен
-    if (!adminToken || isTokenExpired(adminToken) || !hasAdminPermission(adminToken)) {
-        return NextResponse.redirect(new URL('/login', request.url));
-    }
-
-    // Редірект з / на /dashboard
+    // Редирект с / на /dashboard
     if (pathname === '/') {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
