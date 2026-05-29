@@ -25,8 +25,6 @@ export * from './generated/client/endpoints/me';
 export * from './generated/client/endpoints/me-playlists';
 
 
-export * from './generated/client/endpoints/artist-profiles';
-
 export * from './generated/admin/models';
 
 export * from './generated/client/models/homeBannerDto';
