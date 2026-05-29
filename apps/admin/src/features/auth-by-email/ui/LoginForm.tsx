@@ -137,7 +137,7 @@ const OtpStep = ({ email, onBack }: OtpStepProps) => {
 
                 setAdminAccessToken(token);
                 document.cookie = `adminToken=${token}; path=/; max-age=43200; SameSite=Strict`;
-                router.push('/dashboard');
+                window.location.href = '/dashboard';
             },
             onError: () => {
                 setError('code', { message: 'Invalid or expired code. Please try again.' });
