@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import {
     usePostApiAdminAuthPreLogin,
-    usePostApiAdminAuthLogin, postApiAdminAuthLoginResponse,
+    usePostApiAdminAuthLogin, postApiAdminAuthLoginResponse, LoginResponse,
 } from '@repo/api';
 import { useAdminSessionStore } from '@/entities/adminSession/model/store';
 
@@ -126,9 +126,8 @@ const OtpStep = ({ email, onBack }: OtpStepProps) => {
     const { mutate: login, isPending } = usePostApiAdminAuthLogin({
         mutation: {
             onSuccess: (response: postApiAdminAuthLoginResponse) => {
-                if (response.status !== 200) return;
-
-                const token = response.data?.token ?? undefined;
+                const payload = response as unknown as LoginResponse;
+                const token = payload.token ?? undefined;
 
                 if (!token) {
                     setError('root', { message: 'Authorization failed: no token received.' });
@@ -136,8 +135,7 @@ const OtpStep = ({ email, onBack }: OtpStepProps) => {
                 }
 
                 setAdminAccessToken(token);
-                document.cookie = `adminToken=${token}; path=/; max-age=43200; SameSite=Strict`;
-                window.location.href = '/dashboard';
+                router.push('/dashboard');
             },
             onError: () => {
                 setError('code', { message: 'Invalid or expired code. Please try again.' });
