@@ -9,6 +9,7 @@ import { Footer } from '@/widgets/footer/ui/Footer';
 import { RightSidebar } from '@/widgets/right-sidebar/ui/RightSidebar';
 import { PlaylistToastProvider } from '@/shared/ui/PlaylistToast';
 import { AuthGuardProvider } from '@/shared/lib/useAuthGuard';
+import { PlayerBar } from '@/widgets/player/ui/PlayerBar';
 
 // ══════════════════════════════════════════════════════════
 // CONSTANTS
@@ -140,6 +141,7 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
                             {/* Правий сайдбар */}
                             <RightSidebar onOpenManually={openManually} />
                         </div>
+                        <PlayerBar />
                     </div>
                 </AuthGuardProvider>
             </RightSidebarContext.Provider>

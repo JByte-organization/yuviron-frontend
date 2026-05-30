@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import {useAuthGuard} from '@/shared/lib/useAuthGuard';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { usePlayer } from '@/entities/player/lib/usePlayer';
 
 export interface TrackCardData {
     id: string;
@@ -24,12 +25,14 @@ export const TrackCard = ({ track, onClick }: TrackCardProps) => {
     const coverSrc = getImageUrl(track.coverUrl)
         ?? `https://picsum.photos/seed/track-${track.id}/300/300`;
 
-
+    const { playQueue } = usePlayer();
 
     const { requireAuth } = useAuthGuard();
 
+
     const handleClick = () => {
         requireAuth(() => onClick?.(track.id));
+        playQueue([track], 0, 'Search', null);
     };
 
     return (
