@@ -151,7 +151,7 @@ export const DeleteTrackModal = ({ isOpen, trackId, trackTitle, onClose, onSucce
 
                 <div className="client-modal__body">
                     <p className="text-muted mb-1">Ви впевнені що хочете видалити трек?</p>
-                    <p className="text-white fw-semibold mb-0">«{trackTitle}»</p>
+                    <p className="text-theme fw-semibold mb-0">«{trackTitle}»</p>
                     <p className="text-danger small mt-3 mb-0">Цю дію неможливо скасувати.</p>
                 </div>
 

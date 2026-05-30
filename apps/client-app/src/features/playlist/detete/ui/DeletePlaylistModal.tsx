@@ -42,7 +42,7 @@ export const DeletePlaylistModal = ({
         >
             <p className="client-modal__confirm-text">
                 Ти впевнений що хочеш видалити плейліст{' '}
-                <strong className="text-white">"{playlistName}"</strong>?
+                <strong className="text-theme">"{playlistName}"</strong>?
             </p>
             <p className="client-modal__confirm-hint">
                 Цю дію неможливо скасувати.

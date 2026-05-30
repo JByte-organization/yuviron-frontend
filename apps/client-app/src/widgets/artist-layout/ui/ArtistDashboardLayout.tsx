@@ -3,7 +3,6 @@
 import React from 'react';
 import { Header } from '@/widgets/header/ui/Header';
 import { Footer } from '@/widgets/footer/ui/Footer';
-import { ThemeProvider } from '@/shared/lib/ThemeProvider';
 import { PlaylistToastProvider } from '@/shared/ui/PlaylistToast';
 import { ArtistDashboardSidebar } from '@/widgets/artist-sidebar/ui/ArtistDashboardSidebar';
 import {
