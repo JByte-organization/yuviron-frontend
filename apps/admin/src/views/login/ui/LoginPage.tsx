@@ -17,6 +17,7 @@ export const LoginPage = () => {
                             height={180}
                             className="admin-login__logo"
                         />
+
                     </div>
 
                     <LoginForm />
