@@ -37,7 +37,10 @@ jobs:
         run: |
           set -Eeuo pipefail
           cd /opt/yuviron-server/src/yuviron-frontend
-          git fetch --prune origin "${SOURCE_BRANCH}"
+          # Fetch the exact triggering commit, not the branch tip.
+          # Fetching the branch tip would fail when a newer push arrives
+          # while this job is still running (concurrency cancel-in-progress=false).
+          git fetch --depth=1 origin "${{ github.sha }}"
           incoming_sha="$(git rev-parse FETCH_HEAD)"
           if [ "$incoming_sha" != "${{ github.sha }}" ]; then
             echo "ERROR: fetched SHA ${incoming_sha} does not match trigger SHA ${{ github.sha }}" >&2
@@ -184,7 +187,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           cd /opt/yuviron-server/src/yuviron-frontend
-          git fetch --prune origin "${SOURCE_BRANCH}"
+          git fetch --depth=1 origin "${{ github.sha }}"
           incoming_sha="$(git rev-parse FETCH_HEAD)"
           if [ "$incoming_sha" != "${{ github.sha }}" ]; then
             echo "ERROR: fetched SHA ${incoming_sha} does not match trigger SHA ${{ github.sha }}" >&2
