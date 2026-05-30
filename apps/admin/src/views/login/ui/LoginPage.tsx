@@ -11,8 +11,8 @@ export const LoginPage = () => {
                 <div className="admin-login__content w-100 px-3 px-md-4" style={{ maxWidth: '450px' }}>
                     <div className="text-center mb-5">
                         <Image
-                            src="/images/Logo/logo.svg"
-                            alt="Logo"
+                            src="/images/logo/logo.svg"
+                            alt="logo"
                             width={180}
                             height={180}
                             className="admin-login__logo"
