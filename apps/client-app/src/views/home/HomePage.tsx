@@ -183,6 +183,7 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
 
             <AllTracksSection/>
 
+
             <div style={{padding: '0 24px'}}>
                 {TEST_TRACKS.map(track => (
                     <TrackRow key={track.id} track={track} allTracks={TEST_TRACKS} sourceType="Search"/>
