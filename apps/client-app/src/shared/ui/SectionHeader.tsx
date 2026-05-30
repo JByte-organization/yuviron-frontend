@@ -71,7 +71,7 @@ export const SectionHeader = ({
                     <Link
                         href={showAllHref}
                         onClick={onShowAll}
-                        className="text-white d-md-none"
+                        className="text-theme d-md-none"
                         aria-label="Show all"
                     >
                         <i className="bi bi-chevron-right" />

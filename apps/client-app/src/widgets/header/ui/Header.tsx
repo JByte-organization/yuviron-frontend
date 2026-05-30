@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {usePostApiAuthLogout, useGetApiAuthMe, type CurrentUserDto, getGetApiAuthMeQueryKey} from '@repo/api';
 import { useSessionStore } from '@/entities/session/model/store';
+import { useTheme } from '@/shared/lib/ThemeProvider';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { SearchDropdown } from './SearchDropdown';
 import { UserDropdown } from './UserDropdown';
@@ -14,6 +15,14 @@ export const Header = () => {
     const router = useRouter();
     const accessToken = useSessionStore(s => s.accessToken);
     const clearSession = useSessionStore(s => s.clearSession);
+
+    // ─── Тема ─────────────────────────────────────────────
+    const { theme, toggleTheme } = useTheme();
+    // Іконка залежить від теми, яка читається з localStorage лише на клієнті —
+    // чекаємо монтування, щоб не словити hydration mismatch (сервер = 'dark').
+    const [themeMounted, setThemeMounted] = useState(false);
+    useEffect(() => setThemeMounted(true), []);
+    const isLight = themeMounted && theme === 'light';
 
     // ─── Дані поточного користувача ───────────────────────
     const { data: meRaw, refetch } = useGetApiAuthMe({
@@ -120,6 +129,18 @@ export const Header = () => {
 
             {/* ─── Праві дії ────────────────────────── */}
             <div className="client-header__actions">
+
+                {/* Перемикач теми */}
+                <button
+                    type="button"
+                    className="client-header__icon-btn client-header__theme-btn"
+                    onClick={toggleTheme}
+                    aria-label={isLight ? 'Увімкнути темну тему' : 'Увімкнути світлу тему'}
+                    title={isLight ? 'Темна тема' : 'Світла тема'}
+                >
+                    <i className={`bi ${isLight ? 'bi-moon-stars' : 'bi-sun'}`} />
+                </button>
+
                 {accessToken && me ? (
                     <div className="client-header__user">
 
