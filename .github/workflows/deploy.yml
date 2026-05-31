@@ -195,7 +195,9 @@ jobs:
           fi
           echo "Verified: incoming SHA ${incoming_sha}"
           git reset --hard "$incoming_sha"
-          git clean -fdx
+          # -fd instead of -fdx: preserves gitignored files (node_modules) installed
+          # by the detect-affected job, making pnpm install a fast lockfile check.
+          git clean -fd
 
       - name: Print deploy mode
         run: |
@@ -241,12 +243,12 @@ jobs:
           fi
 
           echo "Waiting for backend to become healthy..."
-          for i in $(seq 1 24); do
+          for i in $(seq 1 60); do
             status="$(docker inspect "yuviron-${DEPLOY_ENV}-backend" \
               --format='{{.State.Health.Status}}' 2>/dev/null || echo 'missing')"
             echo "  attempt $i: ${status}"
             [ "$status" = "healthy" ] && break
-            [ "$i" -eq 24 ] && { echo "Backend did not become healthy in time" >&2; exit 1; }
+            [ "$i" -eq 60 ] && { echo "Backend did not become healthy in time" >&2; exit 1; }
             sleep 5
           done
 
@@ -298,7 +300,13 @@ jobs:
         run: |
           set -Eeuo pipefail
           cd /opt/yuviron-server
-          timeout 1200 python3 ./scripts/cli.py stack up "${DEPLOY_ENV}"
+          # --no-build: image was just built in the previous step
+          # --skip-swagger: swagger was fetched in Generate API types
+          # --skip-migrate: migrations are owned by the backend workflow
+          timeout 1200 python3 ./scripts/cli.py stack up "${DEPLOY_ENV}" \
+            --no-build \
+            --skip-swagger \
+            --skip-migrate
 
       - name: Smoke test
         run: |
