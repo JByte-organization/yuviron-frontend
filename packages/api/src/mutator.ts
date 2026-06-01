@@ -46,6 +46,34 @@ const getBaseUrl = (): string => {
 };
 
 /**
+ * Читает CSRF-токен из куки XSRF-TOKEN (схема Double Submit Cookie).
+ * На сервере (SSR) document недоступен — возвращаем пустую строку.
+ */
+const getCsrfToken = (): string => {
+    if (typeof document === 'undefined') return '';
+    const value = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]+)/)?.[1];
+    return value ? decodeURIComponent(value) : '';
+};
+
+/**
+ * Инициализация CSRF-токена. Делает GET /auth/csrf-token — бэкенд ставит куки
+ * XSRF-TOKEN (читаем мы) и yuviron_csrf (системная, браузер шлёт сам).
+ * Вызывать один раз при старте приложения ДО любых мутирующих запросов
+ * (refresh / logout / register), иначе бэк вернёт 400 без заголовка X-CSRF-TOKEN.
+ */
+export const initCsrfToken = async (): Promise<void> => {
+    if (typeof document === 'undefined') return;
+    try {
+        await fetch(`${getBaseUrl()}/auth/csrf-token`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+    } catch {
+        // Молча: отсутствие куки проявится на первом мутирующем запросе.
+    }
+};
+
+/**
  * Запрашивает новую пару токенов через HttpOnly Cookie с Refresh токеном.
  */
 const refreshAccessToken = async (): Promise<string> => {
@@ -54,7 +82,7 @@ const refreshAccessToken = async (): Promise<string> => {
         method: 'POST',
         credentials: 'include',
         headers: {
-            'X-CSRF-Protection': '1',
+            'X-CSRF-TOKEN': getCsrfToken(),
         },
     });
 
@@ -106,10 +134,13 @@ export const customInstance = async <T>(
             headers.set('Authorization', `Bearer ${token}`);
         }
 
-        // Anti-CSRF для refresh — бэк проверяет наличие этого заголовка перед
-        // тем, как принять HttpOnly cookie с refresh-токеном.
-        if (url.includes('/auth/refresh')) {
-            headers.set('X-CSRF-Protection', '1');
+        // Anti-CSRF (Double Submit Cookie): на все мутирующие запросы добавляем
+        // заголовок X-CSRF-TOKEN со значением из куки XSRF-TOKEN. Бэк сверяет
+        // заголовок с системной кукой yuviron_csrf (refresh / logout / register).
+        const method = (options.method ?? 'GET').toUpperCase();
+        if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+            const csrf = getCsrfToken();
+            if (csrf) headers.set('X-CSRF-TOKEN', csrf);
         }
 
         const baseUrl = getBaseUrl();

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { configureApiClient, postApiAuthRefresh } from '@repo/api/client.ts';
+import { configureApiClient, initCsrfToken, postApiAuthRefresh } from '@repo/api/client.ts';
 import { useSessionStore } from '@/entities/session/model/store';
 
 export const ApiClientProvider = ({ children }: { children: React.ReactNode }) => {
@@ -25,6 +25,8 @@ export const ApiClientProvider = ({ children }: { children: React.ReactNode }) =
 
         const restoreSession = async () => {
             try {
+                // Получаем куку XSRF-TOKEN ДО refresh — иначе бэк вернёт 400.
+                await initCsrfToken();
                 const data = await postApiAuthRefresh();
                 const token = (data as any)?.accessToken ?? (data as any)?.token;
                 if (token) {

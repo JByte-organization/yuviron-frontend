@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { configureApiClient } from '@repo/api/admin.ts';
+import { configureApiClient, initCsrfToken } from '@repo/api/admin.ts';
 import { useAdminSessionStore } from '@/entities/adminSession/model/store';
 
 // ══════════════════════════════════════════════════════════
@@ -31,6 +31,10 @@ export const ApiClientProvider = ({ children }: { children: React.ReactNode }) =
                 useAdminSessionStore.getState().setAdminAccessToken(token);
             },
         });
+
+        // Отримуємо куку XSRF-TOKEN один раз при старті — потрібна для
+        // мутуючих запитів адмінки (logout / refresh строго вимагають X-CSRF-TOKEN).
+        initCsrfToken();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

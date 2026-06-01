@@ -17,4 +17,4 @@ export { postApiAnalyticsPlayStart, postApiAnalyticsPlayCommit } from './generat
 export * from './generated/client/models';
 
 // Спільний налаштовувач інстансу
-export { configureApiClient } from './mutator';
+export { configureApiClient, initCsrfToken } from './mutator';
