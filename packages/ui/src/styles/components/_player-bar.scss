@@ -9,7 +9,7 @@
   z-index: 150;
   height: 82px;
 
-  background: rgba(13, 21, 32, 0.97);
+  background: $client-header-bg;
   border-top: 1px solid $client-border;
   backdrop-filter: blur(16px);
 
@@ -117,7 +117,7 @@
 
     &:hover:not(:disabled) {
       color: $client-text;
-      background: rgba(255, 255, 255, 0.08);
+      background: $client-hover;
     }
 
     &:disabled { opacity: 0.35; cursor: default; }
@@ -125,14 +125,14 @@
     &--play {
       width: 36px;
       height: 36px;
-      background: $white;
-      color: $black;
+      background: $client-solid-bg;
+      color: $client-solid-text;
       font-size: 16px;
       border-radius: 50%;
 
       &:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.88);
-        color: $black;
+        background: $client-solid-bg-hover;
+        color: $client-solid-text;
       }
     }
 
@@ -161,7 +161,7 @@
     flex: 1;
     height: 4px;
     appearance: none;
-    background: rgba(255, 255, 255, 0.15);
+    background: $client-border-strong;
     border-radius: 2px;
     cursor: pointer;
     outline: none;
@@ -171,7 +171,7 @@
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: $white;
+      background: $client-solid-bg;
       cursor: pointer;
       opacity: 0;
       transition: opacity 0.15s;
@@ -196,7 +196,7 @@
     width: 80px;
     height: 4px;
     appearance: none;
-    background: rgba(255, 255, 255, 0.15);
+    background: $client-border-strong;
     border-radius: 2px;
     cursor: pointer;
     outline: none;
@@ -206,7 +206,7 @@
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: $white;
+      background: $client-solid-bg;
       cursor: pointer;
     }
   }

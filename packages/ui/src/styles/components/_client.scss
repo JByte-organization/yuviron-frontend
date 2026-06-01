@@ -95,16 +95,20 @@
       color: #fff;
     }
 
+    // Белые бейджи Google/Apple сливаются с белой карточкой на светлой теме —
+    // тонкая граница очерчивает их (на тёмной теме незаметна).
     &--google {
       background: #fff;
       color: #ea4335;
       font-weight: 800;
+      border: 1px solid $client-border;
     }
 
     &--apple {
       background: #fff;
       color: #111;
       font-size: 13px;
+      border: 1px solid $client-border;
     }
   }
 
@@ -421,16 +425,20 @@
       color: #fff;
     }
 
+    // Белые бейджи Google/Apple сливаются с белой карточкой на светлой теме —
+    // тонкая граница очерчивает их (на тёмной теме незаметна).
     &--google {
       background: #fff;
       color: #ea4335;
       font-weight: 800;
+      border: 1px solid $client-border;
     }
 
     &--apple {
       background: #fff;
       color: #111;
       font-size: 13px;
+      border: 1px solid $client-border;
     }
   }
 
