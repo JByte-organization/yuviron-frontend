@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useGetApiAdminDashboardStats } from '@repo/api';
+import { useGetApiAdminDashboardStats } from '@repo/api/admin.ts';
 import { SummaryCards }     from '../ui/components/SummaryCards';
 import { RecentUsersTable } from '../ui/components/RecentUsersTable';
 import { TopEntityTable }   from '../ui/components/TopEntityTable';

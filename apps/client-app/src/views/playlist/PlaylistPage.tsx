@@ -12,7 +12,7 @@ import {
     type PlaylistTrackItemClientDto,
     type CurrentUserDto,
     type UpdatePlaylistRequest,
-} from '@repo/api';
+} from '@repo/api/client.ts';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 import { AddToPlaylistModal } from '@/features/playlist/add/ui/AddToPlaylistModal';
 import { EditPlaylistModal, type PlaylistToEdit } from '@/features/playlist/edit/ui/EditPlaylistModal';

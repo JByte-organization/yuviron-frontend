@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { usePutApiUsersProfile, usePostApiFilesUpload } from '@repo/api';
+import { usePutApiUsersProfile, usePostApiFilesUpload } from '@repo/api/client.ts';
 import { Modal } from '@/shared/ui/Modal';
 import { CoverUpload } from '@/shared/ui/CoverUpload';
 

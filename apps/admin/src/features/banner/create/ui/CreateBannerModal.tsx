@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { usePostApiAdminBanners, postApiFilesUpload, type CreateBannerCommand } from '@repo/api';
+import { usePostApiAdminBanners, postApiFilesUpload, type CreateBannerCommand } from '@repo/api/admin.ts';
 
 interface Props {
     isOpen: boolean;

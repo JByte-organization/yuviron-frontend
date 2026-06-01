@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import {usePostApiAuthLogout, useGetApiAuthMe, type CurrentUserDto, getGetApiAuthMeQueryKey} from '@repo/api';
+import {usePostApiAuthLogout, useGetApiAuthMe, type CurrentUserDto, getGetApiAuthMeQueryKey} from '@repo/api/client.ts';
 import { useSessionStore } from '@/entities/session/model/store';
 import { useTheme } from '@/shared/lib/ThemeProvider';
 import { getImageUrl } from '@/shared/lib/getImageUrl';

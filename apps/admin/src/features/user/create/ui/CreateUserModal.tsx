@@ -9,7 +9,7 @@ import {
     Gender,
     type CreateUserCommand,
     type RoleDto,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 
 interface Props {
     isOpen: boolean;

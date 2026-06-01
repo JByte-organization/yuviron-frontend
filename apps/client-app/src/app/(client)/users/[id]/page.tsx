@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useGetApiAuthMe } from '@repo/api';
+import { useGetApiAuthMe } from '@repo/api/client.ts';
 import { UserProfilePage } from '@/views/user';
 
 export default function UserDetailPage() {

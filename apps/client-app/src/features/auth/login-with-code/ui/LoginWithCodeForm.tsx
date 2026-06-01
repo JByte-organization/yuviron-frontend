@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { type FormEvent, useMemo, useState } from 'react';
-import { usePostApiAuthLoginWithCode, usePostApiAuthSendCode } from '@repo/api';
+import { usePostApiAuthLoginWithCode, usePostApiAuthSendCode } from '@repo/api/client.ts';
 import { useSessionStore } from '@/entities/session/model/store';
 import {
     clearRegisterDraft,
