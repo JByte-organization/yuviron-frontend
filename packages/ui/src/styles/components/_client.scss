@@ -5,7 +5,7 @@
           radial-gradient(circle at left center, rgba(0, 110, 105, 0.24) 0, transparent 22%),
           radial-gradient(circle at center, rgba(0, 80, 180, 0.24) 0, transparent 22%),
           radial-gradient(circle at right center, rgba(0, 110, 105, 0.22) 0, transparent 20%),
-          var(--client-auth-bg);
+          $client-auth-bg;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,8 +21,8 @@
   &__card {
     width: 100%;
     max-width: 404px;
-    background: var(--client-card-bg);
-    border: 1px solid var(--client-border-strong);
+    background: $client-card-bg;
+    border: 1px solid $client-border-strong;
     border-radius: 14px;
     padding: 32px 24px 24px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -41,7 +41,7 @@
   }
 
   &__title {
-    color: var(--client-text-strong);
+    color: $client-text-strong;
     text-align: center;
     font-size: 17px;
     line-height: 1.3;
@@ -62,9 +62,9 @@
     width: 100%;
     height: 30px;
     border-radius: 6px;
-    border: 1px solid var(--client-outline-border);
+    border: 1px solid $client-outline-border;
     background: transparent;
-    color: var(--client-outline-text);
+    color: $client-outline-text;
     font-size: 12px;
     display: flex;
     align-items: center;
@@ -74,8 +74,8 @@
 
     &:hover,
     &:focus {
-      background: var(--client-outline-bg-hover);
-      color: var(--client-outline-text-hover);
+      background: $client-outline-bg-hover;
+      color: $client-outline-text-hover;
     }
   }
 
@@ -123,7 +123,7 @@
   }
 
   &__label {
-    color: var(--client-label);
+    color: $client-label;
     font-size: 12px;
     font-weight: 500;
     margin-bottom: 6px;
@@ -132,22 +132,22 @@
   &__input {
     height: 30px;
     border-radius: 6px;
-    border: 1px solid var(--client-field-border);
-    background: var(--client-field-bg);
-    color: var(--client-text-strong);
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
     font-size: 12px;
     box-shadow: none;
     padding: 0 12px;
 
     &::placeholder {
-      color: var(--client-text-muted);
+      color: $client-text-muted;
       opacity: 1;
     }
 
     &:focus {
-      background: var(--client-field-bg);
-      color: var(--client-text-strong);
-      border-color: var(--client-field-focus);
+      background: $client-field-bg;
+      color: $client-text-strong;
+      border-color: $client-field-focus;
       box-shadow: none;
     }
   }
@@ -161,12 +161,12 @@
   }
 
   &__forgot {
-    color: var(--client-link);
+    color: $client-link;
     font-size: 10px;
     line-height: 1.2;
 
     &:hover {
-      color: var(--client-text-strong);
+      color: $client-text-strong;
     }
   }
 
@@ -185,7 +185,7 @@
     transform: translateY(-50%);
     border: 0;
     background: transparent;
-    color: var(--client-link);
+    color: $client-link;
     padding: 0;
     width: 16px;
     height: 16px;
@@ -200,7 +200,7 @@
 
     &:hover,
     &:focus {
-      color: var(--client-text-strong);
+      color: $client-text-strong;
       outline: none;
     }
   }
@@ -209,39 +209,39 @@
     height: 30px;
     border: 0;
     border-radius: 6px;
-    background: var(--client-btn-primary);
-    color: var(--client-on-primary);
+    background: $client-btn-primary;
+    color: $client-on-primary;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.02em;
 
     &:hover,
     &:focus {
-      background: var(--client-btn-primary-hover);
-      color: var(--client-on-primary);
+      background: $client-btn-primary-hover;
+      color: $client-on-primary;
     }
   }
 
   &__alt-btn {
     height: 30px;
     margin-top: 10px;
-    border: 1px solid var(--client-outline-border);
+    border: 1px solid $client-outline-border;
     border-radius: 6px;
     background: transparent;
-    color: var(--client-outline-text);
+    color: $client-outline-text;
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.02em;
 
     &:hover,
     &:focus {
-      background: var(--client-outline-bg-hover);
-      color: var(--client-outline-text-hover);
+      background: $client-outline-bg-hover;
+      color: $client-outline-text-hover;
     }
   }
 
   &__register {
-    color: var(--client-text-faint);
+    color: $client-text-faint;
     font-size: 10px;
     display: flex;
     justify-content: center;
@@ -251,13 +251,13 @@
   }
 
   &__register-link {
-    color: var(--client-heading);
+    color: $client-heading;
     font-weight: 600;
-    border-bottom: 1px solid var(--client-border-strong);
+    border-bottom: 1px solid $client-border-strong;
 
     &:hover {
-      color: var(--client-text-strong);
-      border-color: var(--client-text-strong);
+      color: $client-text-strong;
+      border-color: $client-text-strong;
     }
   }
 }
@@ -272,8 +272,8 @@
   &__card {
     width: 100%;
     max-width: 404px;
-    background: var(--client-card-bg);
-    border: 1px solid var(--client-border-strong);
+    background: $client-card-bg;
+    border: 1px solid $client-border-strong;
     border-radius: 14px;
     padding: 32px 24px 24px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -292,7 +292,7 @@
   }
 
   &__title {
-    color: var(--client-text-strong);
+    color: $client-text-strong;
     text-align: center;
     font-size: 17px;
     line-height: 1.3;
@@ -303,7 +303,7 @@
 
 .client-register-form {
   &__label {
-    color: var(--client-label);
+    color: $client-label;
     font-size: 12px;
     font-weight: 500;
     margin-bottom: 6px;
@@ -312,22 +312,22 @@
   &__input {
     height: 30px;
     border-radius: 6px;
-    border: 1px solid var(--client-field-border);
-    background: var(--client-field-bg);
-    color: var(--client-text-strong);
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
     font-size: 12px;
     box-shadow: none;
     padding: 0 12px;
 
     &::placeholder {
-      color: var(--client-text-muted);
+      color: $client-text-muted;
       opacity: 1;
     }
 
     &:focus {
-      background: var(--client-field-bg);
-      color: var(--client-text-strong);
-      border-color: var(--client-field-focus);
+      background: $client-field-bg;
+      color: $client-text-strong;
+      border-color: $client-field-focus;
       box-shadow: none;
     }
   }
@@ -336,8 +336,8 @@
     height: 30px;
     border: 0;
     border-radius: 6px;
-    background: var(--client-btn-primary);
-    color: var(--client-on-primary);
+    background: $client-btn-primary;
+    color: $client-on-primary;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.02em;
@@ -345,8 +345,8 @@
 
     &:hover,
     &:focus {
-      background: var(--client-btn-primary-hover);
-      color: var(--client-on-primary);
+      background: $client-btn-primary-hover;
+      color: $client-on-primary;
     }
   }
 
@@ -370,8 +370,8 @@
       position: relative;
       z-index: 1;
       padding: 0 10px;
-      background: var(--client-card-bg);
-      color: var(--client-text-faint);
+      background: $client-card-bg;
+      color: $client-text-faint;
       font-size: 10px;
       text-transform: lowercase;
     }
@@ -388,9 +388,9 @@
     width: 100%;
     height: 30px;
     border-radius: 6px;
-    border: 1px solid var(--client-outline-border);
+    border: 1px solid $client-outline-border;
     background: transparent;
-    color: var(--client-outline-text);
+    color: $client-outline-text;
     font-size: 12px;
     display: flex;
     align-items: center;
@@ -400,8 +400,8 @@
 
     &:hover,
     &:focus {
-      background: var(--client-outline-bg-hover);
-      color: var(--client-outline-text-hover);
+      background: $client-outline-bg-hover;
+      color: $client-outline-text-hover;
     }
   }
 
@@ -441,7 +441,7 @@
   }
 
   &__login {
-    color: var(--client-text-faint);
+    color: $client-text-faint;
     font-size: 10px;
     display: flex;
     justify-content: center;
@@ -451,13 +451,13 @@
   }
 
   &__login-link {
-    color: var(--client-heading);
+    color: $client-heading;
     font-weight: 600;
-    border-bottom: 1px solid var(--client-border-strong);
+    border-bottom: 1px solid $client-border-strong;
 
     &:hover {
-      color: var(--client-text-strong);
-      border-color: var(--client-text-strong);
+      color: $client-text-strong;
+      border-color: $client-text-strong;
     }
   }
 }
@@ -476,8 +476,8 @@
   &__card {
     width: 100%;
     max-width: 370px;
-    background: var(--client-card-bg);
-    border: 1px solid var(--client-field-focus);
+    background: $client-card-bg;
+    border: 1px solid $client-field-focus;
     border-radius: 10px;
     padding: 18px 22px 26px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -492,14 +492,14 @@
   }
 
   &__back {
-    color: var(--client-heading);
+    color: $client-heading;
     font-size: 12px;
     line-height: 1.2;
-    border-bottom: 1px solid var(--client-border-strong);
+    border-bottom: 1px solid $client-border-strong;
 
     &:hover {
-      color: var(--client-text-strong);
-      border-color: var(--client-text-strong);
+      color: $client-text-strong;
+      border-color: $client-text-strong;
     }
   }
 
@@ -516,7 +516,7 @@
   }
 
   &__title {
-    color: var(--client-text-strong);
+    color: $client-text-strong;
     text-align: center;
     font-size: 16px;
     line-height: 1.25;
@@ -525,7 +525,7 @@
   }
 
   &__step {
-    color: var(--client-text-soft);
+    color: $client-text-soft;
     text-align: center;
     font-size: 12px;
     margin-bottom: 12px;
@@ -544,12 +544,12 @@
     display: block;
     width: 50%;
     height: 100%;
-    background: var(--client-btn-primary);
+    background: $client-btn-primary;
     border-radius: 999px;
   }
 
   &__label {
-    color: var(--client-label);
+    color: $client-label;
     font-size: 12px;
     font-weight: 500;
     margin-bottom: 6px;
@@ -562,22 +562,22 @@
   &__input {
     height: 30px;
     border-radius: 6px;
-    border: 1px solid var(--client-field-border);
-    background: var(--client-field-bg);
-    color: var(--client-text-strong);
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
     font-size: 12px;
     box-shadow: none;
     padding: 0 12px;
 
     &::placeholder {
-      color: var(--client-text-muted);
+      color: $client-text-muted;
       opacity: 1;
     }
 
     &:focus {
-      background: var(--client-field-bg);
-      color: var(--client-text-strong);
-      border-color: var(--client-field-focus);
+      background: $client-field-bg;
+      color: $client-text-strong;
+      border-color: $client-field-focus;
       box-shadow: none;
     }
   }
@@ -593,7 +593,7 @@
     transform: translateY(-50%);
     border: 0;
     background: transparent;
-    color: var(--client-link);
+    color: $client-link;
     padding: 0;
     width: 16px;
     height: 16px;
@@ -608,7 +608,7 @@
 
     &:hover,
     &:focus {
-      color: var(--client-text-strong);
+      color: $client-text-strong;
       outline: none;
     }
   }
@@ -618,7 +618,7 @@
   }
 
   &__rules-title {
-    color: var(--client-label);
+    color: $client-label;
     font-size: 12px;
     line-height: 1.35;
     margin-bottom: 8px;
@@ -635,7 +635,7 @@
     li {
       position: relative;
       padding-left: 16px;
-      color: var(--client-text-soft);
+      color: $client-text-soft;
       font-size: 11px;
       line-height: 1.35;
 
@@ -646,7 +646,7 @@
         top: 4px;
         width: 8px;
         height: 8px;
-        border: 1px solid var(--client-text-soft);
+        border: 1px solid $client-text-soft;
         border-radius: 50%;
       }
     }
@@ -656,16 +656,16 @@
     height: 30px;
     border: 0;
     border-radius: 6px;
-    background: var(--client-btn-primary);
-    color: var(--client-on-primary);
+    background: $client-btn-primary;
+    color: $client-on-primary;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.02em;
 
     &:hover,
     &:focus {
-      background: var(--client-btn-primary-hover);
-      color: var(--client-on-primary);
+      background: $client-btn-primary-hover;
+      color: $client-on-primary;
     }
   }
 }
@@ -683,8 +683,8 @@
   &__card {
     width: 100%;
     max-width: 370px;
-    background: var(--client-card-bg);
-    border: 1px solid var(--client-border-strong);
+    background: $client-card-bg;
+    border: 1px solid $client-border-strong;
     border-radius: 10px;
     padding: 18px 22px 26px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -699,14 +699,14 @@
   }
 
   &__back {
-    color: var(--client-heading);
+    color: $client-heading;
     font-size: 12px;
     line-height: 1.2;
-    border-bottom: 1px solid var(--client-border-strong);
+    border-bottom: 1px solid $client-border-strong;
 
     &:hover {
-      color: var(--client-text-strong);
-      border-color: var(--client-text-strong);
+      color: $client-text-strong;
+      border-color: $client-text-strong;
     }
   }
 
@@ -723,7 +723,7 @@
   }
 
   &__title {
-    color: var(--client-text-strong);
+    color: $client-text-strong;
     text-align: center;
     font-size: 16px;
     line-height: 1.25;
@@ -732,7 +732,7 @@
   }
 
   &__step {
-    color: var(--client-text-soft);
+    color: $client-text-soft;
     text-align: center;
     font-size: 12px;
     margin-bottom: 12px;
@@ -751,13 +751,13 @@
     display: block;
     width: 100%;
     height: 100%;
-    background: var(--client-btn-primary);
+    background: $client-btn-primary;
     border-radius: 999px;
   }
 
   &__label,
   &__sub-label {
-    color: var(--client-label);
+    color: $client-label;
     font-size: 12px;
     font-weight: 500;
     margin-bottom: 6px;
@@ -765,7 +765,7 @@
 
   &__hint,
   &__hint-link {
-    color: var(--client-text-muted);
+    color: $client-text-muted;
     font-size: 10px;
     line-height: 1.35;
   }
@@ -778,22 +778,22 @@
   &__select {
     height: 30px;
     border-radius: 6px;
-    border: 1px solid var(--client-field-border);
-    background: var(--client-field-bg);
-    color: var(--client-text-strong);
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
     font-size: 12px;
     box-shadow: none;
     padding: 0 12px;
 
     &::placeholder {
-      color: var(--client-text-muted);
+      color: $client-text-muted;
       opacity: 1;
     }
 
     &:focus {
-      background: var(--client-field-bg);
-      color: var(--client-text-strong);
-      border-color: var(--client-field-focus);
+      background: $client-field-bg;
+      color: $client-text-strong;
+      border-color: $client-field-focus;
       box-shadow: none;
     }
   }
@@ -824,7 +824,7 @@
     top: 50%;
     right: 10px;
     transform: translateY(-50%);
-    color: var(--client-link);
+    color: $client-link;
     width: 14px;
     height: 14px;
     display: inline-flex;
@@ -848,13 +848,13 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--client-text-soft);
+    color: $client-text-soft;
     font-size: 11px;
     line-height: 1.35;
 
     input {
       margin: 0;
-      accent-color: var(--client-btn-primary);
+      accent-color: $client-btn-primary;
     }
   }
 
@@ -862,16 +862,16 @@
     height: 30px;
     border: 0;
     border-radius: 6px;
-    background: var(--client-btn-primary);
-    color: var(--client-on-primary);
+    background: $client-btn-primary;
+    color: $client-on-primary;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.02em;
 
     &:hover,
     &:focus {
-      background: var(--client-btn-primary-hover);
-      color: var(--client-on-primary);
+      background: $client-btn-primary-hover;
+      color: $client-on-primary;
     }
   }
 }
@@ -889,8 +889,8 @@
   &__panel {
     width: 100%;
     max-width: 404px;
-    background: var(--client-card-bg);
-    border: 1px solid var(--client-border-strong);
+    background: $client-card-bg;
+    border: 1px solid $client-border-strong;
     border-radius: 14px;
     padding: 18px 24px 22px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -921,14 +921,14 @@
   }
 
   &__back {
-    color: var(--client-heading);
+    color: $client-heading;
     font-size: 12px;
     line-height: 1.2;
-    border-bottom: 1px solid var(--client-border-strong);
+    border-bottom: 1px solid $client-border-strong;
 
     &:hover {
-      color: var(--client-text-strong);
-      border-color: var(--client-text-strong);
+      color: $client-text-strong;
+      border-color: $client-text-strong;
     }
   }
 
@@ -945,7 +945,7 @@
   }
 
   &__title {
-    color: var(--client-text-strong);
+    color: $client-text-strong;
     text-align: center;
     font-size: 18px;
     line-height: 1.25;
@@ -954,7 +954,7 @@
   }
 
   &__subtitle {
-    color: var(--client-text-soft);
+    color: $client-text-soft;
     text-align: center;
     font-size: 11px;
     line-height: 1.4;
@@ -962,7 +962,7 @@
   }
 
   &__label {
-    color: var(--client-label);
+    color: $client-label;
     font-size: 12px;
     font-weight: 500;
     margin-bottom: 6px;
@@ -971,22 +971,22 @@
   &__input {
     height: 30px;
     border-radius: 6px;
-    border: 1px solid var(--client-field-border);
-    background: var(--client-field-bg);
-    color: var(--client-text-strong);
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
     font-size: 12px;
     box-shadow: none;
     padding: 0 12px;
 
     &::placeholder {
-      color: var(--client-text-muted);
+      color: $client-text-muted;
       opacity: 1;
     }
 
     &:focus {
-      background: var(--client-field-bg);
-      color: var(--client-text-strong);
-      border-color: var(--client-field-focus);
+      background: $client-field-bg;
+      color: $client-text-strong;
+      border-color: $client-field-focus;
       box-shadow: none;
     }
   }
@@ -995,33 +995,33 @@
     height: 30px;
     border: 0;
     border-radius: 6px;
-    background: var(--client-btn-primary);
-    color: var(--client-on-primary);
+    background: $client-btn-primary;
+    color: $client-on-primary;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.02em;
 
     &:hover,
     &:focus {
-      background: var(--client-btn-primary-hover);
-      color: var(--client-on-primary);
+      background: $client-btn-primary-hover;
+      color: $client-on-primary;
     }
   }
 
   &__resend {
     height: 30px;
-    border: 1px solid var(--client-field-border);
+    border: 1px solid $client-field-border;
     border-radius: 6px;
     background: transparent;
-    color: var(--client-heading);
+    color: $client-heading;
     font-size: 12px;
     font-weight: 500;
     margin-bottom: 14px;
 
     &:hover,
     &:focus {
-      background: var(--client-outline-bg-hover);
-      color: var(--client-text-strong);
+      background: $client-outline-bg-hover;
+      color: $client-text-strong;
       border-color: rgba(131, 152, 177, 0.7);
     }
   }
@@ -1033,7 +1033,7 @@
   }
 
   &__login {
-    color: var(--client-text-faint);
+    color: $client-text-faint;
     font-size: 10px;
     display: flex;
     justify-content: center;
@@ -1043,13 +1043,13 @@
   }
 
   &__login-link {
-    color: var(--client-heading);
+    color: $client-heading;
     font-weight: 600;
-    border-bottom: 1px solid var(--client-border-strong);
+    border-bottom: 1px solid $client-border-strong;
 
     &:hover {
-      color: var(--client-text-strong);
-      border-color: var(--client-text-strong);
+      color: $client-text-strong;
+      border-color: $client-text-strong;
     }
   }
 }
@@ -1067,8 +1067,8 @@
   &__panel {
     width: 100%;
     max-width: 404px;
-    background: var(--client-card-bg);
-    border: 1px solid var(--client-border-strong);
+    background: $client-card-bg;
+    border: 1px solid $client-border-strong;
     border-radius: 14px;
     padding: 18px 24px 22px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -1103,21 +1103,21 @@
   &__card {
     width: 100%;
     max-width: 460px;
-    background: var(--client-card-bg);
-    border: 1px solid var(--client-border-strong);
+    background: $client-card-bg;
+    border: 1px solid $client-border-strong;
     border-radius: 14px;
     padding: 28px 24px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   }
 
   .client-reset-form__error {
-    color: var(--client-danger-soft);
+    color: $client-danger-soft;
     font-size: 11px;
     margin-top: 4px;
   }
 
   .client-reset-form__success {
-    color: var(--client-success);
+    color: $client-success;
     font-size: 12px;
     margin-top: 4px;
   }
@@ -1131,14 +1131,14 @@
   }
 
   &__back {
-    color: var(--client-heading);
+    color: $client-heading;
     font-size: 12px;
     line-height: 1.2;
-    border-bottom: 1px solid var(--client-border-strong);
+    border-bottom: 1px solid $client-border-strong;
 
     &:hover {
-      color: var(--client-text-strong);
-      border-color: var(--client-text-strong);
+      color: $client-text-strong;
+      border-color: $client-text-strong;
     }
   }
 
@@ -1155,7 +1155,7 @@
   }
 
   &__title {
-    color: var(--client-text-strong);
+    color: $client-text-strong;
     text-align: center;
     font-size: 18px;
     line-height: 1.25;
@@ -1164,7 +1164,7 @@
   }
 
   &__label {
-    color: var(--client-label);
+    color: $client-label;
     font-size: 12px;
     font-weight: 500;
     margin-bottom: 6px;
@@ -1177,22 +1177,22 @@
   &__input {
     height: 30px;
     border-radius: 6px;
-    border: 1px solid var(--client-field-border);
-    background: var(--client-field-bg);
-    color: var(--client-text-strong);
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
     font-size: 12px;
     box-shadow: none;
     padding: 0 12px;
 
     &::placeholder {
-      color: var(--client-text-muted);
+      color: $client-text-muted;
       opacity: 1;
     }
 
     &:focus {
-      background: var(--client-field-bg);
-      color: var(--client-text-strong);
-      border-color: var(--client-field-focus);
+      background: $client-field-bg;
+      color: $client-text-strong;
+      border-color: $client-field-focus;
       box-shadow: none;
     }
   }
@@ -1208,7 +1208,7 @@
     transform: translateY(-50%);
     border: 0;
     background: transparent;
-    color: var(--client-link);
+    color: $client-link;
     padding: 0;
     width: 16px;
     height: 16px;
@@ -1223,7 +1223,7 @@
 
     &:hover,
     &:focus {
-      color: var(--client-text-strong);
+      color: $client-text-strong;
       outline: none;
     }
   }
@@ -1232,16 +1232,16 @@
     height: 30px;
     border: 0;
     border-radius: 6px;
-    background: var(--client-btn-primary);
-    color: var(--client-on-primary);
+    background: $client-btn-primary;
+    color: $client-on-primary;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.02em;
 
     &:hover,
     &:focus {
-      background: var(--client-btn-primary-hover);
-      color: var(--client-on-primary);
+      background: $client-btn-primary-hover;
+      color: $client-on-primary;
     }
   }
 
@@ -1252,7 +1252,7 @@
   }
 
   &__login {
-    color: var(--client-text-faint);
+    color: $client-text-faint;
     font-size: 10px;
     display: flex;
     justify-content: center;
@@ -1262,13 +1262,13 @@
   }
 
   &__login-link {
-    color: var(--client-heading);
+    color: $client-heading;
     font-weight: 600;
-    border-bottom: 1px solid var(--client-border-strong);
+    border-bottom: 1px solid $client-border-strong;
 
     &:hover {
-      color: var(--client-text-strong);
-      border-color: var(--client-text-strong);
+      color: $client-text-strong;
+      border-color: $client-text-strong;
     }
   }
 }
@@ -1592,14 +1592,14 @@
     }
 
     &--active {
-      background: var(--client-solid-bg);
-      border-color: var(--client-solid-bg);
-      color: var(--client-solid-text);
+      background: $client-solid-bg;
+      border-color: $client-solid-bg;
+      color: $client-solid-text;
 
       &:hover {
-        background: var(--client-solid-bg-hover);
-        border-color: var(--client-solid-bg-hover);
-        color: var(--client-solid-text);
+        background: $client-solid-bg-hover;
+        border-color: $client-solid-bg-hover;
+        color: $client-solid-text;
       }
     }
   }
@@ -1753,13 +1753,13 @@
     }
 
     &--active {
-      background: var(--client-solid-bg);
-      border-color: var(--client-solid-bg);
-      color: var(--client-solid-text);
+      background: $client-solid-bg;
+      border-color: $client-solid-bg;
+      color: $client-solid-text;
 
       &:hover {
-        background: var(--client-solid-bg-hover);
-        color: var(--client-solid-text);
+        background: $client-solid-bg-hover;
+        color: $client-solid-text;
       }
     }
   }
@@ -2109,18 +2109,18 @@
     }
 
     &--active {
-      background: var(--client-solid-bg);
-      border-color: var(--client-solid-bg);
-      color: var(--client-solid-text);
+      background: $client-solid-bg;
+      border-color: $client-solid-bg;
+      color: $client-solid-text;
 
       &:hover {
-        background: var(--client-solid-bg-hover);
-        color: var(--client-solid-text);
+        background: $client-solid-bg-hover;
+        color: $client-solid-text;
       }
 
       .search-page__filter-count {
-        background: var(--client-solid-badge);
-        color: var(--client-solid-text);
+        background: $client-solid-badge;
+        color: $client-solid-text;
       }
     }
   }
@@ -2299,7 +2299,7 @@
     flex-shrink: 0;
 
     &:hover {
-      background: var(--client-hover);
+      background: $client-hover;
       color: $client-text;
     }
   }
@@ -2326,7 +2326,7 @@
 
     &:focus { border-color: $client-accent; }
 
-    &--error { border-color: var(--client-danger); }
+    &--error { border-color: $client-danger; }
   }
 
   // ─── Textarea ─────────────────────────────────────────
@@ -2351,7 +2351,7 @@
   // ─── Помилка поля ─────────────────────────────────────
   &__field-error {
     font-size: 12px;
-    color: var(--client-danger);
+    color: $client-danger;
     margin: 4px 0 0;
   }
 
@@ -2474,7 +2474,7 @@
     &--danger {
       background: rgba(255, 80, 80, 0.15);
       border: 1px solid rgba(255, 80, 80, 0.4);
-      color: var(--client-danger);
+      color: $client-danger;
 
       &:hover:not(:disabled) {
         background: rgba(255, 80, 80, 0.25);
@@ -2505,7 +2505,7 @@
       .cover-upload__overlay { opacity: 1; }
     }
 
-    &--error { border-color: var(--client-danger); }
+    &--error { border-color: $client-danger; }
   }
 
   // Прев'ю завантаженого фото
@@ -2552,7 +2552,7 @@
 
   &__remove-btn {
     background: rgba(255, 80, 80, 0.2);
-    color: var(--client-danger);
+    color: $client-danger;
 
     &:hover { background: rgba(255, 80, 80, 0.35); }
   }
@@ -2581,7 +2581,7 @@
 
   &__error {
     font-size: 12px;
-    color: var(--client-danger);
+    color: $client-danger;
     margin: 6px 0 0;
   }
 }
@@ -2753,7 +2753,7 @@
 
       &:hover {
         border-color: rgba(255, 80, 80, 0.6);
-        color: var(--client-danger);
+        color: $client-danger;
       }
     }
   }
@@ -2851,7 +2851,7 @@
     transition: background 0.15s;
     margin-bottom: 4px;
 
-    &:hover { background: var(--client-hover); }
+    &:hover { background: $client-hover; }
   }
 
   &__create-icon {
@@ -2890,7 +2890,7 @@
     transition: background 0.15s;
     text-align: left;
 
-    &:hover { background: var(--client-hover); }
+    &:hover { background: $client-hover; }
   }
 
   &__cover {
@@ -3215,7 +3215,7 @@
 
       &:hover {
         border-color: rgba(255, 80, 80, 0.6);
-        color: var(--client-danger);
+        color: $client-danger;
       }
     }
   }
@@ -3335,7 +3335,7 @@
     transition: 0.2s;
 
     &:hover {
-      background: var(--client-hover);
+      background: $client-hover;
       color: $client-text;
     }
   }
@@ -3453,14 +3453,14 @@
     padding: 0 16px;
     border-radius: 16px;
     border: none;
-    background: var(--client-solid-bg);
-    color: var(--client-solid-text);
+    background: $client-solid-bg;
+    color: $client-solid-text;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     transition: background 0.2s, transform 0.1s;
 
-    &:hover   { background: var(--client-solid-bg-hover); transform: scale(1.02); }
+    &:hover   { background: $client-solid-bg-hover; transform: scale(1.02); }
     &:active  { transform: scale(0.98); }
   }
 }

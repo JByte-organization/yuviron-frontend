@@ -174,15 +174,66 @@ $admin-tr-bg-1: #3B4452;
   --client-header-bg:       rgba(234, 241, 248, 0.92);
 }
 
-// SCSS-алиасы → CSS-токены (обратная совместимость со старым кодом).
-$client-bg:           var(--client-bg);
-$client-surface:      var(--client-surface);
-$client-surface-2:    var(--client-surface-2);
-$client-border:       var(--client-border);
-$client-accent:       var(--client-accent);
-$client-accent-hover: var(--client-accent-hover);
-$client-text:         var(--client-text);
-$client-text-muted:   var(--client-text-muted);
+// SCSS-алиасы → CSS-токены.
+// В компонентах используем ТОЛЬКО эти $client-*, без голых var(--client-*).
+// Значения берутся из :root / [data-theme="light"] выше — это даёт
+// переключение темы в рантайме (по data-theme на <html>).
+
+// Поверхности
+$client-bg:              var(--client-bg);
+$client-auth-bg:         var(--client-auth-bg);
+$client-surface:         var(--client-surface);
+$client-surface-2:       var(--client-surface-2);
+$client-card-bg:         var(--client-card-bg);
+$client-field-bg:        var(--client-field-bg);
+
+// Границы
+$client-border:          var(--client-border);
+$client-border-strong:   var(--client-border-strong);
+$client-field-border:    var(--client-field-border);
+$client-field-focus:     var(--client-field-focus);
+
+// Текст
+$client-text:            var(--client-text);
+$client-text-strong:     var(--client-text-strong);
+$client-text-soft:       var(--client-text-soft);
+$client-text-muted:      var(--client-text-muted);
+$client-text-faint:      var(--client-text-faint);
+$client-label:           var(--client-label);
+$client-heading:         var(--client-heading);
+
+// Акцент
+$client-accent:          var(--client-accent);
+$client-accent-hover:    var(--client-accent-hover);
+
+// Кнопка primary
+$client-btn-primary:        var(--client-btn-primary);
+$client-btn-primary-hover:  var(--client-btn-primary-hover);
+$client-on-primary:         var(--client-on-primary);
+
+// Кнопка outline
+$client-outline-border:      var(--client-outline-border);
+$client-outline-text:        var(--client-outline-text);
+$client-outline-text-hover:  var(--client-outline-text-hover);
+$client-outline-bg-hover:    var(--client-outline-bg-hover);
+
+// Ссылки
+$client-link:            var(--client-link);
+
+// Состояния
+$client-danger:          var(--client-danger);
+$client-danger-soft:     var(--client-danger-soft);
+$client-success:         var(--client-success);
+
+// Прочее
+$client-hover:           var(--client-hover);
+$client-header-bg:       var(--client-header-bg);
+
+// Инвертируемая сплошная заливка
+$client-solid-bg:        var(--client-solid-bg);
+$client-solid-bg-hover:  var(--client-solid-bg-hover);
+$client-solid-text:      var(--client-solid-text);
+$client-solid-badge:     var(--client-solid-badge);
 
 $header-height:  56px;
 $sidebar-width:  240px;
