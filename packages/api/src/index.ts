@@ -52,6 +52,10 @@ export * from './generated/client/models/playlistDetailsClientDto';
 export * from './generated/client/models/playlistTrackItemClientDto';
 export * from './generated/client/models/updatePlaylistRequest';
 
+
+//Artist
+
+
 export { postApiAnalyticsPlayStart, postApiAnalyticsPlayCommit } from './generated/client/endpoints/analytics';
 export { getApiTracksIdPlay } from './generated/client/endpoints/tracks';
 

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useSidebar } from '@/widgets/layout/ui/ClientLayout';
+import { useSidebar } from '@/widgets/layout/model/contexts';
 import { CreatePlaylistModal } from '@/features/playlist/create/ui/CreatePlaylistModal';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import {

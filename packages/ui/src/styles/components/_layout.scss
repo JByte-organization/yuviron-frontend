@@ -1067,6 +1067,12 @@ $sidebar-margin: 12px;
     }
   }
 
+
+  &__follow-btn--active {
+    border-color: $client-accent;
+    color: $client-accent;
+  }
+
   // ─── Обкладинка ───────────────────────────────────────
   &__cover {
     width: 100%;
