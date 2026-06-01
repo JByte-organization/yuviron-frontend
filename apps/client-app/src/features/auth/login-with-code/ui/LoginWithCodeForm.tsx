@@ -5,10 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { type FormEvent, useMemo, useState } from 'react';
 import { usePostApiAuthLoginWithCode, usePostApiAuthSendCode } from '@repo/api';
 import { useSessionStore } from '@/entities/session/model/store';
-import {
-    clearRegisterDraft,
-    getRegisterDraft,
-} from '@/features/auth/register/model/registerDraft';
+import { clearRegisterDraft } from '@/features/auth/register/model/registerDraft';
 
 const CODE_REGEX = /^\d{6}$/;
 
@@ -57,12 +54,10 @@ export const LoginWithCodeForm = () => {
         mutation: {
             onSuccess: (res: any) => {
                 const token = res?.token ?? res?.data?.token;
-                const draft = getRegisterDraft();
-                const next = draft.role === 'author' ? '/artist-onboarding' : '/';
                 clearRegisterDraft();
                 if (token) {
                     setAccessToken(token);
-                    router.push(next);
+                    router.push('/');
                 } else {
                     router.push('/login');
                 }

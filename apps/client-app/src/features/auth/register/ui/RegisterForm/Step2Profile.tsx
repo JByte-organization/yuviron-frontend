@@ -18,7 +18,6 @@ type ProfileErrors = {
     year?: string;
     country?: string;
     city?: string;
-    role?: string;
 };
 
 const MONTHS = [
@@ -54,7 +53,6 @@ type ProfileState = {
     year: string;
     country: string;
     city: string;
-    role: string;
 };
 
 const isAtLeastMinAge = (year: number, month: number, day: number): boolean => {
@@ -93,7 +91,6 @@ const validate = (state: ProfileState): ProfileErrors => {
 
     if (!state.country) errors.country = 'Оберіть країну';
     if (!state.city) errors.city = 'Оберіть місто';
-    if (!state.role) errors.role = 'Оберіть роль';
 
     return errors;
 };
@@ -117,7 +114,6 @@ export const Step2Profile = () => {
             year: draft.year ?? '',
             country,
             city,
-            role: draft.role ?? '',
         };
     });
     const [errors, setErrors] = useState<ProfileErrors>({});
@@ -135,9 +131,8 @@ export const Step2Profile = () => {
             onSuccess: (_response, variables) => {
                 // Регистрация только создаёт аккаунт. Подтверждение почты идёт по
                 // ССЫЛКЕ из письма (/confirm-email?token=...), а не по коду — поэтому
-                // отсюда ведём на экран «перевірте пошту». Роль (isArtist) уже ушла
-                // на бэк в register, а sessionStorage-draft до клика по ссылке из
-                // письма не доживёт, поэтому чистим его здесь.
+                // отсюда ведём на экран «перевірте пошту». sessionStorage-draft до
+                // клика по ссылке из письма не доживёт, поэтому чистим его здесь.
                 const { email } = variables.data;
                 clearRegisterDraft();
                 router.push(`/register/check-email?email=${encodeURIComponent(email ?? '')}`);
@@ -177,7 +172,6 @@ export const Step2Profile = () => {
             year: state.year,
             country: state.country,
             city: state.city,
-            role: state.role as 'listener' | 'author',
         });
 
         const draft = getRegisterDraft();
@@ -193,7 +187,6 @@ export const Step2Profile = () => {
                 Number(state.day),
             ),
         ).toISOString();
-        const isArtist = state.role === 'author';
 
         mutate({
             data: {
@@ -206,7 +199,7 @@ export const Step2Profile = () => {
                 gender: Gender.NotSpecified,
                 acceptMarketing: false,
                 acceptTerms: true,
-                isArtist,
+                isArtist: false,
             },
         });
     };
@@ -390,37 +383,6 @@ export const Step2Profile = () => {
                             )}
                         </div>
                     </div>
-                </div>
-
-                <div className="mb-4">
-                    <div className="client-register-profile-form__label">Хто ви?</div>
-
-                    <div className="client-register-profile-form__radio-list">
-                        <label className="client-register-profile-form__radio">
-                            <input
-                                type="radio"
-                                name="role"
-                                value="listener"
-                                checked={state.role === 'listener'}
-                                onChange={(event) => update('role', event.target.value)}
-                            />
-                            <span>Я звичайний користувач</span>
-                        </label>
-
-                        <label className="client-register-profile-form__radio">
-                            <input
-                                type="radio"
-                                name="role"
-                                value="author"
-                                checked={state.role === 'author'}
-                                onChange={(event) => update('role', event.target.value)}
-                            />
-                            <span>Я автор пісень</span>
-                        </label>
-                    </div>
-                    {errors.role && (
-                        <div className="client-register-profile-form__error">{errors.role}</div>
-                    )}
                 </div>
 
                 {serverError && (
