@@ -91,6 +91,10 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
         startX.current     = e.clientX;
         startWidth.current = sidebarWidth;
 
+        // Забороняємо виділення тексту під час ресайзу
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor     = 'ew-resize';
+
         const onMouseMove = (e: MouseEvent) => {
             if (!isResizing.current) return;
             const delta    = e.clientX - startX.current;
@@ -103,6 +107,9 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
 
         const onMouseUp = () => {
             isResizing.current = false;
+            // Повертаємо назад
+            document.body.style.userSelect = '';
+            document.body.style.cursor     = '';
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup',   onMouseUp);
         };
