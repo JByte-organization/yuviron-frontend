@@ -1,5 +1,11 @@
 @import "../abstract/variables";
 
+// Перекрашивание белых/светлых SVG-иконок в фирменный циан (~#00A6FF).
+// Рецепт: brightness(0) делает иконку чёрной, далее invert/sepia/hue дают синий.
+// Применяется на светлой теме (где белые иконки сливаются с фоном) и в активных пунктах.
+$icon-blue-filter: brightness(0) saturate(100%) invert(58%) sepia(80%)
+saturate(500%) hue-rotate(180deg) brightness(105%);
+
 // Тематизируемый фон/текст для <body> клиентского приложения.
 // Раньше тут висели Bootstrap-классы bg-dark/text-white, которые
 // форсили тёмную тему и ломали переключение на светлую.
@@ -233,7 +239,10 @@
     display: block;
     opacity: 0.6;
     transition: opacity 0.2s;
-    filter: invert(1); // для світлої SVG іконки
+    filter: invert(1); // біла SVG іконка на тёмній шапці
+
+    // На світлій шапці інверсія робить іконку темно-помаранчевою — фарбуємо в циан.
+    [data-theme="light"] & { filter: $icon-blue-filter; }
 
     .client-header__notif-btn:hover & { opacity: 1; }
   }
@@ -294,7 +303,7 @@
   &__premium-badge {
     font-size: 11px;
     font-weight: 700;
-    color: #FFD700;
+    color: $client-premium;
     letter-spacing: 0.05em;
   }
 
@@ -479,9 +488,9 @@
     }
 
     &--accent {
-      color: #FFD700;
+      color: $client-premium;
 
-      &:hover { color: #FFD700; background: rgba(255, 215, 0, 0.08); }
+      &:hover { color: $client-premium; background: $client-hover; }
     }
 
     &--logout {
@@ -618,9 +627,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 4px 16px;
-    width: 100%;
-    flex-shrink: 0;
+ padding: 0 4px 16px;
+      width: 100%;
+      flex-shrink: 0;
+  
+      // Белые SVG подзаголовков на светлой теме красим в циан.
+      [data-theme="light"] & img { filter: $icon-blue-filter; }
   }
 
   &__header-title {
@@ -724,6 +736,11 @@
       .client-sidebar__nav-icon img {
         filter: brightness(0) invert(1);
         opacity: 1;
+
+        // На светлой теме белый hover невидим — оставляем циан.
+        [data-theme="light"] & {
+          filter: $icon-blue-filter;
+        }
       }
     }
 
@@ -739,8 +756,7 @@
               0 0 12px rgba(0, 166, 255, 0.12);
 
       .client-sidebar__nav-icon img {
-        filter: brightness(0) saturate(100%) invert(58%) sepia(80%)
-        saturate(500%) hue-rotate(180deg) brightness(105%);
+        filter: $icon-blue-filter;
         opacity: 1;
       }
 
@@ -767,6 +783,12 @@
       height: 18px;
       opacity: 0.5;
       transition: opacity 0.2s, filter 0.2s;
+
+      // На светлой теме белые иконки сливаются с фоном — красим в циан.
+      [data-theme="light"] & {
+        filter: $icon-blue-filter;
+        opacity: 1;
+      }
     }
   }
 
@@ -856,15 +878,17 @@
       transition: background 0.2s;
     }
 
-    &:hover::after,
-    &:active::after {
-      background: $client-accent;
+ &:hover::after,
+      &:active::after {
+        background: $client-accent;
+      }
+    }
+
+    &__toggle,
+    &__restore-btn {
+      display: none !important;
     }
   }
-
-  &__toggle,
-  &__restore-btn {
-    display: none !important;
   }
 }
 

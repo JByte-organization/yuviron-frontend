@@ -109,6 +109,7 @@ $admin-tr-bg-1: #3B4452;
   --client-danger:         #FF5050;
   --client-danger-soft:    #FF7D7D;
   --client-success:        #5FD08A;
+  --client-premium:        #FFD700;            // золото бейджа/Premium
 
   // Прочее
   --client-hover:          rgba(255, 255, 255, 0.06);  // подсветка при наведении
@@ -163,6 +164,7 @@ $admin-tr-bg-1: #3B4452;
   --client-danger:         #E11D2B;
   --client-danger-soft:    #E0566A;
   --client-success:        #1A9E5C;
+  --client-premium:        #B8860B;            // тёмное золото — читаемо на светлом фоне
 
   --client-hover:          rgba(13, 21, 32, 0.05);
 
@@ -224,6 +226,7 @@ $client-link:            var(--client-link);
 $client-danger:          var(--client-danger);
 $client-danger-soft:     var(--client-danger-soft);
 $client-success:         var(--client-success);
+$client-premium:         var(--client-premium);
 
 // Прочее
 $client-hover:           var(--client-hover);
