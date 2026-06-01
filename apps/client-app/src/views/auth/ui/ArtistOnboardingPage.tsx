@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { usePostApiArtistDashboardProfiles } from '@repo/api';
+import { usePostApiArtistProfiles } from '@repo/api';
 
 export const ArtistOnboardingPage = () => {
     const router = useRouter();
@@ -10,7 +10,7 @@ export const ArtistOnboardingPage = () => {
     const [error, setError] = useState<string | null>(null);
     const [limitReached, setLimitReached] = useState(false);
 
-    const { mutate, isPending } = usePostApiArtistDashboardProfiles({
+    const { mutate, isPending } = usePostApiArtistProfiles({
         mutation: {
             onSuccess: () => {
                 router.push('/');
