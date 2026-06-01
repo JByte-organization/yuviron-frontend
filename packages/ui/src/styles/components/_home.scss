@@ -10,7 +10,7 @@
 // ─── SectionHeader ───────────────────────────────────────
 .section-header {
   &__title {
-    font-size: 16px;
+    //font-size: 16px;
     font-weight: 700;
     color: $client-text;
   }
@@ -38,52 +38,122 @@
   }
 }
 
-// ─── HeroBannerSection ───────────────────────────────────
-.hero-banner-section {
-  &__slide {
-    height: 500px;
-    border-radius: 12px;
+// ─── HeroPanoramicBanner ───────────────────────────────────
+.hero-panoramic-banner {
+  width: 100%;
+  position: relative;
+  overflow: hidden; // Гарантує, що слайдер не розтягне ширину всього сайту
+
+  __container {
+    width: 100%;
+    // Дозволяємо слайдам виходити за межі стандартного Swiper-контейнера
+    .panoramic-banner-swiper {
+      overflow: visible !important;
+      width: 100%;
+
+      __slide {
+        // Бокові (сусідні) слайди рівні, але трохи приглушені
+        opacity: 0.4;
+        transform: scale(0.96); // Легкий благородний відступ по глибині, без перекосів
+        transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+        transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        cursor: pointer;
+
+        // ЦЕНТРАЛЬНИЙ АКТИВНИЙ БАННЕР
+        &.swiper-slide-active {
+          opacity: 1;
+          transform: scale(1); // Натуральний повноцінний розмір за сіткою
+        }
+      }
+    }
+  }
+
+  // Об'єкт самої картки баннера
+  .panoramic-banner-card {
+    width: 100%;
+    aspect-ratio: 16 / 9; // Мобільний формат за замовчуванням
+    border-radius: 0; // На мобільних лежить впритул до країв
     overflow: hidden;
     position: relative;
+    background: #121212;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+
+    @media (min-width: 768px) {
+      aspect-ratio: 16 / 6.5;
+      border-radius: 12px;
+    }
+
+    @media (min-width: 1200px) {
+      aspect-ratio: 16 / 5.2; // Кінематографічний рівний формат для десктопу
+      border-radius: 16px; // Радіус округлення як у вашої картки
+    }
 
     img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: cover; // Зображення обрізається строго по центру під будь-який монітор
+      object-position: center;
+      user-select: none;
+    }
+
+    __gradient {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 100%);
+      pointer-events: none;
     }
   }
 
-  &__gradient {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
-    background: linear-gradient(to top, $client-bg, transparent);
+  // Адаптивний скелетон повторює логіку розмірів
+  &-skeleton {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 0;
+
+    @media (min-width: 768px) {
+      width: 80%;
+      aspect-ratio: 16 / 6.5;
+      border-radius: 12px;
+      margin: 0 auto;
+    }
+    @media (min-width: 1200px) {
+      width: 70%;
+      aspect-ratio: 16 / 5.2;
+      border-radius: 16px;
+    }
   }
 
+  // Крапки пагінації під банером
   &__dots {
     display: flex;
     justify-content: center;
-    gap: 6px;
-    margin-top: 10px;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
   }
 
   &__dot {
-    height: 8px;
+    height: 6px;
     border-radius: 999px;
     border: none;
-    background: $client-border;
-    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     padding: 0;
+    cursor: pointer;
 
     &--active {
-      width: 20px;
-      background: $client-accent;
+      width: 24px;
+      background: #ffffff;
     }
 
     &:not(&--active) {
-      width: 8px;
+      width: 6px;
+      &:hover {
+        background: rgba(255, 255, 255, 0.4);
+      }
     }
   }
 }
@@ -292,42 +362,108 @@
 }
 
 // ─── ArtistCard ───────────────────────────────────────────
+// ─── ArtistCard (Spotify Style Layout) ─────────────────────
 .artist-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02); // Дефолтне ледь помітне тло карти
+  border-radius: 8px;
   cursor: pointer;
-  text-align: center;
+  transition: background-color 0.3s ease;
+  text-align: left; // Перемикаємо на лівий край для автентичного вигляду
+  width: 100%;
+
+  // Ефект ховеру на всю картку
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.07); // М'яке підсвічування плитки
+
+    .artist-card__play-btn {
+      opacity: 1;
+      transform: translateY(0); // Повертаємо кнопку на дефолтну позицію
+    }
+  }
+
+  // Обгортка для утримання пропорцій та позиціонування кнопки
+  &__avatar-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    margin-bottom: 16px;
+  }
 
   &__avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%; // Строге коло для артиста
     overflow: hidden;
-    flex-shrink: 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: grayscale(20%);
+      transition: transform 0.3s ease;
     }
   }
 
+  // Кастомна зелена кнопка плейліста
+  &__play-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #1db954; // Фірмовий насичений зелений
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+
+    // Початковий стан для анімації випливання
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 2;
+
+    i {
+      font-size: 26px;
+      color: #000000;
+      margin-left: 2px; // Оптичне вирівнювання трикутника іконки по центру
+    }
+
+    // Мікро-ховер на саму кнопку (ефект збільшення)
+    &:hover {
+      transform: scale(1.06) !important;
+      background-color: #1ed760; // Легке освітлення зеленого
+    }
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+  }
+
   &__name {
-    font-size: 14px;
-    font-weight: 600;
-    color: $client-text;
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
     margin: 0;
   }
 
-  &__listeners {
-    font-size: 12px;
-    color: $client-text-muted;
+  &__role {
+    font-size: 13px;
+    color: #b3b3b3;
     margin: 0;
+    font-weight: 500;
   }
 }
+
 
 .show-all-btn {
   display: flex;
@@ -513,8 +649,8 @@
   // width: 100% від колонки, aspect-ratio робить висоту = ширині
   &__circle-wrap {
     width: 100%;
-    max-height: 170px;
-    min-height: 170px;
+    max-height: 160px;
+    min-height: 160px;
     aspect-ratio: 1 / 1;
   }
 
@@ -551,23 +687,6 @@
     justify-content: center;
     overflow: hidden;
     position: relative;
-
-    // Тонкий блик зверху-зліва
-    &::after {
-      content: '';
-      position: absolute;
-      top: 8%;
-      left: 12%;
-      width: 38%;
-      height: 28%;
-      border-radius: 50%;
-      background: radial-gradient(
-                      circle,
-                      rgba(100, 180, 255, 0.14) 0%,
-                      transparent 70%
-      );
-      pointer-events: none;
-    }
   }
 
   &__icon {
@@ -1014,8 +1133,6 @@
   padding-bottom: 8px;
 
   &::-webkit-scrollbar { display: none; }
-
-  //.col-6 { min-width: 160px; }
 }
 
 

@@ -34,7 +34,7 @@ export const FavoriteArtistsSection = ({
     const lastWord = sectionTitle.trim().split(' ').at(-1) ?? '';
 
     return (
-        <section className="favorite-artists-section mb-4">
+        <section className="favorite-artists-section mb-4 mb-md-5">
             <SectionHeader
                 title={sectionTitle}
                 highlightedWord={lastWord}
@@ -54,7 +54,7 @@ export const FavoriteArtistsSection = ({
                         480:  { slidesPerView: 3 },
                         768:  { slidesPerView: 3 },
                         992:  { slidesPerView: 5 },
-                        1200: { slidesPerView: 5 },
+                        1200: { slidesPerView: 7 },
                     }}
                     className="favorite-artists-section__swiper"
                 >

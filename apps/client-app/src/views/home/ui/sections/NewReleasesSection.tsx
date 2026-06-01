@@ -29,7 +29,7 @@ export const NewReleasesSection = ({
     if (!isLoading && (!albums || albums.length === 0)) return null;
 
     return (
-        <section className="new-releases-section mb-4">
+        <section className="new-releases-section mb-4 mb-md-5">
             <SectionHeader
                 title={sectionTitle}
                 highlightedWord="музичні"
@@ -55,7 +55,7 @@ export const NewReleasesSection = ({
                         480:  { slidesPerView: 3 },
                         768:  { slidesPerView: 3 },
                         992:  { slidesPerView: 3 },
-                        1200: { slidesPerView: 5 },
+                        1200: { slidesPerView: 7 },
                     }}
                     className="new-releases-section__swiper"
                 >

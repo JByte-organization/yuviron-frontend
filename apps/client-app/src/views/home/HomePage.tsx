@@ -34,12 +34,6 @@ import { AllTracksSection } from './ui/sections/AllTracksSection';
 import {TrackRow} from '@/entities/track/ui/TrackRow';
 import type {TrackRowData} from '@/entities/track/ui/TrackRow';
 
-// Прямо в JSX перед закриваючим </div>:
-const TEST_TRACKS: TrackRowData[] = [
-    { id: '7887272f-cbee-4f38-984a-a2e6e3732be7', index: 1, title: 'Тест трек 1', artistNames: ['Артист 1'], coverUrl: null },
-    { id: 'fca53b2d-ac28-497d-9d62-ac6f2eb73e2e', index: 2, title: 'Тест трек 2', artistNames: ['Артист 2'], coverUrl: null },
-];
-
 
 interface HomePageProps {
     isAuthenticated?: boolean;
@@ -150,45 +144,39 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
     const artistsTitle = isAuthenticated ? 'Твої улюблені виконавці'             : 'Популярні виконавці';
 
     return (
-        <div className="home-page container-fluid">
+        <div className="home-page">
+            <div className="container-fluid px-lg-4">
+                <HeroBannerSection
+                    items={banners}
+                    isLoading={bannersLoading}
+                />
 
-            <HeroBannerSection
-                items={banners}
-                isLoading={bannersLoading}
-            />
+                <MoodSection
+                    moods={moods.length > 0 ? moods : undefined}
+                    genres={genres.length > 0 ? genres : undefined}
+                    isLoading={moodsLoading || genresLoading}
+                    title={moodTitle}
+                />
 
-            <MoodSection
-                moods={moods.length > 0 ? moods : undefined}
-                genres={genres.length > 0 ? genres : undefined}
-                isLoading={moodsLoading || genresLoading}
-                title={moodTitle}
-            />
+                <TopTracksSection
+                    tracks={topTracks.length > 0 ? topTracks : undefined}
+                    isLoading={topTracksLoading}
+                    sectionTitle={tracksTitle}
+                />
 
-            <TopTracksSection
-                tracks={topTracks.length > 0 ? topTracks : undefined}
-                isLoading={topTracksLoading}
-                sectionTitle={tracksTitle}
-            />
+                <NewReleasesSection
+                    albums={newReleases.length > 0 ? newReleases : undefined}
+                    isLoading={newReleasesLoading}
+                />
 
-            <NewReleasesSection
-                albums={newReleases.length > 0 ? newReleases : undefined}
-                isLoading={newReleasesLoading}
-            />
+                <FavoriteArtistsSection
+                    artists={artists.length > 0 ? artists : undefined}
+                    isLoading={artistsLoading}
+                    sectionTitle={artistsTitle}
+                />
 
-            <FavoriteArtistsSection
-                artists={artists.length > 0 ? artists : undefined}
-                isLoading={artistsLoading}
-                sectionTitle={artistsTitle}
-            />
-
-            <AllTracksSection/>
-
-            <div style={{padding: '0 24px'}}>
-                {TEST_TRACKS.map(track => (
-                    <TrackRow key={track.id} track={track} allTracks={TEST_TRACKS} sourceType="Search"/>
-                ))}
+                <AllTracksSection/>
             </div>
-
         </div>
     );
 };
