@@ -39,5 +39,14 @@ export * from './generated/client/models/recentlyPlayedTrackDto';
 export * from './generated/client/models/currentUserDto';
 export * from './generated/client/models/userFavoriteTrackDto';
 
+//Player
+export * from './generated/client/models/trackStreamUrlResponse';
+export * from './generated/client/models/startPlayRequest';
+export * from './generated/client/models/startPlayResponse';
+export * from './generated/client/models/commitPlayRequest';
+
+export { postApiAnalyticsPlayStart, postApiAnalyticsPlayCommit } from './generated/client/endpoints/analytics';
+export { getApiTracksIdPlay } from './generated/client/endpoints/tracks';
+
 
 export { configureApiClient } from './mutator';
