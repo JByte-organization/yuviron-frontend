@@ -36,7 +36,7 @@ export const TopTracksSection = ({
     const lastWord = sectionTitle.trim().split(' ').at(-1) ?? 'музика';
 
     return (
-        <section className="top-tracks-section mb-4">
+        <section className="top-tracks-section mb-4 mb-md-5">
             <SectionHeader
                 title={sectionTitle}
                 highlightedWord={lastWord}
@@ -62,7 +62,7 @@ export const TopTracksSection = ({
                         480:  { slidesPerView: 3 },
                         768:  { slidesPerView: 3 },
                         992:  { slidesPerView: 5 },
-                        1200: { slidesPerView: 5 },
+                        1200: { slidesPerView: 7 },
                     }}
                     className="top-tracks-section__swiper"
                 >
