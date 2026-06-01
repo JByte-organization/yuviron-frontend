@@ -5,10 +5,8 @@ import { Header } from '@/widgets/header/ui/Header';
 import { Footer } from '@/widgets/footer/ui/Footer';
 import { PlaylistToastProvider } from '@/shared/ui/PlaylistToast';
 import { ArtistDashboardSidebar } from '@/widgets/artist-sidebar/ui/ArtistDashboardSidebar';
-import {
-    SidebarContext,
-    RightSidebarContext,
-} from '@/widgets/layout/ui/ClientLayout';
+
+import { SidebarContext, RightSidebarContext } from '@/widgets/layout/model/contexts';
 import { useState } from 'react';
 
 interface ArtistDashboardLayoutProps {

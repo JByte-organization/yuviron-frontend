@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useSidebar } from '@/widgets/layout/ui/ClientLayout';
+import { useSidebar } from '@/widgets/layout/model/contexts';
 import { CreatePlaylistModal } from '@/features/playlist/create/ui/CreatePlaylistModal';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import {
@@ -41,7 +41,7 @@ interface NavItemProps {
 }
 
 const NavItem = ({ label, icon, isActive, href, onClick, collapsed }: NavItemProps) => {
-    const className = `client-sidebar__nav-item${isActive ? ' client-sidebar__nav-item--active' : ''}`;
+    const className = `client-sidebar__nav-item${isActive ? ' client-sidebar__nav-item--active' : ''}${collapsed ? ' px-3' : ''}`;
 
     const content = (
         <>
@@ -147,56 +147,67 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
                         <hr />
                     </div>
 
+                    {/* ─── Плейлисти — завжди видимі ──────────── */}
+                    <div className="client-sidebar__section">
+                        {!collapsed && (
+                            <div className="client-sidebar__sub-header">
+                                <p className="client-sidebar__sub-title">Ваші плейлисти</p>
+                                <Image src="/images/icons/list.svg" alt="list" width={18} height={18} />
+                            </div>
+                        )}
+
+                        {playlists.length > 0 ? (
+                            <div className="client-sidebar__playlist-list">
+                                {playlists.map(pl => (
+                                    <Link
+                                        key={pl.id}
+                                        href={`/playlist/${pl.id}`}
+                                        className={`client-sidebar__playlist-item${collapsed ? ' client-sidebar__playlist-item--collapsed' : ''}`}
+                                        title={collapsed ? `${pl.title ?? 'Без назви'}` : undefined}
+                                    >
+                                        <div
+                                            className="client-sidebar__playlist-avatar"
+                                            style={{
+                                                backgroundImage: pl.coverUrl
+                                                    ? `url(${getImageUrl(pl.coverUrl)})`
+                                                    : undefined,
+                                                backgroundColor: pl.coverUrl
+                                                    ? undefined
+                                                    : 'var(--client-surface-2)',
+                                            }}
+                                        >
+                                            {!pl.coverUrl && (
+                                                <i className="bi bi-music-note" />
+                                            )}
+                                        </div>
+
+                                        {/* Тексти — приховані в collapsed, але показуються в тултіпі */}
+                                        {!collapsed && (
+                                            <div className="client-sidebar__playlist-info">
+                            <span className="client-sidebar__playlist-name">
+                                {pl.title ?? 'Без назви'}
+                            </span>
+                                                <span className="client-sidebar__playlist-type">
+                                Плейліст · {pl.tracksCount ?? 0} треків
+                            </span>
+                                            </div>
+                                        )}
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : (
+                            !collapsed && (
+                                <p className="client-sidebar__empty-text">
+                                    Немає плейлістів
+                                </p>
+                            )
+                        )}
+                        <hr />
+                    </div>
+
                     {/* ─── Плейлисти — приховані в collapsed ── */}
                     {!collapsed && (
                         <>
-                            <div className="client-sidebar__section">
-                                <div className="client-sidebar__sub-header">
-                                    <p className="client-sidebar__sub-title">Ваші плейлисти</p>
-                                    <Image src="/images/icons/list.svg" alt="list" width={18} height={18} />
-                                </div>
-
-                                {playlists.length > 0 ? (
-                                    <div className="client-sidebar__playlist-list">
-                                        {playlists.map(pl => (
-                                            <Link
-                                                key={pl.id}
-                                                href={`/playlist/${pl.id}`}
-                                                className="client-sidebar__playlist-item"
-                                            >
-                                                <div
-                                                    className="client-sidebar__playlist-avatar"
-                                                    style={{
-                                                        backgroundImage: pl.coverUrl
-                                                            ? `url(${getImageUrl(pl.coverUrl)})`
-                                                            : undefined,
-                                                        backgroundColor: pl.coverUrl
-                                                            ? undefined
-                                                            : 'var(--client-surface-2)',
-                                                    }}
-                                                >
-                                                    {!pl.coverUrl && (
-                                                        <i className="bi bi-music-note" />
-                                                    )}
-                                                </div>
-                                                <div className="client-sidebar__playlist-info">
-                                                    <span className="client-sidebar__playlist-name">
-                                                        {pl.title ?? 'Без назви'}
-                                                    </span>
-                                                    <span className="client-sidebar__playlist-type">
-                                                        Плейліст · {pl.tracksCount ?? 0} треків
-                                                    </span>
-                                                </div>
-                                            </Link>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="client-sidebar__empty-text">
-                                        Немає плейлістів
-                                    </p>
-                                )}
-                                <hr />
-                            </div>
 
                             {/* ─── Нещодавно прослухані ─────── */}
                             {recentTracks.length > 0 && (

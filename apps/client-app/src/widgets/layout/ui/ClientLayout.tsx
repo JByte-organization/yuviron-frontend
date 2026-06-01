@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Header } from '@/widgets/header/ui/Header';
 import { Sidebar } from '@/widgets/sidebar/ui/Sidebar';
 import { GuestSidebar } from '@/widgets/sidebar/ui/GuestSidebar';
@@ -11,120 +11,32 @@ import { PlaylistToastProvider } from '@/shared/ui/PlaylistToast';
 import { AuthGuardProvider } from '@/shared/lib/useAuthGuard';
 import { PlayerBar } from '@/widgets/player/ui/PlayerBar';
 
-// ══════════════════════════════════════════════════════════
-// CONSTANTS
-// ══════════════════════════════════════════════════════════
-const SIDEBAR_MIN_WIDTH  = 240;
-const SIDEBAR_MAX_WIDTH  = 480;
-const SIDEBAR_DEFAULT    = 260;
-// Ширина collapsed сайдбара (тільки іконки) — має збігатись з CSS
-const SIDEBAR_ICON_WIDTH = 68;
-// Брейкпоінт десктоп — має збігатись з CSS (992px = lg)
-const DESKTOP_BREAKPOINT = 992;
+import {
+    SidebarContext,
+    RightSidebarContext,
+    SIDEBAR_ICON_WIDTH,
+} from '../model/contexts';
+import { useSidebarResize } from '../lib/useSidebarResize';
+import { useRightSidebarState } from '../lib/useRightSidebarState';
+import { useIsDesktop } from '../lib/useIsDesktop';
 
-// ══════════════════════════════════════════════════════════
-// LEFT SIDEBAR CONTEXT
-// ══════════════════════════════════════════════════════════
-interface SidebarContextValue {
-    collapsed:    boolean;
-    setCollapsed: (v: boolean) => void;
-    sidebarWidth: number;
-}
-
-export const SidebarContext = createContext<SidebarContextValue>({
-    collapsed:    false,
-    setCollapsed: () => {},
-    sidebarWidth: SIDEBAR_DEFAULT,
-});
-
-export const useSidebar = () => useContext(SidebarContext);
-
-// ══════════════════════════════════════════════════════════
-// RIGHT SIDEBAR CONTEXT
-// ══════════════════════════════════════════════════════════
-interface RightSidebarContextValue {
-    isOpen:     boolean;
-    userClosed: boolean;
-    open:       () => void;
-    close:      () => void;
-}
-
-export const RightSidebarContext = createContext<RightSidebarContextValue>({
-    isOpen:     false,
-    userClosed: false,
-    open:  () => {},
-    close: () => {},
-});
-
-export const useRightSidebar = () => useContext(RightSidebarContext);
-
-// ══════════════════════════════════════════════════════════
-// CLIENT LAYOUT
-// ══════════════════════════════════════════════════════════
 interface ClientLayoutProps {
     children: React.ReactNode;
 }
 
 export const ClientLayout = ({ children }: ClientLayoutProps) => {
-    // ─── Визначаємо чи десктоп ────────────────────────────
-    // Потрібно щоб не застосовувати marginLeft на мобайлі
-    const [isDesktop, setIsDesktop] = useState(false);
-
-    useEffect(() => {
-        const check = () => setIsDesktop(window.innerWidth >= DESKTOP_BREAKPOINT);
-        check();
-        window.addEventListener('resize', check);
-        return () => window.removeEventListener('resize', check);
-    }, []);
+    const isDesktop = useIsDesktop();
 
     // ─── Лівий сайдбар ────────────────────────────────────
-    const [collapsed,    setCollapsed]    = useState(false);
-    const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT);
-
-    // ─── Resize логіка ────────────────────────────────────
-    const isResizing  = useRef(false);
-    const startX      = useRef(0);
-    const startWidth  = useRef(SIDEBAR_DEFAULT);
-
-    const onResizeStart = useCallback((e: React.MouseEvent) => {
-        isResizing.current = true;
-        startX.current     = e.clientX;
-        startWidth.current = sidebarWidth;
-
-        const onMouseMove = (e: MouseEvent) => {
-            if (!isResizing.current) return;
-            const delta    = e.clientX - startX.current;
-            const newWidth = Math.min(
-                SIDEBAR_MAX_WIDTH,
-                Math.max(SIDEBAR_MIN_WIDTH, startWidth.current + delta),
-            );
-            setSidebarWidth(newWidth);
-        };
-
-        const onMouseUp = () => {
-            isResizing.current = false;
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup',   onMouseUp);
-        };
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup',   onMouseUp);
-    }, [sidebarWidth]);
+    const [collapsed, setCollapsed] = useState(false);
+    const { sidebarWidth, isResizing, onResizeStart } = useSidebarResize();
 
     // ─── Правий сайдбар ───────────────────────────────────
-    const [isOpen,     setIsOpen]     = useState(false);
-    const [userClosed, setUserClosed] = useState(false);
-
-    const open         = () => { if (!userClosed) setIsOpen(true); };
-    const close        = () => { setIsOpen(false); setUserClosed(true); };
-    const openManually = () => { setUserClosed(false); setIsOpen(true); };
+    const { isOpen, userClosed, open, close, openManually } = useRightSidebarState();
 
     const accessToken = useSessionStore(s => s.accessToken);
 
-    // ─── Розраховуємо marginLeft ──────────────────────────
-    // На мобайлі — 0 (сайдбар overlay або прихований)
-    // На десктопі collapsed — тільки іконки (SIDEBAR_ICON_WIDTH)
-    // На десктопі expanded — повна ширина сайдбара
+    // На мобайлі marginLeft = 0, сайдбар display:none через CSS
     const marginLeft = !isDesktop
         ? 0
         : collapsed
@@ -139,13 +51,11 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
                         <Header />
 
                         <div className="client-layout__body">
-                            {/* Лівий сайдбар */}
                             {accessToken
                                 ? <Sidebar onResizeStart={onResizeStart} />
                                 : <GuestSidebar onResizeStart={onResizeStart} />
                             }
 
-                            {/* Основний контент */}
                             <main
                                 className={[
                                     'client-layout__main',
@@ -162,9 +72,9 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
                                 <Footer />
                             </main>
 
-                            {/* Правий сайдбар */}
                             <RightSidebar onOpenManually={openManually} />
                         </div>
+
                         <PlayerBar />
                     </div>
                 </AuthGuardProvider>
