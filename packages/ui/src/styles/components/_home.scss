@@ -164,7 +164,7 @@
     height: 80px;
     border-radius: 50%;
     border: 2px solid $client-border;
-    background: var(--client-hover);
+    background: $client-hover;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -468,7 +468,7 @@
     transition: 0.15s ease;
 
     &:hover {
-      background: var(--client-hover);
+      background: $client-hover;
       color: $client-text;
     }
 
