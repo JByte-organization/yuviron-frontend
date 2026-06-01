@@ -7,7 +7,7 @@ import {
     type UserListItemDtoPaginatedList,
     type GetApiAdminUsersParams,
     AccountState,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 import { BaseTable } from '@/shared/ui/Table/BaseTable';
 import { UserRow } from '@/entities/user/ui/UserRow';
 import { CreateUserModal } from '@/features/user/create/ui/CreateUserModal';

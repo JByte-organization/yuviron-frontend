@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TopEntityDto } from '@repo/api';
+import type { TopEntityDto } from '@repo/api/admin.ts';
 
 interface Props {
     title: string;

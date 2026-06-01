@@ -14,6 +14,8 @@ $white: #FFFFFF;
 //$gray: #1DB954;
 $gray-dark: #0F1724;
 
+$right-sidebar-width: 280px;
+
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
@@ -47,24 +49,199 @@ $admin-text: #718096;
 $admin-tr-bg-1: #3B4452;
 
 
-// CLIENT APP
-$client-bg:           #000000;
-$client-surface:      #0D1520;
-$client-surface-2:    #111D2E;
-$client-border:       rgba(119, 145, 178, 0.2);
-$client-accent:       $cyan;
-$client-accent-hover: #29BBFF;
-$client-text:         $white;
-$client-text-muted:   rgba(206, 216, 227, 0.55);
+// =====================================================================
+// CLIENT APP — Design tokens (CSS custom properties)
+// ---------------------------------------------------------------------
+// Тема переключается атрибутом data-theme на <html> (см. ThemeProvider).
+// :root         — тёмная тема (база).
+// [data-theme="light"] — светлая тема (значения пока первичные,
+//                        будут уточнены по макету Figma).
+//
+// Компоненты ДОЛЖНЫ использовать только var(--client-*), без хардкода.
+// SCSS-переменные $client-* ниже перенаправлены на эти токены ради
+// обратной совместимости — старый код, ссылающийся на $client-*,
+// автоматически становится тематизируемым.
+// =====================================================================
+
+:root {
+  // Поверхности
+  --client-bg:             #000000;
+  --client-auth-bg:        #111315;            // фон страниц авторизации (под градиентами)
+  --client-surface:        #0D1520;
+  --client-surface-2:      #111D2E;
+  --client-card-bg:        rgba(7, 10, 15, 0.94);   // карточки/дропдауны/модалки
+  --client-field-bg:       #0F141C;            // фон полей ввода
+
+  // Границы
+  --client-border:         rgba(119, 145, 178, 0.2);
+  --client-border-strong:  rgba(119, 145, 178, 0.34);
+  --client-field-border:   rgba(131, 152, 177, 0.45);
+  --client-field-focus:    #29A8FF;            // граница поля в фокусе
+
+  // Текст
+  --client-text:           #FFFFFF;
+  --client-text-strong:    #FFFFFF;            // акцентный/hover текст, иконки, бордеры
+  --client-text-soft:      rgba(206, 216, 227, 0.78); // подзаголовки
+  --client-text-muted:     rgba(206, 216, 227, 0.55);
+  --client-text-faint:     rgba(196, 207, 219, 0.58); // disabled/footer
+  --client-label:          #DCE7F2;            // подписи форм
+  --client-heading:        #DCECFF;            // заголовки модалок/секций
+
+  // Акцент
+  --client-accent:         #00A6FF;
+  --client-accent-hover:   #29BBFF;
+
+  // Кнопка primary
+  --client-btn-primary:        #19AAF5;
+  --client-btn-primary-hover:  #40BBFB;
+  --client-on-primary:         #04131F;        // текст на primary-кнопке
+
+  // Кнопка outline
+  --client-outline-border:      #1E77C9;
+  --client-outline-text:        #6EA8DE;
+  --client-outline-text-hover:  #9CC7EF;
+  --client-outline-bg-hover:    rgba(20, 60, 110, 0.18);
+
+  // Ссылки (вторичный синий)
+  --client-link:           #70A7D8;
+
+  // Состояния
+  --client-danger:         #FF5050;
+  --client-danger-soft:    #FF7D7D;
+  --client-success:        #5FD08A;
+  --client-premium:        #FFD700;            // золото бейджа/Premium
+
+  // Прочее
+  --client-hover:          rgba(255, 255, 255, 0.06);  // подсветка при наведении
+
+  // Инвертируемая сплошная заливка (активные фильтр-чипы, белые CTA-кнопки):
+  // тёмная тема — белая плашка с тёмным текстом, светлая — наоборот.
+  --client-solid-bg:        #FFFFFF;
+  --client-solid-bg-hover:  rgba(255, 255, 255, 0.9);
+  --client-solid-text:      #000000;
+  --client-solid-badge:     rgba(0, 0, 0, 0.15);   // счётчик/бейдж на такой плашке
+
+  --client-header-bg:       rgba(2, 10, 19, 0.92);  // полупрозрачный фон шапки (с blur)
+}
+
+[data-theme="light"] {
+  // Светлая палитра по макету Figma (Main, light): прохладный голубоватый фон,
+  // белые карточки, яркий циановый акцент. Значения подобраны по скриншоту.
+  --client-bg:             #EAF1F8;            // прохладный светлый фон (не чисто белый)
+  --client-auth-bg:        #EAF1F8;
+  --client-surface:        #FFFFFF;            // карточки/сайдбары — белые
+  --client-surface-2:      #F2F6FB;
+  --client-card-bg:        rgba(255, 255, 255, 0.96);
+  --client-field-bg:       #FFFFFF;
+
+  --client-border:         rgba(15, 23, 36, 0.10);
+  --client-border-strong:  rgba(15, 23, 36, 0.18);
+  --client-field-border:   rgba(15, 23, 36, 0.22);
+  --client-field-focus:    #0090E0;
+
+  --client-text:           #0D1520;
+  --client-text-strong:    #04131F;
+  --client-text-soft:      rgba(13, 21, 32, 0.72);
+  --client-text-muted:     rgba(13, 21, 32, 0.55);
+  --client-text-faint:     rgba(13, 21, 32, 0.45);
+  --client-label:          #33424F;
+  --client-heading:        #0D1520;
+
+  --client-accent:         #00A6FF;            // яркий циан как в макете (тот же, что в тёмной)
+  --client-accent-hover:   #29BBFF;
+
+  --client-btn-primary:        #0090E0;
+  --client-btn-primary-hover:  #007DC2;
+  --client-on-primary:         #FFFFFF;
+
+  --client-outline-border:      #0090E0;
+  --client-outline-text:        #0078C2;
+  --client-outline-text-hover:  #005C99;
+  --client-outline-bg-hover:    rgba(0, 144, 224, 0.08);
+
+  --client-link:           #0078C2;
+
+  --client-danger:         #E11D2B;
+  --client-danger-soft:    #E0566A;
+  --client-success:        #1A9E5C;
+  --client-premium:        #B8860B;            // тёмное золото — читаемо на светлом фоне
+
+  --client-hover:          rgba(13, 21, 32, 0.05);
+
+  --client-solid-bg:        #0D1520;
+  --client-solid-bg-hover:  rgba(13, 21, 32, 0.9);
+  --client-solid-text:      #FFFFFF;
+  --client-solid-badge:     rgba(255, 255, 255, 0.15);
+
+  --client-header-bg:       rgba(234, 241, 248, 0.92);
+}
+
+// SCSS-алиасы → CSS-токены.
+// В компонентах используем ТОЛЬКО эти $client-*, без голых var(--client-*).
+// Значения берутся из :root / [data-theme="light"] выше — это даёт
+// переключение темы в рантайме (по data-theme на <html>).
+
+// Поверхности
+$client-bg:              var(--client-bg);
+$client-auth-bg:         var(--client-auth-bg);
+$client-surface:         var(--client-surface);
+$client-surface-2:       var(--client-surface-2);
+$client-card-bg:         var(--client-card-bg);
+$client-field-bg:        var(--client-field-bg);
+
+// Границы
+$client-border:          var(--client-border);
+$client-border-strong:   var(--client-border-strong);
+$client-field-border:    var(--client-field-border);
+$client-field-focus:     var(--client-field-focus);
+
+// Текст
+$client-text:            var(--client-text);
+$client-text-strong:     var(--client-text-strong);
+$client-text-soft:       var(--client-text-soft);
+$client-text-muted:      var(--client-text-muted);
+$client-text-faint:      var(--client-text-faint);
+$client-label:           var(--client-label);
+$client-heading:         var(--client-heading);
+
+// Акцент
+$client-accent:          var(--client-accent);
+$client-accent-hover:    var(--client-accent-hover);
+
+// Кнопка primary
+$client-btn-primary:        var(--client-btn-primary);
+$client-btn-primary-hover:  var(--client-btn-primary-hover);
+$client-on-primary:         var(--client-on-primary);
+
+// Кнопка outline
+$client-outline-border:      var(--client-outline-border);
+$client-outline-text:        var(--client-outline-text);
+$client-outline-text-hover:  var(--client-outline-text-hover);
+$client-outline-bg-hover:    var(--client-outline-bg-hover);
+
+// Ссылки
+$client-link:            var(--client-link);
+
+// Состояния
+$client-danger:          var(--client-danger);
+$client-danger-soft:     var(--client-danger-soft);
+$client-success:         var(--client-success);
+$client-premium:         var(--client-premium);
+
+// Прочее
+$client-hover:           var(--client-hover);
+$client-header-bg:       var(--client-header-bg);
+
+// Инвертируемая сплошная заливка
+$client-solid-bg:        var(--client-solid-bg);
+$client-solid-bg-hover:  var(--client-solid-bg-hover);
+$client-solid-text:      var(--client-solid-text);
+$client-solid-badge:     var(--client-solid-badge);
 
 $header-height:  56px;
 $sidebar-width:  240px;
 $sidebar-margin: 12px;
 
-
-[data-theme="light"] {
-  // TODO: визначити кольори світлої теми
-}
 
 // Buttons
 $admin-approve:   #8EE6CC;

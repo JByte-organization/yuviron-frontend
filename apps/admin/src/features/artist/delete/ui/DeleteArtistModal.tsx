@@ -4,7 +4,7 @@ import React from 'react';
 import {
     useDeleteApiAdminArtistsId,
     type ArtistListItemDto,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 
 interface Props {
     artist: ArtistListItemDto | null;

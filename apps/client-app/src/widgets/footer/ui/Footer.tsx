@@ -5,97 +5,84 @@ import Image from 'next/image';
 export const Footer = () => {
     return (
         <footer className="client-footer">
-            <div className="container-fluid">
 
-                {/* ─── Верхній блок: лого + контакти ───────── */}
-                <div className="row align-items-center py-4 py-lg-5">
+            {/* ─── Верхній блок ─────────────────────────── */}
+            <div className="client-footer__top justify-content-center align-items-center">
 
-                    {/* Лого */}
-                    <div className="col-12 col-lg-5 d-flex justify-content-center justify-content-lg-start mb-4 mb-lg-0">
-                        <Image
-                            src="/images/logo.svg"
-                            alt="Lumitune"
-                            width={180}
-                            height={120}
-                            className="client-footer__logo"
-                        />
-                    </div>
+                {/* Лого */}
+                <Link href="/home" className="client-footer__logo">
+                    <Image
+                        src="/images/logo.svg"
+                        alt="Lumitune"
+                        width={120}
+                        height={150}
+                    />
+                </Link>
 
-                    {/* Контакти + соцмережі */}
-                    <div className="col-12 col-lg-7">
-
-                        {/* Адреса */}
-                        <div className="row mb-3">
-                            <div className="col-12">
-                                <p className="client-footer__contact-item mb-0">
-                                    <i className="bi bi-geo-alt-fill client-footer__contact-icon" />
-                                    Adress st. Shevchenko, 25 house, UA, Odessa, 00000
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Телефон + Email */}
-                        <div className="row mb-3">
-                            <div className="col-12 col-sm-6">
-                                <p className="client-footer__contact-item mb-0">
-                                    <i className="bi bi-telephone-fill client-footer__contact-icon" />
-                                    (380) 00-000-00-00
-                                </p>
-                            </div>
-                            <div className="col-12 col-sm-6 mt-2 mt-sm-0">
-                                <p className="client-footer__contact-item mb-0">
-                                    <i className="bi bi-envelope-fill client-footer__contact-icon" />
-                                    lumitune@gmail.com
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Соцмережі */}
-                        <div className="row">
-                            <div className="col-12">
-                                <div className="d-flex gap-3">
-                                    <a href="#" className="client-footer__social-link" aria-label="Facebook">
-                                        <i className="bi bi-facebook" />
-                                    </a>
-                                    <a href="#" className="client-footer__social-link" aria-label="Twitter">
-                                        <i className="bi bi-twitter-x" />
-                                    </a>
-                                    <a href="#" className="client-footer__social-link" aria-label="Pinterest">
-                                        <i className="bi bi-pinterest" />
-                                    </a>
-                                    <a href="#" className="client-footer__social-link" aria-label="RSS">
-                                        <i className="bi bi-rss-fill" />
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
+                {/* Адреса */}
+                <div className="client-footer__contact-block">
+                    <p className="client-footer__contact-label">Address:</p>
+                    <p className="client-footer__contact-text">
+                        st. Shevchenko, 25 house,
+                        Odesa, Ukraine
+                    </p>
                 </div>
 
-                {/* ─── Розділювач ───────────────────────────── */}
-                <hr className="client-footer__divider" />
+                {/* Телефон + Email */}
+                <div className="client-footer__contact-block">
+                    <p className="client-footer__contact-label">Support:</p>
+                    <p className="client-footer__contact-text">(380) 00-000-00-00</p>
+                </div>
 
-                {/* ─── Нижні лінки по центру ────────────────── */}
-                <div className="row py-3">
-                    <div className="col-12">
-                        <div className="d-flex flex-wrap justify-content-center gap-3 gap-md-4">
-                            {[
-                                { href: '/about',      label: 'About us'      },
-                                { href: '/contact',    label: 'Contact us'    },
-                                { href: '/help',       label: 'Help'          },
-                                { href: '/privacy',    label: 'Privacy Policy'},
-                                { href: '/disclaimer', label: 'Disclaimer'    },
-                            ].map((link) => (
-                                <Link key={link.href} href={link.href} className="client-footer__bottom-link">
-                                    {link.label}
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
+                {/* Email */}
+                <div className="client-footer__contact-block">
+                    <p className="client-footer__contact-label">Email:</p>
+                    <p className="client-footer__contact-text">yuviron@gmail.com</p>
+                </div>
+
+                {/* Соцмережі */}
+                <div className="client-footer__socials">
+                    <a href="#" className="client-footer__social client-footer__social--fb" aria-label="Facebook">
+                        <i className="bi bi-facebook" />
+                    </a>
+                    <a href="#" className="client-footer__social client-footer__social--tw" aria-label="Twitter">
+                        <i className="bi bi-twitter-x" />
+                    </a>
+                    <a href="#" className="client-footer__social client-footer__social--pt" aria-label="Pinterest">
+                        <i className="bi bi-pinterest" />
+                    </a>
+                    <a href="#" className="client-footer__social client-footer__social--rss" aria-label="RSS">
+                        <i className="bi bi-rss-fill" />
+                    </a>
                 </div>
 
             </div>
+
+            {/* ─── Нижній блок ──────────────────────────── */}
+            <div className="client-footer__bottom">
+
+                {/* Лінки по центру */}
+                <nav className="client-footer__links">
+                    {[
+                        { href: '/about',      label: 'About us'       },
+                        { href: '/contact',    label: 'Contact us'     },
+                        { href: '/help',       label: 'Help'           },
+                        { href: '/privacy',    label: 'Privacy Policy' },
+                        { href: '/disclaimer', label: 'Disclaimer'     },
+                    ].map(link => (
+                        <Link key={link.href} href={link.href} className="client-footer__link">
+                            {link.label}
+                        </Link>
+                    ))}
+                </nav>
+
+                {/* Копірайт */}
+                <p className="client-footer__copy">
+                    © {new Date().getFullYear()} Yuviron Inc. All rights reserved.
+                </p>
+
+            </div>
+
         </footer>
     );
 };

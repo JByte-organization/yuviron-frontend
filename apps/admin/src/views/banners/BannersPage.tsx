@@ -6,7 +6,7 @@ import {
     type BannerListItemDto,
     type BannerListItemDtoPaginatedList,
     type GetApiAdminBannersParams,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 import { BaseTable } from '@/shared/ui/Table/BaseTable';
 import { BannerRow } from '@/entities/banner/ui/BannerRow';
 import { CreateBannerModal } from '@/features/banner/create/ui/CreateBannerModal';

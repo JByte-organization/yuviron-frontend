@@ -1,0 +1,220 @@
+// ══════════════════════════════════════════════════════════
+// PLAYER BAR — фіксований знизу
+// ══════════════════════════════════════════════════════════
+.player-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 150;
+  height: 82px;
+
+  background: $client-header-bg;
+  border-top: 1px solid $client-border;
+  backdrop-filter: blur(16px);
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 16px;
+  gap: 5px;
+
+  @media (min-width: 992px) {
+    padding: 0 24px;
+  }
+
+  // ─── Трек інфо ────────────────────────────────────────
+  &__track {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  &__cover {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+    background: $client-surface-2;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  &__cover-loader {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $white;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: $client-text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+
+  &__artist {
+    font-size: 11px;
+    color: $client-text-muted;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    text-decoration: none;
+
+    &:hover { color: $client-text; text-decoration: underline; }
+  }
+
+  // ─── Контроли ─────────────────────────────────────────
+  &__controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+
+  &__buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__btn {
+    background: transparent;
+    border: none;
+    color: $client-text-muted;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: color 0.15s, background 0.15s;
+
+    &:hover:not(:disabled) {
+      color: $client-text;
+      background: $client-hover;
+    }
+
+    &:disabled { opacity: 0.35; cursor: default; }
+
+    &--play {
+      width: 36px;
+      height: 36px;
+      background: $client-solid-bg;
+      color: $client-solid-text;
+      font-size: 16px;
+      border-radius: 50%;
+
+      &:hover:not(:disabled) {
+        background: $client-solid-bg-hover;
+        color: $client-solid-text;
+      }
+    }
+
+    &--sm { font-size: 16px; }
+  }
+
+  // ─── Прогрес ──────────────────────────────────────────
+  &__progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 400px;
+
+    @media (max-width: 768px) { width: 220px; }
+  }
+
+  &__time {
+    font-size: 11px;
+    color: $client-text-muted;
+    flex-shrink: 0;
+    min-width: 32px;
+    text-align: center;
+  }
+
+  &__seek {
+    flex: 1;
+    height: 4px;
+    appearance: none;
+    background: $client-border-strong;
+    border-radius: 2px;
+    cursor: pointer;
+    outline: none;
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: $client-solid-bg;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    &:hover::-webkit-slider-thumb { opacity: 1; }
+
+    &:disabled { cursor: default; opacity: 0.4; }
+
+    // Заповнення прогресу через linear-gradient задається через JS або CSS var
+  }
+
+  // ─── Гучність ─────────────────────────────────────────
+  &__volume {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  &__volume-slider {
+    width: 80px;
+    height: 4px;
+    appearance: none;
+    background: $client-border-strong;
+    border-radius: 2px;
+    cursor: pointer;
+    outline: none;
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: $client-solid-bg;
+      cursor: pointer;
+    }
+  }
+}
+
+// ─── Відступ знизу для контенту коли плеєр активний ──────
+.client-layout__main {
+  &--player-open {
+    padding-bottom: 72px;
+  }
+}

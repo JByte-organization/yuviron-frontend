@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { type MoodDto } from '@repo/api';
+import { type MoodDto } from '@repo/api/admin.ts';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
     mood: MoodDto;
@@ -21,9 +22,8 @@ const formatDate = (dateString?: string): string => {
 };
 
 export const MoodRow = ({ mood, isSelected, onSelect, onEdit, onDelete }: Props) => {
-    const coverSrc = mood.coverUrl
-        ? `https://api.yuviron.com/storage/${mood.coverUrl}`
-        : null;
+
+    const coverSrc = getImageUrl(mood.coverUrl);
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>
@@ -40,7 +40,7 @@ export const MoodRow = ({ mood, isSelected, onSelect, onEdit, onDelete }: Props)
             {/* Cover */}
             <td className="py-3">
                 <div
-                    className="rounded bg-secondary d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0"
+                    className="rounded bg-dark d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0"
                     style={{ width: '40px', height: '40px' }}
                 >
                     {coverSrc

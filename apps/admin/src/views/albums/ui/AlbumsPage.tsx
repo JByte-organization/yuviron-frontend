@@ -5,7 +5,7 @@ import {
     useGetApiAdminAlbums,
     getApiAdminArtists,
     type AlbumListItemDto,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 import { BaseTable } from '@/shared/ui/Table/BaseTable';
 import { AlbumRow } from '@/entities/album/ui/AlbumRow';
 import { albumTableColumns } from '@/entities/album/model/columns';

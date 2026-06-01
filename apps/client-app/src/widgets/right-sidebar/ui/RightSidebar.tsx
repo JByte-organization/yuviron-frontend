@@ -2,61 +2,93 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRightSidebar } from '@/widgets/layout/ui/ClientLayout';
+import { usePlayerStore } from '@/entities/player/model/playerStore';
+import { useRightSidebar } from '@/widgets/layout/model/contexts';
+import { useRightSidebarTrack } from '../lib/useRightSidebarTrack';
+import { useFavoriteTrack } from '@/features/track/lib/useFavoriteTrack';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
+import {
+    useGetApiArtistsId,
+    usePostApiArtistsIdFollow,
+    useDeleteApiArtistsIdFollow,
+} from '@repo/api/client.ts';
 
-// ─── Типи ─────────────────────────────────────────────────
-export interface CurrentTrackInfo {
-    id: string;
-    title: string;
-    artistId?: string;
-    artistName: string;
-    artistAvatarUrl?: string | null;
-    artistMonthlyListeners?: number;
-    artistBio?: string | null;
-    albumId?: string;
-    albumTitle?: string;
-    coverUrl?: string | null;
-}
+import type { ArtistDetailsDto } from '@repo/api/generated/client/models/artistDetailsDto';
 
-interface RightSidebarProps {
-    /** TODO: підключити до playerStore — usePlayerStore() */
-    currentTrack?: CurrentTrackInfo | null;
-    onOpenManually: () => void;
-}
 
-// ─── Mock даних (прибрати коли буде плеєр) ────────────────
-const MOCK_TRACK: CurrentTrackInfo = {
-    id: '1',
-    title: 'Rockstar',
-    artistId: 'lisa',
-    artistName: 'LISA',
-    artistAvatarUrl: null,
-    artistMonthlyListeners: 72780975,
-    artistBio: 'Południnokoreyska співачка LISA — учасниця BLACKPINK. Відома своїм унікальним стилем та неперевершеною харизмою.',
-    albumId: 'alter-ego',
-    albumTitle: 'Alter Ego',
-    coverUrl: null,
-};
-
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
 const formatListeners = (count?: number): string => {
     if (!count) return '';
     return count.toLocaleString('uk-UA') + ' слухачів на місяць';
 };
 
-export const RightSidebar = ({
-                                 currentTrack = MOCK_TRACK,
-                                 onOpenManually,
-                             }: RightSidebarProps) => {
+// ══════════════════════════════════════════════════════════
+// PROPS
+// ══════════════════════════════════════════════════════════
+interface RightSidebarProps {
+    onOpenManually: () => void;
+}
+
+// ══════════════════════════════════════════════════════════
+// COMPONENT
+// ══════════════════════════════════════════════════════════
+export const RightSidebar = ({ onOpenManually }: RightSidebarProps) => {
     const { isOpen, close } = useRightSidebar();
-    const [isLiked, setIsLiked] = useState(false);
 
-    const coverSrc = currentTrack?.coverUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${currentTrack.coverUrl}`
-        : `https://picsum.photos/seed/track-${currentTrack?.id}/300/300`;
+    // Відкриваємо сайдбар при старті треку (якщо юзер не закрив)
+    useRightSidebarTrack();
 
-    const artistAvatarSrc = currentTrack?.artistAvatarUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${currentTrack.artistAvatarUrl}`
-        : `https://picsum.photos/seed/artist-${currentTrack?.artistId}/80/80`;
+    const currentTrack = usePlayerStore(s => s.currentTrack);
+
+    // ── Лайк треку ────────────────────────────────────────
+    const { isLiked, isPending: isLikePending, toggle: toggleLike } = useFavoriteTrack({
+        initialLiked: false, // TODO: передати isLiked з DTO коли бекенд додасть поле
+    });
+
+    // ── Підписка на артиста — оптимістичний UI ────────────
+    const [isFollowing, setIsFollowing] = useState(false);
+
+    const { mutate: follow,   isPending: isFollowPending }   = usePostApiArtistsIdFollow();
+    const { mutate: unfollow, isPending: isUnfollowPending } = useDeleteApiArtistsIdFollow();
+
+    const handleFollowToggle = () => {
+        if (!currentTrack?.artistId) return;
+        if (isFollowing) {
+            setIsFollowing(false);
+            unfollow(
+                { id: currentTrack.artistId },
+                { onError: () => setIsFollowing(true) },
+            );
+        } else {
+            setIsFollowing(true);
+            follow(
+                { id: currentTrack.artistId },
+                { onError: () => setIsFollowing(false) },
+            );
+        }
+    };
+
+    // ── Дані артиста — завантажуємо тільки якщо є artistId ─
+    const artistId = currentTrack?.artistId ?? '';
+    const { data: artistRaw } = useGetApiArtistsId(artistId, {
+        query: {
+            enabled:  !!artistId,
+            queryKey: [`/api/artists/${artistId}`],
+        },
+    });
+
+    // Наш mutator повертає дані напряму без обгортки { data, status }
+    const artist = artistRaw as unknown as ArtistDetailsDto | undefined;
+
+    // ── Обкладинка треку ──────────────────────────────────
+    const coverSrc = getImageUrl(currentTrack?.coverUrl)
+        ?? `https://picsum.photos/seed/track-${currentTrack?.id}/300/300`;
+
+    // ── Аватар артиста ────────────────────────────────────
+    const artistAvatarSrc = getImageUrl(artist?.avatarUrl)
+        ?? `https://picsum.photos/seed/artist-${artistId}/80/80`;
 
     return (
         <>
@@ -95,29 +127,28 @@ export const RightSidebar = ({
                                                 href={`/artists/${currentTrack.artistId}`}
                                                 className="right-sidebar__track-artist"
                                             >
-                                                {currentTrack.artistName}
+                                                {currentTrack.artistNames.join(', ')}
                                             </Link>
                                         ) : (
                                             <span className="right-sidebar__track-artist">
-                                                {currentTrack.artistName}
+                                                {currentTrack.artistNames.join(', ')}
                                             </span>
                                         )}
                                     </div>
 
-                                    {/* Дії: лайк + плейліст */}
+                                    {/* Лайк + плейліст */}
                                     <div className="right-sidebar__track-actions">
                                         <button
                                             className={`right-sidebar__action-btn${isLiked ? ' right-sidebar__action-btn--active' : ''}`}
-                                            onClick={() => setIsLiked((v) => !v)}
-                                            aria-label="Додати до обраного"
-                                            // TODO: usePostApiUserFavorites()
+                                            onClick={() => toggleLike(currentTrack.id)}
+                                            disabled={isLikePending}
+                                            aria-label={isLiked ? 'Прибрати з улюблених' : 'Додати до улюблених'}
                                         >
                                             <i className={`bi bi-heart${isLiked ? '-fill' : ''}`} />
                                         </button>
                                         <button
                                             className="right-sidebar__action-btn"
                                             aria-label="Додати до плейліста"
-                                            // TODO: відкрити модалку вибору плейліста
                                         >
                                             <i className="bi bi-plus-circle" />
                                         </button>
@@ -133,44 +164,49 @@ export const RightSidebar = ({
                                 </button>
                             </div>
 
-                            {/* ─── Роздільник ───────────── */}
                             <hr className="right-sidebar__divider" />
 
                             {/* ─── Про артиста ──────────── */}
-                            <div className="right-sidebar__about">
-                                <p className="right-sidebar__section-label">Про виконавця</p>
+                            {artist && (
+                                <div className="right-sidebar__about">
+                                    <p className="right-sidebar__section-label">Про виконавця</p>
 
-                                <div className="right-sidebar__artist-card">
-                                    <div className="right-sidebar__artist-avatar">
-                                        <img src={artistAvatarSrc} alt={currentTrack.artistName} />
-                                    </div>
-                                    <div className="right-sidebar__artist-info">
-                                        <Link
-                                            href={`/artists/${currentTrack.artistId}`}
-                                            className="right-sidebar__artist-name"
-                                        >
-                                            {currentTrack.artistName}
-                                        </Link>
-                                        {currentTrack.artistMonthlyListeners && (
-                                            <p className="right-sidebar__artist-listeners">
-                                                {formatListeners(currentTrack.artistMonthlyListeners)}
-                                            </p>
+                                    <div className="right-sidebar__artist-card">
+                                        <div className="right-sidebar__artist-avatar">
+                                            <img src={artistAvatarSrc} alt={artist.name ?? ''} />
+                                        </div>
+                                        <div className="right-sidebar__artist-info">
+                                            <Link
+                                                href={`/artists/${currentTrack.artistId}`}
+                                                className="right-sidebar__artist-name"
+                                            >
+                                                {artist.name}
+                                            </Link>
+                                            {!!artist.listenersCount && (
+                                                <p className="right-sidebar__artist-listeners">
+                                                    {formatListeners(artist.listenersCount)}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {currentTrack.artistId && (
+                                            <button
+                                                className={`right-sidebar__follow-btn${isFollowing ? ' right-sidebar__follow-btn--active' : ''}`}
+                                                onClick={handleFollowToggle}
+                                                disabled={isFollowPending || isUnfollowPending}
+                                            >
+                                                {isFollowing ? 'Стежу' : 'Стежити'}
+                                            </button>
                                         )}
                                     </div>
-                                    <button
-                                        className="right-sidebar__follow-btn"
-                                        // TODO: usePostApiUserFollowArtist()
-                                    >
-                                        Стежити
-                                    </button>
-                                </div>
 
-                                {currentTrack.artistBio && (
-                                    <p className="right-sidebar__artist-bio">
-                                        {currentTrack.artistBio}
-                                    </p>
-                                )}
-                            </div>
+                                    {artist.bio && (
+                                        <p className="right-sidebar__artist-bio">
+                                            {artist.bio}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                         </>
                     ) : (
                         <div className="right-sidebar__empty">
@@ -181,7 +217,6 @@ export const RightSidebar = ({
                 </div>
             </aside>
 
-            {/* ─── Кнопка відкрити (коли закритий) ─────── */}
             {!isOpen && (
                 <button
                     className="right-sidebar__restore-btn"

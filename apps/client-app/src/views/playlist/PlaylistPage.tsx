@@ -1,6 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+    useGetApiPlaylistsId,
+    useGetApiPlaylistsIdTracks,
+    useGetApiAuthMe,
+    usePutApiMePlaylistsId,
+    useDeleteApiMePlaylistsId,
+    type PlaylistDetailsClientDto,
+    type PlaylistTrackItemClientDto,
+    type CurrentUserDto,
+    type UpdatePlaylistRequest,
+} from '@repo/api/client.ts';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 import { AddToPlaylistModal } from '@/features/playlist/add/ui/AddToPlaylistModal';
 import { EditPlaylistModal, type PlaylistToEdit } from '@/features/playlist/edit/ui/EditPlaylistModal';
@@ -8,88 +20,157 @@ import { DeletePlaylistModal } from '@/features/playlist/detete/ui/DeletePlaylis
 import { CreatePlaylistModal } from '@/features/playlist/create/ui/CreatePlaylistModal';
 import { PlaylistPageHeader } from './ui/PlaylistPageHeader';
 import { PlaylistRecommendations } from './ui/PlaylistRecommendations';
+import {PlaylistVisibility} from "@repo/api/generated/client/models";
+
 
 interface PlaylistPageProps {
     playlistId: string;
 }
 
-// ─── Mock ──────────────────────────────────────────────────
-// TODO: замінити на useGetApiPlaylistsId(playlistId)
-const MOCK_PLAYLIST = {
-    id: 'p1',
-    name: 'Мій плейліст №2',
-    description: null,
-    coverUrl: null,
-    isPrivate: false,
-    ownerId: 'current-user', // якщо збігається з userId — це наш плейліст
-    ownerName: 'HannaD',
-    tracksCount: 18,
-    isSubscribed: false,
-};
+// ─── Маппінг даних з API у формат TrackRow ────────────────────────────────────
+// PlaylistTrackItemClientDto → TrackRowData
+// Причина: TrackRow — загальний компонент, він не знає про структуру плейліста.
+// Ми перетворюємо дані тут, щоб TrackRow залишився незалежним.
+const mapTrack = (t: PlaylistTrackItemClientDto, index: number): TrackRowData => ({
+    id:          t.trackId   ?? '',
+    index:       index + 1,
+    title:       t.title     ?? '',
+    artistNames: t.artists?.map(a => a.name ?? '') ?? [],
+    artistId:    t.artists?.[0]?.id ?? undefined,
+    albumId:     t.albumId   ?? undefined,
+    albumTitle:  null,   // PlaylistTrackItemClientDto не містить albumTitle
+    addedAt:     t.addedAt   ?? null,
+    durationMs:  t.durationMs ?? null,
+    coverUrl:    t.coverUrl  ?? null,
+});
 
-const CURRENT_USER_ID = 'current-user'; // TODO: з useGetApiCurrentUser()
-
-const MOCK_TRACKS: TrackRowData[] = [
-    { id: '1',  index: 1,  title: 'How You Like That',   artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a1', albumTitle: 'THE ALBUM',           addedAt: new Date().toISOString(),                           durationMs: 182000, coverUrl: null },
-    { id: '2',  index: 2,  title: 'Ice Cream',           artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a1', albumTitle: 'THE ALBUM',           addedAt: new Date().toISOString(),                           durationMs: 182000, coverUrl: null },
-    { id: '3',  index: 3,  title: 'Playing With Fire',   artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a2', albumTitle: 'The Show',            addedAt: new Date(Date.now() - 86400000).toISOString(),      durationMs: 162000, coverUrl: null },
-    { id: '4',  index: 4,  title: 'Lovesick Girls',      artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a2', albumTitle: 'The Show',            addedAt: new Date(Date.now() - 86400000).toISOString(),      durationMs: 224000, coverUrl: null },
-    { id: '5',  index: 5,  title: 'Crazy Over You',      artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a2', albumTitle: 'The Show',            addedAt: new Date(Date.now() - 2 * 86400000).toISOString(),  durationMs: 202000, coverUrl: null },
-    { id: '6',  index: 6,  title: 'Forever Young',       artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a2', albumTitle: 'The Show',            addedAt: new Date(Date.now() - 3 * 86400000).toISOString(),  durationMs: 202000, coverUrl: null },
-    { id: '7',  index: 7,  title: 'Bet Yiu Wanna',       artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a1', albumTitle: 'THE ALBUM',           addedAt: new Date(Date.now() - 5 * 86400000).toISOString(),  durationMs: 182000, coverUrl: null },
-    { id: '8',  index: 8,  title: 'Rockstar',            artistNames: ['LISA'],               artistId: 'lisa',  albumId: 'a3', albumTitle: 'Alter Ego',           addedAt: '2025-04-02T00:00:00Z',                             durationMs: 166000, coverUrl: null },
-];
-
-/**
- * Сторінка: Плейліст /playlists/[id]
- *
- * Підключення даних:
- * 1. const { data: playlist } = useGetApiPlaylistsId(playlistId);
- * 2. const { data: tracks }   = useGetApiPlaylistsIdTracks(playlistId);
- * 3. const { data: me }       = useGetApiCurrentUser();
- * 4. isOwner = me?.id === playlist?.ownerId
- */
+// ─── Компонент ────────────────────────────────────────────────────────────────
 export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
-    const playlist = MOCK_PLAYLIST;
-    const tracks   = MOCK_TRACKS;
-    const isOwner  = playlist.ownerId === CURRENT_USER_ID;
+    const router = useRouter();
 
-    // ─── Модалки ──────────────────────────────────────────
+    // ── Запити даних ──────────────────────────────────────────────────────────
+    const {
+        data: playlistRaw,
+        isLoading: playlistLoading,
+        refetch: refetchPlaylist,
+    } = useGetApiPlaylistsId(playlistId);
+
+    const {
+        data: tracksRaw,
+        isLoading: tracksLoading,
+    } = useGetApiPlaylistsIdTracks(playlistId, { Page: 1, PageSize: 50 });
+
+    // GET /api/auth/me — потрібен для визначення чи є поточний юзер власником
+    const { data: meRaw } = useGetApiAuthMe();
+
+    // Наш mutator повертає дані напряму без обгортки { data, status }
+    const playlist  = playlistRaw  as unknown as PlaylistDetailsClientDto;
+    const tracksData = tracksRaw   as unknown as { items?: PlaylistTrackItemClientDto[] };
+    const me        = meRaw        as unknown as CurrentUserDto;
+
+    const tracks: TrackRowData[] = (tracksData?.items ?? []).map(mapTrack);
+
+    // isOwner: порівнюємо id поточного юзера з creatorId плейліста
+    const isOwner = !!me?.id && !!playlist?.creatorId && me.id === playlist.creatorId;
+
+    // ── Мутації ───────────────────────────────────────────────────────────────
+    const { mutateAsync: updatePlaylist } = usePutApiMePlaylistsId();
+    const { mutateAsync: deletePlaylist } = useDeleteApiMePlaylistsId();
+
+    // ── Стан модалок ──────────────────────────────────────────────────────────
     const [addToPlaylistTrackId, setAddToPlaylistTrackId] = useState<string | null>(null);
     const [addToPlaylistTitle,   setAddToPlaylistTitle]   = useState('');
     const [showEdit,   setShowEdit]   = useState(false);
     const [showDelete, setShowDelete] = useState(false);
     const [showCreate, setShowCreate] = useState(false);
 
+    // ── Хендлери ──────────────────────────────────────────────────────────────
     const handleAddToPlaylist = (trackId: string, title: string) => {
         setAddToPlaylistTrackId(trackId);
         setAddToPlaylistTitle(title);
     };
 
-    const playlistToEdit: PlaylistToEdit = {
-        id:          playlist.id,
-        name:        playlist.name,
-        description: playlist.description,
-        coverUrl:    playlist.coverUrl,
-        isPrivate:   playlist.isPrivate,
+    // Редагування: отримуємо дані з форми → відправляємо на PUT /api/me/playlists/:id
+    const handleEditSuccess = async (values: {
+        name: string;
+        description?: string;
+        coverUrl?: string | null;
+        isPrivate: boolean;
+    }) => {
+        const body: UpdatePlaylistRequest = {
+            title:       values.name,
+            coverFileId: values.coverUrl ?? null,
+            // конвертуємо boolean → PlaylistVisibility enum
+            visibility:  values.isPrivate ? PlaylistVisibility.Private : PlaylistVisibility.Public,
+        };
+        await updatePlaylist({ id: playlistId, data: body });
+        refetchPlaylist();
+        setShowEdit(false);
     };
 
+    // Видалення: DELETE /api/me/playlists/:id → редірект на /library
+    const handleDeleteSuccess = async () => {
+        await deletePlaylist({ id: playlistId });
+        router.push('/library');
+    };
+
+    // ── Стани завантаження ────────────────────────────────────────────────────
+    if (playlistLoading || tracksLoading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+                <div className="spinner-border text-light" role="status">
+                    <span className="visually-hidden">Завантаження...</span>
+                </div>
+            </div>
+        );
+    }
+
+    if (!playlist) {
+        return (
+            <div className="text-center text-secondary mt-5">
+                Плейліст не знайдено
+            </div>
+        );
+    }
+
+    // ── Перетворення для дочірніх компонентів ─────────────────────────────────
+    // PlaylistPageHeader очікує свій формат об'єкта — адаптуємо тут
+    const playlistForHeader = {
+        id:           playlist.id          ?? '',
+        name:         playlist.title       ?? '',
+        description:  playlist.description ?? null,
+        coverUrl:     playlist.coverUrl    ?? null,
+        ownerName:    playlist.creatorName ?? '',
+        tracksCount:  playlist.totalTracks ?? tracks.length,
+        isSubscribed: false, // TODO: підключити після реалізації підписок на бекенді
+    };
+
+    // EditPlaylistModal очікує isPrivate: boolean — конвертуємо з visibility
+    const playlistToEdit: PlaylistToEdit = {
+        id:          playlist.id          ?? '',
+        name:        playlist.title       ?? '',
+        description: playlist.description ?? null,
+        coverUrl:    playlist.coverUrl    ?? null,
+        isPrivate:   playlist.visibility  === PlaylistVisibility.Private,
+    };
+
+    // ── Рендер ────────────────────────────────────────────────────────────────
     return (
         <div className="playlist-page">
 
-            {/* ─── Хедер ─────────────────────────── */}
+            {/* Хедер з обкладинкою, назвою, кнопками дій */}
             <PlaylistPageHeader
-                playlist={playlist}
+                playlist={playlistForHeader}
                 isOwner={isOwner}
                 tracksCount={tracks.length}
-                onPlay={() => console.log('play all')}       // TODO: плеєр
+                onPlay={() => console.log('play all')}        // TODO: плеєр
                 onEdit={() => setShowEdit(true)}
                 onDelete={() => setShowDelete(true)}
-                onShare={() => console.log('share')}         // TODO
-                onSubscribe={() => console.log('subscribe')} // TODO: usePostApiPlaylistsIdSubscribe
+                onShare={() => console.log('share')}          // TODO
+                onSubscribe={() => console.log('subscribe')}  // TODO: після реалізації підписок
             />
 
-            {/* ─── Список треків ──────────────────── */}
+            {/* Список треків */}
             <div className="playlist-page__tracks">
                 {/* Заголовки колонок */}
                 <div className="playlist-page__columns">
@@ -104,40 +185,49 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
 
                 <hr className="playlist-page__divider" />
 
-                {/* Рядки треків */}
-                {tracks.map((track) => (
-                    <TrackRow
-                        key={track.id}
-                        track={track}
-                        onClick={(id) => console.log('play', id)}  // TODO: плеєр
-                        onLike={(id) => console.log('like', id)}   // TODO: хук
-                        onAddToPlaylist={(id) => handleAddToPlaylist(id, track.title)}
-                        showAddToPlaylist
-                    />
-                ))}
+                {tracks.length === 0 ? (
+                    <p className="text-secondary text-center mt-4">
+                        У цьому плейлісті ще немає треків
+                    </p>
+                ) : (
+                    tracks.map((track) => (
+                        <TrackRow
+                            key={track.id}
+                            track={track}
+                            allTracks={tracks}
+                            sourceType="Playlist"
+                            sourceId={playlistId}
+                            onAddToPlaylist={(id) => handleAddToPlaylist(id, track.title)}
+                            showAddToPlaylist
+                        />
+                    ))
+                )}
             </div>
 
-            {/* ─── Рекомендації (завжди) ──────────── */}
+            {/* Рекомендації */}
             <PlaylistRecommendations
                 playlistId={playlistId}
                 isOwner={isOwner}
                 onAddToPlaylist={handleAddToPlaylist}
             />
 
-            {/* ─── Модалки ────────────────────────── */}
+            {/* Модалки */}
             <AddToPlaylistModal
                 isOpen={!!addToPlaylistTrackId}
                 onClose={() => setAddToPlaylistTrackId(null)}
                 trackId={addToPlaylistTrackId ?? ''}
                 trackTitle={addToPlaylistTitle}
-                onCreatePlaylist={() => { setAddToPlaylistTrackId(null); setShowCreate(true); }}
+                onCreatePlaylist={() => {
+                    setAddToPlaylistTrackId(null);
+                    setShowCreate(true);
+                }}
             />
 
             {showEdit && (
                 <EditPlaylistModal
                     isOpen={showEdit}
                     onClose={() => setShowEdit(false)}
-                    onSuccess={() => setShowEdit(false)}
+                    onSuccess={handleEditSuccess}
                     playlist={playlistToEdit}
                 />
             )}
@@ -145,9 +235,9 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
             <DeletePlaylistModal
                 isOpen={showDelete}
                 onClose={() => setShowDelete(false)}
-                onSuccess={() => { setShowDelete(false); /* TODO: redirect */ }}
-                playlistName={playlist.name}
-                playlistId={playlist.id}
+                onSuccess={handleDeleteSuccess}
+                playlistName={playlist.title ?? ''}
+                playlistId={playlist.id ?? ''}
             />
 
             <CreatePlaylistModal

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useDeleteApiAdminMoodsId, type MoodDto } from '@repo/api';
+import { useDeleteApiAdminMoodsId, type MoodDto } from '@repo/api/admin.ts';
 
 interface Props {
     mood: MoodDto | null;

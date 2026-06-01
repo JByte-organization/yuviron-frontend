@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useGetApiAdminGenres, type GenreListItemDto } from '@repo/api';
+import { useGetApiAdminGenres, type GenreListItemDto } from '@repo/api/admin.ts';
 import { BaseTable } from '@/shared/ui/Table/BaseTable';
 import { GenreRow } from '@/entities/genre/ui/GenreRow';
 import { genreTableColumns } from '@/entities/genre/model/columns';

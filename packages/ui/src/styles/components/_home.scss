@@ -3,11 +3,7 @@
 
 // ─── HomePage wrapper ────────────────────────────────────
 .home-page {
-  padding: 1rem 1.25rem;
-
-  @media (min-width: 768px) {
-    padding: 1.5rem 2rem;
-  }
+  padding-top: 0.8rem;
 }
 
 
@@ -45,7 +41,7 @@
 // ─── HeroBannerSection ───────────────────────────────────
 .hero-banner-section {
   &__slide {
-    height: 260px;
+    height: 500px;
     border-radius: 12px;
     overflow: hidden;
     position: relative;
@@ -168,7 +164,7 @@
     height: 80px;
     border-radius: 50%;
     border: 2px solid $client-border;
-    background: rgba(255, 255, 255, 0.03);
+    background: $client-hover;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -472,7 +468,7 @@
     transition: 0.15s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: $client-hover;
       color: $client-text;
     }
 
@@ -482,18 +478,18 @@
     }
   }
 
-  // ─── Слайдер ──────────────────────────────────────────
-  // Bootstrap row flex-nowrap + overflow-x для скролу на mobile
-  &__slider {
-    overflow-x: auto;
-    padding-bottom: 8px;
-    cursor: grab;
-    user-select: none;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar { display: none; }
-    &:active { cursor: grabbing; }
-  }
+  //// ─── Слайдер ──────────────────────────────────────────
+  //// Bootstrap row flex-nowrap + overflow-x для скролу на mobile
+  //&__slider {
+  //  overflow-x: auto;
+  //  padding-bottom: 8px;
+  //  cursor: grab;
+  //  user-select: none;
+  //  scrollbar-width: none;
+  //
+  //  &::-webkit-scrollbar { display: none; }
+  //  &:active { cursor: grabbing; }
+  //}
 }
 
 // ══════════════════════════════════════════════════════════
@@ -503,10 +499,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  //gap: 12px;
   cursor: pointer;
   text-align: center;
-  padding: 0;             // відступи між картками — через Bootstrap g-* на row
+  //padding: 0;             // відступи між картками — через Bootstrap g-* на row
   transition: transform 0.2s ease;
 
   &:hover {
@@ -517,8 +513,8 @@
   // width: 100% від колонки, aspect-ratio робить висоту = ширині
   &__circle-wrap {
     width: 100%;
-    max-height: 200px;
-    max-width: 200px;
+    max-height: 170px;
+    min-height: 170px;
     aspect-ratio: 1 / 1;
   }
 
@@ -575,8 +571,8 @@
   }
 
   &__icon {
-    width: 45%;
-    height: 45%;
+    width: 100px;
+    height: 100px;
     object-fit: contain;
     filter: drop-shadow(0 2px 4px rgba(0, 100, 200, 0.3));
   }
@@ -636,67 +632,147 @@
 // ══════════════════════════════════════════════════════════
 .client-footer {
   background: $client-surface;
-  border-top: 1px solid $client-border;
+  padding: 32px 32px 20px;
   margin-top: auto;
-  border-radius: 20px;
+  margin-bottom: 0.8rem;
+  border-radius: 8px;
+
+  // ─── Верхній блок ─────────────────────────────────────
+  &__top {
+    display: flex;
+    align-items: flex-start;
+    gap: 48px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+
+    @media (max-width: 768px) {
+      gap: 24px;
+      justify-content: center;
+      text-align: center;
+    }
+  }
 
   // ─── Лого ─────────────────────────────────────────────
   &__logo {
-    width: auto;
-    height: auto;
-    max-width: 200px;
-    object-fit: contain;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+
+    img { display: block; }
   }
 
   // ─── Контакти ─────────────────────────────────────────
-  &__contact-item {
+  &__contact-block {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__contact-label {
+    font-size: 12px;
+    font-weight: 600;
     color: $client-text;
     margin: 0;
   }
 
-  &__contact-icon {
-    color: $client-accent;
-    font-size: 15px;
-    flex-shrink: 0;
+  &__contact-text {
+    font-size: 13px;
+    color: $client-text-muted;
+    margin: 0;
+    line-height: 1.5;
   }
 
   // ─── Соцмережі ────────────────────────────────────────
-  &__social-link {
-    color: $client-text;
+  &__socials {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      margin-left: 0;
+      justify-content: center;
+    }
+  }
+
+  &__social {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 18px;
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: opacity 0.2s, transform 0.2s;
+    color: $white;
 
     &:hover {
-      color: $client-accent;
+      opacity: 0.85;
+      transform: scale(1.08);
+      text-decoration: none;
+      color: $white;
     }
+
+    &--fb  { background: #1877F2; }
+    &--tw  { background: #000; }
+    &--pt  { background: #E60023; }
+    &--rss { background: $client-accent; }
   }
 
   // ─── Розділювач ───────────────────────────────────────
   &__divider {
     border-color: $client-border;
     opacity: 1;
-    margin: 0;
+    margin: 0 0 16px;
   }
 
-  // ─── Нижні лінки ──────────────────────────────────────
-  &__bottom-link {
+  // ─── Нижній блок ──────────────────────────────────────
+  &__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  }
+
+  &__links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      justify-content: center;
+    }
+  }
+
+  &__link {
     font-size: 13px;
     color: $client-text-muted;
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color 0.2s;
+
+    &:hover { color: $client-text; text-decoration: none; }
+  }
+
+  &__copy {
+    font-size: 12px;
+    color: $client-text-muted;
+    margin: 0;
     white-space: nowrap;
 
-    &:hover {
-      color: $client-text;
-    }
+    @media (max-width: 768px) { white-space: normal; text-align: center; }
   }
 }
-
 
 // ══════════════════════════════════════════════════════════
 // NEW RELEASES — слайдер
@@ -719,75 +795,132 @@
 // TRACK CARD
 // ══════════════════════════════════════════════════════════
 .track-card {
+  position: relative; // потрібно щоб кнопки позиціонувались відносно картки
   cursor: pointer;
-  border-radius: 12px;
-  background: $client-surface-2;
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  &--playing {
+    .track-card__title {
+      color: $green; // акцентний колір для поточного треку
+    }
   }
 
   &__cover {
-    width: 100%;
-    height: 180px;
+    position: relative; // для абсолютного позиціонування кнопок
     aspect-ratio: 1 / 1;
+    border-radius: 8px;
     overflow: hidden;
+    margin-bottom: 10px;
 
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform 0.3s ease;
     }
   }
 
-  &:hover &__cover img {
-    transform: scale(1.04);
+  // Play кнопка — знизу зліва на обкладинці
+  &__play-btn {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background-color: $green;
+    color: $black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    z-index: 2;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
   }
 
-  // ─── Текстовий блок ───────────────────────────────────
+  // Like кнопка — знизу справа на обкладинці
+  &__like-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: $white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    cursor: pointer;
+    z-index: 2;
+    transition: color 0.15s ease, transform 0.15s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &__like-btn--hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    // Активний стан — серце заповнене зеленим
+    &--active {
+      color: $green;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+  }
+
   &__info {
-    padding: 10px 12px 12px;
+    padding: 0 2px;
   }
 
   &__title {
-    font-size: 14px;
-    font-weight: 600;
-    color: $client-text;
-    text-decoration: none;
     display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $white;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: color 0.15s ease;
+    text-decoration: none;
+    margin-bottom: 2px;
+
+    &--playing {
+      color: $green;
+    }
 
     &:hover {
-      color: $client-text;
       text-decoration: underline;
     }
   }
 
   &__artist {
-    font-size: 12px;
-    color: $client-text-muted;
-    text-decoration: none;
     display: block;
+    font-size: 0.75rem;
+    color: rgba($white, 0.6);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: color 0.15s ease;
+    text-decoration: none;
 
     &:hover {
-      color: $client-text;
+      color: $white;
       text-decoration: underline;
     }
   }
 }
-
 // ══════════════════════════════════════════════════════════
 // TOP TRACKS — слайдер
 // ══════════════════════════════════════════════════════════
@@ -882,5 +1015,19 @@
 
   &::-webkit-scrollbar { display: none; }
 
-  .col-6 { min-width: 160px; }
+  //.col-6 { min-width: 160px; }
 }
+
+
+.mood-section {
+  &__swiper {
+    width: 100%;
+    padding-bottom: 8px !important;
+  }
+
+  &__swiper-slide {
+    width: auto !important;
+  }
+}
+
+

@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-table';
 
 // Тип импортируем из сгенерированных моделей Orval
-import type { GetApiAdminPlaylistsIdTracksParams } from '@repo/api';
+import type { GetApiAdminPlaylistsIdTracksParams } from '@repo/api/admin.ts';
 
 interface TracksTableProps {
     data: GetApiAdminPlaylistsIdTracksParams[];

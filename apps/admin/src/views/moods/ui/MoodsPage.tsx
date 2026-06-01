@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useGetApiAdminMoods, type MoodDto } from '@repo/api';
+import { useGetApiAdminMoods, type MoodDto } from '@repo/api/admin.ts';
 import { BaseTable } from '@/shared/ui/Table/BaseTable';
 import { MoodRow } from '@/entities/mood/ui/MoodRow';
 import { moodTableColumns } from '@/entities/mood/model/columns';
