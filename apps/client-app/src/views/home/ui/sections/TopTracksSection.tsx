@@ -10,6 +10,7 @@ import { TrackCard, type TrackCardData } from '@/entities/track/ui/TrackCard';
 import 'swiper/css';
 import 'swiper/css/free-mode';
 
+// ─── Типи ─────────────────────────────────────────────────────────────────────
 interface TopTracksSectionProps {
     sectionTitle?: string;
     tracks?: TrackCardData[];
@@ -18,6 +19,10 @@ interface TopTracksSectionProps {
     onTrackClick?: (id: string) => void;
 }
 
+// ─── Компонент ────────────────────────────────────────────────────────────────
+// Секція відповідає тільки за відображення.
+// Дані (tracks, isLoading) приходять з батьківського компонента (HomePage або LibraryPage).
+// Це дозволяє перевикористовувати секцію з різними хуками.
 export const TopTracksSection = ({
                                      sectionTitle = 'Топ популярна музика',
                                      tracks,
@@ -76,6 +81,7 @@ export const TopTracksSection = ({
     );
 };
 
+// ─── Скелетон ─────────────────────────────────────────────────────────────────
 const TrackCardSkeleton = () => (
     <div>
         <div className="skeleton skeleton--rounded mb-2" style={{ aspectRatio: '1/1' }} />

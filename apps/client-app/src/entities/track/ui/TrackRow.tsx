@@ -6,6 +6,7 @@ import { useAuthGuard } from '@/shared/lib/useAuthGuard';
 import { usePlayer } from '@/entities/player/lib/usePlayer';
 import { usePlayerStore } from '@/entities/player/model/playerStore';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { useFavoriteTrack } from '@/features/track/lib/useFavoriteTrack';
 
 export type TrackRowVariant = 'default' | 'artist';
 
@@ -21,16 +22,15 @@ export interface TrackRowData {
     durationMs?: number | null;
     coverUrl?: string | null;
     playsCount?: number;
+    isLiked?: boolean; // TODO: передавати з API коли зʼявиться поле
 }
 
 interface TrackRowProps {
     track: TrackRowData;
-    /** Всі треки списку — для черги */
     allTracks?: TrackRowData[];
     isPlaying?: boolean;
     variant?: TrackRowVariant;
     onClick?: (id: string) => void;
-    onLike?: (id: string) => void;
     onAddToPlaylist?: (id: string) => void;
     showAddToPlaylist?: boolean;
     sourceType?: 'Playlist' | 'Album' | 'Search' | 'ArtistProfile';
@@ -66,7 +66,6 @@ export const TrackRow = ({
                              isPlaying = false,
                              variant = 'default',
                              onClick,
-                             onLike,
                              onAddToPlaylist,
                              showAddToPlaylist = false,
                              sourceType = 'Search',
@@ -77,6 +76,11 @@ export const TrackRow = ({
     const { playQueue } = usePlayer();
     const currentTrackId = usePlayerStore(s => s.currentTrack?.id);
     const playerStatus   = usePlayerStore(s => s.status);
+
+    // Хук лайків — оптимістичний UI + реальний API запит
+    const { isLiked, isPending: isLikePending, toggle: toggleLike } = useFavoriteTrack({
+        initialLiked: track.isLiked ?? false,
+    });
 
     const isCurrentlyPlaying = currentTrackId === track.id && playerStatus === 'playing';
 
@@ -89,7 +93,6 @@ export const TrackRow = ({
                 onClick(track.id);
                 return;
             }
-            // Якщо є черга — запускаємо з поточного треку
             const queue = allTracks ?? [track];
             const index = queue.findIndex(t => t.id === track.id);
             playQueue(
@@ -110,6 +113,12 @@ export const TrackRow = ({
         });
     };
 
+    const handleLike = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // requireAuth — якщо не авторизований, покаже модалку логіну
+        requireAuth(() => toggleLike(track.id));
+    };
+
     return (
         <div
             className={`track-row track-row--${variant}${isCurrentlyPlaying ? ' track-row--playing' : ''}${isHovered ? ' track-row--hovered' : ''}`}
@@ -117,7 +126,7 @@ export const TrackRow = ({
             onMouseLeave={() => setIsHovered(false)}
             onClick={handleClick}
         >
-            {/* ─── Номер / play ─────────────────────────── */}
+            {/* Номер / play іконка */}
             <div className="track-row__index">
                 {isCurrentlyPlaying ? (
                     <i className="bi bi-volume-up-fill track-row__playing-icon" />
@@ -128,7 +137,7 @@ export const TrackRow = ({
                 )}
             </div>
 
-            {/* ─── Обкладинка + назва + артист ─────────── */}
+            {/* Обкладинка + назва + артист */}
             <div className="track-row__info">
                 <div className="track-row__cover">
                     <img src={coverSrc} alt={track.title} />
@@ -142,7 +151,11 @@ export const TrackRow = ({
                         {track.title}
                     </Link>
                     {track.artistId ? (
-                        <Link href={`/artists/${track.artistId}`} className="track-row__artist" onClick={e => e.stopPropagation()}>
+                        <Link
+                            href={`/artists/${track.artistId}`}
+                            className="track-row__artist"
+                            onClick={e => e.stopPropagation()}
+                        >
                             {track.artistNames.join(', ')}
                         </Link>
                     ) : (
@@ -151,10 +164,14 @@ export const TrackRow = ({
                 </div>
             </div>
 
-            {/* ─── Альбом ───────────────────────────────── */}
+            {/* Альбом */}
             <div className="track-row__album d-none d-md-block">
                 {track.albumId ? (
-                    <Link href={`/albums/${track.albumId}`} className="track-row__album-link" onClick={e => e.stopPropagation()}>
+                    <Link
+                        href={`/albums/${track.albumId}`}
+                        className="track-row__album-link"
+                        onClick={e => e.stopPropagation()}
+                    >
                         {track.albumTitle ?? '—'}
                     </Link>
                 ) : (
@@ -162,7 +179,7 @@ export const TrackRow = ({
                 )}
             </div>
 
-            {/* ─── Дата або прослуховування ─────────────── */}
+            {/* Дата або прослуховування */}
             <div className="track-row__context d-none d-lg-block">
                 {variant === 'artist'
                     ? <span>{formatPlays(track.playsCount)}</span>
@@ -170,14 +187,17 @@ export const TrackRow = ({
                 }
             </div>
 
-            {/* ─── Дії + тривалість ─────────────────────── */}
+            {/* Дії + тривалість */}
             <div className="track-row__actions">
+
+                {/* Кнопка лайку — серце заповнене якщо isLiked */}
                 <button
-                    className="track-row__like-btn"
-                    onClick={e => { e.stopPropagation(); requireAuth(() => onLike?.(track.id)); }}
-                    aria-label="Like"
+                    className={`track-row__like-btn${isLiked ? ' track-row__like-btn--active' : ''}`}
+                    onClick={handleLike}
+                    disabled={isLikePending}
+                    aria-label={isLiked ? 'Прибрати з улюблених' : 'Додати до улюблених'}
                 >
-                    <i className="bi bi-heart" />
+                    <i className={isLiked ? 'bi bi-heart-fill' : 'bi bi-heart'} />
                 </button>
 
                 <span className="track-row__duration">

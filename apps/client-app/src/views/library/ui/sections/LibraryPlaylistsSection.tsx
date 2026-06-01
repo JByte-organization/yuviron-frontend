@@ -3,35 +3,21 @@
 import React, { useRef } from 'react';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { PlaylistCard, type PlaylistCardData } from '@/entities/playlist/ui/PlaylistCard';
-import {ShowAllButton} from "@/shared/ui/ShowAllButton";
+import { ShowAllButton } from '@/shared/ui/ShowAllButton';
 
+// ─── Типи ─────────────────────────────────────────────────────────────────────
 interface LibraryPlaylistsSectionProps {
-    /** TODO: замінити на хук — useGetApiUserPlaylists() */
     playlists?: PlaylistCardData[];
     isLoading?: boolean;
     showAllHref?: string;
     onPlaylistClick?: (id: string) => void;
 }
 
-const MOCK_PLAYLISTS: PlaylistCardData[] = [
-    { id: '1', name: 'On The Floor',  authorName: 'JLO',           tracksCount: 19, coverUrl: null },
-    { id: '2', name: 'Reputation',    authorName: 'Taylor Swift',   tracksCount: 10, coverUrl: null },
-    { id: '3', name: 'Yours Truly',   authorName: 'Ariana Grande',  tracksCount: 5,  coverUrl: null },
-    { id: '4', name: 'Маргарита',     authorName: 'Michelle',       tracksCount: 7,  coverUrl: null },
-    { id: '5', name: '30 Vinyl',      authorName: 'Adele',          tracksCount: 12, coverUrl: null },
-    { id: '6', name: 'When You Knock',authorName: 'Various',        tracksCount: 8,  coverUrl: null },
-    { id: '7', name: 'Songs Of The...',authorName: 'Various',       tracksCount: 14, coverUrl: null },
-];
-
-/**
- * Секція: Плейлісти (сторінка медіатеки)
- *
- * Підключення даних:
- * 1. const { data, isLoading } = useGetApiUserPlaylists();
- * 2. <LibraryPlaylistsSection playlists={data?.items} isLoading={isLoading} />
- */
+// ─── Компонент ────────────────────────────────────────────────────────────────
+// Дані приймає через props — логіка запиту живе в LibraryPage.
+// Причина: секція відповідає тільки за відображення, не за отримання даних.
 export const LibraryPlaylistsSection = ({
-                                            playlists = MOCK_PLAYLISTS,
+                                            playlists = [],
                                             isLoading = false,
                                             showAllHref = '/playlists',
                                             onPlaylistClick,
@@ -41,8 +27,14 @@ export const LibraryPlaylistsSection = ({
     const scroll = (dir: 'prev' | 'next') => {
         if (!sliderRef.current) return;
         const amount = sliderRef.current.offsetWidth * 0.8;
-        sliderRef.current.scrollBy({ left: dir === 'next' ? amount : -amount, behavior: 'smooth' });
+        sliderRef.current.scrollBy({
+            left: dir === 'next' ? amount : -amount,
+            behavior: 'smooth',
+        });
     };
+
+    // Не показуємо секцію якщо немає даних і не завантажуємо
+    if (!isLoading && playlists.length === 0) return null;
 
     return (
         <section className="mb-5">
@@ -78,7 +70,7 @@ export const LibraryPlaylistsSection = ({
                         </div>
                     ))}
                     <div className="col-auto d-flex align-items-center">
-                        <ShowAllButton href="/tracks"/>
+                        <ShowAllButton href={showAllHref} />
                     </div>
                 </div>
             )}

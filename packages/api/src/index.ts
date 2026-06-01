@@ -23,6 +23,8 @@ export * from './generated/client/endpoints/tracks';
 export * from './generated/client/endpoints/artists';
 export * from './generated/client/endpoints/me';
 export * from './generated/client/endpoints/me-playlists';
+export * from './generated/client/endpoints/playlists';
+
 
 
 export * from './generated/admin/models';
@@ -44,6 +46,11 @@ export * from './generated/client/models/trackStreamUrlResponse';
 export * from './generated/client/models/startPlayRequest';
 export * from './generated/client/models/startPlayResponse';
 export * from './generated/client/models/commitPlayRequest';
+
+//Playlist
+export * from './generated/client/models/playlistDetailsClientDto';
+export * from './generated/client/models/playlistTrackItemClientDto';
+export * from './generated/client/models/updatePlaylistRequest';
 
 export { postApiAnalyticsPlayStart, postApiAnalyticsPlayCommit } from './generated/client/endpoints/analytics';
 export { getApiTracksIdPlay } from './generated/client/endpoints/tracks';
