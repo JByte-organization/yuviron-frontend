@@ -3534,11 +3534,11 @@
     }
 
     &--primary {
-      background: $white;
+      background: $client-solid-bg;
       border: none;
-      color: $black;
+      color: $client-solid-text;
 
-      &:hover { background: rgba(255, 255, 255, 0.88); color: $black; text-decoration: none; }
+      &:hover { background: $client-solid-bg-hover; color: $client-solid-text; text-decoration: none; }
     }
   }
 }
