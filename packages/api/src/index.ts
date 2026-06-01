@@ -26,4 +26,4 @@ export * from './generated/client/endpoints/artist-profiles';
 export * from './generated/admin/models';
 
 
-export { configureApiClient } from './mutator';
+export { configureApiClient, customInstance } from './mutator';
