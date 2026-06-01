@@ -88,8 +88,11 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
         return new Date(album.releaseDate).getFullYear();
     }, [album]);
 
+
     const albumCoverSrc = useMemo(() => {
-        return album?.coverUrl ? getImageUrl(album.coverUrl) : '/images/album/placeholder.png';
+        if (!album?.coverUrl) return '/images/album/placeholder.png';
+
+        return getImageUrl(album.coverUrl) ?? '/images/album/placeholder.png';
     }, [album]);
 
     // 3. Обробка CORS проксі для коректного зчитування колірної палітри

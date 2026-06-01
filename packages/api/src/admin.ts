@@ -12,6 +12,8 @@ export * from './generated/admin/endpoints/admin-playlists';
 export * from './generated/admin/endpoints/admin-auth';
 export * from './generated/admin/endpoints/admin-ads';
 
+export * from './generated/client/endpoints/files';
+
 // МОДЕЛІ АДМІНКИ — аналогічно, однією строкою
 export * from './generated/admin/models';
 
