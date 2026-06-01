@@ -57,6 +57,9 @@ export * from './generated/client/models/updatePlaylistRequest';
 
 //Profile
 export * from './generated/client/models/updateUserProfileRequest';
+export * from './generated/client/models/followerDto';
+export * from './generated/client/models/followedProfileDto';
+export * from './generated/client/models/userProfileDto';
 
 export { postApiAnalyticsPlayStart, postApiAnalyticsPlayCommit } from './generated/client/endpoints/analytics';
 export { getApiTracksIdPlay } from './generated/client/endpoints/tracks';

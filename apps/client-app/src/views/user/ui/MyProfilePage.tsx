@@ -6,12 +6,19 @@ import { useRouter } from 'next/navigation';
 // Swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
+import type { Swiper as SwiperClass } from 'swiper/types';
+
+import 'swiper/css';
 
 import {
     useGetApiAuthMe,
     useGetApiMePlaylists,
     useGetApiUsersIdFollowers,
     useGetApiUsersIdFollowing,
+    // ФІКС: Імпортуємо автогенеровані хелпери ключів для React Query
+    getGetApiMePlaylistsQueryKey,
+    getGetApiUsersIdFollowersQueryKey,
+    getGetApiUsersIdFollowingQueryKey,
     type UserPlaylistDto,
     type FollowerDto,
     type FollowedProfileDto,
@@ -47,22 +54,20 @@ interface ExtendedPlaylistCardData extends PlaylistCardData {
     isPublic: boolean;
 }
 
-interface ServerPlaylistDto extends UserPlaylistDto {
-    visibility?: string;
-}
-
 // ══════════════════════════════════════════════════════════
 // ЧИСТІ МАППЕРИ ДАННИХ
 // ══════════════════════════════════════════════════════════
 
 const mapPlaylist = (p: UserPlaylistDto): ExtendedPlaylistCardData => {
-    const serverPlaylist = p as ServerPlaylistDto;
+    // ФІКС ПОМИЛКИ TS2430: Робимо безпечний інлайн-каст властивості без any
+    const rawVisibility = (p as { visibility?: string }).visibility;
+
     return {
         id:          p.id          ?? '',
         name:        p.title       ?? '',
         tracksCount: p.tracksCount ?? undefined,
         coverUrl:    p.coverUrl    ?? null,
-        isPublic:    serverPlaylist.visibility === 'Public',
+        isPublic:    rawVisibility === 'Public',
     };
 };
 
@@ -100,11 +105,9 @@ export const MyProfilePage = () => {
 
     const [instantAvatarUrl, setInstantAvatarUrl] = useState<string | null | undefined>(undefined);
 
-    // Зберігаємо інстанси Swiper для керування зовнішніми кнопками
     const [publicSwiperInstance, setPublicSwiperInstance] = useState<SwiperClass | null>(null);
     const [privateSwiperInstance, setPrivateSwiperInstance] = useState<SwiperClass | null>(null);
 
-    // Стейти для динамічного відображення стрілок навігації
     const [showPublicArrows, setShowPublicArrows] = useState(false);
     const [showPrivateArrows, setShowPrivateArrows] = useState(false);
 
@@ -137,13 +140,40 @@ export const MyProfilePage = () => {
         }
     }, [userId, me?.profile?.avatarUrl]);
 
+    // ФІКС ПОМИЛКИ TS2741: Передаємо правильний згенерований queryKey
     const { data: playlistsResponse, isLoading: playlistsLoading } = useGetApiMePlaylists(
         { PageSize: 50 },
-        { query: { enabled: !!userId } }
+        {
+            query: {
+                enabled: !!userId,
+                queryKey: getGetApiMePlaylistsQueryKey({ PageSize: 50 })
+            }
+        }
     );
 
-    const { data: followersRaw } = useGetApiUsersIdFollowers(userId ?? '', { PageSize: 20 }, { query: { enabled: !!userId } });
-    const { data: followingRaw } = useGetApiUsersIdFollowing(userId ?? '', { PageSize: 20 }, { query: { enabled: !!userId } });
+    // ФІКС ПОМИЛКИ TS2741: Передаємо правильний згенерований queryKey для підписників
+    const { data: followersRaw } = useGetApiUsersIdFollowers(
+        userId ?? '',
+        { PageSize: 20 },
+        {
+            query: {
+                enabled: !!userId,
+                queryKey: getGetApiUsersIdFollowersQueryKey(userId ?? '', { PageSize: 20 })
+            }
+        }
+    );
+
+    // ФІКС ПОМИЛКИ TS2741: Передаємо правильний згенерований queryKey для підписок
+    const { data: followingRaw } = useGetApiUsersIdFollowing(
+        userId ?? '',
+        { PageSize: 20 },
+        {
+            query: {
+                enabled: !!userId,
+                queryKey: getGetApiUsersIdFollowingQueryKey(userId ?? '', { PageSize: 20 })
+            }
+        }
+    );
 
     // ── 2. Мемоізація та обробка списків ──────────────────
     const userDisplayName = useMemo(() => {
@@ -196,12 +226,11 @@ export const MyProfilePage = () => {
                 onShare={() => navigator.clipboard.writeText(window.location.origin + `/users/${me.id}`)}
             />
 
-            {/* ─── Відкриті плейлісти ─────────────────── */}
+            {/* Відкриті */}
             {publicPlaylists.length > 0 && (
                 <section className="user-page__section mb-5">
                     <SectionHeader
                         title="Мої відкриті плейлісти"
-                        // Передаємо функції навігації тільки якщо стрілки мають відображатися
                         onPrev={showPublicArrows ? () => publicSwiperInstance?.slidePrev() : undefined}
                         onNext={showPublicArrows ? () => publicSwiperInstance?.slideNext() : undefined}
                     />
@@ -228,7 +257,7 @@ export const MyProfilePage = () => {
                 </section>
             )}
 
-            {/* ─── Приватні плейлісти ─────────────────── */}
+            {/* Приватні */}
             {privatePlaylists.length > 0 && (
                 <section className="user-page__section mb-5">
                     <SectionHeader

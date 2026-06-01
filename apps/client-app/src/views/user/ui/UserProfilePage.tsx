@@ -3,9 +3,13 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
-// Swiper
+// Імпортуємо Swiper та його модулі
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
+import type { Swiper as SwiperClass } from 'swiper/types';
+
+// Імпортуємо базові стилі Swiper
+import 'swiper/css';
 
 import {
     useGetApiUsersId,
