@@ -9,6 +9,7 @@ import { ArtistCard, type ArtistCardData } from '@/entities/artist/ui/ArtistCard
 import 'swiper/css';
 import 'swiper/css/free-mode';
 
+// ─── Типи ─────────────────────────────────────────────────────────────────────
 interface FavoriteArtistsSectionProps {
     sectionTitle?: string;
     artists?: ArtistCardData[];
@@ -17,6 +18,9 @@ interface FavoriteArtistsSectionProps {
     onArtistClick?: (id: string) => void;
 }
 
+// ─── Компонент ────────────────────────────────────────────────────────────────
+// Секція відповідає тільки за відображення.
+// Дані (artists, isLoading) приходять з батьківського компонента.
 export const FavoriteArtistsSection = ({
                                            sectionTitle = 'Популярні виконавці',
                                            artists,
@@ -68,6 +72,7 @@ export const FavoriteArtistsSection = ({
     );
 };
 
+// ─── Скелетон ─────────────────────────────────────────────────────────────────
 const ArtistsSkeleton = () => (
     <div className="d-flex gap-4">
         {Array.from({ length: 4 }).map((_, i) => (

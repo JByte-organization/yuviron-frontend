@@ -206,7 +206,7 @@ export const Step2Profile = () => {
                 gender: Gender.NotSpecified,
                 acceptMarketing: false,
                 acceptTerms: true,
-                isArtist,
+                //isArtist,
             },
         });
     };

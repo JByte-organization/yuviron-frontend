@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { Header } from '@/widgets/header/ui/Header';
 import { Sidebar } from '@/widgets/sidebar/ui/Sidebar';
 import { GuestSidebar } from '@/widgets/sidebar/ui/GuestSidebar';
@@ -14,9 +14,13 @@ import { PlayerBar } from '@/widgets/player/ui/PlayerBar';
 // ══════════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════════
-const SIDEBAR_MIN_WIDTH = 240;  // ~2 Bootstrap cols
-const SIDEBAR_MAX_WIDTH = 480;  // ~4 Bootstrap cols
-const SIDEBAR_DEFAULT   = 260;
+const SIDEBAR_MIN_WIDTH  = 240;
+const SIDEBAR_MAX_WIDTH  = 480;
+const SIDEBAR_DEFAULT    = 260;
+// Ширина collapsed сайдбара (тільки іконки) — має збігатись з CSS
+const SIDEBAR_ICON_WIDTH = 68;
+// Брейкпоінт десктоп — має збігатись з CSS (992px = lg)
+const DESKTOP_BREAKPOINT = 992;
 
 // ══════════════════════════════════════════════════════════
 // LEFT SIDEBAR CONTEXT
@@ -39,10 +43,10 @@ export const useSidebar = () => useContext(SidebarContext);
 // RIGHT SIDEBAR CONTEXT
 // ══════════════════════════════════════════════════════════
 interface RightSidebarContextValue {
-    isOpen:    boolean;
-    userClosed:boolean;
-    open:  () => void;
-    close: () => void;
+    isOpen:     boolean;
+    userClosed: boolean;
+    open:       () => void;
+    close:      () => void;
 }
 
 export const RightSidebarContext = createContext<RightSidebarContextValue>({
@@ -62,6 +66,17 @@ interface ClientLayoutProps {
 }
 
 export const ClientLayout = ({ children }: ClientLayoutProps) => {
+    // ─── Визначаємо чи десктоп ────────────────────────────
+    // Потрібно щоб не застосовувати marginLeft на мобайлі
+    const [isDesktop, setIsDesktop] = useState(false);
+
+    useEffect(() => {
+        const check = () => setIsDesktop(window.innerWidth >= DESKTOP_BREAKPOINT);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
+
     // ─── Лівий сайдбар ────────────────────────────────────
     const [collapsed,    setCollapsed]    = useState(false);
     const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT);
@@ -81,7 +96,7 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
             const delta    = e.clientX - startX.current;
             const newWidth = Math.min(
                 SIDEBAR_MAX_WIDTH,
-                Math.max(SIDEBAR_MIN_WIDTH, startWidth.current + delta)
+                Math.max(SIDEBAR_MIN_WIDTH, startWidth.current + delta),
             );
             setSidebarWidth(newWidth);
         };
@@ -100,11 +115,21 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
     const [isOpen,     setIsOpen]     = useState(false);
     const [userClosed, setUserClosed] = useState(false);
 
-    const open = () => { if (!userClosed) setIsOpen(true); };
-    const close = () => { setIsOpen(false); setUserClosed(true); };
+    const open         = () => { if (!userClosed) setIsOpen(true); };
+    const close        = () => { setIsOpen(false); setUserClosed(true); };
     const openManually = () => { setUserClosed(false); setIsOpen(true); };
 
     const accessToken = useSessionStore(s => s.accessToken);
+
+    // ─── Розраховуємо marginLeft ──────────────────────────
+    // На мобайлі — 0 (сайдбар overlay або прихований)
+    // На десктопі collapsed — тільки іконки (SIDEBAR_ICON_WIDTH)
+    // На десктопі expanded — повна ширина сайдбара
+    const marginLeft = !isDesktop
+        ? 0
+        : collapsed
+            ? SIDEBAR_ICON_WIDTH + 16
+            : sidebarWidth + 24;
 
     return (
         <SidebarContext.Provider value={{ collapsed, setCollapsed, sidebarWidth }}>
@@ -124,11 +149,10 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
                             <main
                                 className={[
                                     'client-layout__main',
-                                    collapsed ? 'client-layout__main--left-collapsed' : '',
-                                    isOpen    ? 'client-layout__main--right-open'     : '',
+                                    isOpen ? 'client-layout__main--right-open' : '',
                                 ].filter(Boolean).join(' ')}
                                 style={{
-                                    marginLeft: collapsed ? 32 : sidebarWidth + 24,
+                                    marginLeft,
                                     transition: isResizing.current ? 'none' : 'margin-left 0.3s ease',
                                 }}
                             >

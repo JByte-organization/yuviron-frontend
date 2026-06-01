@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface PlaylistInfo {
     id: string;
@@ -36,9 +37,9 @@ export const PlaylistPageHeader = ({
     const [isSubscribed, setIsSubscribed] = useState(playlist.isSubscribed);
     const [menuOpen, setMenuOpen] = useState(false);
 
-    const coverSrc = playlist.coverUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${playlist.coverUrl}`
-        : `https://picsum.photos/seed/playlist-${playlist.id}/200/200`;
+
+    const coverSrc = getImageUrl(playlist.coverUrl)
+        ?? `https://picsum.photos/seed/track-${playlist.id}/40/40`;
 
     const handleSubscribe = () => {
         setIsSubscribed((v) => !v);

@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { Modal } from '@/shared/ui/Modal';
 import { CoverUpload } from '@/shared/ui/CoverUpload';
 
+// ─── Типи ─────────────────────────────────────────────────────────────────────
 export interface PlaylistToEdit {
     id: string;
     name: string;
@@ -13,10 +14,16 @@ export interface PlaylistToEdit {
     isPrivate: boolean;
 }
 
+// onSuccess тепер приймає значення форми — обробка відбувається в PlaylistPage
 interface EditPlaylistModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess?: () => void;
+    onSuccess?: (values: {
+        name: string;
+        description?: string;
+        coverUrl?: string | null;
+        isPrivate: boolean;
+    }) => Promise<void>;
     playlist: PlaylistToEdit;
 }
 
@@ -27,6 +34,7 @@ type FormValues = {
     isPrivate: boolean;
 };
 
+// ─── Компонент ────────────────────────────────────────────────────────────────
 export const EditPlaylistModal = ({
                                       isOpen,
                                       onClose,
@@ -54,9 +62,16 @@ export const EditPlaylistModal = ({
     };
 
     const onSubmit = async (values: FormValues) => {
-        console.log('edit playlist', playlist.id, values);
-        // TODO: usePutApiUserPlaylistsId()
-        onSuccess?.();
+        // coverFile — це File обʼєкт для завантаження.
+        // TODO: коли буде хук завантаження файлів — тут робимо upload → отримуємо tempPath
+        // і передаємо tempPath в onSuccess як coverUrl.
+        // Поки що передаємо поточний coverUrl без змін.
+        await onSuccess?.({
+            name:        values.name,
+            description: values.description,
+            coverUrl:    playlist.coverUrl, // TODO: замінити на tempPath після upload
+            isPrivate:   values.isPrivate,
+        });
         handleClose();
     };
 
@@ -69,6 +84,7 @@ export const EditPlaylistModal = ({
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="row g-3">
 
+                    {/* Завантаження обкладинки */}
                     <div className="col-12 col-sm-auto">
                         <Controller
                             name="coverFile"
@@ -84,14 +100,14 @@ export const EditPlaylistModal = ({
                     </div>
 
                     <div className="col">
-
+                        {/* Назва */}
                         <div className="mb-3">
                             <input
                                 type="text"
                                 placeholder="Назва плейліста"
                                 className={`client-modal__input${errors.name ? ' client-modal__input--error' : ''}`}
                                 {...register('name', {
-                                    required: "Назва обов'язкова",
+                                    required:  "Назва обов'язкова",
                                     maxLength: { value: 100, message: 'Максимум 100 символів' },
                                 })}
                             />
@@ -100,6 +116,7 @@ export const EditPlaylistModal = ({
                             )}
                         </div>
 
+                        {/* Опис */}
                         <div className="mb-3">
                             <textarea
                                 placeholder="Додати опис (необов'язково)"
@@ -111,6 +128,7 @@ export const EditPlaylistModal = ({
                             />
                         </div>
 
+                        {/* Приватний/Публічний тогл */}
                         <Controller
                             name="isPrivate"
                             control={control}
@@ -130,7 +148,6 @@ export const EditPlaylistModal = ({
                                 </div>
                             )}
                         />
-
                     </div>
                 </div>
 
