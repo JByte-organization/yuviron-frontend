@@ -13,16 +13,16 @@ import {
     type UpdateUserCommand,
     type RoleDto,
     type UserListItemDto,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
-    user: UserListItemDto | null; // передаём из таблицы для быстрого рендера шапки
+    user: UserListItemDto | null;
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-// UpdateUserCommand не содержит пароль — его менять нельзя через этот эндпоинт
 type FormValues = {
     email: string;
     firstName: string;
@@ -31,7 +31,6 @@ type FormValues = {
     accountState: AccountState;
     acceptMarketing: boolean;
     roleId: string;
-    avatarUrl: string;
 };
 
 const MAX_BIRTH_DATE = (() => {
@@ -85,7 +84,6 @@ export const EditUserModal = ({ user, isOpen, onClose, onSuccess }: Props) => {
             accountState: details.accountState ?? AccountState.Active,
             acceptMarketing: details.acceptMarketing ?? false,
             roleId: currentRoleId,
-            avatarUrl: details.avatarUrl ?? '',
         });
     }, [details, reset]);
 
@@ -101,7 +99,8 @@ export const EditUserModal = ({ user, isOpen, onClose, onSuccess }: Props) => {
             accountState: values.accountState,
             acceptMarketing: values.acceptMarketing,
             roleIds: values.roleId ? [values.roleId] : [],
-            avatarUrl: values.avatarUrl || null,
+            avatarFileId: null,
+            bannerFileId: null,
         };
 
         try {
@@ -129,9 +128,8 @@ export const EditUserModal = ({ user, isOpen, onClose, onSuccess }: Props) => {
 
     if (!isOpen || !user) return null;
 
-    const avatarSrc = user.avatarUrl
-        ? `https://api.yuviron.com/storage/${user.avatarUrl}`
-        : null;
+    //Image
+    const avatarSrc = getImageUrl(user.avatarUrl);
 
     return (
         <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050 }}>

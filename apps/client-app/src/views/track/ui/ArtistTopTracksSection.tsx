@@ -72,7 +72,6 @@ export const ArtistTopTracksSection = ({
                             track={track}
                             variant="artist"
                             onClick={(id) => console.log('play', id)} // TODO: плеєр
-                            onLike={(id) => console.log('like', id)}  // TODO: хук лайку
                         />
                     ))}
                 </>

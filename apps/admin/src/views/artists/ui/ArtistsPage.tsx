@@ -7,7 +7,7 @@ import {
     type ArtistListItemDtoPaginatedList,
     type GetApiAdminArtistsParams,
     VerificationStatus,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 import { BaseTable } from '@/shared/ui/Table/BaseTable';
 import { ArtistRow } from '@/entities/artist/ui/ArtistRow';
 import { artistTableColumns } from '@/entities/artist/model/columns';

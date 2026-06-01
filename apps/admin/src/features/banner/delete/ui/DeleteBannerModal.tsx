@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useDeleteApiAdminBannersId, type BannerListItemDto } from '@repo/api';
+import { useDeleteApiAdminBannersId, type BannerListItemDto } from '@repo/api/admin.ts';
 
 interface Props {
     banner: BannerListItemDto | null;

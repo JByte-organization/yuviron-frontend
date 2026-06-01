@@ -1,5 +1,5 @@
 // src/entities/user/model/constants.ts
-import { UserDetailsDto } from '@repo/api';
+import { UserDetailsDto } from '@repo/api/admin.ts';
 
 /**
  * Ключ из API -> Название для заголовка таблицы.

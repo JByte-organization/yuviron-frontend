@@ -5,7 +5,7 @@ import {
     useGetApiAdminPlaylists,
     getApiAdminUsers,
     type PlaylistDto,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 import { BaseTable } from '@/shared/ui/Table/BaseTable';
 import { PlaylistRow } from '@/entities/playlist/ui/PlaylistRow';
 import { playlistTableColumns } from '@/entities/playlist/model/columns';

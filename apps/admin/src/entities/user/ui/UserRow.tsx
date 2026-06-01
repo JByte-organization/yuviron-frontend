@@ -1,6 +1,7 @@
 import React from 'react';
-import { AccountState, type UserListItemDto } from '@repo/api';
+import { AccountState, type UserListItemDto } from '@repo/api/admin.ts';
 import Image from 'next/image'
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
     user: UserListItemDto;
@@ -57,9 +58,9 @@ const StateBadge = ({ state }: { state?: AccountState | string | number }) => {
 };
 
 export const UserRow = ({ user, onEdit, onDelete, isSelected, onSelect }: Props) => {
-    const avatarSrc = user.avatarUrl
-        ? `https://api.yuviron.com/storage/${user.avatarUrl}`
-        : null;
+
+    // Путь к аватару
+    const avatarSrc = getImageUrl(user.avatarUrl);
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{backgroundColor: '#3B4452'}}>

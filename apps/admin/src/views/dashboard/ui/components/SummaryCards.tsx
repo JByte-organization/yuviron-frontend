@@ -1,5 +1,5 @@
 import React from 'react';
-import type { DashboardSummaryDto } from '@repo/api';
+import type { DashboardSummaryDto } from '@repo/api/admin.ts';
 
 interface Props {
     summary?: DashboardSummaryDto;

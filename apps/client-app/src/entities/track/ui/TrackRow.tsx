@@ -2,6 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useAuthGuard } from '@/shared/lib/useAuthGuard';
+import { usePlayer } from '@/entities/player/lib/usePlayer';
+import { usePlayerStore } from '@/entities/player/model/playerStore';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { useFavoriteTrack } from '@/features/track/lib/useFavoriteTrack';
 
 export type TrackRowVariant = 'default' | 'artist';
 
@@ -17,16 +22,19 @@ export interface TrackRowData {
     durationMs?: number | null;
     coverUrl?: string | null;
     playsCount?: number;
+    isLiked?: boolean; // TODO: передавати з API коли зʼявиться поле
 }
 
 interface TrackRowProps {
     track: TrackRowData;
+    allTracks?: TrackRowData[];
     isPlaying?: boolean;
     variant?: TrackRowVariant;
     onClick?: (id: string) => void;
-    onLike?: (id: string) => void;
-    onAddToPlaylist?: (id: string) => void; // ← додано
-    showAddToPlaylist?: boolean;             // ← додано
+    onAddToPlaylist?: (id: string) => void;
+    showAddToPlaylist?: boolean;
+    sourceType?: 'Playlist' | 'Album' | 'Search' | 'ArtistProfile';
+    sourceId?: string | null;
 }
 
 const formatDuration = (ms?: number | null): string => {
@@ -54,29 +62,73 @@ const formatPlays = (count?: number): string => {
 
 export const TrackRow = ({
                              track,
+                             allTracks,
                              isPlaying = false,
                              variant = 'default',
                              onClick,
-                             onLike,
                              onAddToPlaylist,
                              showAddToPlaylist = false,
+                             sourceType = 'Search',
+                             sourceId = null,
                          }: TrackRowProps) => {
     const [isHovered, setIsHovered] = useState(false);
+    const { requireAuth } = useAuthGuard();
+    const { playQueue } = usePlayer();
+    const currentTrackId = usePlayerStore(s => s.currentTrack?.id);
+    const playerStatus   = usePlayerStore(s => s.status);
 
-    const coverSrc = track.coverUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${track.coverUrl}`
-        : `https://picsum.photos/seed/track-${track.id}/40/40`;
+    // Хук лайків — оптимістичний UI + реальний API запит
+    const { isLiked, isPending: isLikePending, toggle: toggleLike } = useFavoriteTrack({
+        initialLiked: track.isLiked ?? false,
+    });
+
+    const isCurrentlyPlaying = currentTrackId === track.id && playerStatus === 'playing';
+
+    const coverSrc = getImageUrl(track.coverUrl)
+        ?? `https://picsum.photos/seed/track-${track.id}/40/40`;
+
+    const handleClick = () => {
+        requireAuth(() => {
+            if (onClick) {
+                onClick(track.id);
+                return;
+            }
+            const queue = allTracks ?? [track];
+            const index = queue.findIndex(t => t.id === track.id);
+            playQueue(
+                queue.map(t => ({
+                    id:          t.id,
+                    title:       t.title,
+                    artistNames: t.artistNames,
+                    artistId:    t.artistId,
+                    albumId:     t.albumId,
+                    albumTitle:  t.albumTitle ?? undefined,
+                    coverUrl:    t.coverUrl,
+                    durationMs:  t.durationMs ?? undefined,
+                })),
+                index >= 0 ? index : 0,
+                sourceType,
+                sourceId,
+            );
+        });
+    };
+
+    const handleLike = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // requireAuth — якщо не авторизований, покаже модалку логіну
+        requireAuth(() => toggleLike(track.id));
+    };
 
     return (
         <div
-            className={`track-row track-row--${variant}${isPlaying ? ' track-row--playing' : ''}${isHovered ? ' track-row--hovered' : ''}`}
+            className={`track-row track-row--${variant}${isCurrentlyPlaying ? ' track-row--playing' : ''}${isHovered ? ' track-row--hovered' : ''}`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            onClick={() => onClick?.(track.id)}
+            onClick={handleClick}
         >
-            {/* ─── Номер / play ─────────────────────────── */}
+            {/* Номер / play іконка */}
             <div className="track-row__index">
-                {isPlaying ? (
+                {isCurrentlyPlaying ? (
                     <i className="bi bi-volume-up-fill track-row__playing-icon" />
                 ) : isHovered ? (
                     <i className="bi bi-play-fill" />
@@ -85,7 +137,7 @@ export const TrackRow = ({
                 )}
             </div>
 
-            {/* ─── Обкладинка + назва + артист ─────────── */}
+            {/* Обкладинка + назва + артист */}
             <div className="track-row__info">
                 <div className="track-row__cover">
                     <img src={coverSrc} alt={track.title} />
@@ -93,8 +145,8 @@ export const TrackRow = ({
                 <div className="track-row__meta">
                     <Link
                         href={`/tracks/${track.id}`}
-                        className={`track-row__title${isPlaying ? ' track-row__title--playing' : ''}`}
-                        onClick={(e) => e.stopPropagation()}
+                        className={`track-row__title${isCurrentlyPlaying ? ' track-row__title--playing' : ''}`}
+                        onClick={e => e.stopPropagation()}
                     >
                         {track.title}
                     </Link>
@@ -102,25 +154,23 @@ export const TrackRow = ({
                         <Link
                             href={`/artists/${track.artistId}`}
                             className="track-row__artist"
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={e => e.stopPropagation()}
                         >
                             {track.artistNames.join(', ')}
                         </Link>
                     ) : (
-                        <span className="track-row__artist">
-                            {track.artistNames.join(', ')}
-                        </span>
+                        <span className="track-row__artist">{track.artistNames.join(', ')}</span>
                     )}
                 </div>
             </div>
 
-            {/* ─── Альбом ───────────────────────────────── */}
+            {/* Альбом */}
             <div className="track-row__album d-none d-md-block">
                 {track.albumId ? (
                     <Link
                         href={`/albums/${track.albumId}`}
                         className="track-row__album-link"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={e => e.stopPropagation()}
                     >
                         {track.albumTitle ?? '—'}
                     </Link>
@@ -129,7 +179,7 @@ export const TrackRow = ({
                 )}
             </div>
 
-            {/* ─── Дата або прослуховування ─────────────── */}
+            {/* Дата або прослуховування */}
             <div className="track-row__context d-none d-lg-block">
                 {variant === 'artist'
                     ? <span>{formatPlays(track.playsCount)}</span>
@@ -137,28 +187,28 @@ export const TrackRow = ({
                 }
             </div>
 
-            {/* ─── Дії + тривалість ─────────────────────── */}
+            {/* Дії + тривалість */}
             <div className="track-row__actions">
-                {/* Лайк */}
+
+                {/* Кнопка лайку — серце заповнене якщо isLiked */}
                 <button
-                    className="track-row__like-btn"
-                    onClick={(e) => { e.stopPropagation(); onLike?.(track.id); }}
-                    aria-label="Like"
+                    className={`track-row__like-btn${isLiked ? ' track-row__like-btn--active' : ''}`}
+                    onClick={handleLike}
+                    disabled={isLikePending}
+                    aria-label={isLiked ? 'Прибрати з улюблених' : 'Додати до улюблених'}
                 >
-                    <i className="bi bi-heart" />
+                    <i className={isLiked ? 'bi bi-heart-fill' : 'bi bi-heart'} />
                 </button>
 
                 <span className="track-row__duration">
                     {formatDuration(track.durationMs)}
                 </span>
 
-                {/* Додати до плейліста — показується тільки якщо showAddToPlaylist */}
                 {showAddToPlaylist && (
                     <button
                         className="track-row__add-btn"
-                        onClick={(e) => { e.stopPropagation(); onAddToPlaylist?.(track.id); }}
+                        onClick={e => { e.stopPropagation(); onAddToPlaylist?.(track.id); }}
                         aria-label="Додати до плейліста"
-                        title="Додати до плейліста"
                     >
                         <i className="bi bi-plus-circle" />
                     </button>

@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 
-import { useSessionStore } from '@/entities/session/model/store';
+import { useAdminSessionStore } from '@/entities/adminSession/model/store';
 import Image from "next/image";
 import Link from 'next/link';
 import { SIDEBAR_WIDTH } from '@/shared/config/constants';
@@ -19,19 +19,29 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
     const [elementsOpen, setElementsOpen] = useState(true);
 
     const router = useRouter();
-    const setAuth = useSessionStore((state) => state.setAuth);
+    const clearAdminSession = useAdminSessionStore((state) => state.clearAdminSession);
 
-    const handleLogout = () => {
-        setAuth(null, null); // очищає токен, роль і куки
+    const handleLogout = async () => {
+        try {
+            await fetch('https://dev-api.yuviron.com/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    Authorization: `Bearer ${useAdminSessionStore.getState().adminAccessToken}`,
+                },
+            });
+        } catch {}
+
+        document.cookie = 'adminToken=; path=/; max-age=0; SameSite=Strict';
+        clearAdminSession();
         router.replace('/login');
     };
 
-    // Закрываем на моб при переходе
     useEffect(() => {
         if (window.innerWidth < 992) {
             onClose();
         }
-    }, [pathname]);
+    }, [pathname, onClose])
 
     const navLink = (href: string, label: string) => (
         <li key={href}>

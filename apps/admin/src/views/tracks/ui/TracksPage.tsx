@@ -8,7 +8,7 @@ import {
     getApiAdminGenres,
     getApiAdminMoods,
     type TrackListItemDto,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 import { BaseTable } from '@/shared/ui/Table/BaseTable';
 import { TrackRow } from '@/entities/track/ui/TrackRow';
 import { trackTableColumns } from '@/entities/track/model/columns';

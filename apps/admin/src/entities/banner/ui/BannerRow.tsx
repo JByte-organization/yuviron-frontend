@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { type BannerListItemDto } from '@repo/api';
+import { type BannerListItemDto } from '@repo/api/admin.ts';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 interface BannerRowProps {

@@ -1,31 +1,47 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import { usePutApiUsersProfile, usePostApiFilesUpload } from '@repo/api/client.ts';
 import { Modal } from '@/shared/ui/Modal';
 import { CoverUpload } from '@/shared/ui/CoverUpload';
 
 interface EditProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess?: () => void;
+    onSuccess?: (localUrl: string | null | undefined) => void;
     user: {
         name: string;
         avatarUrl?: string | null;
     };
+    userId: string; // Передаємо userId для унікального ключа в localStorage
 }
 
 type FormValues = {
     name: string;
-    avatarFile?: File | null;
+    avatarFile: File | null | undefined;
 };
+
+// Хелпер для переведення файлу в Base64
+const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+    });
 
 export const EditProfileModal = ({
                                      isOpen,
                                      onClose,
                                      onSuccess,
                                      user,
+                                     userId,
                                  }: EditProfileModalProps) => {
+
+    const { mutateAsync: uploadFile } = usePostApiFilesUpload();
+    const { mutateAsync: updateProfile } = usePutApiUsersProfile();
+
     const {
         register,
         handleSubmit,
@@ -35,9 +51,18 @@ export const EditProfileModal = ({
     } = useForm<FormValues>({
         defaultValues: {
             name:       user.name,
-            avatarFile: null,
+            avatarFile: undefined,
         },
     });
+
+    useEffect(() => {
+        if (isOpen) {
+            reset({
+                name: user.name,
+                avatarFile: undefined,
+            });
+        }
+    }, [isOpen, user, reset]);
 
     const handleClose = () => {
         reset();
@@ -45,37 +70,66 @@ export const EditProfileModal = ({
     };
 
     const onSubmit = async (values: FormValues) => {
-        console.log('edit profile', values);
-        // TODO: usePutApiUserProfile()
-        // const formData = new FormData();
-        // formData.append('name', values.name);
-        // if (values.avatarFile) formData.append('avatar', values.avatarFile);
-        // await updateProfile({ data: formData });
-        onSuccess?.();
-        handleClose();
+        try {
+            let uploadedAvatarId: string | null = null;
+            let localPreviewUrl: string | null | undefined = undefined;
+
+            if (values.avatarFile instanceof File) {
+                const uploadResponse = await uploadFile({
+                    data: { file: values.avatarFile }
+                });
+
+                const resData = uploadResponse as unknown as { fileId?: string; data?: { fileId?: string } };
+                uploadedAvatarId = resData?.data?.fileId ?? resData?.fileId ?? null;
+
+                // 1. Отримуємо Base64 для збереження між перезавантаженнями сторінки
+                const base64Img = await fileToBase64(values.avatarFile);
+                localStorage.setItem(`yuviron_temp_avatar_${userId}`, JSON.stringify({
+                    url: base64Img,
+                    expiresAt: Date.now() + 3 * 60 * 1000 // Кеш на 3 хвилини
+                }));
+
+                localPreviewUrl = base64Img;
+            }
+            else if (values.avatarFile === null) {
+                uploadedAvatarId = null;
+                localPreviewUrl = null;
+                localStorage.removeItem(`yuviron_temp_avatar_${userId}`);
+            }
+
+            const requestBody = {
+                name: values.name,
+                bio: null,
+                ...(values.avatarFile !== undefined ? { avatarFileId: uploadedAvatarId } : {}),
+                bannerFileId: null
+            };
+
+            await updateProfile({ data: requestBody });
+
+            onSuccess?.(localPreviewUrl);
+            handleClose();
+        } catch (error) {
+            console.error('[EditProfile] Помилка при збереженні профілю:', error);
+        }
     };
 
     return (
         <Modal isOpen={isOpen} onClose={handleClose} title="Редагування профілю">
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="row g-3 align-items-start">
-
-                    {/* Аватарка */}
                     <div className="col-12 col-sm-auto">
                         <Controller
                             name="avatarFile"
                             control={control}
                             render={({ field }) => (
                                 <CoverUpload
-                                    value={field.value}
+                                    value={field.value === undefined ? null : field.value}
                                     previewUrl={user.avatarUrl}
                                     onChange={field.onChange}
                                 />
                             )}
                         />
                     </div>
-
-                    {/* Нікнейм */}
                     <div className="col">
                         <div className="mb-2">
                             <label className="client-modal__field-label">Нікнейм</label>
@@ -84,7 +138,7 @@ export const EditProfileModal = ({
                                 className={`client-modal__input${errors.name ? ' client-modal__input--error' : ''}`}
                                 {...register('name', {
                                     required: "Нікнейм обов'язковий",
-                                    maxLength: { value: 50, message: 'Максимум 50 символів' },
+                                    maxLength: { value: 50, message: 'Максимум 50 symbols' },
                                 })}
                             />
                             {errors.name && (
@@ -93,25 +147,11 @@ export const EditProfileModal = ({
                         </div>
                     </div>
                 </div>
-
-                <p className="client-modal__hint">
-                    Продовжуючи, ти надаєш доступ до вибраного зображення.
-                    Будь ласка, не завантажуй файли, які ти не маєш права поширювати.
-                </p>
-
-                <div className="client-modal__footer">
-                    <button
-                        type="button"
-                        className="client-modal__btn client-modal__btn--ghost"
-                        onClick={handleClose}
-                    >
+                <div className="client-modal__footer mt-3">
+                    <button type="button" className="client-modal__btn client-modal__btn--ghost" onClick={handleClose} disabled={isSubmitting}>
                         Скасувати
                     </button>
-                    <button
-                        type="submit"
-                        className="client-modal__btn client-modal__btn--primary"
-                        disabled={isSubmitting}
-                    >
+                    <button type="submit" className="client-modal__btn client-modal__btn--primary" disabled={isSubmitting}>
                         {isSubmitting && <span className="spinner-border spinner-border-sm me-2" />}
                         Зберегти
                     </button>

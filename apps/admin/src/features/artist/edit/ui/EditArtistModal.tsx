@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import {
     useGetApiAdminArtistsId,
@@ -13,13 +13,15 @@ import {
     getGetApiAdminArtistsIdQueryKey,
     getGetApiAdminArtistsIdTeamQueryKey,
     usePutApiAdminArtistsId,
+    postApiFilesUpload,
     VerificationStatus,
     ArtistTeamRole,
     type ArtistListItemDto,
     type ArtistDetailsDto,
     type ArtistTeamMemberDto,
     type UpdateArtistCommand,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 // ══════════════════════════════════════════════════════════
 // TYPES
@@ -35,12 +37,11 @@ type FormValues = {
     name: string;
     bio: string;
     verificationStatus: VerificationStatus;
-    avatarUrl: string;
 };
 
 interface MemberOption {
-    userId: string;  // ← userId для API
-    name:   string;  // ← ім'я артиста для відображення
+    userId: string;
+    name:   string;
     email:  string;
 }
 
@@ -60,9 +61,8 @@ interface TeamMemberRowProps {
 }
 
 const TeamMemberRow = ({ member, onRemove, onRoleChange }: TeamMemberRowProps) => {
-    const avatarSrc = member.avatarUrl
-        ? `https://api.yuviron.com/storage/${member.avatarUrl}`
-        : null;
+
+    const avatarSrc = getImageUrl(member.avatarUrl);
 
     return (
         <div className="d-flex align-items-center gap-3 py-2 border-bottom border-secondary">
@@ -337,6 +337,30 @@ export const EditArtistModal = ({ artist, isOpen, onClose, onSuccess }: Props) =
         },
     });
 
+    const [avatarFileId, setAvatarFileId] = useState<string | null>(null);
+    const [previewUrl,   setPreviewUrl]   = useState<string | null>(null);
+    const [isUploading,  setIsUploading]  = useState(false);
+    const [uploadError,  setUploadError]  = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setIsUploading(true);
+        setUploadError(null);
+        try {
+            const res = await postApiFilesUpload({ file });
+            const data = res as { fileId?: string; url?: string };
+            if (!data.fileId) throw new Error('No fileId in response');
+            setAvatarFileId(data.fileId);
+            setPreviewUrl(data.url ?? null);
+        } catch {
+            setUploadError('Failed to upload image. Please try again.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     const { mutateAsync: updateArtist,  isPending } = usePutApiAdminArtistsId();
     const { mutateAsync: addMember }                = usePostApiAdminArtistsIdTeam();
     const { mutateAsync: removeMember }             = useDeleteApiAdminArtistsIdTeamUserId();
@@ -363,7 +387,6 @@ export const EditArtistModal = ({ artist, isOpen, onClose, onSuccess }: Props) =
             name:               details.name               ?? '',
             bio:                details.bio                ?? '',
             verificationStatus: details.verificationStatus ?? VerificationStatus.Pending,
-            avatarUrl:          details.avatarUrl          ?? '',
         });
     }, [details, reset]);
 
@@ -375,7 +398,8 @@ export const EditArtistModal = ({ artist, isOpen, onClose, onSuccess }: Props) =
             name:               values.name,
             bio:                values.bio || '',
             verificationStatus: values.verificationStatus,
-            avatarUrl:          values.avatarUrl || null,
+            avatarFileId:       avatarFileId ?? null,
+            bannerFileId:       null,
             ownerUserId:        details?.owner?.userId ?? null,
         };
 
@@ -425,9 +449,8 @@ export const EditArtistModal = ({ artist, isOpen, onClose, onSuccess }: Props) =
 
     if (!isOpen || !artist) return null;
 
-    const avatarSrc = artist.avatarUrl
-        ? `https://api.yuviron.com/storage/${artist.avatarUrl}`
-        : null;
+    // Путь к аватару
+    const avatarSrc = getImageUrl(artist.avatarUrl);
 
     return (
         <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050 }}>
@@ -505,12 +528,21 @@ export const EditArtistModal = ({ artist, isOpen, onClose, onSuccess }: Props) =
 
                                 {/* Avatar */}
                                 <div className="mb-4">
-                                    <label className="form-label admin-text small fw-bold">AVATAR PATH</label>
-                                    <input
-                                        type="text"
-                                        className="form-control admin-login__input text-secondary"
-                                        {...register('avatarUrl')}
-                                    />
+                                    <label className="form-label admin-text small fw-bold">AVATAR IMAGE</label>
+                                    <div
+                                        className={`upload-input ${avatarFileId ? 'border-success' : ''}`}
+                                        onClick={() => fileInputRef.current?.click()}
+                                        style={{ cursor: 'pointer', minHeight: '38px' }}
+                                    >
+                                        {previewUrl
+                                            ? <img src={previewUrl} alt="avatar preview" className="img-fluid rounded" style={{ maxHeight: '80px' }} />
+                                            : <p className="mb-0 small mt-1 text-center text-secondary">Click to replace (leave empty to keep current)</p>
+                                        }
+                                    </div>
+                                    <input ref={fileInputRef} type="file" accept="image/*" className="d-none" onChange={handleFileChange} />
+                                    {isUploading && <p className="text-info small mt-1">Uploading...</p>}
+                                    {uploadError && <p className="text-danger small mt-1">{uploadError}</p>}
+                                    {avatarFileId && !uploadError && <p className="text-success small mt-1">New avatar uploaded</p>}
                                 </div>
 
                                 {/* ─── Team ─────────────────────────────── */}
@@ -558,7 +590,7 @@ export const EditArtistModal = ({ artist, isOpen, onClose, onSuccess }: Props) =
                                 <button
                                     type="submit"
                                     className="btn btn-primary px-5 fw-bold"
-                                    disabled={isPending || isSubmitting}
+                                    disabled={isPending || isSubmitting || isUploading}
                                 >
                                     {isPending ? 'Saving...' : 'Save Changes'}
                                 </button>

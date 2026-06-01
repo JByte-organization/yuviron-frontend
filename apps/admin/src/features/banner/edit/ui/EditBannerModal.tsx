@@ -10,7 +10,7 @@ import {
     type BannerListItemDto,
     type BannerDetailsDto,
     type UpdateBannerCommand,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 interface Props {
@@ -36,10 +36,10 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
     const bannerId = banner?.id ?? '';
 
     // ─── Upload стан ──────────────────────────────────────
-    const [bannerPath,  setBannerPath]  = useState<string | null>(null);
-    const [previewUrl,  setPreviewUrl]  = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadError, setUploadError] = useState<string | null>(null);
+    const [bannerFileId, setBannerFileId] = useState<string | null>(null);
+    const [previewUrl,   setPreviewUrl]   = useState<string | null>(null);
+    const [isUploading,  setIsUploading]  = useState(false);
+    const [uploadError,  setUploadError]  = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // ─── Запити ───────────────────────────────────────────
@@ -67,6 +67,7 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
             isActive:  details.isActive  ?? true,
         });
 
+        //Image
         setPreviewUrl(getImageUrl(details.bannerUrl));
     }, [details, reset]);
 
@@ -80,17 +81,9 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
 
         try {
             const res = await postApiFilesUpload({ file });
-
-            type UploadResponse = { path?: string; url?: string }
-                | { data?: { path?: string; url?: string } };
-
-            const raw  = res as UploadResponse;
-            const data = 'data' in raw && raw.data ? raw.data : raw as { path?: string; url?: string };
-
-            if (!data.path) throw new Error('No path in response');
-
-            setBannerPath(data.path);
-            // Превью тимчасового файлу — використовуємо url з відповіді
+            const data = res as { fileId?: string; url?: string };
+            if (!data.fileId) throw new Error('No fileId in response');
+            setBannerFileId(data.fileId);
             setPreviewUrl(data.url ?? null);
         } catch {
             setUploadError('Failed to upload image. Please try again.');
@@ -101,7 +94,7 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
 
     const handleClose = () => {
         reset();
-        setBannerPath(null);
+        setBannerFileId(null);
         setPreviewUrl(null);
         setUploadError(null);
         onClose();
@@ -113,11 +106,11 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
 
         const body: UpdateBannerCommand = {
             bannerId,
-            title:     values.title     || null,
-            targetUrl: values.targetUrl || null,
-            bannerUrl: bannerPath ?? details?.bannerUrl ?? null,
-            sortOrder: values.sortOrder,
-            isActive:  values.isActive,
+            title:        values.title     || null,
+            targetUrl:    values.targetUrl || null,
+            bannerFileId: bannerFileId ?? null,
+            sortOrder:    values.sortOrder,
+            isActive:     values.isActive,
         };
 
         try {

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthResetPassword } from '@repo/api';
+import { usePostApiAuthResetPassword } from '@repo/api/client.ts';
 
 const checkUppercase = (value: string) => /[A-Z]/.test(value);
 const checkLowercase = (value: string) => /[a-z]/.test(value);
