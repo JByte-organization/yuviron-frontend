@@ -50,7 +50,6 @@ export const FavoritesPage = () => {
                             track={track}
                             isPlaying={currentTrack === track.id}
                             onClick={id => setCurrentTrack(id === currentTrack ? null : id)}
-                            onLike={id => console.log('like', id)} // TODO: usePostApiMeFavoritesTracks
                         />
                     ))
                 )}

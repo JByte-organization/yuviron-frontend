@@ -197,7 +197,6 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
                             allTracks={tracks}
                             sourceType="Playlist"
                             sourceId={playlistId}
-                            onLike={(id) => console.log('like', id)}  // TODO: хук лайків
                             onAddToPlaylist={(id) => handleAddToPlaylist(id, track.title)}
                             showAddToPlaylist
                         />

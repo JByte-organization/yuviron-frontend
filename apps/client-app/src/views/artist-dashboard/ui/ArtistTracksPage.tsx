@@ -100,7 +100,6 @@ export const ArtistTracksPage = () => {
                             track={track}
                             isPlaying={currentTrack === track.id}
                             onClick={id => setCurrentTrack(id === currentTrack ? null : id)}
-                            onLike={() => {}}
                         />
                         {/* Кнопки редагування/видалення */}
                         <div className="artist-tracks-page__row-actions">
