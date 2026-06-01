@@ -20,7 +20,7 @@ import {
     type ArtistDetailsDto,
     type ArtistTeamMemberDto,
     type UpdateArtistCommand,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 // ══════════════════════════════════════════════════════════

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { type MoodDto } from '@repo/api';
+import { type MoodDto } from '@repo/api/admin.ts';
 import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {

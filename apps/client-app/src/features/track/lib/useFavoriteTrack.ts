@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
     usePostApiMeFavoritesTracks,
     useDeleteApiMeFavoritesTracksTrackId,
-} from '@repo/api';
+} from '@repo/api/client.ts';
 
 interface UseFavoriteTrackOptions {
     // Початковий стан — чи трек вже в улюблених

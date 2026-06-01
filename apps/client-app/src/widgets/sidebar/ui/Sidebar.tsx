@@ -13,7 +13,7 @@ import {
     type UserPlaylistDto,
     type RecentlyPlayedTrackDto,
     type TrackArtistDto,
-} from '@repo/api';
+} from '@repo/api/client.ts';
 
 // ══════════════════════════════════════════════════════════
 // HELPERS

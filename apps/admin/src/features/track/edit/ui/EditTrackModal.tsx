@@ -9,7 +9,7 @@ import {
     VisibilityStatus,
     postApiFilesUpload,
     type TrackListItemDto, ArtistRole, TrackGenreSimpleDto, TrackMoodSimpleDto, TrackArtistSimpleDto, TrackDetailsDto,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
 import {getImageUrl} from "@/shared/lib/getImageUrl";
 

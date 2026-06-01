@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useGetApiHomeTopTracks, type TopTrackDto, type TrackArtistDto } from '@repo/api';
+import { useGetApiHomeTopTracks, type TopTrackDto, type TrackArtistDto } from '@repo/api/client.ts';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { getImageUrl } from '@/shared/lib/getImageUrl';

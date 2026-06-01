@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import {ArtistListItemDto, VerificationStatus} from '@repo/api';
+import {ArtistListItemDto, VerificationStatus} from '@repo/api/admin.ts';
 import Image from "next/image";
 import {getImageUrl} from "@/shared/lib/getImageUrl";
 

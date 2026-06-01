@@ -22,7 +22,7 @@ import {
     type UserPlaylistDto,
     type FollowerDto,
     type FollowedProfileDto,
-} from '@repo/api';
+} from '@repo/api/client.ts';
 import { UserPageHeader } from './UserPageHeader';
 import { UserCard, type UserCardData } from '@/entities/user/ui/UserCard';
 import { PlaylistCard, type PlaylistCardData } from '@/entities/playlist/ui/PlaylistCard';

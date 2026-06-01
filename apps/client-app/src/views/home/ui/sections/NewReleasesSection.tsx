@@ -1,16 +1,14 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { FreeMode, Navigation } from 'swiper/modules';
+import { FreeMode } from 'swiper/modules';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { AlbumCard, type AlbumCardData } from '@/entities/album/ui/AlbumCard';
+import { ShowAllButton } from "@/shared/ui/ShowAllButton";
 
 import 'swiper/css';
 import 'swiper/css/free-mode';
-import 'swiper/css/navigation';
-import {ShowAllButton} from "@/shared/ui/ShowAllButton";
 
 interface NewReleasesSectionProps {
     sectionTitle?: string;
@@ -61,14 +59,18 @@ export const NewReleasesSection = ({
                     }}
                     className="new-releases-section__swiper"
                 >
-                    {albums!.map(album => (
+                    {/* ФІКС: міняємо albumData на ітератор album та прокидаємо onClick */}
+                    {albums?.map(album => (
                         <SwiperSlide key={album.id}>
-                            <AlbumCard album={album} onClick={onAlbumClick} />
+                            <AlbumCard
+                                album={album}
+                                onClick={onAlbumClick}
+                            />
                         </SwiperSlide>
                     ))}
 
                     <SwiperSlide className="new-releases-section__show-all-slide">
-                        <div className="col-auto d-flex align-items-center">
+                        <div className="col-auto d-flex align-items-center h-100">
                             <ShowAllButton href={showAllHref}/>
                         </div>
                     </SwiperSlide>

@@ -9,7 +9,7 @@ import {
     type UserFavoriteTrackDto,
     type FollowedArtistDto,
     type UserPlaylistDto,
-} from '@repo/api';
+} from '@repo/api/client.ts';
 import { TopTracksSection } from '@/views/home/ui/sections/TopTracksSection';
 import { FavoriteArtistsSection } from '@/views/home/ui/sections/FavoriteArtistsSection';
 import { LibraryPlaylistsSection } from './ui/sections/LibraryPlaylistsSection';

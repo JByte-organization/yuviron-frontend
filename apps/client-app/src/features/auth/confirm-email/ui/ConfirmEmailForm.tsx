@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { usePostApiAuthConfirmEmail } from '@repo/api';
+import { usePostApiAuthConfirmEmail } from '@repo/api/client.ts';
 
 // Подтверждение почты при регистрации = link-based. Бэк шлёт письмо с кнопкой
 // → /confirm-email?token=... Эта форма достаёт token из query и дёргает

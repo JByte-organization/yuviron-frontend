@@ -17,7 +17,7 @@ import {
     type NewReleaseDto,
     type TrackArtistDto,
     type FollowedArtistDto, getGetApiHomeTopArtistsQueryKey, getGetApiMeFollowingArtistsQueryKey,
-} from '@repo/api';
+} from '@repo/api/client.ts';
 import { HeroBannerSection, type BannerItem } from './ui/sections/HeroBannerSection';
 import { MoodSection } from './ui/sections/MoodSection';
 import { TopTracksSection } from './ui/sections/TopTracksSection';

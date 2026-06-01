@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useDeleteApiAdminAlbumsId, type AlbumListItemDto } from '@repo/api';
+import { useDeleteApiAdminAlbumsId, type AlbumListItemDto } from '@repo/api/admin.ts';
 
 interface Props {
     album: AlbumListItemDto | null;

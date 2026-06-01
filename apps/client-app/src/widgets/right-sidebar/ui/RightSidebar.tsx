@@ -11,7 +11,7 @@ import {
     useGetApiArtistsId,
     usePostApiArtistsIdFollow,
     useDeleteApiArtistsIdFollow,
-} from '@repo/api';
+} from '@repo/api/client.ts';
 
 import type { ArtistDetailsDto } from '@repo/api/generated/client/models/artistDetailsDto';
 

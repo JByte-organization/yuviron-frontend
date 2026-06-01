@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { configureApiClient } from '@repo/api';
+import { configureApiClient } from '@repo/api/admin.ts';
 import { useAdminSessionStore } from '@/entities/adminSession/model/store';
 
 // ══════════════════════════════════════════════════════════

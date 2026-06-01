@@ -1,5 +1,5 @@
 import React from 'react';
-import { AccountState, type UserListItemDto } from '@repo/api';
+import { AccountState, type UserListItemDto } from '@repo/api/admin.ts';
 import Image from 'next/image'
 import {getImageUrl} from "@/shared/lib/getImageUrl";
 

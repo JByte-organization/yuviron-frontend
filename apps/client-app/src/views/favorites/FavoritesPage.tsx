@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { FavoritesHeader } from './ui/FavoritesHeader';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
-import { useGetApiMeFavoritesTracks, type UserFavoriteTrackDto, type TrackArtistDto } from '@repo/api';
+import { useGetApiMeFavoritesTracks, type UserFavoriteTrackDto, type TrackArtistDto } from '@repo/api/client.ts';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import {UserFavoriteTrackDtoPaginatedList} from "@repo/api/generated/client/models";
 

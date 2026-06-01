@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { configureApiClient, postApiAuthRefresh } from '@repo/api';
+import { configureApiClient, postApiAuthRefresh } from '@repo/api/client.ts';
 import { useSessionStore } from '@/entities/session/model/store';
 
 export const ApiClientProvider = ({ children }: { children: React.ReactNode }) => {
