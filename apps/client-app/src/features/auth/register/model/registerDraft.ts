@@ -9,7 +9,6 @@ export interface RegisterDraft {
     year?: string;
     country?: string;
     city?: string;
-    role?: 'listener' | 'author';
 }
 
 export const getRegisterDraft = (): RegisterDraft => {
