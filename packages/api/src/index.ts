@@ -24,6 +24,7 @@ export * from './generated/client/endpoints/artists';
 export * from './generated/client/endpoints/me';
 export * from './generated/client/endpoints/me-playlists';
 export * from './generated/client/endpoints/playlists';
+export * from './generated/client/endpoints/users';
 
 
 
@@ -53,8 +54,9 @@ export * from './generated/client/models/playlistTrackItemClientDto';
 export * from './generated/client/models/updatePlaylistRequest';
 
 
-//Artist
 
+//Profile
+export * from './generated/client/models/updateUserProfileRequest';
 
 export { postApiAnalyticsPlayStart, postApiAnalyticsPlayCommit } from './generated/client/endpoints/analytics';
 export { getApiTracksIdPlay } from './generated/client/endpoints/tracks';

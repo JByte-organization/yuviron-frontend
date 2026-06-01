@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useAvatarColor } from '@/shared/lib/useAvatarColor';
 
@@ -39,23 +39,39 @@ export const UserPageHeader = ({
                                }: UserPageHeaderProps) => {
     const [following, setFollowing] = useState(isFollowing);
 
-    const avatarSrc = avatarUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${avatarUrl}`
-        : `https://picsum.photos/seed/vibrant-${userId}/200/200`;
+    useEffect(() => {
+        setFollowing(isFollowing);
+    }, [isFollowing, userId]);
 
-    // Витягуємо домінуючий колір з аватарки
-    const dominantColor = useAvatarColor(avatarSrc);
+    const hasCustomAvatar = useMemo(() => !!avatarUrl, [avatarUrl]);
 
-    const handleFollow = () => {
+    // Проксуємо через наш Next.js API, якщо посилання веде на зовнішній бекенд
+    const avatarSrc = useMemo(() => {
+        if (!hasCustomAvatar) return '/images/avatar/default-avatar.png';
+
+        // Якщо це зовнішнє http/https посилання (а не локальна base64/blob)
+        if (avatarUrl && avatarUrl.startsWith('http')) {
+            return `/api/image-proxy?url=${encodeURIComponent(avatarUrl)}`;
+        }
+
+        return avatarUrl!;
+    }, [hasCustomAvatar, avatarUrl]);
+
+    // Отримуємо колір (тепер canvas зчитає його без проблем, бо домен наш)
+    const detectedColor = useAvatarColor(hasCustomAvatar ? avatarSrc : '');
+
+    const dominantColor = useMemo(() => {
+        if (!hasCustomAvatar) return '#282828';
+        return detectedColor || '#404040';
+    }, [hasCustomAvatar, detectedColor]);
+
+    const handleFollowClick = () => {
         setFollowing((v) => !v);
         onFollow?.();
-        // TODO: usePostApiUsersIdFollow()
     };
-
 
     return (
         <div className="user-page-header">
-            {/* Градієнтний фон */}
             <div
                 className="user-page-header__gradient"
                 style={{
@@ -64,32 +80,31 @@ export const UserPageHeader = ({
             />
 
             <div className="user-page-header__content">
-                {/* Аватарка */}
                 <div className="user-page-header__avatar">
-                    <img src={avatarSrc} alt={name} />
+                    {/* crossOrigin прибрано, бо картинка йде через наш локальний /api/image-proxy */}
+                    <img
+                        src={avatarSrc}
+                        alt={name}
+                    />
                 </div>
 
-                {/* Інфо */}
                 <div className="user-page-header__info">
                     <p className="user-page-header__type">Профіль</p>
                     <h1 className="user-page-header__name">{name}</h1>
 
-                    {/* Статистика — клікабельна */}
                     <div className="user-page-header__stats">
-                        <span className="user-page-header__stat">
-                            {playlistsCount} відкритих плейлістів
-                        </span>
+                        <span className="user-page-header__stat">{playlistsCount} плейлістів</span>
                         <span className="user-page-header__dot">•</span>
                         <button
                             className="user-page-header__stat-link"
-                            onClick={() => document.getElementById('followers')?.scrollIntoView({ behavior: 'smooth' })}
+                            onClick={() => document.getElementById('followers')?.scrollIntoView({behavior: 'smooth'})}
                         >
                             {formatCount(followersCount)} підписників
                         </button>
                         <span className="user-page-header__dot">•</span>
                         <button
                             className="user-page-header__stat-link"
-                            onClick={() => document.getElementById('following')?.scrollIntoView({ behavior: 'smooth' })}
+                            onClick={() => document.getElementById('following')?.scrollIntoView({behavior: 'smooth'})}
                         >
                             {formatCount(followingCount)} підписок
                         </button>
@@ -97,56 +112,28 @@ export const UserPageHeader = ({
                 </div>
             </div>
 
-            {/* Кнопки дій */}
             <div className="user-page-header__actions">
                 {isOwner ? (
                     <>
-                        {/* Налаштування */}
-                        <Link
-                            href="/settings"
-                            className="user-page-header__action-btn"
-                            aria-label="Налаштування"
-                            title="Налаштування"
-                        >
+                        <Link href="/settings" className="user-page-header__action-btn" aria-label="Налаштування" title="Налаштування">
                             <i className="bi bi-gear" />
                         </Link>
-
-                        {/* Редагувати профіль */}
-                        <button
-                            className="user-page-header__action-btn"
-                            onClick={onEdit}
-                            aria-label="Редагувати профіль"
-                            title="Редагувати профіль"
-                        >
+                        <button className="user-page-header__action-btn" onClick={onEdit} aria-label="Редагувати профіль" title="Редагувати профіль">
                             <i className="bi bi-pencil" />
                         </button>
-
-                        {/* Поділитися */}
-                        <button
-                            className="user-page-header__action-btn"
-                            onClick={onShare}
-                            aria-label="Поділитися профілем"
-                            title="Поділитися профілем"
-                        >
+                        <button className="user-page-header__action-btn" onClick={onShare} aria-label="Поділитися профілем" title="Поділитися профілем">
                             <i className="bi bi-share" />
                         </button>
                     </>
                 ) : (
                     <>
-                        {/* Підписатися */}
                         <button
                             className={`user-page-header__follow-btn${following ? ' user-page-header__follow-btn--active' : ''}`}
-                            onClick={handleFollow}
+                            onClick={handleFollowClick}
                         >
                             {following ? 'Відписатися' : 'Підписатися'}
                         </button>
-
-                        {/* Поділитися */}
-                        <button
-                            className="user-page-header__action-btn"
-                            onClick={onShare}
-                            aria-label="Поділитися"
-                        >
+                        <button className="user-page-header__action-btn" onClick={onShare} aria-label="Поділитися">
                             <i className="bi bi-share" />
                         </button>
                     </>
