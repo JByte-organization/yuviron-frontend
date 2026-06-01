@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthLogin, usePostApiAuthSendCode } from '@repo/api';
+import { usePostApiAuthLogin, usePostApiAuthSendCode } from '@repo/api/client.ts';
 import { useSessionStore } from '@/entities/session/model/store';
 import { useQueryClient } from '@tanstack/react-query';
-import { getGetApiAuthMeQueryKey } from '@repo/api';
+import { getGetApiAuthMeQueryKey } from '@repo/api/client.ts';
 
 type LoginErrors = {
     identifier?: string;

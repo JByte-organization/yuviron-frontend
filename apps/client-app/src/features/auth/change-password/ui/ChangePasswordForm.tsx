@@ -1,7 +1,7 @@
 'use client';
 
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthChangePassword } from '@repo/api';
+import { usePostApiAuthChangePassword } from '@repo/api/client.ts';
 
 const checkUppercase = (value: string) => /[A-Z]/.test(value);
 const checkLowercase = (value: string) => /[a-z]/.test(value);

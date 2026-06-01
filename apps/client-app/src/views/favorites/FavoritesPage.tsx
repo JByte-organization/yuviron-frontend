@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { FavoritesHeader } from './ui/FavoritesHeader';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
-import { useGetApiMeFavoritesTracks, type UserFavoriteTrackDto, type TrackArtistDto } from '@repo/api';
+import { useGetApiMeFavoritesTracks, type UserFavoriteTrackDto, type TrackArtistDto } from '@repo/api/client.ts';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import {UserFavoriteTrackDtoPaginatedList} from "@repo/api/generated/client/models";
 
@@ -50,7 +50,6 @@ export const FavoritesPage = () => {
                             track={track}
                             isPlaying={currentTrack === track.id}
                             onClick={id => setCurrentTrack(id === currentTrack ? null : id)}
-                            onLike={id => console.log('like', id)} // TODO: usePostApiMeFavoritesTracks
                         />
                     ))
                 )}

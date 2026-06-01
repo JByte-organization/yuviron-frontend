@@ -9,7 +9,7 @@ import {
     PlaylistVisibility,
     postApiFilesUpload,
     type PlaylistDto,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
 import {getImageUrl} from "@/shared/lib/getImageUrl";
 

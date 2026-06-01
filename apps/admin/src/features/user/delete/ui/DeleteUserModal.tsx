@@ -5,7 +5,7 @@ import {
     useDeleteApiAdminUsersId,
     AccountState,
     type UserListItemDto,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 
 interface Props {
     user: UserListItemDto | null;

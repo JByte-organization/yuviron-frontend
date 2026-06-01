@@ -10,7 +10,7 @@ import {
     type BannerListItemDto,
     type BannerDetailsDto,
     type UpdateBannerCommand,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 interface Props {

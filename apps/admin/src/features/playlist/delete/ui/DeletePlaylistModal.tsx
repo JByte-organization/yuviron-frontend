@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useDeleteApiAdminPlaylistsId, type PlaylistDto } from '@repo/api';
+import { useDeleteApiAdminPlaylistsId, type PlaylistDto } from '@repo/api/admin.ts';
 
 interface Props {
     playlist: PlaylistDto | null;

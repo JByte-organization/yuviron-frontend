@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { type AlbumListItemDto, VisibilityStatus } from '@repo/api';
+import { type AlbumListItemDto, VisibilityStatus } from '@repo/api/admin.ts';
 
 interface Props {
     album: AlbumListItemDto;

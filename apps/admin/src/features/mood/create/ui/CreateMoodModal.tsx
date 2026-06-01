@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { usePostApiAdminMoods, postApiFilesUpload } from '@repo/api';
+import { usePostApiAdminMoods, postApiFilesUpload } from '@repo/api/admin.ts';
 
 interface Props {
     isOpen: boolean;

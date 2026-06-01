@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthRegister } from '@repo/api';
+import { usePostApiAuthRegister } from '@repo/api/client.ts';
 import { Gender } from '@repo/api/generated/client/models/gender';
 import {
     clearRegisterDraft,
@@ -206,7 +206,7 @@ export const Step2Profile = () => {
                 gender: Gender.NotSpecified,
                 acceptMarketing: false,
                 acceptTerms: true,
-                isArtist,
+                //isArtist,
             },
         });
     };

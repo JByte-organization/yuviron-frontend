@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useAvatarColor } from '@/shared/lib/useAvatarColor';
 
@@ -39,19 +39,38 @@ export const UserPageHeader = ({
                                }: UserPageHeaderProps) => {
     const [following, setFollowing] = useState(isFollowing);
 
-    const avatarSrc = avatarUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${avatarUrl}`
-        : `https://picsum.photos/seed/vibrant-${userId}/200/200`;
+    // ФІКС ПОМИЛКИ ESLint: Переносимо оновлення стейту в асинхронний такт анімації
+    useEffect(() => {
+        requestAnimationFrame(() => {
+            setFollowing(isFollowing);
+        });
+    }, [isFollowing, userId]);
 
-    // Витягуємо домінуючий колір з аватарки
-    const dominantColor = useAvatarColor(avatarSrc);
+    const hasCustomAvatar = useMemo(() => !!avatarUrl, [avatarUrl]);
 
-    const handleFollow = () => {
+    // Проксуємо через наш Next.js API, якщо посилання веде на зовнішній бекенд (обходимо CORS)
+    const avatarSrc = useMemo(() => {
+        if (!hasCustomAvatar) return '/images/avatar/default-avatar.png';
+
+        if (avatarUrl && avatarUrl.startsWith('http')) {
+            return `/api/image-proxy?url=${encodeURIComponent(avatarUrl)}`;
+        }
+
+        return avatarUrl!;
+    }, [hasCustomAvatar, avatarUrl]);
+
+    // Отримуємо колір (тепер canvas зчитає його без проблем завдяки проксі)
+    const detectedColor = useAvatarColor(hasCustomAvatar ? avatarSrc : '');
+
+    const dominantColor = useMemo(() => {
+        if (!hasCustomAvatar) return '#282828';
+        return detectedColor || '#404040';
+    }, [hasCustomAvatar, detectedColor]);
+
+    const handleFollowClick = () => {
         setFollowing((v) => !v);
         onFollow?.();
-        // TODO: usePostApiUsersIdFollow()
     };
-
 
     return (
         <div className="user-page-header">
@@ -66,7 +85,10 @@ export const UserPageHeader = ({
             <div className="user-page-header__content">
                 {/* Аватарка */}
                 <div className="user-page-header__avatar">
-                    <img src={avatarSrc} alt={name} />
+                    <img
+                        src={avatarSrc}
+                        alt={name}
+                    />
                 </div>
 
                 {/* Інфо */}
@@ -74,22 +96,22 @@ export const UserPageHeader = ({
                     <p className="user-page-header__type">Профіль</p>
                     <h1 className="user-page-header__name">{name}</h1>
 
-                    {/* Статистика — клікабельна */}
+                    {/* Статистика */}
                     <div className="user-page-header__stats">
                         <span className="user-page-header__stat">
-                            {playlistsCount} відкритих плейлістів
+                            {playlistsCount} плейлістів
                         </span>
                         <span className="user-page-header__dot">•</span>
                         <button
                             className="user-page-header__stat-link"
-                            onClick={() => document.getElementById('followers')?.scrollIntoView({ behavior: 'smooth' })}
+                            onClick={() => document.getElementById('followers')?.scrollIntoView({behavior: 'smooth'})}
                         >
                             {formatCount(followersCount)} підписників
                         </button>
                         <span className="user-page-header__dot">•</span>
                         <button
                             className="user-page-header__stat-link"
-                            onClick={() => document.getElementById('following')?.scrollIntoView({ behavior: 'smooth' })}
+                            onClick={() => document.getElementById('following')?.scrollIntoView({behavior: 'smooth'})}
                         >
                             {formatCount(followingCount)} підписок
                         </button>
@@ -101,7 +123,6 @@ export const UserPageHeader = ({
             <div className="user-page-header__actions">
                 {isOwner ? (
                     <>
-                        {/* Налаштування */}
                         <Link
                             href="/settings"
                             className="user-page-header__action-btn"
@@ -111,7 +132,6 @@ export const UserPageHeader = ({
                             <i className="bi bi-gear" />
                         </Link>
 
-                        {/* Редагувати профіль */}
                         <button
                             className="user-page-header__action-btn"
                             onClick={onEdit}
@@ -121,7 +141,6 @@ export const UserPageHeader = ({
                             <i className="bi bi-pencil" />
                         </button>
 
-                        {/* Поділитися */}
                         <button
                             className="user-page-header__action-btn"
                             onClick={onShare}
@@ -133,15 +152,13 @@ export const UserPageHeader = ({
                     </>
                 ) : (
                     <>
-                        {/* Підписатися */}
                         <button
                             className={`user-page-header__follow-btn${following ? ' user-page-header__follow-btn--active' : ''}`}
-                            onClick={handleFollow}
+                            onClick={handleFollowClick}
                         >
                             {following ? 'Відписатися' : 'Підписатися'}
                         </button>
 
-                        {/* Поділитися */}
                         <button
                             className="user-page-header__action-btn"
                             onClick={onShare}

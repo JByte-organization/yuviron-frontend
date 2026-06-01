@@ -170,7 +170,6 @@ export const AlbumDetailModal = ({ isOpen, album, onClose }: DetailProps) => {
                             track={track}
                             isPlaying={currentTrack === track.id}
                             onClick={id => setCurrentTrack(id === currentTrack ? null : id)}
-                            onLike={() => {}}
                         />
                     ))}
                 </div>

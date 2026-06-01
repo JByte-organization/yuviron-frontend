@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import {
     usePostApiAdminAuthPreLogin,
     usePostApiAdminAuthLogin, postApiAdminAuthLoginResponse, LoginResponse,
-} from '@repo/api';
+} from '@repo/api/admin.ts';
 import { useAdminSessionStore } from '@/entities/adminSession/model/store';
 
 // ══════════════════════════════════════════════════════════

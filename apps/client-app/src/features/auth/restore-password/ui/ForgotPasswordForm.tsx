@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthForgotPassword } from '@repo/api';
+import { usePostApiAuthForgotPassword } from '@repo/api/client.ts';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

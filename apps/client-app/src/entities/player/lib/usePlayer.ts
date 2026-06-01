@@ -8,7 +8,7 @@ import {
     postApiAnalyticsPlayCommit,
     type TrackStreamUrlResponse,
     type StartPlayResponse,
-} from '@repo/api';
+} from '@repo/api/client.ts';
 import {
     usePlayerStore,
     type PlayerTrack,

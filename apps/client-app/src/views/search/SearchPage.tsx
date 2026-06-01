@@ -103,7 +103,6 @@ export const SearchPage = () => {
                                             addedAt: null,
                                         }}
                                         onClick={(id) => console.log('play', id)} // TODO: плеєр
-                                        onLike={(id) => console.log('like', id)}  // TODO: хук
                                     />
                                 ))}
                             </div>

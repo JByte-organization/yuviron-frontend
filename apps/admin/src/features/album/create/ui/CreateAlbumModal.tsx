@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { usePostApiAdminAlbums, VisibilityStatus, ReleaseType, postApiFilesUpload } from '@repo/api';
+import { usePostApiAdminAlbums, VisibilityStatus, ReleaseType, postApiFilesUpload } from '@repo/api/admin.ts';
 import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
 
 interface Props {

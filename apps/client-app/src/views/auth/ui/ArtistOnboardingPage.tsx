@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
-// import { usePostApiArtistDashboardProfiles } from '@repo/api';
+// import { usePostApiArtistDashboardProfiles } from '@repo/api/client.ts';
 
 export const ArtistOnboardingPage = () => {
     // const router = useRouter();

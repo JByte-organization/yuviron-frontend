@@ -795,75 +795,132 @@
 // TRACK CARD
 // ══════════════════════════════════════════════════════════
 .track-card {
+  position: relative; // потрібно щоб кнопки позиціонувались відносно картки
   cursor: pointer;
-  border-radius: 12px;
-  background: $client-surface-2;
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  &--playing {
+    .track-card__title {
+      color: $green; // акцентний колір для поточного треку
+    }
   }
 
   &__cover {
-    width: 100%;
-    height: 180px;
+    position: relative; // для абсолютного позиціонування кнопок
     aspect-ratio: 1 / 1;
+    border-radius: 8px;
     overflow: hidden;
+    margin-bottom: 10px;
 
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform 0.3s ease;
     }
   }
 
-  &:hover &__cover img {
-    transform: scale(1.04);
+  // Play кнопка — знизу зліва на обкладинці
+  &__play-btn {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background-color: $green;
+    color: $black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    z-index: 2;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
   }
 
-  // ─── Текстовий блок ───────────────────────────────────
+  // Like кнопка — знизу справа на обкладинці
+  &__like-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: $white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    cursor: pointer;
+    z-index: 2;
+    transition: color 0.15s ease, transform 0.15s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &__like-btn--hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    // Активний стан — серце заповнене зеленим
+    &--active {
+      color: $green;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+  }
+
   &__info {
-    padding: 10px 12px 12px;
+    padding: 0 2px;
   }
 
   &__title {
-    font-size: 14px;
-    font-weight: 600;
-    color: $client-text;
-    text-decoration: none;
     display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $white;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: color 0.15s ease;
+    text-decoration: none;
+    margin-bottom: 2px;
+
+    &--playing {
+      color: $green;
+    }
 
     &:hover {
-      color: $client-text;
       text-decoration: underline;
     }
   }
 
   &__artist {
-    font-size: 12px;
-    color: $client-text-muted;
-    text-decoration: none;
     display: block;
+    font-size: 0.75rem;
+    color: rgba($white, 0.6);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: color 0.15s ease;
+    text-decoration: none;
 
     &:hover {
-      color: $client-text;
+      color: $white;
       text-decoration: underline;
     }
   }
 }
-
 // ══════════════════════════════════════════════════════════
 // TOP TRACKS — слайдер
 // ══════════════════════════════════════════════════════════
@@ -969,43 +1026,8 @@
   }
 
   &__swiper-slide {
-    width: auto !important; // SwiperSlide auto-width
+    width: auto !important;
   }
 }
 
 
-// ══════════════════════════════════════════════════════════
-// SIDEBAR RESIZE HANDLE
-// ══════════════════════════════════════════════════════════
-.client-sidebar {
-  // Resize handle — вертикальна смуга справа
-  &__resize-handle {
-    position: absolute;
-    top: 0;
-    right: -4px;
-    width: 8px;
-    height: 100%;
-    cursor: ew-resize;
-    z-index: 102;
-    border-radius: 4px;
-
-    // Видима лінія при hover
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 100%;
-      background: transparent;
-      border-radius: 1px;
-      transition: background 0.2s;
-    }
-
-    &:hover::after,
-    &:active::after {
-      background: $client-accent;
-    }
-  }
-}

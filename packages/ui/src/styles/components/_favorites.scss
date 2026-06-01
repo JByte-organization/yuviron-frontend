@@ -163,6 +163,10 @@
     opacity: 1;
   }
 
+  .track-row__like-btn--active {
+    color: $red;
+  }
+
   &__duration {
     font-size: 13px;
     color: $client-text-muted;

@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { MediaCard } from '@/entities/shared/ui/MediaCard';
 
 export interface AlbumCardData {
@@ -15,9 +18,21 @@ interface AlbumCardProps {
 }
 
 export const AlbumCard = ({ album, onClick }: AlbumCardProps) => {
+    const router = useRouter();
+
     const subtitle = album.tracksCount !== undefined
         ? `by ${album.artistName} • ${album.tracksCount} tracks`
         : `by ${album.artistName}`;
+
+    const handleClick = () => {
+        // Якщо передали кастомний обробник (наприклад, для трека чи аналітики) — викликаємо його
+        if (onClick) {
+            onClick(album.id);
+        } else {
+            // Інакше — робимо стандартний перехід на сторінку альбому за нашою FSD структурою
+            router.push(`/albums/${album.id}`);
+        }
+    };
 
     return (
         <MediaCard
@@ -25,7 +40,7 @@ export const AlbumCard = ({ album, onClick }: AlbumCardProps) => {
             subtitle={subtitle}
             coverUrl={album.coverUrl}
             coverSeed={`album-${album.id}`}
-            onClick={() => onClick?.(album.id)}
+            onClick={handleClick}
         />
     );
 };

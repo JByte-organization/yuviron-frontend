@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useSidebar } from '@/widgets/layout/ui/ClientLayout';
+import { useSidebar } from '@/widgets/layout/model/contexts';
 import { GuestSidebarCard } from '@/shared/ui/GuestSidebarCard';
 
 interface NavItemProps {

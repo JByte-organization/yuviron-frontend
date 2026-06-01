@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useSidebar } from '@/widgets/layout/ui/ClientLayout';
+import { useSidebar } from '@/widgets/layout/model/contexts';
 import { CreatePlaylistModal } from '@/features/playlist/create/ui/CreatePlaylistModal';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import {
@@ -13,7 +13,7 @@ import {
     type UserPlaylistDto,
     type RecentlyPlayedTrackDto,
     type TrackArtistDto,
-} from '@repo/api';
+} from '@repo/api/client.ts';
 
 // ══════════════════════════════════════════════════════════
 // HELPERS
@@ -31,21 +31,24 @@ const extractList = <T,>(raw: unknown): T[] => {
 // NAV ITEM
 // ══════════════════════════════════════════════════════════
 interface NavItemProps {
-    label: string;
-    icon: string;
+    label:     string;
+    icon:      string;
     isActive?: boolean;
-    href?: string;
-    onClick?: () => void;
+    href?:     string;
+    onClick?:  () => void;
+    // Коли collapsed — показуємо тільки іконку з тултіпом
+    collapsed?: boolean;
 }
 
-const NavItem = ({ label, icon, isActive, href, onClick }: NavItemProps) => {
-    const className = `client-sidebar__nav-item${isActive ? ' client-sidebar__nav-item--active' : ''}`;
+const NavItem = ({ label, icon, isActive, href, onClick, collapsed }: NavItemProps) => {
+    const className = `client-sidebar__nav-item${isActive ? ' client-sidebar__nav-item--active' : ''}${collapsed ? ' px-3' : ''}`;
 
     const content = (
         <>
-            <span className="client-sidebar__nav-icon">
+            <span className="client-sidebar__nav-icon" title={collapsed ? label : undefined}>
                 <Image src={`/images/icons/${icon}.svg`} alt={label} width={18} height={18} />
             </span>
+            {/* Текст лейбла — прихований в collapsed режимі через CSS */}
             <span className="client-sidebar__nav-label">{label}</span>
         </>
     );
@@ -71,7 +74,7 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
     // ─── Плейлисти ────────────────────────────────────────
     const { data: playlistsRaw } = useGetApiMePlaylists({ PageSize: 20 });
     const playlists = extractList<UserPlaylistDto>(playlistsRaw)
-        .filter(p => !p.isSystem); // не показуємо системні
+        .filter(p => !p.isSystem);
 
     // ─── Нещодавно прослухані ─────────────────────────────
     const { data: recentRaw } = useGetApiMeRecentlyPlayed({ Limit: 5 });
@@ -85,35 +88,82 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
             >
                 <div className="client-sidebar__inner">
 
-                    {/* ─── Меню ─────────────────────────── */}
+                    {/* ─── Заголовок "Меню" з кнопкою collapse ── */}
+                    <div className="client-sidebar__header">
+                        {/* В expanded режимі — слово "Меню" */}
+                        {!collapsed && (
+                            <span className="client-sidebar__header-title">Меню</span>
+                        )}
+                        {/* Кнопка collapse/expand — завжди видима */}
+                        <button
+                            className="client-sidebar__collapse-btn"
+                            onClick={() => setCollapsed(!collapsed)}
+                            aria-label={collapsed ? 'Розгорнути меню' : 'Згорнути меню'}
+                            title={collapsed ? 'Розгорнути меню' : 'Згорнути меню'}
+                        >
+                            <Image
+                                src={collapsed
+                                    ? '/images/icons/chevron-right.svg'
+                                    : '/images/icons/chevron-left.svg'
+                                }
+                                alt={collapsed ? 'expand' : 'collapse'}
+                                width={16}
+                                height={16}
+                            />
+                        </button>
+                    </div>
+
+                    {/* ─── Навігація ────────────────────────── */}
                     <div className="client-sidebar__section">
                         <nav className="client-sidebar__nav">
-                            <NavItem href="/home"      icon="home"        label="Головна"          isActive={isActive('/home')} />
-                            <NavItem href="/library"   icon="library"     label="Моя медіатека"    isActive={isActive('/library')} />
-                            <NavItem href="/favorites" icon="heart"       label="Улюблені треки"   isActive={isActive('/favorites')} />
+                            <NavItem
+                                href="/home"
+                                icon="home"
+                                label="Головна"
+                                isActive={isActive('/home')}
+                                collapsed={collapsed}
+                            />
+                            <NavItem
+                                href="/library"
+                                icon="library"
+                                label="Моя медіатека"
+                                isActive={isActive('/library')}
+                                collapsed={collapsed}
+                            />
+                            <NavItem
+                                href="/favorites"
+                                icon="heart"
+                                label="Улюблені треки"
+                                isActive={isActive('/favorites')}
+                                collapsed={collapsed}
+                            />
                             <NavItem
                                 icon="plus-square"
                                 label="Створити плейліст"
                                 onClick={() => setCreatePlaylistOpen(true)}
+                                collapsed={collapsed}
                             />
                         </nav>
                         <hr />
                     </div>
 
-                    {/* ─── Плейлисти ────────────────────── */}
+                    {/* ─── Плейлисти — завжди видимі ──────────── */}
                     <div className="client-sidebar__section">
-                        <div className="client-sidebar__sub-header">
-                            <p className="client-sidebar__sub-title">Ваші плейлисти</p>
-                            <Image src="/images/icons/list.svg" alt="list" width={18} height={18} />
-                        </div>
+                        {!collapsed && (
+                            <div className="client-sidebar__sub-header">
+                                <p className="client-sidebar__sub-title">Ваші плейлисти</p>
+                                <Image src="/images/icons/list.svg" alt="list" width={18} height={18} />
+                            </div>
+                        )}
 
                         {playlists.length > 0 ? (
                             <div className="client-sidebar__playlist-list">
                                 {playlists.map(pl => (
                                     <Link
                                         key={pl.id}
-                                        href={`/playlists/${pl.id}`}
-                                        className="client-sidebar__playlist-item"
+                                        href={`/playlist/${pl.id}`}
+                                        className={`client-sidebar__playlist-item${collapsed ? ' client-sidebar__playlist-item--collapsed' : ''}`}
+                                        title={collapsed ? `${pl.title ?? 'Без назви'}` : undefined}
                                     >
                                         <div
                                             className="client-sidebar__playlist-avatar"
@@ -121,104 +171,108 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
                                                 backgroundImage: pl.coverUrl
                                                     ? `url(${getImageUrl(pl.coverUrl)})`
                                                     : undefined,
-                                                backgroundColor: pl.coverUrl ? undefined : 'var(--client-surface-2)',
+                                                backgroundColor: pl.coverUrl
+                                                    ? undefined
+                                                    : 'var(--client-surface-2)',
                                             }}
                                         >
                                             {!pl.coverUrl && (
                                                 <i className="bi bi-music-note" />
                                             )}
                                         </div>
-                                        <div className="client-sidebar__playlist-info">
-                                            <span className="client-sidebar__playlist-name">
-                                                {pl.title ?? 'Без назви'}
-                                            </span>
-                                            <span className="client-sidebar__playlist-type">
-                                                Плейліст · {pl.tracksCount ?? 0} треків
-                                            </span>
-                                        </div>
+
+                                        {/* Тексти — приховані в collapsed, але показуються в тултіпі */}
+                                        {!collapsed && (
+                                            <div className="client-sidebar__playlist-info">
+                            <span className="client-sidebar__playlist-name">
+                                {pl.title ?? 'Без назви'}
+                            </span>
+                                                <span className="client-sidebar__playlist-type">
+                                Плейліст · {pl.tracksCount ?? 0} треків
+                            </span>
+                                            </div>
+                                        )}
                                     </Link>
                                 ))}
                             </div>
                         ) : (
-                            <p className="client-sidebar__empty-text">
-                                Немає плейлістів
-                            </p>
+                            !collapsed && (
+                                <p className="client-sidebar__empty-text">
+                                    Немає плейлістів
+                                </p>
+                            )
                         )}
                         <hr />
                     </div>
 
-                    {/* ─── Нещодавно прослухані ─────────── */}
-                    {recentTracks.length > 0 && (
-                        <div className="client-sidebar__section">
-                            <div className="client-sidebar__sub-header">
-                                <p className="client-sidebar__sub-title">Нещодавно прослухані</p>
-                                <Image src="/images/icons/refresh.svg" alt="refresh" width={18} height={18} />
-                            </div>
-                            <div className="client-sidebar__playlist-list">
-                                {recentTracks.map(track => {
-                                    const coverSrc = getImageUrl(track.coverUrl);
-                                    const artistNames = (track.artists ?? [])
-                                        .map((a: TrackArtistDto) => a.name ?? '')
-                                        .join(', ');
+                    {/* ─── Плейлисти — приховані в collapsed ── */}
+                    {!collapsed && (
+                        <>
 
-                                    return (
-                                        <Link
-                                            key={track.id}
-                                            href={`/tracks/${track.id}`}
-                                            className="client-sidebar__playlist-item"
-                                        >
-                                            <div
-                                                className="client-sidebar__playlist-avatar client-sidebar__playlist-avatar--rounded"
-                                                style={{
-                                                    backgroundImage: coverSrc ? `url(${coverSrc})` : undefined,
-                                                    backgroundColor: coverSrc ? undefined : 'var(--client-surface-2)',
-                                                }}
-                                            >
-                                                {!coverSrc && <i className="bi bi-music-note" />}
-                                            </div>
-                                            <div className="client-sidebar__playlist-info">
-                                                <span className="client-sidebar__playlist-name">
-                                                    {track.title ?? '—'}
-                                                </span>
-                                                <span className="client-sidebar__playlist-type">
-                                                    {artistNames || '—'}
-                                                </span>
-                                            </div>
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        </div>
+                            {/* ─── Нещодавно прослухані ─────── */}
+                            {recentTracks.length > 0 && (
+                                <div className="client-sidebar__section">
+                                    <div className="client-sidebar__sub-header">
+                                        <p className="client-sidebar__sub-title">Нещодавно прослухані</p>
+                                        <Image
+                                            src="/images/icons/refresh.svg"
+                                            alt="refresh"
+                                            width={18}
+                                            height={18}
+                                        />
+                                    </div>
+                                    <div className="client-sidebar__playlist-list">
+                                        {recentTracks.map(track => {
+                                            const coverSrc   = getImageUrl(track.coverUrl);
+                                            const artistNames = (track.artists ?? [])
+                                                .map((a: TrackArtistDto) => a.name ?? '')
+                                                .join(', ');
+
+                                            return (
+                                                <Link
+                                                    key={track.id}
+                                                    href={`/tracks/${track.id}`}
+                                                    className="client-sidebar__playlist-item"
+                                                >
+                                                    <div
+                                                        className="client-sidebar__playlist-avatar client-sidebar__playlist-avatar--rounded"
+                                                        style={{
+                                                            backgroundImage: coverSrc
+                                                                ? `url(${coverSrc})`
+                                                                : undefined,
+                                                            backgroundColor: coverSrc
+                                                                ? undefined
+                                                                : 'var(--client-surface-2)',
+                                                        }}
+                                                    >
+                                                        {!coverSrc && <i className="bi bi-music-note" />}
+                                                    </div>
+                                                    <div className="client-sidebar__playlist-info">
+                                                        <span className="client-sidebar__playlist-name">
+                                                            {track.title ?? '—'}
+                                                        </span>
+                                                        <span className="client-sidebar__playlist-type">
+                                                            {artistNames || '—'}
+                                                        </span>
+                                                    </div>
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
-
                 </div>
 
-                {/* ─── Resize handle ────────────────────── */}
+                {/* Resize handle — тільки в expanded режимі */}
                 {!collapsed && (
                     <div
                         className="client-sidebar__resize-handle"
                         onMouseDown={onResizeStart}
                     />
                 )}
-
-                <button
-                    className="client-sidebar__toggle"
-                    onClick={() => setCollapsed(true)}
-                    aria-label="Сховати сайдбар"
-                >
-                    <Image src="/images/icons/chevron-left.svg" alt="collapse" width={14} height={14} />
-                </button>
             </aside>
-
-            {collapsed && (
-                <button
-                    className="client-sidebar__restore-btn"
-                    onClick={() => setCollapsed(false)}
-                    aria-label="Показати сайдбар"
-                >
-                    <Image src="/images/icons/chevron-right.svg" alt="open" width={14} height={14} />
-                </button>
-            )}
 
             <CreatePlaylistModal
                 isOpen={createPlaylistOpen}
