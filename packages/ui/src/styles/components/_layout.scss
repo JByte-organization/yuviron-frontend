@@ -878,17 +878,15 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
       transition: background 0.2s;
     }
 
- &:hover::after,
-      &:active::after {
-        background: $client-accent;
-      }
-    }
-
-    &__toggle,
-    &__restore-btn {
-      display: none !important;
+    &:hover::after,
+    &:active::after {
+      background: $client-accent;
     }
   }
+
+  &__toggle,
+  &__restore-btn {
+    display: none !important;
   }
 }
 
