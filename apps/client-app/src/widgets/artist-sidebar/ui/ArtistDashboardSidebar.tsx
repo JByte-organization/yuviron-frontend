@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSidebar } from '@/widgets/layout/ui/ClientLayout';
+import { useSidebar } from '@/widgets/layout/model/contexts';
 
 interface NavItemProps {
     label: string;
