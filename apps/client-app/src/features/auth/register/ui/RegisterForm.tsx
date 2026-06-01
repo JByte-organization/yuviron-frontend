@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthCheckEmail } from '@repo/api';
+import { customInstance } from '@repo/api';
 import { getRegisterDraft, setRegisterDraft } from '../model/registerDraft';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,18 +22,25 @@ export const RegisterForm = () => {
     const [email, setEmail] = useState(() => getRegisterDraft().email ?? '');
     const [error, setError] = useState<string | undefined>();
     const [submitted, setSubmitted] = useState(false);
+    const [isChecking, setIsChecking] = useState(false);
 
-    const { mutateAsync: checkEmail, isPending: isChecking } = usePostApiAuthCheckEmail();
-
-    // Спрашивает у бэка, занята ли почта. Возвращает true, если занята.
+    // Спрашивает у бэка, занята ли почта (POST /auth/check-email → { exists }).
+    // Зовём через customInstance напрямую, а не через сгенерированный хук —
+    // чтобы не зависеть от имени/тега хука в Orval-генерации.
     // Сетевую ошибку не считаем «занято» — пропускаем дальше, финальный
     // register всё равно отловит дубль.
     const isEmailTaken = async (value: string): Promise<boolean> => {
+        setIsChecking(true);
         try {
-            const res = (await checkEmail({ data: { email: value } })) as any;
-            return Boolean(res?.exists ?? res?.data?.exists);
+            const res = await customInstance<{ exists?: boolean }>('/api/auth/check-email', {
+                method: 'POST',
+                body: JSON.stringify({ email: value }),
+            });
+            return Boolean(res?.exists);
         } catch {
             return false;
+        } finally {
+            setIsChecking(false);
         }
     };
 
