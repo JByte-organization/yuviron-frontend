@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ApiClientProvider } from "./providers/ApiClientProvider";
 import { QueryProvider } from "./providers/QueryProvider";
+import { ThemeProvider } from "@/shared/lib/ThemeProvider";
 
 import "@repo/ui/styles";
 
@@ -15,10 +16,12 @@ export default function RootLayout({
 }) {
     return (
         <html lang="uk">
-        <body className={`bg-dark text-white`}>
+        <body className="client-body">
         <QueryProvider>
             <ApiClientProvider>
-                {children}
+                <ThemeProvider>
+                    {children}
+                </ThemeProvider>
             </ApiClientProvider>
         </QueryProvider>
         </body>

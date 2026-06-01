@@ -224,7 +224,7 @@ export const DeleteAlbumModal = ({ isOpen, album, onClose, onSuccess }: DeleteAl
 
                 <div className="client-modal__body">
                     <p className="text-muted mb-1">Ви впевнені що хочете видалити альбом?</p>
-                    <p className="text-white fw-semibold mb-0">«{album.title}»</p>
+                    <p className="text-theme fw-semibold mb-0">«{album.title}»</p>
                     <p className="text-danger small mt-3 mb-0">Треки альбому не будуть видалені.</p>
                 </div>
 

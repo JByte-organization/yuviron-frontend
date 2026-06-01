@@ -6,6 +6,7 @@ import {
     XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, Legend, PieChart, Pie, Cell,
 } from 'recharts';
+import { useTheme } from '@/shared/lib/ThemeProvider';
 
 // ─── Mock ──────────────────────────────────────────────────
 const PLAYS_WEEKLY = [
@@ -52,16 +53,21 @@ const SOURCES_DATA = [
 
 type Period = 'week' | 'month' | 'year';
 
+// Акцентные цвета серий графиков (data-viz, не зависят от темы).
 const COLORS = {
     accent:  '#00A6FF',
     accent2: '#7B61FF',
-    muted:   'rgba(206,216,227,0.15)',
-    text:    'rgba(206,216,227,0.55)',
-    grid:    'rgba(119,145,178,0.15)',
 };
 
 export const ArtistAnalyticsPage = () => {
     const [period, setPeriod] = useState<Period>('week');
+
+    // Цвета осей/сетки графиков рисуются как SVG-атрибуты, где var() не резолвится,
+    // поэтому подбираем их под активную тему вручную.
+    const { theme } = useTheme();
+    const chart = theme === 'light'
+        ? { grid: 'rgba(15,23,36,0.12)',     text: 'rgba(13,21,32,0.6)' }
+        : { grid: 'rgba(119,145,178,0.15)',  text: 'rgba(206,216,227,0.55)' };
 
     const playsData = period === 'week'
         ? PLAYS_WEEKLY.map(d => ({ label: d.day,   value: d.plays }))
@@ -119,12 +125,12 @@ export const ArtistAnalyticsPage = () => {
                 <h2 className="artist-analytics-page__chart-title">Прослуховування</h2>
                 <ResponsiveContainer width="100%" height={260}>
                     <LineChart data={playsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={COLORS.grid} />
-                        <XAxis dataKey="label" tick={{ fill: COLORS.text, fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: COLORS.text, fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
+                        <XAxis dataKey="label" tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
                         <Tooltip
-                            contentStyle={{ background: '#0D1520', border: '1px solid rgba(119,145,178,0.2)', borderRadius: 8 }}
-                            labelStyle={{ color: '#fff' }}
+                            contentStyle={{ background: 'var(--client-surface)', border: '1px solid var(--client-border)', borderRadius: 8 }}
+                            labelStyle={{ color: 'var(--client-text)' }}
                             itemStyle={{ color: COLORS.accent }}
                         />
                         <Line
@@ -185,7 +191,7 @@ export const ArtistAnalyticsPage = () => {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ background: '#0D1520', border: '1px solid rgba(119,145,178,0.2)', borderRadius: 8 }}
+                                    contentStyle={{ background: 'var(--client-surface)', border: '1px solid var(--client-border)', borderRadius: 8 }}
                                     formatter={(value) => [`${value}%`, '']}
                                 />
                             </PieChart>
@@ -208,12 +214,12 @@ export const ArtistAnalyticsPage = () => {
                 <h2 className="artist-analytics-page__chart-title">Зростання підписників</h2>
                 <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={FOLLOWERS_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={COLORS.grid} />
-                        <XAxis dataKey="month" tick={{ fill: COLORS.text, fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: COLORS.text, fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
+                        <XAxis dataKey="month" tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
                         <Tooltip
-                            contentStyle={{ background: '#0D1520', border: '1px solid rgba(119,145,178,0.2)', borderRadius: 8 }}
-                            labelStyle={{ color: '#fff' }}
+                            contentStyle={{ background: 'var(--client-surface)', border: '1px solid var(--client-border)', borderRadius: 8 }}
+                            labelStyle={{ color: 'var(--client-text)' }}
                             itemStyle={{ color: COLORS.accent2 }}
                         />
                         <Bar dataKey="followers" name="Підписників" fill={COLORS.accent2} radius={[4, 4, 0, 0]} />
