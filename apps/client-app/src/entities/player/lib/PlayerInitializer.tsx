@@ -28,15 +28,50 @@ export const PlayerInitializer = () => {
         const handleDurationChange = () => setDuration(audio.duration || 0);
         const handleEnded = () => { void next(); };
 
-        // 2. ФІКС ДЛЯ SAFARI / IOS (Silent Retry на випадок помилки мережі/токену)
+        // ФІКС ДЛЯ SAFARI / IOS (Повноцінний Silent Retry)
         const handleNativeError = async () => {
-            if (!audio.error || !currentTrack) return;
+            const audio = playerAudioRef.current;
+            if (!audio || !audio.error || !currentTrack) return;
 
-            // Код 4 або 2 зазвичай свідчить про проблеми з мережею або протухлим медіа-джерелом (401/403)
-            console.warn('[Player] Native audio error caught (Safari fallback):', audio.error.code);
+            // Код 4 (MEDIA_ERR_SRC_NOT_SUPPORTED) або 2 (NETWORK_ERROR) вилітають при протуханні Signed URL
+            const isAuthError = audio.error.code === 4 || audio.error.code === 2;
 
-            // Тут можна викликати твою функцію refreshStreamUrl(currentTrack.id)
-            // і перезапустити src, як ми робили в Hls.js обробнику
+            if (isAuthError) {
+                console.warn('[Player Safari] Token expired or IP changed, refreshing stream...');
+
+                try {
+                    const currentTime = audio.currentTime; // Запам'ятовуємо секунду
+
+                    // Смикаємо ендпоінт за свіжим Signed URL
+                    const res = await fetch(`/api/tracks/${currentTrack.id}/play`);
+                    const payload = await res.json();
+
+                    // Витягуємо сирий URL (враховуючи пласку або вкладену структуру)
+                    const rawUrl = payload?.data?.audioUrl ?? payload?.audioUrl;
+
+                    if (rawUrl) {
+                        // Формуємо абсолютний шлях (наш хелпер з урахуванням домену бекенду)
+                        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dev-api.yuviron.com/api';
+                        const origin = apiUrl.replace(/\/api.*$/, '');
+                        const newAudioUrl = rawUrl.startsWith('http') ? rawUrl : `${origin}${rawUrl}`;
+
+                        // Перезапускаємо нативний потік Safari
+                        audio.src = newAudioUrl;
+                        audio.load();
+
+                        // Повертаємо слухач на ту саму секунду після завантаження маніфесту
+                        audio.onloadedmetadata = () => {
+                            audio.currentTime = currentTime;
+                            void audio.play();
+                            usePlayerStore.getState().setAudioUrl(newAudioUrl);
+                            audio.onloadedmetadata = null; // Чистимо за собою
+                        };
+                    }
+                } catch (err) {
+                    console.error('[Player Safari] Silent retry failed:', err);
+                    setStatus('idle');
+                }
+            }
         };
 
         audio.addEventListener('timeupdate', handleTimeUpdate);

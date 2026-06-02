@@ -16,12 +16,14 @@ import {
     type PendingAd,
 } from '@/entities/player/model/playerStore';
 import { playerAudioRef, playerAdAudioRef } from '@/entities/player/lib/playerRefs';
+import { useSessionStore } from '@/entities/session/model/store.ts';
 
 // ══════════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════════
 const CDN_BASE   = 'https://dev-i.yuviron.com';
 const DEVICE_TYPE = 'WebPlayer' as const;
+const token = useSessionStore.getState().accessToken;
 
 // ══════════════════════════════════════════════════════════
 // MODULE-LEVEL STATE
@@ -52,16 +54,28 @@ const destroyHls = () => {
  * Рішення: якщо URL вже абсолютний (починається з http) — повертаємо як є.
  * Бекенд з Signed URLs повертає вже абсолютний URL з токенами.
  */
+// const buildAudioUrl = (rawUrl: string): string => {
+//     // Абсолютний URL — повертаємо без змін (Signed URL вже містить домен і токени)
+//     if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+//         return rawUrl;
+//     }
+//
+//     // Відносний URL — підставляємо origin бекенду
+//     // NEXT_PUBLIC_API_URL = "https://dev-api.yuviron.com/api" → беремо origin
+//     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+//     const origin = apiUrl.replace(/\/api.*$/, ''); // Відрізаємо /api і все після
+//
+//     return `${origin}${rawUrl}`;
+// };
+
 const buildAudioUrl = (rawUrl: string): string => {
-    // Абсолютний URL — повертаємо без змін (Signed URL вже містить домен і токени)
+    // Якщо URL вже абсолютний — повертаємо як є
     if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
         return rawUrl;
     }
 
-    // Відносний URL — підставляємо origin бекенду
-    // NEXT_PUBLIC_API_URL = "https://dev-api.yuviron.com/api" → беремо origin
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
-    const origin = apiUrl.replace(/\/api.*$/, ''); // Відрізаємо /api і все після
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dev-api.yuviron.com/api';
+    const origin = apiUrl.replace(/\/api.*$/, '');
 
     return `${origin}${rawUrl}`;
 };
@@ -371,29 +385,22 @@ export const usePlayer = () => {
         const handleUnload = (): void => {
             const { playSessionId, currentTrack, sourceType, sourceId } = usePlayerStore.getState();
             if (!playSessionId || !currentTrack) return;
-            navigator.sendBeacon(
-                '/api/analytics/play/commit',
-                JSON.stringify({
-                    playSessionId,
-                    trackId:    currentTrack.id,
-                    deviceType: DEVICE_TYPE,
-                    sourceType: sourceType ?? 'Search',
-                    sourceId:   sourceId ?? null,
-                }),
-            );
+            if (token) {
+                fetch('/api/analytics/play/commit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ /* ваші дані */ }),
+                    keepalive: true,
+                });
+            }
         };
         window.addEventListener('beforeunload', handleUnload);
         return () => window.removeEventListener('beforeunload', handleUnload);
     }, []); // ФІКС: тепер подія не перепідписується щоразу
 
-    // // автоматично наступний трек
-    // useEffect(() => {
-    //     const audio = playerAudioRef.current;
-    //     if (!audio) return;
-    //     const handleEnded = (): void => { void next(); };
-    //     audio.addEventListener('ended', handleEnded);
-    //     return () => audio.removeEventListener('ended', handleEnded);
-    // });
 
     return { playQueue, playTrack, togglePlay, next, prev, seek, setVolume };
 };
