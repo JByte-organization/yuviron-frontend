@@ -1,70 +1,93 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import { notFound } from 'next/navigation';
+import { useGetApiTracksId, type TrackDetailsDto } from '@repo/api/client';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
+
 import { TrackPageHeader } from './ui/TrackPageHeader';
 import { TrackRecommendationsSection } from './ui/TrackRecommendationsSection';
 import { ArtistTopTracksSection } from './ui/ArtistTopTracksSection';
-import { NewReleasesSection } from '@/views/home/ui/sections/NewReleasesSection';
+import { ArtistAlbumsSection } from './ui/ArtistAlbumsSection';
 
 interface TrackPageProps {
     trackId: string;
 }
 
-// ─── Mock дані ────────────────────────────────────────────
-// TODO: замінити на хук — useGetApiTracksId(trackId)
-const MOCK_TRACK = {
-    id: '1',
-    title: 'Rockstar',
-    artistId: 'artist-1',
-    artistName: 'LISA',
-    albumTitle: 'Alter Ego',
-    year: '2025',
-    durationMs: 166000,
-    coverUrl: null,
-};
+interface OrvalResponse<T> {
+    data?: T;
+}
 
-/**
- * Сторінка: Трек
- *
- * Підключення даних:
- * 1. const { data: track, isLoading } = useGetApiTracksId(trackId);
- * 2. Передати дані в TrackPageHeader і дочірні секції
- */
 export const TrackPage = ({ trackId }: TrackPageProps) => {
-    // TODO: замінити на хук
-    const track = MOCK_TRACK;
+    // 1. Отримуємо дані основного треку сторінки
+    const { data: trackRaw, isLoading } = useGetApiTracksId(trackId, {
+        query: {
+            enabled: !!trackId,
+        }
+    });
+
+    const track = useMemo<TrackDetailsDto | undefined>(() => {
+        if (!trackRaw) return undefined;
+        const response = trackRaw as OrvalResponse<TrackDetailsDto>;
+        return response.data ?? (trackRaw as TrackDetailsDto);
+    }, [trackRaw]);
+
+    // 2. Безпечно витягуємо дані головного виконавця для дочірніх секцій
+    const mainArtist = track?.artists?.[0];
+    const artistId = mainArtist?.id ?? '';
+    const artistName = mainArtist?.name ?? 'Невідомий виконавець';
+
+    const coverSrc = useMemo(() => {
+        if (!track?.coverUrl) return '/images/track/track-placeholder.png';
+        return getImageUrl(track.coverUrl) ?? '/images/track/track-placeholder.png';
+    }, [track]);
+
+    const releaseYear = useMemo(() => {
+        if (!track?.releaseDate) return '—';
+        return new Date(track.releaseDate).getFullYear().toString();
+    }, [track]);
+
+    if (isLoading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center bg-neutral-950" style={{ minHeight: '60vh' }}>
+                <div className="spinner-border text-light" role="status" />
+            </div>
+        );
+    }
+
+    if (!track) return notFound();
 
     return (
-        <div className="track-page">
+        <div className="track-page text-white">
             {/* Хедер треку */}
             <TrackPageHeader
-                trackId={track.id}
-                title={track.title}
-                artistName={track.artistName}
-                albumTitle={track.albumTitle}
-                year={track.year}
-                durationMs={track.durationMs}
-                coverUrl={track.coverUrl}
-                onPlay={() => console.log('play')}       // TODO: плеєр
-                onLike={() => console.log('like')}       // TODO: хук лайку
-                onAddToPlaylist={() => console.log('add')} // TODO: модалка
+                trackId={track.id ?? ''}
+                title={track.title ?? 'Без назви'}
+                artistName={artistName}
+                albumTitle={track.album?.title ?? 'Сінгл'}
+                year={releaseYear}
+                durationMs={(track as any).durationMs ?? ((track as any).durationSeconds ? (track as any).durationSeconds * 1000 : 0)}
+                coverUrl={coverSrc}
+                onPlay={() => console.log('play')}
+                onLike={() => console.log('like')}
+                onAddToPlaylist={() => console.log('add')}
             />
 
-            {/* Рекомендації */}
-            <TrackRecommendationsSection />
+            <TrackRecommendationsSection trackId={trackId} />
 
-            {/* Популярні треки виконавця */}
-            <ArtistTopTracksSection
-                artistId={track.artistId}
-                artistName={track.artistName}
-            />
+            {artistId && (
+                <ArtistTopTracksSection
+                    artistId={artistId}
+                    artistName={artistName}
+                />
+            )}
 
-            {/* Інші альбоми виконавця */}
-            <NewReleasesSection
-                sectionTitle={`${track.artistName}: інші альбоми`}
-                // highlightedWord="інші"
-                showAllHref={`/artists/${track.artistId}/albums`}
-            />
+            {artistId && (
+                <ArtistAlbumsSection
+                    artistId={artistId}
+                    artistName={artistName}
+                />
+            )}
         </div>
     );
 };

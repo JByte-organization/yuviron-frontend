@@ -1,65 +1,108 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useGetApiTracksIdRecommendations, type RecommendedTrackDto } from '@repo/api/client';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 
 interface TrackRecommendationsSectionProps {
-    /** TODO: замінити на хук — useGetApiTracksIdRecommendations(trackId) */
-    tracks?: TrackRowData[];
-    isLoading?: boolean;
+    trackId: string;
 }
 
-const MOCK_RECOMMENDATIONS: TrackRowData[] = [
-    { id: '1', index: 1, title: 'How You Like That', artistNames: ['BLACKPINK'], albumTitle: 'THE ALBUM',   addedAt: null, durationMs: 154000, coverUrl: null },
-    { id: '2', index: 2, title: 'Ice Cream',         artistNames: ['BLACKPINK'], albumTitle: 'THE ALBUM',   addedAt: null, durationMs: 182000, coverUrl: null },
-    { id: '3', index: 3, title: 'Bet Yiu Wanna',     artistNames: ['BLACKPINK'], albumTitle: 'THE ALBUM',   addedAt: null, durationMs: 182000, coverUrl: null },
-    { id: '4', index: 4, title: 'Rockstar',          artistNames: ['LISA'],      albumTitle: 'Alter Ego',   addedAt: null, durationMs: 166000, coverUrl: null },
-    { id: '5', index: 5, title: 'Thunder',           artistNames: ['LISA'],      albumTitle: 'Alter Ego',   addedAt: null, durationMs: 162000, coverUrl: null },
-    { id: '6', index: 6, title: 'LALISA',            artistNames: ['LISA'],      albumTitle: 'Сінгл',       addedAt: null, durationMs: 186000, coverUrl: null },
-    { id: '7', index: 7, title: 'Money',             artistNames: ['LISA'],      albumTitle: 'Сінгл',       addedAt: null, durationMs: 172000, coverUrl: null },
-];
+interface OrvalResponseWrapper<T> {
+    data?: T;
+}
 
-const INITIAL_COUNT = 5;
+// Розширюємо DTO, додаючи туди обидва варіанти полів (пласкі та вкладені) для залізобетонного мапінгу
+interface ExtendedRecommendedTrack extends RecommendedTrackDto {
+    durationMs?: number | null;
+    durationSeconds?: number | null;
+    playsCount?: number | null;
+    isLiked?: boolean;
+    albumTitle?: string | null; // Пласке поле, якщо бекенд віддає так
+    albumId?: string | null;    // Пласке поле
+}
 
-/**
- * Секція: Рекомендації на основі треку
- *
- * Підключення даних:
- * 1. const { data, isLoading } = useGetApiTracksIdRecommendations(trackId);
- * 2. <TrackRecommendationsSection tracks={data?.items} isLoading={isLoading} />
- */
-export const TrackRecommendationsSection = ({
-                                                tracks = MOCK_RECOMMENDATIONS,
-                                                isLoading = false,
-                                            }: TrackRecommendationsSectionProps) => {
+const INITIAL_COUNT = 3;
+
+export const TrackRecommendationsSection = ({ trackId }: TrackRecommendationsSectionProps) => {
     const [showAll, setShowAll] = useState(false);
 
-    const visibleTracks = showAll ? tracks : tracks.slice(0, INITIAL_COUNT);
-    const hasMore = tracks.length > INITIAL_COUNT;
+    const { data: rawRecommendations, isLoading } = useGetApiTracksIdRecommendations(trackId, {
+        limit: 10
+    });
+
+    const mappedTracks = useMemo<TrackRowData[]>(() => {
+        if (!rawRecommendations) return [];
+
+        const responseWrapper = rawRecommendations as OrvalResponseWrapper<ExtendedRecommendedTrack[]>;
+        const unwrapped = responseWrapper.data && Array.isArray(responseWrapper.data)
+            ? responseWrapper.data
+            : (rawRecommendations as ExtendedRecommendedTrack[]);
+
+        const list = Array.isArray(unwrapped) ? unwrapped : [];
+
+        return list.map((track, index) => {
+            const artistNames = track.artists?.map(a => a.name ?? 'Невідомий виконавець') ?? ['Невідомий виконавець'];
+
+            let calculatedDuration: number | null = null;
+            if (track.durationMs) {
+                calculatedDuration = track.durationMs;
+            } else if (track.durationSeconds) {
+                calculatedDuration = track.durationSeconds * 1000;
+            }
+
+            return {
+                id:          track.id ?? '',
+                index:       index + 1,
+                title:       track.title ?? 'Без назви',
+                artistNames,
+                artistId:    track.artists?.[0]?.id,
+
+                // ФІКС АЛЬБОМУ: спочатку шукаємо вкладений об'єкт, якщо немає — беремо пласке поле
+                albumId:     track.album?.id ?? track.albumId ?? undefined,
+                albumTitle:  track.album?.title ?? track.albumTitle ?? '—',
+
+                // Для рекомендацій дати додавання не існує, залишаємо null (буде прочерк, як у Spotify)
+                addedAt:     null,
+
+                durationMs:  calculatedDuration,
+                coverUrl:    track.coverUrl,
+                playsCount:  track.playsCount ?? 0,
+                isLiked:     track.isLiked ?? false,
+            };
+        });
+    }, [rawRecommendations]);
+
+    const visibleTracks = showAll ? mappedTracks : mappedTracks.slice(0, INITIAL_COUNT);
+    const hasMore = mappedTracks.length > INITIAL_COUNT;
 
     return (
         <section className="mb-5">
-            <div className="mb-1">
-                <h2 className="section-header__title">Рекомендації</h2>
-                <p className="track-page__subtitle">На основі цього треку</p>
+            <div className="mb-3">
+                <h2 className="section-header__title" style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Рекомендації</h2>
+                <p className="track-page__subtitle text-secondary m-0 small">На основі цього треку</p>
             </div>
 
             {isLoading ? (
                 <RecommendationsSkeleton />
+            ) : mappedTracks.length === 0 ? (
+                <p className="text-secondary small">Немає рекомендацій для цього треку</p>
             ) : (
                 <>
-                    {visibleTracks.map((track) => (
-                        <TrackRow
-                            key={track.id}
-                            track={track}
-                            onClick={(id) => console.log('play', id)} // TODO: плеєр
-                        />
-                    ))}
+                    <div className="d-flex flex-column gap-1">
+                        {visibleTracks.map((track) => (
+                            <TrackRow
+                                key={track.id}
+                                track={track}
+                                allTracks={mappedTracks}
+                                sourceType="Search"
+                            />
+                        ))}
+                    </div>
 
-                    {/* Показати ще */}
                     {hasMore && (
                         <button
-                            className="track-page__show-more"
+                            className="btn btn-link text-white-50 text-decoration-none small mt-2 p-0 hover-white"
                             onClick={() => setShowAll((v) => !v)}
                         >
                             {showAll ? 'Згорнути' : 'Показати ще...'}
@@ -72,20 +115,18 @@ export const TrackRecommendationsSection = ({
 };
 
 const RecommendationsSkeleton = () => (
-    <>
+    <div className="d-flex flex-column gap-2">
         {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="track-row">
-                <div className="skeleton" style={{ width: 20, height: 16 }} />
-                <div className="d-flex align-items-center gap-3 flex-grow-1">
-                    <div className="skeleton" style={{ width: 40, height: 40, flexShrink: 0 }} />
-                    <div>
-                        <div className="skeleton mb-1" style={{ width: 140, height: 14 }} />
-                        <div className="skeleton" style={{ width: 100, height: 12 }} />
-                    </div>
+            <div key={i} className="d-flex align-items-center gap-3 py-2 px-3 bg-white-5 rounded" style={{ height: 56 }}>
+                <div className="skeleton" style={{ width: 16, height: 16 }} />
+                <div className="skeleton" style={{ width: 40, height: 40, borderRadius: '4px' }} />
+                <div className="flex-grow-1">
+                    <div className="skeleton mb-1" style={{ width: '30%', height: 14 }} />
+                    <div className="skeleton" style={{ width: '15%', height: 12 }} />
                 </div>
-                <div className="skeleton d-none d-md-block" style={{ width: 120, height: 14 }} />
-                <div className="skeleton" style={{ width: 40, height: 14 }} />
+                <div className="skeleton d-none d-md-block" style={{ width: 100, height: 14 }} />
+                <div className="skeleton" style={{ width: 36, height: 14 }} />
             </div>
         ))}
-    </>
+    </div>
 );
