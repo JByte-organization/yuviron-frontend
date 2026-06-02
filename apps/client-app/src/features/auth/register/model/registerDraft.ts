@@ -30,3 +30,19 @@ export const clearRegisterDraft = () => {
     if (typeof window === 'undefined') return;
     sessionStorage.removeItem(KEY);
 };
+
+// Полностью ли заполнен черновик для финального register. true бывает только
+// после прохода всех шагов — например когда юзер вернулся на email-шаг после
+// 409 «почта занята»: пароль и анкета уже в черновике, и сменив только почту,
+// он по «Далі» уходит сразу на register, минуя шаги пароля/профиля.
+export const isRegisterDraftComplete = (draft: RegisterDraft): boolean =>
+    Boolean(
+        draft.email &&
+            draft.password &&
+            draft.firstName &&
+            draft.day &&
+            draft.month &&
+            draft.year &&
+            draft.country &&
+            draft.city,
+    );

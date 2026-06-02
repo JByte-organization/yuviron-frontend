@@ -3,13 +3,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthRegister } from '@repo/api/client.ts';
-import { Gender } from '@repo/api/generated/client/models/gender';
-import {
-    clearRegisterDraft,
-    getRegisterDraft,
-    setRegisterDraft,
-} from '../../model/registerDraft';
+import { getRegisterDraft, setRegisterDraft } from '../../model/registerDraft';
+import { useRegisterSubmit } from '../../model/useRegisterSubmit';
+import { EmailTakenModal } from '../EmailTakenModal';
 
 type ProfileErrors = {
     name?: string;
@@ -118,7 +114,11 @@ export const Step2Profile = () => {
     });
     const [errors, setErrors] = useState<ProfileErrors>({});
     const [submitted, setSubmitted] = useState(false);
-    const [serverError, setServerError] = useState<string | null>(null);
+
+    // Отправку register держит общий хук: он же ловит 409 (почта занята) и ведёт
+    // на экран подтверждения по ссылке. Введённые данные при 409 не сбрасываются —
+    // компонент остаётся смонтированным, стейт формы живёт.
+    const { submit, isPending, emailTaken, closeEmailTaken, serverError } = useRegisterSubmit();
 
     const update = <K extends keyof ProfileState>(key: K, value: ProfileState[K]) => {
         const next = { ...state, [key]: value };
@@ -126,47 +126,15 @@ export const Step2Profile = () => {
         if (submitted) setErrors(validate(next));
     };
 
-    const { mutate, isPending } = usePostApiAuthRegister({
-        mutation: {
-            onSuccess: (_response, variables) => {
-                // Регистрация только создаёт аккаунт. Подтверждение почты идёт по
-                // ССЫЛКЕ из письма (/confirm-email?token=...), а не по коду — поэтому
-                // отсюда ведём на экран «перевірте пошту». sessionStorage-draft до
-                // клика по ссылке из письма не доживёт, поэтому чистим его здесь.
-                const { email } = variables.data;
-                clearRegisterDraft();
-                router.push(`/register/check-email?email=${encodeURIComponent(email ?? '')}`);
-            },
-            onError: (error: any) => {
-                console.log('[register] status:', error?.response?.status);
-                console.log('[register] data:', JSON.stringify(error?.response?.data, null, 2));
-                const data = error?.response?.data;
-                const fieldErrors = data?.errors
-                    ? Object.values(data.errors).flat().join(' ')
-                    : null;
-                const message =
-                    fieldErrors ||
-                    data?.detail ||
-                    data?.title ||
-                    data?.message ||
-                    data?.error ||
-                    (typeof data === 'string' ? data : null) ||
-                    'Не вдалося зареєструватися. Спробуйте ще раз.';
-                setServerError(message);
-            },
-        },
-    });
-
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitted(true);
-        setServerError(null);
         const next = validate(state);
         setErrors(next);
         if (Object.keys(next).length > 0) return;
 
         setRegisterDraft({
-            firstName: state.name,
+            firstName: state.name.trim(),
             day: state.day,
             month: state.month,
             year: state.year,
@@ -180,27 +148,7 @@ export const Step2Profile = () => {
             return;
         }
 
-        const dateOfBirth = new Date(
-            Date.UTC(
-                Number(state.year),
-                Number(state.month) - 1,
-                Number(state.day),
-            ),
-        ).toISOString();
-
-        mutate({
-            data: {
-                email: draft.email,
-                password: draft.password,
-                firstName: state.name.trim(),
-                country: state.country,
-                city: state.city,
-                dateOfBirth,
-                gender: Gender.NotSpecified,
-                acceptMarketing: false,
-                acceptTerms: true,
-            },
-        });
+        submit();
     };
 
     const dateInvalid = errors.day || errors.month || errors.year;
@@ -396,6 +344,14 @@ export const Step2Profile = () => {
                     {isPending ? 'Реєстрація…' : 'Зареєструватися'}
                 </button>
             </form>
+
+            {/* «Змінити пошту» уводит на email-шаг: пароль и анкета уже в черновике,
+                сменив только почту, юзер по «Далі» сразу попадёт на финальный register. */}
+            <EmailTakenModal
+                isOpen={emailTaken}
+                onClose={closeEmailTaken}
+                onChangeEmail={() => router.push('/register')}
+            />
         </div>
     );
 };
