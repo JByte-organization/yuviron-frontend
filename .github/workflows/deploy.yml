@@ -310,6 +310,10 @@ jobs:
             wget -qO- http://127.0.0.1:5073/swagger/client/swagger.json \
             > packages/api/openapi/client.swagger.json
 
+          docker exec "yuviron-${DEPLOY_ENV}-backend" \
+            wget -qO- http://127.0.0.1:5073/swagger/artist/swagger.json \
+            > packages/api/openapi/artist.swagger.json
+
           pnpm api:gen
           gha_pass_stage "API types generated from Swagger spec."
 
