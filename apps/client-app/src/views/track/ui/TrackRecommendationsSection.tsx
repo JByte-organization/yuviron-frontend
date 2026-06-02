@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useGetApiTracksIdRecommendations, type RecommendedTrackDto } from '@repo/api/client';
+import { useGetApiTracksIdRecommendations, getGetApiTracksIdRecommendationsQueryKey, type RecommendedTrackDto } from '@repo/api/client';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 
 interface TrackRecommendationsSectionProps {
@@ -12,65 +12,72 @@ interface OrvalResponseWrapper<T> {
     data?: T;
 }
 
-// Розширюємо DTO, додаючи туди обидва варіанти полів (пласкі та вкладені) для залізобетонного мапінгу
-interface ExtendedRecommendedTrack extends RecommendedTrackDto {
+// ФІКС TS2430: Вирізаємо durationMs з базового DTO перед розширенням, щоб уникнути конфлікту типів
+interface ExtendedRecommendedTrack extends Omit<RecommendedTrackDto, 'durationMs'> {
     durationMs?: number | null;
     durationSeconds?: number | null;
     playsCount?: number | null;
     isLiked?: boolean;
-    albumTitle?: string | null; // Пласке поле, якщо бекенд віддає так
-    albumId?: string | null;    // Пласке поле
+    albumTitle?: string | null;
+    albumId?: string | null;
 }
 
-const INITIAL_COUNT = 3;
+const INITIAL_COUNT = 5;
 
 export const TrackRecommendationsSection = ({ trackId }: TrackRecommendationsSectionProps) => {
     const [showAll, setShowAll] = useState(false);
 
-    const { data: rawRecommendations, isLoading } = useGetApiTracksIdRecommendations(trackId, {
-        limit: 10
-    });
+    // Отримуємо список рекомендацій із передачею обов'язкового queryKey
+    const { data: rawRecommendations, isLoading } = useGetApiTracksIdRecommendations(
+        trackId,
+        { limit: 10 },
+        {
+            query: {
+                enabled: !!trackId,
+                queryKey: getGetApiTracksIdRecommendationsQueryKey(trackId, { limit: 10 })
+            }
+        }
+    );
 
+    // Безпечне мапування моделей бекенду без використання any та конфліктів типів
+    // Безпечне мапування моделей бекенду без використання any та помилок TS2352
     const mappedTracks = useMemo<TrackRowData[]>(() => {
         if (!rawRecommendations) return [];
 
-        const responseWrapper = rawRecommendations as OrvalResponseWrapper<ExtendedRecommendedTrack[]>;
-        const unwrapped = responseWrapper.data && Array.isArray(responseWrapper.data)
-            ? responseWrapper.data
-            : (rawRecommendations as ExtendedRecommendedTrack[]);
+        // ФІКС TS2352: Пропускаємо через unknown, щоб TypeScript дозволив нам безпечно розібрати юніон відповіді
+        const response = rawRecommendations as unknown as { status: number; data: ExtendedRecommendedTrack[] };
 
-        const list = Array.isArray(unwrapped) ? unwrapped : [];
+        // Якщо сервер повернув 200 і всередині дійсно масив даних — мапимо його
+        if (response.status === 200 && Array.isArray(response.data)) {
+            return response.data.map((track, index) => {
+                const artistNames = track.artists?.map(a => a.name ?? 'Невідомий виконавець') ?? ['Невідомий виконавець'];
 
-        return list.map((track, index) => {
-            const artistNames = track.artists?.map(a => a.name ?? 'Невідомий виконавець') ?? ['Невідомий виконавець'];
+                let calculatedDuration: number | null = null;
+                if (track.durationMs) {
+                    calculatedDuration = track.durationMs;
+                } else if (track.durationSeconds) {
+                    calculatedDuration = track.durationSeconds * 1000;
+                }
 
-            let calculatedDuration: number | null = null;
-            if (track.durationMs) {
-                calculatedDuration = track.durationMs;
-            } else if (track.durationSeconds) {
-                calculatedDuration = track.durationSeconds * 1000;
-            }
+                return {
+                    id:          track.id ?? '',
+                    index:       index + 1,
+                    title:       track.title ?? 'Без назви',
+                    artistNames,
+                    artistId:    track.artists?.[0]?.id,
+                    albumId:     track.albumId ?? undefined,
+                    albumTitle:  track.albumTitle ?? '—',
+                    addedAt:     null,
+                    durationMs:  calculatedDuration,
+                    coverUrl:    track.coverUrl,
+                    playsCount:  track.playsCount ?? 0,
+                    isLiked:     track.isLiked ?? false,
+                };
+            });
+        }
 
-            return {
-                id:          track.id ?? '',
-                index:       index + 1,
-                title:       track.title ?? 'Без назви',
-                artistNames,
-                artistId:    track.artists?.[0]?.id,
-
-                // ФІКС АЛЬБОМУ: спочатку шукаємо вкладений об'єкт, якщо немає — беремо пласке поле
-                albumId:     track.album?.id ?? track.albumId ?? undefined,
-                albumTitle:  track.album?.title ?? track.albumTitle ?? '—',
-
-                // Для рекомендацій дати додавання не існує, залишаємо null (буде прочерк, як у Spotify)
-                addedAt:     null,
-
-                durationMs:  calculatedDuration,
-                coverUrl:    track.coverUrl,
-                playsCount:  track.playsCount ?? 0,
-                isLiked:     track.isLiked ?? false,
-            };
-        });
+        // Якщо прилетів 404 або інший статус — просто повертаємо порожній список треків
+        return [];
     }, [rawRecommendations]);
 
     const visibleTracks = showAll ? mappedTracks : mappedTracks.slice(0, INITIAL_COUNT);
