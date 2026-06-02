@@ -18,6 +18,7 @@ const mutatorConfig = {
     name: 'customInstance',
 };
 
+
 const queryConfig = {
     useQuery: true,
     useInfinite: true,
