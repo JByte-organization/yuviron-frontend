@@ -23,11 +23,17 @@ interface TrackInfoProps {
     coverSrc:   string;
     isLoading:  boolean;
     isAdMode:   boolean;
+    onAdClick?: () => void;
 }
 
-const TrackInfo = ({ title, artistName, artistId, coverSrc, isLoading, isAdMode }: TrackInfoProps) => (
+const TrackInfo = ({ title, artistName, artistId, coverSrc, isLoading, isAdMode, onAdClick }: TrackInfoProps) => (
     <div className="player-bar__track">
-        <div className="player-bar__cover">
+        {/* Додаємо клікабельність та стилі курсору, якщо це реклама */}
+        <div
+            className="player-bar__cover"
+            onClick={isAdMode ? onAdClick : undefined}
+            style={{ cursor: isAdMode ? 'pointer' : 'default' }}
+        >
             <img src={coverSrc} alt={title} draggable={false} />
             {isLoading && (
                 <div className="player-bar__cover-loader">
@@ -193,6 +199,16 @@ export const PlayerBar = () => {
 
     if (!isVisible) return null;
 
+    const handleAdClick = () => {
+        if (isAdMode && pendingAd?.clickUrl) {
+            // Відкриваємо сайт рекламодавця у новій вкладці
+            window.open(pendingAd.clickUrl, '_blank', 'noopener,noreferrer');
+
+            // Тихо в фоне регистрируем клик на бэкенде
+            fetch(`/api/ads/${pendingAd.adId}/clicks`, { method: 'POST' }).catch(() => {});
+        }
+    };
+
     return (
         <div className="player-bar">
             <TrackInfo
@@ -202,6 +218,7 @@ export const PlayerBar = () => {
                 coverSrc={coverSrc}
                 isLoading={isLoading}
                 isAdMode={isAdMode}
+                onAdClick={handleAdClick}
             />
 
             <PlaybackControls
