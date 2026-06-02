@@ -23,7 +23,6 @@ import { useSessionStore } from '@/entities/session/model/store.ts';
 // ══════════════════════════════════════════════════════════
 const CDN_BASE   = 'https://dev-i.yuviron.com';
 const DEVICE_TYPE = 'WebPlayer' as const;
-const token = useSessionStore.getState().accessToken;
 
 // ══════════════════════════════════════════════════════════
 // MODULE-LEVEL STATE
@@ -46,43 +45,47 @@ const destroyHls = () => {
 
 /**
  * Формує абсолютний URL для HLS потоку.
- *
- * Проблема: NEXT_PUBLIC_* змінні вбудовуються під час next build.
- * Якщо на сервері змінна не передана в Docker — буде undefined,
- * і відносний URL /api/stream/... резолвиться до Next.js домену замість бекенду.
- *
- * Рішення: якщо URL вже абсолютний (починається з http) — повертаємо як є.
- * Бекенд з Signed URLs повертає вже абсолютний URL з токенами.
  */
 const buildAudioUrl = (rawUrl: string): string => {
-    // Абсолютний URL — повертаємо без змін (Signed URL вже містить домен і токени)
+    // 1. Проверяем входящие данные
+    if (!rawUrl) {
+        console.error('[Player:buildAudioUrl] КРИТИЧЕСКАЯ ОШИБКА: rawUrl пустой или undefined!');
+        return '';
+    }
+
     if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
         return rawUrl;
     }
 
-    // Відносний URL — підставляємо origin бекенду
-    // NEXT_PUBLIC_API_URL = "https://dev-api.yuviron.com/api" → беремо origin
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
-    const origin = apiUrl.replace(/\/api.*$/, ''); // Відрізаємо /api і все після
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dev-api.yuviron.com/api';
 
-    return `${origin}${rawUrl}`;
+    try {
+        // Использование класса URL автоматически подсветит ошибку, если apiUrl кривой
+        const { origin } = new URL(apiUrl);
+        const finalUrl = `${origin}${rawUrl}`;
+
+        // 2. Логируем успешный результат (удалить перед деплоем в прод, чтобы не спамить)
+        console.log(`[Player:buildAudioUrl] Успешно склеено:\nВход: ${rawUrl}\nВыход: ${finalUrl}`);
+
+        return finalUrl;
+    } catch (error) {
+        // 3. Перехватываем ошибки парсинга домена
+        console.error('[Player:buildAudioUrl] Ошибка при парсинге доменов:', {
+            apiConfigValue: process.env.NEXT_PUBLIC_API_URL,
+            fallbackUsed: 'https://dev-api.yuviron.com/api',
+            rawUrl,
+            error
+        });
+
+        // На всякий случай откатываемся к старому регулярному выражению, если URL был странным
+        const originFallback = apiUrl.replace(/\/api.*$/, '');
+        return `${originFallback}${rawUrl}`;
+    }
 };
-
-// const buildAudioUrl = (rawUrl: string): string => {
-//     // Якщо URL вже абсолютний — повертаємо як є
-//     if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
-//         return rawUrl;
-//     }
-//
-//     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dev-api.yuviron.com/api';
-//     const origin = apiUrl.replace(/\/api.*$/, '');
-//
-//     return `${origin}${rawUrl}`;
-// };
 
 /**
  * Запускає HLS відтворення.
- * Підтримує Silent Retry при 401/403 (зміна IP, протухлий Signed URL).
+ * Підтримує Silent Retry при 401/403 та прокидує підписи через xhrSetup.
  */
 const startHlsPlayback = (
     audioUrl:  string,
@@ -98,12 +101,28 @@ const startHlsPlayback = (
     destroyHls();
 
     if (Hls.isSupported()) {
+        // Вытягиваем параметры подписи из основного URL
+        let searchParams = '';
+        try {
+            searchParams = new URL(audioUrl).search;
+        } catch (e) {
+            console.error('[Player] Failed to parse audio URL params', e);
+        }
+
         const hls = new Hls({
-            // Зменшуємо кількість автоматичних ретраїв hls.js —
-            // бо при 401 нам потрібен власний ретрай з новим токеном
             fragLoadingMaxRetry: 0,
             manifestLoadingMaxRetry: 0,
+
+            // Дописываем сигнатуру к каждому .ts чанку
+            xhrSetup: (xhr, url) => {
+                if (!url.includes('sig=') && searchParams) {
+                    const separator = url.includes('?') ? '&' : '?';
+                    const signedUrl = `${url}${separator}${searchParams.slice(1)}`;
+                    xhr.open('GET', signedUrl, true);
+                }
+            }
         });
+
         hlsInstance = hls;
         hls.loadSource(audioUrl);
         hls.attachMedia(audio);
@@ -115,10 +134,6 @@ const startHlsPlayback = (
         });
 
         hls.on(Hls.Events.ERROR, async (_, data) => {
-            // ── Silent Retry: 401/403 при зміні IP ───────────────
-            // Бекенд підписує URL за IP-адресою. При переключенні Wi-Fi → LTE
-            // старий токен стає недійсним і бекенд повертає 401/403.
-            // Тихо отримуємо новий Signed URL і продовжуємо відтворення.
             const isAuthError =
                 data.response?.code === 401 ||
                 data.response?.code === 403 ||
@@ -130,13 +145,11 @@ const startHlsPlayback = (
                 console.warn('[Player] Signed URL expired or IP changed, refreshing token...');
 
                 try {
-                    const currentTime = audio.currentTime; // Запам'ятовуємо позицію
+                    const currentTime = audio.currentTime;
                     const newUrl      = await refreshStreamUrl(trackId);
 
                     if (newUrl) {
-                        // Перезапускаємо HLS з новим URL — продовжуємо з тієї ж секунди
                         startHlsPlayback(newUrl, trackId, () => {
-                            // Відновлюємо позицію після підключення
                             if (audio && currentTime > 0) {
                                 audio.currentTime = currentTime;
                             }
@@ -147,19 +160,13 @@ const startHlsPlayback = (
                     console.error('[Player] Token refresh failed, stopping playback');
                     destroyHls();
                     usePlayerStore.getState().setStatus('idle');
-                } finally {
+                } {
                     isRetryingToken = false;
                 }
                 return;
             }
 
-            // ── Звичайна обробка помилок ──────────────────────────
-            if (!data.fatal) {
-                console.warn('[Player] HLS non-fatal error:', data.details);
-                return;
-            }
-
-            console.error('[Player] HLS fatal error:', data.type, data.details);
+            if (!data.fatal) return;
 
             if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
                 hls.recoverMediaError();
@@ -172,28 +179,21 @@ const startHlsPlayback = (
         return;
     }
 
-    // Safari — нативна підтримка HLS
+    // Safari native fallback
     if (audio.canPlayType('application/vnd.apple.mpegurl')) {
         audio.src = audioUrl;
-        audio.play()
-            .then(onPlaying)
-            .catch(err => console.error('[Player] Safari play() rejected:', err));
+        audio.play().then(onPlaying).catch(err => console.error('[Player] Safari play() rejected:', err));
         return;
     }
 
     console.error('[Player] HLS is not supported in this browser');
 };
 
-/**
- * Отримує свіжий Signed URL для поточного треку.
- * Викликається при Silent Retry (зміна IP).
- */
+/** Отримує свіжий Signed URL для поточного треку. */
 const refreshStreamUrl = async (trackId: string): Promise<string | null> => {
     const res = await getApiTracksIdPlay(trackId);
     const data = res as unknown as { data?: TrackStreamUrlResponse } | TrackStreamUrlResponse;
-    const payload: TrackStreamUrlResponse = 'data' in data && data.data
-        ? data.data
-        : (data as TrackStreamUrlResponse);
+    const payload: TrackStreamUrlResponse = 'data' in data && data.data ? data.data : (data as TrackStreamUrlResponse);
 
     const rawUrl = payload.audioUrl ?? null;
     if (!rawUrl) return null;
@@ -237,7 +237,6 @@ const startAdPlayback = (ad: PendingAd, onFinished: () => void): void => {
     adAudio.src = `${CDN_BASE}/${ad.audioUrl}`;
     adAudio.play().catch(err => console.error('[Player] Ad play() rejected:', err));
 
-    // ФІКС: Безпечна одноразова підписка без затирання лінком .onended
     const handleAdEnded = async () => {
         try {
             await fetch(`/api/ads/${ad.adId}/impressions`, { method: 'POST' });
@@ -256,9 +255,7 @@ const startAnalyticsSession = async (trackId: string): Promise<void> => {
     try {
         const res = await postApiAnalyticsPlayStart({ trackId });
         const data = res as unknown as { data?: StartPlayResponse } | StartPlayResponse;
-        const sessionId = 'data' in data
-            ? data.data?.playSessionId
-            : (data as StartPlayResponse).playSessionId;
+        const sessionId = 'data' in data ? data.data?.playSessionId : (data as StartPlayResponse).playSessionId;
         if (sessionId) {
             usePlayerStore.getState().setPlaySessionId(sessionId);
         }
@@ -267,10 +264,7 @@ const startAnalyticsSession = async (trackId: string): Promise<void> => {
     }
 };
 
-// ══════════════════════════════════════════════════════════
-// PLAY TRACK
-// Послідовність: commit → /play → [ad] → analytics → HLS
-// ══════════════════════════════════════════════════════════
+/** Основна логіка запуску треку */
 const playTrack = async (track: PlayerTrack): Promise<void> => {
     const store = usePlayerStore.getState();
 
@@ -282,9 +276,7 @@ const playTrack = async (track: PlayerTrack): Promise<void> => {
     try {
         const res = await getApiTracksIdPlay(track.id);
         const data = res as unknown as { data?: TrackStreamUrlResponse } | TrackStreamUrlResponse;
-        const payload: TrackStreamUrlResponse = 'data' in data && data.data
-            ? data.data
-            : (data as TrackStreamUrlResponse);
+        const payload: TrackStreamUrlResponse = 'data' in data && data.data ? data.data : (data as TrackStreamUrlResponse);
 
         const rawUrl    = payload.audioUrl ?? null;
         const pendingAd = payload.pendingAd ?? null;
@@ -299,7 +291,6 @@ const playTrack = async (track: PlayerTrack): Promise<void> => {
 
         const startMusic = async (): Promise<void> => {
             await startAnalyticsSession(track.id);
-            // Передаємо trackId в startHlsPlayback для Silent Retry
             startHlsPlayback(audioUrl, track.id, () => {
                 usePlayerStore.getState().setStatus('playing');
             });
@@ -385,22 +376,34 @@ export const usePlayer = () => {
         const handleUnload = (): void => {
             const { playSessionId, currentTrack, sourceType, sourceId } = usePlayerStore.getState();
             if (!playSessionId || !currentTrack) return;
-            if (token) {
-                fetch('/api/analytics/play/commit', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ /* ваші дані */ }),
-                    keepalive: true,
-                });
-            }
+
+            // ФІКС: Беремо токен прямо під час виклику івенту, а не на старті модуля
+            const currentToken = useSessionStore.getState().accessToken;
+            if (!currentToken) return;
+
+            // Збираємо повне тіло запиту з реальними даними
+            const payload = {
+                playSessionId,
+                trackId:    currentTrack.id,
+                deviceType: DEVICE_TYPE,
+                sourceType: sourceType ?? 'Search',
+                sourceId:   sourceId ?? null,
+            };
+
+            fetch('/api/analytics/play/commit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentToken}`
+                },
+                body: JSON.stringify(payload),
+                keepalive: true,
+            });
         };
+
         window.addEventListener('beforeunload', handleUnload);
         return () => window.removeEventListener('beforeunload', handleUnload);
-    }, []); // ФІКС: тепер подія не перепідписується щоразу
-
+    }, []);
 
     return { playQueue, playTrack, togglePlay, next, prev, seek, setVolume };
 };
