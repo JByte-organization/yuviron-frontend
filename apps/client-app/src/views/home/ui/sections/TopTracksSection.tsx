@@ -72,7 +72,7 @@ export const TopTracksSection = ({
                         </SwiperSlide>
                     ))}
 
-                    <SwiperSlide className="top-tracks-section__show-all-slide">
+                    <SwiperSlide className="top-tracks-section__show-all-slide align-items-center my-auto mx-0">
                         <ShowAllButton href={showAllHref} />
                     </SwiperSlide>
                 </Swiper>
