@@ -2317,6 +2317,58 @@
     padding: 0 20px 20px;
   }
 
+  // ─── Повідомлення + дії (напр. «пошта вже зареєстрована») ──
+  &__message {
+    font-size: 14px;
+    line-height: 1.5;
+    color: $client-text;
+    margin: 0;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  &__btn {
+    height: 44px;
+    border-radius: 8px;
+    border: 0;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: 0.2s ease;
+
+    &--primary {
+      background: $client-btn-primary;
+      color: $client-on-primary;
+
+      &:hover,
+      &:focus {
+        background: $client-btn-primary-hover;
+        color: $client-on-primary;
+      }
+    }
+
+    &--ghost {
+      background: transparent;
+      border: 1px solid $client-outline-border;
+      color: $client-outline-text;
+
+      &:hover,
+      &:focus {
+        background: $client-outline-bg-hover;
+        color: $client-outline-text-hover;
+      }
+    }
+  }
+
   // ─── Інпут ────────────────────────────────────────────
   &__input {
     width: 100%;

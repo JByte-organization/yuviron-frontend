@@ -3,11 +3,15 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { customInstance } from '@repo/api';
-import { getRegisterDraft, setRegisterDraft } from '../model/registerDraft';
+import {
+    getRegisterDraft,
+    isRegisterDraftComplete,
+    setRegisterDraft,
+} from '../model/registerDraft';
+import { useRegisterSubmit } from '../model/useRegisterSubmit';
+import { EmailTakenModal } from './EmailTakenModal';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const EMAIL_TAKEN = 'Ця електронна пошта вже зареєстрована';
 
 const validateEmail = (email: string): string | undefined => {
     const trimmed = email.trim();
@@ -22,47 +26,29 @@ export const RegisterForm = () => {
     const [email, setEmail] = useState(() => getRegisterDraft().email ?? '');
     const [error, setError] = useState<string | undefined>();
     const [submitted, setSubmitted] = useState(false);
-    const [isChecking, setIsChecking] = useState(false);
 
-    // Спрашивает у бэка, занята ли почта (POST /auth/check-email → { exists }).
-    // Зовём через customInstance напрямую, а не через сгенерированный хук —
-    // чтобы не зависеть от имени/тега хука в Orval-генерации.
-    // Сетевую ошибку не считаем «занято» — пропускаем дальше, финальный
-    // register всё равно отловит дубль.
-    const isEmailTaken = async (value: string): Promise<boolean> => {
-        setIsChecking(true);
-        try {
-            const res = await customInstance<{ exists?: boolean }>('/api/auth/check-email', {
-                method: 'POST',
-                body: JSON.stringify({ email: value }),
-            });
-            return Boolean(res?.exists);
-        } catch {
-            return false;
-        } finally {
-            setIsChecking(false);
-        }
-    };
+    // Нужен здесь для повторного захода: юзер вернулся с шага профиля после 409,
+    // меняет почту — и register уходит прямо отсюда. Если 409 повторится (новая
+    // почта тоже занята), та же модалка покажется снова на этом же экране.
+    const { submit, isPending, emailTaken, closeEmailTaken, serverError } = useRegisterSubmit();
 
-    // Проверяем занятость сразу при уходе из поля — чтобы пользователь узнал
-    // о занятой почте здесь, а не после заполнения имени/страны на шаге 2.
-    const handleBlur = async () => {
-        const formatError = validateEmail(email);
-        if (formatError) return;
-        if (await isEmailTaken(email.trim())) setError(EMAIL_TAKEN);
-    };
-
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    // Проверки занятости почты до сабмита здесь больше нет: эндпоинт
+    // /auth/check-email убран на бэке (он же давал user enumeration). Дубль
+    // отлавливает только финальный register — он вернёт 409.
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitted(true);
         const next = validateEmail(email);
         setError(next);
         if (next) return;
-        if (await isEmailTaken(email.trim())) {
-            setError(EMAIL_TAKEN);
+        setRegisterDraft({ email: email.trim() });
+
+        // Пароль и анкета уже заполнены (возврат после 409) → пропускаем шаги
+        // пароля/профиля и сразу шлём register с новой почтой. Иначе обычный флоу.
+        if (isRegisterDraftComplete(getRegisterDraft())) {
+            submit();
             return;
         }
-        setRegisterDraft({ email: email.trim() });
         router.push('/register/details');
     };
 
@@ -84,17 +70,20 @@ export const RegisterForm = () => {
                         // переоцениваем только после первой попытки сабмита.
                         setError(submitted ? validateEmail(event.target.value) : undefined);
                     }}
-                    onBlur={handleBlur}
                 />
                 {error && <div className="client-register-form__error">{error}</div>}
             </div>
 
+            {serverError && (
+                <div className="client-register-form__error mb-3">{serverError}</div>
+            )}
+
             <button
                 type="submit"
                 className="btn client-register-form__submit w-100"
-                disabled={isChecking}
+                disabled={isPending}
             >
-                {isChecking ? 'Перевірка…' : 'Далі'}
+                {isPending ? 'Реєстрація…' : 'Далі'}
             </button>
 
             <div className="client-register-form__divider">
@@ -132,6 +121,14 @@ export const RegisterForm = () => {
                     Увійти до акаунту
                 </Link>
             </div>
+
+            {/* Здесь «Змінити пошту» = просто закрыть модалку: юзер уже на email-шаге
+                и правит поле на месте. */}
+            <EmailTakenModal
+                isOpen={emailTaken}
+                onClose={closeEmailTaken}
+                onChangeEmail={closeEmailTaken}
+            />
         </form>
     );
 };

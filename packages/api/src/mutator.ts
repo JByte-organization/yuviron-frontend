@@ -98,7 +98,7 @@ const refreshAccessToken = async (): Promise<string> => {
 /**
  * Публичные роуты — не требуют заголовка Authorization.
  * Полный список по доке/Swagger: login/register/refresh плюс
- * восстановление пароля, проверка email и OTP (send-code / login-with-code).
+ * восстановление пароля и OTP (send-code / login-with-code).
  */
 const isAuthRoute = (url: string) =>
     url.includes('/auth/login') ||
@@ -106,7 +106,6 @@ const isAuthRoute = (url: string) =>
     url.includes('/auth/send-code') ||
     url.includes('/auth/register') ||
     url.includes('/auth/refresh') ||
-    url.includes('/auth/check-email') ||
     url.includes('/auth/forgot-password') ||
     url.includes('/auth/reset-password') ||
     url.includes('/auth/confirm-email');
