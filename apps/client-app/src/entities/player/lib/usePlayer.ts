@@ -54,31 +54,31 @@ const destroyHls = () => {
  * Рішення: якщо URL вже абсолютний (починається з http) — повертаємо як є.
  * Бекенд з Signed URLs повертає вже абсолютний URL з токенами.
  */
-// const buildAudioUrl = (rawUrl: string): string => {
-//     // Абсолютний URL — повертаємо без змін (Signed URL вже містить домен і токени)
-//     if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
-//         return rawUrl;
-//     }
-//
-//     // Відносний URL — підставляємо origin бекенду
-//     // NEXT_PUBLIC_API_URL = "https://dev-api.yuviron.com/api" → беремо origin
-//     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
-//     const origin = apiUrl.replace(/\/api.*$/, ''); // Відрізаємо /api і все після
-//
-//     return `${origin}${rawUrl}`;
-// };
-
 const buildAudioUrl = (rawUrl: string): string => {
-    // Якщо URL вже абсолютний — повертаємо як є
+    // Абсолютний URL — повертаємо без змін (Signed URL вже містить домен і токени)
     if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
         return rawUrl;
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dev-api.yuviron.com/api';
-    const origin = apiUrl.replace(/\/api.*$/, '');
+    // Відносний URL — підставляємо origin бекенду
+    // NEXT_PUBLIC_API_URL = "https://dev-api.yuviron.com/api" → беремо origin
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+    const origin = apiUrl.replace(/\/api.*$/, ''); // Відрізаємо /api і все після
 
     return `${origin}${rawUrl}`;
 };
+
+// const buildAudioUrl = (rawUrl: string): string => {
+//     // Якщо URL вже абсолютний — повертаємо як є
+//     if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+//         return rawUrl;
+//     }
+//
+//     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dev-api.yuviron.com/api';
+//     const origin = apiUrl.replace(/\/api.*$/, '');
+//
+//     return `${origin}${rawUrl}`;
+// };
 
 /**
  * Запускає HLS відтворення.
