@@ -29,11 +29,6 @@ import type { TrackCardData } from '@/entities/track/ui/TrackCard';
 import type { AlbumCardData } from '@/entities/album/ui/AlbumCard';
 import type { ArtistCardData } from '@/entities/artist/ui/ArtistCard';
 
-import { AllTracksSection } from './ui/sections/AllTracksSection';
-
-import {TrackRow} from '@/entities/track/ui/TrackRow';
-import type {TrackRowData} from '@/entities/track/ui/TrackRow';
-
 
 interface HomePageProps {
     isAuthenticated?: boolean;
@@ -175,7 +170,6 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
                     sectionTitle={artistsTitle}
                 />
 
-                <AllTracksSection/>
             </div>
         </div>
     );
