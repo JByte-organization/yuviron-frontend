@@ -7,7 +7,6 @@ interface UserDropdownProps {
     userId?: string;
     isPremium?: boolean;
     isArtist?: boolean;
-    artistId?: string;
     onClose: () => void;
     onLogout: () => void;
 }
@@ -16,7 +15,6 @@ export const UserDropdown = ({
                                  userId,
                                  isPremium = false,
                                  isArtist = false,
-                                 artistId,
                                  onClose,
                                  onLogout,
                              }: UserDropdownProps) => {
@@ -55,7 +53,7 @@ export const UserDropdown = ({
         {
             icon: isArtist ? 'bi-music-note-list' : 'bi-mic',
             label: isArtist ? 'Кабінет артиста' : 'Стати артистом',
-            href: isArtist ? `/artists/${artistId}/dashboard` : '/become-artist',
+            href: isArtist ? '/artist-dashboard' : '/become-artist',
             show: true,
         },
     ].filter((item) => item.show);

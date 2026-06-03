@@ -4,7 +4,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import {usePostApiAuthLogout, useGetApiAuthMe, type CurrentUserDto, getGetApiAuthMeQueryKey} from '@repo/api/client.ts';
+import {
+    usePostApiAuthLogout,
+    useGetApiAuthMe,
+    useGetApiNotificationsUnreadCount,
+    type CurrentUserDto,
+    getGetApiAuthMeQueryKey,
+    getGetApiNotificationsUnreadCountQueryKey,
+} from '@repo/api/client.ts';
 import { useSessionStore } from '@/entities/session/model/store';
 import { useTheme } from '@/shared/lib/ThemeProvider';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
@@ -43,6 +50,15 @@ export const Header = () => {
     const me: CurrentUserDto | null = (meRaw as CurrentUserDto) ?? null;
 
     const avatarSrc = getImageUrl(me?.profile?.avatarUrl);
+
+    // ─── Лічильник непрочитаних (червона крапка на дзвіночку) ──
+    const { data: unreadRaw } = useGetApiNotificationsUnreadCount({
+        query: {
+            enabled: !!accessToken,
+            queryKey: getGetApiNotificationsUnreadCountQueryKey(),
+        },
+    });
+    const unreadCount = (unreadRaw as unknown as number) ?? 0;
 
     console.log('[Header] accessToken:', accessToken);
     console.log('[Header] meRaw:', meRaw);
@@ -164,6 +180,11 @@ export const Header = () => {
                                 height={20}
                                 className="client-header__notif-icon"
                             />
+                            {unreadCount > 0 && (
+                                <span className="client-header__notif-badge">
+                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                </span>
+                            )}
                         </Link>
 
                         {/* Аватар */}

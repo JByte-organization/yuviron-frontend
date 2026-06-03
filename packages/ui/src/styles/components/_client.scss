@@ -3607,3 +3607,410 @@
   from { opacity: 0; transform: translateX(-6px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+// ══════════════════════════════════════════════════════════
+// BECOME ARTIST — /become-artist (вибір, створення, заявка)
+// ══════════════════════════════════════════════════════════
+.client-become-artist {
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 0 20px;
+
+  &--narrow { max-width: 480px; }
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: $client-text-muted;
+    text-decoration: none;
+    font-size: 13px;
+    margin-bottom: 20px;
+    transition: color 0.2s ease;
+
+    &:hover { color: $client-text; }
+  }
+
+  &__head { margin-bottom: 28px; }
+
+  &__title {
+    font-size: 26px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 8px;
+  }
+
+  &__subtitle {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  // ─── Вибір шляху ──────────────────────────────────────
+  &__choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+
+    @media (max-width: 640px) { grid-template-columns: 1fr; }
+  }
+
+  &__choice {
+    display: block;
+    text-decoration: none;
+    background: $client-surface;
+    border: 1px solid $client-border;
+    border-radius: 14px;
+    padding: 24px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      border-color: $client-accent;
+      transform: translateY(-2px);
+    }
+  }
+
+  &__choice-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: $client-surface-2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: $client-accent;
+    margin-bottom: 16px;
+  }
+
+  &__choice-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: $client-text;
+    margin: 0 0 8px;
+  }
+
+  &__choice-text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  // ─── Форма ────────────────────────────────────────────
+  &__form { display: flex; flex-direction: column; gap: 18px; }
+
+  &__avatar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__avatar-hint { font-size: 12px; color: $client-text-muted; }
+
+  &__field { display: flex; flex-direction: column; }
+
+  &__label {
+    font-size: 12px;
+    font-weight: 500;
+    color: $client-label;
+    margin-bottom: 6px;
+  }
+
+  &__input,
+  &__textarea {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &::placeholder { color: $client-text-muted; }
+    &:focus { border-color: $client-field-focus; }
+    &.is-invalid { border-color: $client-danger; }
+  }
+
+  &__textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+
+  &__error { font-size: 12px; color: $client-danger; margin-top: 6px; }
+
+  &__btn {
+    height: 44px;
+    border-radius: 8px;
+    border: 0;
+    font-size: 14px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    &--primary {
+      background: $client-btn-primary;
+      color: $client-on-primary;
+
+      &:hover,
+      &:focus { background: $client-btn-primary-hover; color: $client-on-primary; }
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
+    }
+  }
+
+  // ─── Пошук артиста ────────────────────────────────────
+  &__search { display: flex; flex-direction: column; gap: 12px; }
+
+  &__results {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid $client-border;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  &__results-empty {
+    padding: 16px;
+    font-size: 13px;
+    color: $client-text-muted;
+    text-align: center;
+  }
+
+  &__result-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid $client-border;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease;
+
+    &:last-child { border-bottom: 0; }
+    &:hover { background: $client-hover; }
+  }
+
+  &__result-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+
+    &--placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: $client-surface-2;
+      color: $client-text-muted;
+    }
+  }
+
+  &__result-name { flex: 1; font-size: 14px; color: $client-text; }
+  &__result-arrow { color: $client-text-muted; font-size: 14px; }
+
+  // ─── Обраний артист ───────────────────────────────────
+  &__selected {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: $client-surface;
+    border: 1px solid $client-border;
+    border-radius: 10px;
+  }
+
+  &__selected-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+
+    &--placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: $client-surface-2;
+      color: $client-text-muted;
+    }
+  }
+
+  &__selected-info { display: flex; flex-direction: column; gap: 2px; }
+  &__selected-name { font-size: 15px; font-weight: 600; color: $client-text; }
+
+  &__selected-change {
+    align-self: flex-start;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    font-size: 12px;
+    color: $client-accent;
+    cursor: pointer;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  // ─── Екрани результату (успіх / ліміт / очікування) ───
+  &__result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+    padding: 24px 0;
+  }
+
+  &__result-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    background: $client-surface-2;
+    color: $client-accent;
+
+    &--wait { color: $client-text-muted; }
+  }
+
+  &__result-title { font-size: 20px; font-weight: 700; color: $client-text; margin: 0; }
+
+  &__result-text {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+    max-width: 380px;
+    line-height: 1.5;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// NOTIFICATIONS — список + універсальна картка (реальний контракт)
+// ══════════════════════════════════════════════════════════
+.notifications-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// Картка як <button> у вертикальному списку: іконка + title/body + час.
+.notifications-page__list .notification-card {
+  width: 100%;
+  text-align: left;
+  align-items: center;
+  height: auto;
+  font: inherit;
+
+  &__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $client-surface-2;
+    color: $client-accent;
+    font-size: 20px;
+  }
+
+  &__body {
+    font-size: 13px;
+    color: $client-text-muted;
+    line-height: 1.45;
+    white-space: normal;
+  }
+
+  &__arrow {
+    margin-left: auto;
+    color: $client-text-muted;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// APP NOTIFICATION TOAST — real-time пуш (SignalR)
+// ══════════════════════════════════════════════════════════
+.app-notif-toast {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  transform: translateY(-12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 500;
+  background: $client-surface-2;
+  border: 1px solid $client-border;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  min-width: 300px;
+  max-width: 380px;
+  cursor: pointer;
+
+  &--visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+
+  &__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $client-surface;
+    color: $client-accent;
+    font-size: 18px;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $client-text;
+  }
+
+  &__text {
+    font-size: 13px;
+    color: $client-text-muted;
+    line-height: 1.4;
+  }
+
+  &__close {
+    background: transparent;
+    border: none;
+    color: $client-text-muted;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.2s;
+
+    &:hover { color: $client-text; }
+  }
+}
+
