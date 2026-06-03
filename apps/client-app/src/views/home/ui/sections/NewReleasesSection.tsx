@@ -5,7 +5,6 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode } from 'swiper/modules';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { AlbumCard, type AlbumCardData } from '@/entities/album/ui/AlbumCard';
-import { ShowAllButton } from "@/shared/ui/ShowAllButton";
 
 import 'swiper/css';
 import 'swiper/css/free-mode';
@@ -68,12 +67,6 @@ export const NewReleasesSection = ({
                             />
                         </SwiperSlide>
                     ))}
-
-                    <SwiperSlide className="new-releases-section__show-all-slide">
-                        <div className="col-auto d-flex align-items-center h-100">
-                            <ShowAllButton href={showAllHref}/>
-                        </div>
-                    </SwiperSlide>
                 </Swiper>
             )}
         </section>

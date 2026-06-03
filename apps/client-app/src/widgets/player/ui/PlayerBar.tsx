@@ -1,20 +1,13 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { usePlayerStore } from '@/entities/player/model/playerStore';
 import { usePlayer } from '@/entities/player/lib/usePlayer';
-import { playerAudioRef, playerAdAudioRef } from '@/entities/player/lib/playerRefs';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 
-// ══════════════════════════════════════════════════════════
-// CONSTANTS
-// ══════════════════════════════════════════════════════════
 const CDN_BASE = 'https://dev-i.yuviron.com';
 
-// ══════════════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════════════
 const formatTime = (sec: number): string => {
     if (!sec || isNaN(sec)) return '0:00';
     const m = Math.floor(sec / 60);
@@ -22,10 +15,7 @@ const formatTime = (sec: number): string => {
     return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-// ══════════════════════════════════════════════════════════
-// SUB-COMPONENTS
-// ══════════════════════════════════════════════════════════
-
+// ─── SUB-COMPONENTS ──────────────────────────────────────
 interface TrackInfoProps {
     title:      string;
     artistName: string;
@@ -33,12 +23,18 @@ interface TrackInfoProps {
     coverSrc:   string;
     isLoading:  boolean;
     isAdMode:   boolean;
+    onAdClick?: () => void;
 }
 
-const TrackInfo = ({ title, artistName, artistId, coverSrc, isLoading, isAdMode }: TrackInfoProps) => (
+const TrackInfo = ({ title, artistName, artistId, coverSrc, isLoading, isAdMode, onAdClick }: TrackInfoProps) => (
     <div className="player-bar__track">
-        <div className="player-bar__cover">
-            <img src={coverSrc} alt={title} />
+        {/* Додаємо клікабельність та стилі курсору, якщо це реклама */}
+        <div
+            className="player-bar__cover"
+            onClick={isAdMode ? onAdClick : undefined}
+            style={{ cursor: isAdMode ? 'pointer' : 'default' }}
+        >
+            <img src={coverSrc} alt={title} draggable={false} />
             {isLoading && (
                 <div className="player-bar__cover-loader">
                     <span className="spinner-border spinner-border-sm" />
@@ -77,55 +73,66 @@ const PlaybackControls = ({
                               hasPrev, hasNext,
                               currentTime, duration,
                               onTogglePlay, onNext, onPrev, onSeek,
-                          }: PlaybackControlsProps) => (
-    <div className="player-bar__controls">
-        <div className="player-bar__buttons">
-            <button
-                className="player-bar__btn"
-                onClick={onPrev}
-                disabled={!!isAdMode || !hasPrev}
-                aria-label="Попередній трек"
-            >
-                <i className="bi bi-skip-start-fill" />
-            </button>
+                          }: PlaybackControlsProps) => {
 
-            <button
-                className="player-bar__btn player-bar__btn--play"
-                onClick={onTogglePlay}
-                disabled={isLoading || !!isAdMode}
-                aria-label={isPlaying ? 'Пауза' : 'Грати'}
-            >
-                {isLoading
-                    ? <span className="spinner-border spinner-border-sm" />
-                    : <i className={`bi bi-${isPlaying ? 'pause' : 'play'}-fill`} />
-                }
-            </button>
+    // Розраховуємо відсоток прогресу для CSS-градієнта
+    const progressPercent = useMemo(() => {
+        if (!duration) return 0;
+        return (currentTime / duration) * 100;
+    }, [currentTime, duration]);
 
-            <button
-                className="player-bar__btn"
-                onClick={onNext}
-                disabled={!!isAdMode || !hasNext}
-                aria-label="Наступний трек"
-            >
-                <i className="bi bi-skip-end-fill" />
-            </button>
+    return (
+        <div className="player-bar__controls">
+            <div className="player-bar__buttons">
+                <button
+                    className="player-bar__btn"
+                    onClick={onPrev}
+                    disabled={!!isAdMode || !hasPrev}
+                    aria-label="Попередній трек"
+                >
+                    <i className="bi bi-skip-start-fill" />
+                </button>
+
+                <button
+                    className="player-bar__btn player-bar__btn--play"
+                    onClick={onTogglePlay}
+                    disabled={isLoading || !!isAdMode}
+                    aria-label={isPlaying ? 'Пауза' : 'Грати'}
+                >
+                    {isLoading
+                        ? <span className="spinner-border spinner-border-sm" />
+                        : <i className={`bi bi-${isPlaying ? 'pause' : 'play'}-fill`} />
+                    }
+                </button>
+
+                <button
+                    className="player-bar__btn"
+                    onClick={onNext}
+                    disabled={!!isAdMode || !hasNext}
+                    aria-label="Наступний трек"
+                >
+                    <i className="bi bi-skip-end-fill" />
+                </button>
+            </div>
+
+            <div className="player-bar__progress">
+                <span className="player-bar__time">{formatTime(currentTime)}</span>
+                <input
+                    type="range"
+                    className="player-bar__seek"
+                    min={0}
+                    max={duration || 100}
+                    value={currentTime}
+                    onChange={e => onSeek(Number(e.target.value))}
+                    disabled={!!isAdMode}
+                    // Передаємо динамічний відсоток як CSS-змінну
+                    style={{ '--progress': `${progressPercent}%` } as React.CSSProperties}
+                />
+                <span className="player-bar__time">{formatTime(duration)}</span>
+            </div>
         </div>
-
-        <div className="player-bar__progress">
-            <span className="player-bar__time">{formatTime(currentTime)}</span>
-            <input
-                type="range"
-                className="player-bar__seek"
-                min={0}
-                max={duration || 100}
-                value={currentTime}
-                onChange={e => onSeek(Number(e.target.value))}
-                disabled={!!isAdMode}
-            />
-            <span className="player-bar__time">{formatTime(duration)}</span>
-        </div>
-    </div>
-);
+    );
+};
 
 interface VolumeControlProps {
     volume:    number;
@@ -136,6 +143,7 @@ interface VolumeControlProps {
 
 const VolumeControl = ({ volume, isMuted, onToggleMute, onSetVolume }: VolumeControlProps) => {
     const iconSuffix = isMuted || volume === 0 ? 'mute' : volume < 0.5 ? 'down' : 'up';
+    const volumePercent = isMuted ? 0 : volume * 100;
 
     return (
         <div className="player-bar__volume">
@@ -154,14 +162,13 @@ const VolumeControl = ({ volume, isMuted, onToggleMute, onSetVolume }: VolumeCon
                 step={0.01}
                 value={isMuted ? 0 : volume}
                 onChange={e => onSetVolume(Number(e.target.value))}
+                style={{ '--volume-progress': `${volumePercent}%` } as React.CSSProperties}
             />
         </div>
     );
 };
 
-// ══════════════════════════════════════════════════════════
-// PLAYER BAR
-// ══════════════════════════════════════════════════════════
+// ─── MAIN COMPONENT ──────────────────────────────────────
 export const PlayerBar = () => {
     const {
         currentTrack, status, pendingAd,
@@ -172,99 +179,68 @@ export const PlayerBar = () => {
 
     const { togglePlay, next, prev, seek, setVolume } = usePlayer();
 
-    // ─── Реєструємо DOM audio елементи в глобальних refs ──
-    // Це дозволяє usePlayer отримати доступ до елементів
-    // незалежно від того де він викликається
-    const audioElRef   = useRef<HTMLAudioElement>(null);
-    const adAudioElRef = useRef<HTMLAudioElement>(null);
-
-    useEffect(() => {
-        playerAudioRef.current   = audioElRef.current;
-        playerAdAudioRef.current = adAudioElRef.current;
-    }, []);
-
-    // ─── Синхронізуємо гучність з DOM ────────────────────
-    useEffect(() => {
-        if (audioElRef.current) {
-            audioElRef.current.volume = isMuted ? 0 : volume;
-        }
-    }, [volume, isMuted]);
-
-    // ─── Оновлюємо прогрес з DOM подій ───────────────────
-    useEffect(() => {
-        const audio = audioElRef.current;
-        if (!audio) return;
-
-        const onTimeUpdate    = () => usePlayerStore.getState().setCurrentTime(audio.currentTime);
-        const onDurationChange = () => usePlayerStore.getState().setDuration(audio.duration);
-
-        audio.addEventListener('timeupdate',      onTimeUpdate);
-        audio.addEventListener('durationchange',  onDurationChange);
-
-        return () => {
-            audio.removeEventListener('timeupdate',     onTimeUpdate);
-            audio.removeEventListener('durationchange', onDurationChange);
-        };
-    }, []);
-
-    // ─── Похідні значення ─────────────────────────────────
     const isAdMode  = status === 'ad' && !!pendingAd;
     const isPlaying = status === 'playing';
     const isLoading = status === 'loading';
     const hasPrev   = queueIndex > 0;
     const hasNext   = queueIndex < queue.length - 1;
 
-    const coverSrc = isAdMode && pendingAd
-        ? `${CDN_BASE}/${pendingAd.imageUrl}`
-        : getImageUrl(currentTrack?.coverUrl) ?? `https://picsum.photos/seed/track-${currentTrack?.id}/56/56`;
+    const coverSrc = useMemo(() => {
+        if (isAdMode && pendingAd) return `${CDN_BASE}/${pendingAd.imageUrl}`;
+        return getImageUrl(currentTrack?.coverUrl) ?? `/images/track-placeholder.png`;
+    }, [isAdMode, pendingAd, currentTrack]);
 
-    const trackTitle  = isAdMode && pendingAd
+    const trackTitle = isAdMode && pendingAd
         ? `${pendingAd.advertiserName} — ${pendingAd.title}`
         : (currentTrack?.title ?? '');
 
     const artistName = isAdMode ? 'Реклама' : (currentTrack?.artistNames.join(', ') ?? '');
-
     const isVisible = !!currentTrack || status !== 'idle';
 
+    if (!isVisible) return null;
+
+    const handleAdClick = () => {
+        if (isAdMode && pendingAd?.clickUrl) {
+            // Відкриваємо сайт рекламодавця у новій вкладці
+            window.open(pendingAd.clickUrl, '_blank', 'noopener,noreferrer');
+
+            // Тихо в фоне регистрируем клик на бэкенде
+            fetch(`/api/ads/${pendingAd.adId}/clicks`, { method: 'POST' }).catch(() => {});
+        }
+    };
+
     return (
-        <>
-            {/* Audio елементи рендеряться завжди — потрібні для реєстрації refs */}
-            <audio ref={audioElRef}   style={{ display: 'none' }} />
-            <audio ref={adAudioElRef} style={{ display: 'none' }} />
+        <div className="player-bar">
+            <TrackInfo
+                title={trackTitle}
+                artistName={artistName}
+                artistId={currentTrack?.artistId}
+                coverSrc={coverSrc}
+                isLoading={isLoading}
+                isAdMode={isAdMode}
+                onAdClick={handleAdClick}
+            />
 
-            {isVisible && (
-                <div className="player-bar">
-                    <TrackInfo
-                        title={trackTitle}
-                        artistName={artistName}
-                        artistId={currentTrack?.artistId}
-                        coverSrc={coverSrc}
-                        isLoading={isLoading}
-                        isAdMode={isAdMode}
-                    />
+            <PlaybackControls
+                isPlaying={isPlaying}
+                isLoading={isLoading}
+                isAdMode={isAdMode}
+                hasPrev={hasPrev}
+                hasNext={hasNext}
+                currentTime={currentTime}
+                duration={duration}
+                onTogglePlay={togglePlay}
+                onNext={next}
+                onPrev={prev}
+                onSeek={seek}
+            />
 
-                    <PlaybackControls
-                        isPlaying={isPlaying}
-                        isLoading={isLoading}
-                        isAdMode={isAdMode}
-                        hasPrev={hasPrev}
-                        hasNext={hasNext}
-                        currentTime={currentTime}
-                        duration={duration}
-                        onTogglePlay={togglePlay}
-                        onNext={next}
-                        onPrev={prev}
-                        onSeek={seek}
-                    />
-
-                    <VolumeControl
-                        volume={volume}
-                        isMuted={isMuted}
-                        onToggleMute={toggleMute}
-                        onSetVolume={setVolume}
-                    />
-                </div>
-            )}
-        </>
+            <VolumeControl
+                volume={volume}
+                isMuted={isMuted}
+                onToggleMute={toggleMute}
+                onSetVolume={setVolume}
+            />
+        </div>
     );
 };

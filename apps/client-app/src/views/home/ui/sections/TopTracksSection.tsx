@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { useMemo } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode } from 'swiper/modules';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
@@ -16,16 +16,14 @@ interface TopTracksSectionProps {
     tracks?: TrackCardData[];
     isLoading?: boolean;
     showAllHref?: string;
-    onTrackClick?: (id: string) => void;
+    // 🚨 ФІКС ОЧЕРЕДІ: Передаємо трек та його індекс для ініціалізації черги в плеєрі
+    onTrackClick?: (track: TrackCardData, index: number) => void;
 }
 
 // ─── Компонент ────────────────────────────────────────────────────────────────
-// Секція відповідає тільки за відображення.
-// Дані (tracks, isLoading) приходять з батьківського компонента (HomePage або LibraryPage).
-// Це дозволяє перевикористовувати секцію з різними хуками.
 export const TopTracksSection = ({
                                      sectionTitle = 'Топ популярна музика',
-                                     tracks,
+                                     tracks = [], // Дефолтне значення, щоб уникнути undefined
                                      isLoading = false,
                                      showAllHref = '/tracks',
                                      onTrackClick,
@@ -33,7 +31,10 @@ export const TopTracksSection = ({
 
     if (!isLoading && (!tracks || tracks.length === 0)) return null;
 
-    const lastWord = sectionTitle.trim().split(' ').at(-1) ?? 'музика';
+    // Оптимізуємо розрахунок останнього слова через useMemo
+    const lastWord = useMemo(() => {
+        return sectionTitle.trim().split(' ').at(-1) ?? 'музика';
+    }, [sectionTitle]);
 
     return (
         <section className="top-tracks-section mb-4 mb-md-5">
@@ -45,9 +46,9 @@ export const TopTracksSection = ({
             />
 
             {isLoading ? (
-                <div className="d-flex gap-3">
+                <div className="d-flex gap-3 overflow-hidden">
                     {Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} style={{ minWidth: 150 }}>
+                        <div key={i} style={{ minWidth: 150, flex: '0 0 auto' }}>
                             <TrackCardSkeleton />
                         </div>
                     ))}
@@ -56,23 +57,30 @@ export const TopTracksSection = ({
                 <Swiper
                     modules={[FreeMode]}
                     freeMode
+                    // 🚨 ФІКС КНОПКИ: переводимо в auto, щоб ShowAllButton не летіла далеко
                     slidesPerView={2}
                     spaceBetween={24}
                     breakpoints={{
                         480:  { slidesPerView: 3 },
                         768:  { slidesPerView: 3 },
-                        992:  { slidesPerView: 5 },
+                        992:  { slidesPerView: 3 },
                         1200: { slidesPerView: 7 },
                     }}
                     className="top-tracks-section__swiper"
                 >
-                    {tracks!.map(track => (
-                        <SwiperSlide key={track.id}>
-                            <TrackCard track={track} onClick={onTrackClick} />
+                    {tracks.map((track, index) => (
+                        // Додаємо унікальний клас для трек-слайдів, щоб контролювати їх ширину в SCSS
+                        <SwiperSlide key={track.id} className="top-tracks-section__track-slide">
+                            <TrackCard
+                                track={track}
+                                // Передаємо наверх індекс для плеєра
+                                onClick={() => onTrackClick?.(track, index)}
+                            />
                         </SwiperSlide>
                     ))}
 
-                    <SwiperSlide className="top-tracks-section__show-all-slide">
+                    {/* Слайд із кнопкою тепер буде притиснутий впритул з відступом 24px */}
+                    <SwiperSlide className="top-tracks-section__show-all-slide align-items-center my-auto mx-0">
                         <ShowAllButton href={showAllHref} />
                     </SwiperSlide>
                 </Swiper>
