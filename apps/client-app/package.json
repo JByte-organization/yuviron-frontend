@@ -10,11 +10,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@microsoft/signalr": "^10.0.0",
     "@repo/api": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "^5.96.0",
     "@tanstack/react-query-devtools": "^5.96.0",
     "@types/hls.js": "^1.0.0",
+    "date-fns": "^4.4.0",
     "hls.js": "^1.6.16",
     "next": "16.1.6",
     "node-vibrant": "^4.0.4",
