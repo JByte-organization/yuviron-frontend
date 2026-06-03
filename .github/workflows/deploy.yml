@@ -310,9 +310,19 @@ jobs:
             wget -qO- http://127.0.0.1:5073/swagger/client/swagger.json \
             > packages/api/openapi/client.swagger.json
 
-          docker exec "yuviron-${DEPLOY_ENV}-backend" \
-            wget -qO- http://127.0.0.1:5073/swagger/artist/swagger.json \
-            > packages/api/openapi/artist.swagger.json
+          # Artist swagger group is currently unstable on the backend (returns
+          # 500). It is not used by any app yet, so don't fail the deploy on it:
+          # fetch best-effort and drop any partial file so orval skips the artist
+          # client (see orval.config.ts guard). Remove this tolerance once the
+          # backend /swagger/artist endpoint is healthy.
+          if docker exec "yuviron-${DEPLOY_ENV}-backend" \
+               wget -qO- http://127.0.0.1:5073/swagger/artist/swagger.json \
+               > packages/api/openapi/artist.swagger.json; then
+            echo "Artist swagger fetched."
+          else
+            echo "::warning::Artist swagger unavailable (HTTP error) — skipping artist client generation."
+            rm -f packages/api/openapi/artist.swagger.json
+          fi
 
           pnpm api:gen
           gha_pass_stage "API types generated from Swagger spec."

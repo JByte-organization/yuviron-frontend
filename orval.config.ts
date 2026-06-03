@@ -7,11 +7,9 @@ const LOCAL_ARTIST_SWAGGER = './packages/api/openapi/artist.swagger.json';
 
 const REMOTE_ADMIN_SWAGGER = 'https://dev-api.yuviron.com/swagger/admin/swagger.json';
 const REMOTE_CLIENT_SWAGGER = 'https://dev-api.yuviron.com/swagger/client/swagger.json';
-const REMOTE_ARTIST_SWAGGER = 'https://dev-api.yuviron.com/swagger/artist/swagger.json';
 
 const adminInput = existsSync(LOCAL_ADMIN_SWAGGER) ? LOCAL_ADMIN_SWAGGER : REMOTE_ADMIN_SWAGGER;
 const clientInput = existsSync(LOCAL_CLIENT_SWAGGER) ? LOCAL_CLIENT_SWAGGER : REMOTE_CLIENT_SWAGGER;
-const artistInput = existsSync(LOCAL_ARTIST_SWAGGER) ? LOCAL_ARTIST_SWAGGER : REMOTE_ARTIST_SWAGGER;
 
 const mutatorConfig = {
     path: './packages/api/src/mutator.ts',
@@ -24,7 +22,11 @@ const queryConfig = {
     useInfinite: true,
 };
 
-export default defineConfig({
+// Artist-свагер на бекенді нестабільний: /swagger/artist/swagger.json повертає
+// 500, тому генеруємо artist-клієнт ЛИШЕ якщо локальний спек реально завантажено
+// (CI кладе його лише за успішного wget). Жодного fallback на remote — інакше
+// orval упреться в той самий 500. Прибрати guard, коли бекенд полагодить групу.
+const config: Parameters<typeof defineConfig>[0] = {
     // ─── Адмінка ──────────────────────────────────────────
     yuviron_admin: {
         input: adminInput,
@@ -56,10 +58,12 @@ export default defineConfig({
             },
         },
     },
+};
 
-    // ─── Артист ───────────────────────────────────────────
-    yuviron_artist: {
-        input: artistInput,
+// ─── Артист (опціонально, поки бекенд не полагодить /swagger/artist) ──────────
+if (existsSync(LOCAL_ARTIST_SWAGGER)) {
+    config.yuviron_artist = {
+        input: LOCAL_ARTIST_SWAGGER,
         output: {
             mode: 'tags',
             target: './packages/api/src/generated/artist/endpoints',
@@ -71,5 +75,7 @@ export default defineConfig({
                 mutator: mutatorConfig,
             },
         },
-    },
-});
+    };
+}
+
+export default defineConfig(config);
