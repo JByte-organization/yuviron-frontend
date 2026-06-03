@@ -22,7 +22,7 @@ export interface TrackRowData {
     durationMs?: number | null;
     coverUrl?: string | null;
     playsCount?: number;
-    isLiked?: boolean; // TODO: передавати з API коли зʼявиться поле
+    isLiked?: boolean;
 }
 
 interface TrackRowProps {
@@ -37,6 +37,7 @@ interface TrackRowProps {
     sourceId?: string | null;
 }
 
+// Хелперы выносим или оставляем — они написаны правильно
 const formatDuration = (ms?: number | null): string => {
     if (!ms) return '—';
     const totalSec = Math.floor(ms / 1000);
@@ -63,7 +64,6 @@ const formatPlays = (count?: number): string => {
 export const TrackRow = ({
                              track,
                              allTracks,
-                             isPlaying = false,
                              variant = 'default',
                              onClick,
                              onAddToPlaylist,
@@ -77,7 +77,6 @@ export const TrackRow = ({
     const currentTrackId = usePlayerStore(s => s.currentTrack?.id);
     const playerStatus   = usePlayerStore(s => s.status);
 
-    // Хук лайків — оптимістичний UI + реальний API запит
     const { isLiked, isPending: isLikePending, toggle: toggleLike } = useFavoriteTrack({
         initialLiked: track.isLiked ?? false,
     });
@@ -87,14 +86,16 @@ export const TrackRow = ({
     const coverSrc = getImageUrl(track.coverUrl)
         ?? `https://picsum.photos/seed/track-${track.id}/40/40`;
 
+    // 🚨 ФИКС ОЧЕРЕДИ ДЛЯ СТРОК: Строка теперь сама умеет прокидывать весь список треков страницы в плеер
     const handleClick = () => {
         requireAuth(() => {
-            if (onClick) {
-                onClick(track.id);
-                return;
-            }
-            const queue = allTracks ?? [track];
+            // Вызываем внешний клик только как сайд-эффект (если он нужен родителю)
+            onClick?.(track.id);
+
+            // Собираем полную очередь из списка треков на странице плейлиста/альбома
+            const queue = allTracks && allTracks.length > 0 ? allTracks : [track];
             const index = queue.findIndex(t => t.id === track.id);
+
             playQueue(
                 queue.map(t => ({
                     id:          t.id,
@@ -115,7 +116,6 @@ export const TrackRow = ({
 
     const handleLike = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // requireAuth — якщо не авторизований, покаже модалку логіну
         requireAuth(() => toggleLike(track.id));
     };
 
@@ -126,7 +126,6 @@ export const TrackRow = ({
             onMouseLeave={() => setIsHovered(false)}
             onClick={handleClick}
         >
-            {/* Номер / play іконка */}
             <div className="track-row__index">
                 {isCurrentlyPlaying ? (
                     <i className="bi bi-volume-up-fill track-row__playing-icon" />
@@ -137,7 +136,6 @@ export const TrackRow = ({
                 )}
             </div>
 
-            {/* Обкладинка + назва + артист */}
             <div className="track-row__info">
                 <div className="track-row__cover">
                     <img src={coverSrc} alt={track.title} />
@@ -164,7 +162,6 @@ export const TrackRow = ({
                 </div>
             </div>
 
-            {/* Альбом */}
             <div className="track-row__album d-none d-md-block">
                 {track.albumId ? (
                     <Link
@@ -179,7 +176,6 @@ export const TrackRow = ({
                 )}
             </div>
 
-            {/* Дата або прослуховування */}
             <div className="track-row__context d-none d-lg-block">
                 {variant === 'artist'
                     ? <span>{formatPlays(track.playsCount)}</span>
@@ -187,10 +183,7 @@ export const TrackRow = ({
                 }
             </div>
 
-            {/* Дії + тривалість */}
             <div className="track-row__actions">
-
-                {/* Кнопка лайку — серце заповнене якщо isLiked */}
                 <button
                     className={`track-row__like-btn${isLiked ? ' track-row__like-btn--active' : ''}`}
                     onClick={handleLike}
