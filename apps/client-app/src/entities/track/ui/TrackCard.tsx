@@ -15,12 +15,12 @@ export interface TrackCardData {
     artistId?: string;
     coverUrl?: string | null;
     durationMs?: number;
-    isLiked?: boolean; // TODO: передавати з API коли зʼявиться поле
+    isLiked?: boolean;
 }
 
 interface TrackCardProps {
     track: TrackCardData;
-    onClick?: (id: string) => void;
+    onClick?: () => void; // 🚨 Изменили сигнатуру: теперь это чистый калбэк без принудительного id
 }
 
 export const TrackCard = ({ track, onClick }: TrackCardProps) => {
@@ -40,10 +40,14 @@ export const TrackCard = ({ track, onClick }: TrackCardProps) => {
         initialLiked: track.isLiked ?? false,
     });
 
+    // 🚨 ФИКС ИНТЕГРАЦИИ ПЛЕЕРА: Убрали перезапись очереди
     const handleClick = () => {
         requireAuth(() => {
-            onClick?.(track.id);
-            playQueue([track], 0, 'Search', null);
+            if (onClick) {
+                onClick(); // Если есть родительская очередь (например, карусель) — отдаем управление ей
+            } else {
+                playQueue([track], 0, 'Search', null); // Если карточка одна — играем только её
+            }
         });
     };
 
@@ -59,15 +63,13 @@ export const TrackCard = ({ track, onClick }: TrackCardProps) => {
             onMouseLeave={() => setIsHovered(false)}
             onClick={handleClick}
         >
-            {/* Обкладинка з оверлеєм при наведенні */}
             <div className="track-card__cover">
                 <img src={coverSrc} alt={track.title}/>
 
-                {/* Play кнопка зʼявляється зліва при наведенні */}
                 {(isHovered || isCurrentlyPlaying) && (
                     <button
                         className="track-card__play-btn"
-                        onClick={handleClick}
+                        onClick={(e) => { e.stopPropagation(); handleClick(); }}
                         aria-label={isCurrentlyPlaying ? 'Зупинити' : 'Відтворити'}
                     >
                         <i className={isCurrentlyPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill'}/>
@@ -84,7 +86,6 @@ export const TrackCard = ({ track, onClick }: TrackCardProps) => {
                 </button>
             </div>
 
-            {/* Назва і артист */}
             <div className="track-card__info">
                 <Link
                     href={`/tracks/${track.id}`}

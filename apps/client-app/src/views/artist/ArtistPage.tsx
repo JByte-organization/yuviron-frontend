@@ -1,6 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useRouter } from 'next/navigation'; // 🚨 ФИКС: Импортируем роутер для переходов
+import {
+    useGetApiArtistsId,
+    useGetApiArtistsIdTopTracks,
+    useGetApiArtistsIdPopularReleases,
+    useGetApiArtistsIdAlbums,
+    useGetApiArtistsIdSingles,
+    useGetApiArtistsIdRelatedTracks,
+    useGetApiArtistsIdPlaylists,
+    useGetApiArtistsIdSimilarArtists,
+    type ArtistDetailsDto,
+    type ArtistTopTrackDto,
+    type ArtistAlbumDto,
+    type RelatedTrackDto,
+    type ArtistPlaylistDto,
+    type SimilarArtistDto
+} from '@repo/api/client.ts';
+
 import { ArtistPageHeader } from './ui/ArtistPageHeader';
 import { ArtistMusicSection } from './ui/ArtistMusicSection';
 import { ArtistRelatedTracksSection } from './ui/ArtistRelatedTracksSection';
@@ -9,85 +27,162 @@ import { ArtistPlaylistsSection } from './ui/ArtistPlaylistsSection';
 import { ArtistAboutSection } from './ui/ArtistAboutSection';
 import { ArtistTopTracksSection } from '@/views/track/ui/ArtistTopTracksSection';
 
+import { usePlayer } from '@/entities/player/lib/usePlayer';
+import { usePlayerStore } from '@/entities/player/model/playerStore';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
+import type { TrackCardData } from '@/entities/track/ui/TrackCard';
+
 interface ArtistPageProps {
     artistId: string;
 }
 
-// ─── Mock дані ────────────────────────────────────────────
-// TODO: замінити на хук — useGetApiArtistsId(artistId)
-const MOCK_ARTIST = {
-    id: 'blackpink',
-    name: 'Blackpink',
-    avatarUrl: null,
-    isVerified: true,
-    monthlyListeners: 75247295,
-    bio: 'Південнокорейська група Blackpink — це чотири юні струнні дівчата з дивовижними голосами, красиво рухаються під сучасну музику. Колективна, підібрані басові, басові для лице, однині досягають успіху й набувають слованої слави.',
-    bannerUrl: null,
+const extractList = <T,>(raw: unknown): T[] => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw as T[];
+    const obj = raw as Record<string, unknown>;
+    if (Array.isArray(obj.data))  return obj.data  as T[];
+    if (Array.isArray(obj.items)) return obj.items as T[];
+    return [];
 };
 
-/**
- * Сторінка: Артист /artists/{id}
- *
- * Підключення даних:
- * 1. const { data: artist, isLoading } = useGetApiArtistsId(artistId);
- * 2. Передати дані в компоненти
- */
 export const ArtistPage = ({ artistId }: ArtistPageProps) => {
-    const artist = MOCK_ARTIST;
+    const router = useRouter();
+    const { playQueue, togglePlay } = usePlayer();
+
+    // Получаем состояние плеера для интерактивной кнопки Play в шапке
+    const currentTrackId = usePlayerStore(s => s.currentTrack?.id);
+    const playerStatus   = usePlayerStore(s => s.status);
+
+    // ─── 1. ВСЕ ЗАПРОСЫ К API (Параллельный запуск через React Query) ────────
+    const { data: artistData, isLoading: isArtistLoading } = useGetApiArtistsId(artistId);
+    const { data: topTracksRaw } = useGetApiArtistsIdTopTracks(artistId, { limit: 5 });
+
+    // Музыкальные релизы (табы)
+    const { data: popularRaw, isLoading: isPopularLoading } = useGetApiArtistsIdPopularReleases(artistId);
+    const { data: albumsRaw,  isLoading: isAlbumsLoading  } = useGetApiArtistsIdAlbums(artistId);
+    const { data: singlesRaw, isLoading: isSinglesLoading } = useGetApiArtistsIdSingles(artistId);
+
+    // Связанные треки, плейлисты и похожие артисты
+    const { data: relatedRaw, isLoading: isRelatedLoading } = useGetApiArtistsIdRelatedTracks(artistId);
+    const { data: playlistsRaw, isLoading: isPlaylistsLoading } = useGetApiArtistsIdPlaylists(artistId);
+    const { data: similarRaw, isLoading: isSimilarLoading } = useGetApiArtistsIdSimilarArtists(artistId);
+
+    const artist = (artistData?.data || artistData) as ArtistDetailsDto | undefined;
+
+    // ─── 2. РАЗВЕРТЫВАНИЕ СПИСКОВ ДЛЯ СЕКЦИЙ ─────────────────────────────────
+    const popularReleases = extractList<ArtistAlbumDto>(popularRaw);
+    const albums          = extractList<ArtistAlbumDto>(albumsRaw);
+    const singles         = extractList<ArtistAlbumDto>(singlesRaw);
+    const relatedTracks   = extractList<RelatedTrackDto>(relatedRaw);
+    const playlists       = extractList<ArtistPlaylistDto>(playlistsRaw);
+    const similarArtists  = extractList<SimilarArtistDto>(similarRaw);
+
+    // Мапимо топ-треки для кнопки "Play All" у хедері
+    const topTracksMapped: TrackCardData[] = useMemo(() => {
+        return extractList<ArtistTopTrackDto>(topTracksRaw).map(t => ({
+            id:          t.id ?? '',
+            title:       t.title ?? 'Без назви',
+            artistNames: (t.artists ?? []).map(a => a.name ?? '').filter(Boolean),
+            coverUrl:    getImageUrl(t.coverUrl),
+            durationMs:  t.durationMs,
+        }));
+    }, [topTracksRaw]);
+
+    // Вычисляем, играет ли сейчас какой-либо топ-трек этого артиста
+    const isCollectionPlaying = useMemo(() => {
+        if (playerStatus !== 'playing' || topTracksMapped.length === 0) return false;
+        return topTracksMapped.some(t => t.id === currentTrackId);
+    }, [topTracksMapped, currentTrackId, playerStatus]);
+
+    // Общий первичный спиннер загрузки профиля
+    if (isArtistLoading) {
+        return (
+            <div className="container-fluid px-lg-4 py-5 text-center">
+                <div className="spinner-border text-primary" role="status" />
+            </div>
+        );
+    }
+
+    if (!artist) return <div className="container-fluid p-5">Виконавця не знайдено</div>;
+
+    // Умный обработчик кнопки Play в шапке
+    const handlePlayAllTopTracks = () => {
+        if (topTracksMapped.length === 0) return;
+
+        if (isCollectionPlaying) {
+            togglePlay();
+        } else {
+            playQueue(topTracksMapped, 0, 'ArtistProfile', artistId);
+        }
+    };
 
     return (
         <div className="artist-page">
-            {/* Хедер артиста */}
-            <ArtistPageHeader
-                artistId={artist.id}
-                name={artist.name}
-                avatarUrl={artist.avatarUrl}
-                isVerified={artist.isVerified}
-                monthlyListeners={artist.monthlyListeners}
-                onPlay={() => console.log('play')}   // TODO: плеєр
-                onFollow={() => console.log('follow')} // TODO: хук
-            />
+            <div className="container-fluid px-lg-4">
+                {/* Хедер артиста */}
+                <ArtistPageHeader
+                    artistId={artistId}
+                    name={artist.name ?? 'Невідомий виконавець'}
+                    avatarUrl={artist.avatarUrl}
+                    isVerified={artist.verificationStatus === 'Verified'}
+                    monthlyListeners={artist.listenersCount}
+                    isPlaying={isCollectionPlaying}
+                    onPlay={handlePlayAllTopTracks}
+                    onFollow={() => console.log('follow hook integration')} // TODO: Інтегрувати мутацію підписки
+                />
 
-            {/* Популярні треки */}
-            <ArtistTopTracksSection
-                artistId={artistId}
-                artistName={artist.name}
-                // TODO: useGetApiArtistsIdTopTracks(artistId)
-            />
+                {/* Популярні треки */}
+                <ArtistTopTracksSection
+                    artistId={artistId}
+                    artistName={artist.name ?? ''}
+                />
 
-            {/* Музика — таби */}
-            <ArtistMusicSection
-                artistId={artistId}
-                artistName={artist.name}
-                // TODO: передати дані з хуків
-            />
+                {/* Музика — популярні релизы, альбоми, сингли */}
+                <ArtistMusicSection
+                    artistId={artistId}
+                    artistName={artist.name ?? ''}
+                    popularReleases={popularReleases}
+                    albums={albums}
+                    singles={singles}
+                    isLoading={isPopularLoading || isAlbumsLoading || isSinglesLoading}
+                    onAlbumClick={(id) => router.push(`/albums/${id}`)}
+                />
 
-            {/* Вас може зацікавити */}
-            <ArtistRelatedTracksSection
-                artistId={artistId}
-                // TODO: useGetApiArtistsIdRelatedTracks(artistId)
-            />
+                {/* Вас може зацікавити */}
+                <ArtistRelatedTracksSection
+                    artistId={artistId}
+                    tracks={relatedTracks}
+                    isLoading={isRelatedLoading}
+                    onTrackClick={(queue, index) => {
+                        playQueue(queue, index, 'ArtistProfile', artistId);
+                    }}
+                />
 
-            {/* Шанувальникам також подобаються */}
-            <ArtistSimilarArtistsSection
-                artistId={artistId}
-                // TODO: useGetApiArtistsIdSimilarArtists(artistId)
-            />
+                {/* Шанувальникам також подобаються */}
+                <ArtistSimilarArtistsSection
+                    artistId={artistId}
+                    artists={similarArtists}
+                    isLoading={isSimilarLoading}
+                    onArtistClick={(id) => router.push(`/artists/${id}`)}
+                />
 
-            {/* Плейлісти виконавця */}
-            <ArtistPlaylistsSection
-                artistId={artistId}
-                artistName={artist.name}
-                // TODO: useGetApiArtistsIdPlaylists(artistId)
-            />
+                {/* Плейлісти виконавця */}
+                <ArtistPlaylistsSection
+                    artistId={artistId}
+                    artistName={artist.name ?? ''}
+                    playlists={playlists}
+                    isLoading={isPlaylistsLoading}
+                    onPlaylistClick={(id) => router.push(`/playlists/${id}`)}
+                />
 
-            {/* Про виконавця */}
-            <ArtistAboutSection
-                artistId={artistId}
-                monthlyListeners={artist.monthlyListeners}
-                bio={artist.bio}
-                bannerUrl={artist.bannerUrl}
-            />
+                {/* Про виконавця */}
+                <ArtistAboutSection
+                    artistId={artistId}
+                    monthlyListeners={artist.listenersCount}
+                    bio={artist.bio}
+                    bannerUrl={artist.bannerUrl}
+                />
+            </div>
         </div>
     );
 };

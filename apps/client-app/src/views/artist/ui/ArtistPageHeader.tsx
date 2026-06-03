@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 interface ArtistPageHeaderProps {
     artistId: string;
@@ -8,9 +9,8 @@ interface ArtistPageHeaderProps {
     avatarUrl?: string | null;
     isVerified?: boolean;
     monthlyListeners?: number;
-    /** TODO: підключити до плеєра */
+    isPlaying?: boolean; // 🚨 ФИКС: Флаг текущего состояния плеера
     onPlay?: () => void;
-    /** TODO: підключити до usePostApiUserFollowArtist() */
     onFollow?: () => void;
     isFollowing?: boolean;
 }
@@ -26,20 +26,21 @@ export const ArtistPageHeader = ({
                                      avatarUrl,
                                      isVerified = false,
                                      monthlyListeners,
+                                     isPlaying = false, // По умолчанию не играет
                                      onPlay,
                                      onFollow,
                                      isFollowing = false,
                                  }: ArtistPageHeaderProps) => {
     const [following, setFollowing] = useState(isFollowing);
 
-    const avatarSrc = avatarUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${avatarUrl}`
-        : `https://picsum.photos/seed/artist-${artistId}/100/100`;
+    // Переводим на единый хелпер картинок FSD архитектуры
+    const avatarSrc = getImageUrl(avatarUrl)
+        ?? `https://picsum.photos/seed/artist-${artistId}/200/200`;
 
     const handleFollow = () => {
         setFollowing((v) => !v);
         onFollow?.();
-        // TODO: викликати usePostApiUserFollowArtist()
+        // TODO: викликатиusePostApiUserFollowArtist() когда появится мутация
     };
 
     return (
@@ -78,19 +79,21 @@ export const ArtistPageHeader = ({
 
             {/* ─── Кнопки дій ───────────────────────────── */}
             <div className="artist-page-header__actions">
-                {/* Play / Pause */}
+                {/* Play / Pause Toggle Button */}
                 <button
                     className="artist-page-header__btn artist-page-header__btn--play"
                     onClick={onPlay}
-                    aria-label="Play"
+                    aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
-                    <i className="bi bi-play-fill" />
+                    {/* 🚨 ДИНАМИЧЕСКАЯ ИКОНКА */}
+                    <i className={isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill'} />
                 </button>
 
                 {/* Підписатися / Відписатися */}
                 <button
                     className={`artist-page-header__btn artist-page-header__btn--follow${following ? ' artist-page-header__btn--following' : ''}`}
                     onClick={handleFollow}
+                    aria-label={following ? 'Відписатися' : 'Підписатися'}
                 >
                     {following ? (
                         <i className="bi bi-check-lg" />

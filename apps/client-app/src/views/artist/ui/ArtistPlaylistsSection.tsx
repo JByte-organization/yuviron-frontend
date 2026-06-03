@@ -1,41 +1,43 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
-import { ShowAllButton } from '@/shared/ui/ShowAllButton';
-import { PlaylistCard, type PlaylistCardData } from '@/entities/playlist/ui/PlaylistCard';
+import { PlaylistCard } from '@/entities/playlist/ui/PlaylistCard';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
+import type { ArtistPlaylistDto } from '@repo/api/client.ts';
 
 interface ArtistPlaylistsSectionProps {
     artistId: string;
     artistName: string;
-    /** TODO: замінити на хук — useGetApiArtistsIdPlaylists(artistId) */
-    playlists?: PlaylistCardData[];
+    playlists?: ArtistPlaylistDto[];
     isLoading?: boolean;
     onPlaylistClick?: (id: string) => void;
 }
 
-const MOCK_PLAYLISTS: PlaylistCardData[] = [
-    { id: '1', name: "Lisa's Playlist",   authorName: 'YG Entertainment', tracksCount: 15, coverUrl: null },
-    { id: '2', name: "Jisoo's Playlist",  authorName: 'YG Entertainment', tracksCount: 12, coverUrl: null },
-    { id: '3', name: "Rose's Playlist",   authorName: 'YG Entertainment', tracksCount: 10, coverUrl: null },
-    { id: '4', name: "Jennie's Playlist", authorName: 'YG Entertainment', tracksCount: 18, coverUrl: null },
-];
-
-/**
- * Секція: Плейлісти виконавця
- *
- * Підключення даних:
- * 1. const { data, isLoading } = useGetApiArtistsIdPlaylists(artistId);
- * 2. <ArtistPlaylistsSection playlists={data?.items} isLoading={isLoading} />
- */
 export const ArtistPlaylistsSection = ({
                                            artistId,
                                            artistName,
-                                           playlists = MOCK_PLAYLISTS,
+                                           playlists = [], // Избавились от MOCK_PLAYLISTS
                                            isLoading = false,
                                            onPlaylistClick,
                                        }: ArtistPlaylistsSectionProps) => {
     const sliderRef = useRef<HTMLDivElement>(null);
+
+    // ─── Маппинг данных из ArtistPlaylistDto в формат PlaylistCardData ────────
+    const mappedPlaylists = useMemo(() => {
+        if (!playlists || playlists.length === 0) return [];
+
+        return playlists.map((p) => ({
+            id:          p.id ?? '',
+            name:        p.title ?? 'Без назви',
+            authorName:  p.creatorName ?? 'Невідомий автор',
+            tracksCount: p.tracksCount ?? 0,
+            coverUrl:    getImageUrl(p.coverUrl),
+        }));
+    }, [playlists]);
+
+    // Если загрузка завершена и плейлистов нет — скрываем всю секцию
+    if (!isLoading && mappedPlaylists.length === 0) return null;
 
     const scroll = (dir: 'prev' | 'next') => {
         if (!sliderRef.current) return;
@@ -44,7 +46,7 @@ export const ArtistPlaylistsSection = ({
     };
 
     return (
-        <section className="mb-5">
+        <section className="artist-playlists mb-5">
             <SectionHeader
                 title={`${artistName}: плейлісти виконавця`}
                 highlightedWord="плейлісти"
@@ -53,13 +55,17 @@ export const ArtistPlaylistsSection = ({
             />
 
             {isLoading ? (
-                <div className="row g-3">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="col-6 col-md-3">
-                            <div className="skeleton skeleton--rounded" style={{ aspectRatio: '1/1' }} />
-                            <div className="skeleton mt-2" style={{ height: 13, width: '75%' }} />
-                        </div>
-                    ))}
+                // Скелетоны теперь тоже красиво выстроены в горизонтальную ленту
+                <div className="section-slider-wrap">
+                    <div className="row g-3 flex-nowrap overflow-hidden">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} className="col-6 col-md-4 col-lg-2" style={{ flex: '0 0 auto' }}>
+                                <div className="skeleton skeleton--rounded" style={{ aspectRatio: '1/1' }} />
+                                <div className="skeleton mt-2" style={{ height: 13, width: '75%' }} />
+                                <div className="skeleton mt-1" style={{ height: 11, width: '40%' }} />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             ) : (
                 <div className="section-slider-wrap">
@@ -67,12 +73,12 @@ export const ArtistPlaylistsSection = ({
                         ref={sliderRef}
                         className="row g-3 flex-nowrap overflow-x-auto artist-slider"
                     >
-                        {playlists.map((playlist) => (
-                            <div key={playlist.id} className="col-6 col-md-4 col-lg-2">
+                        {mappedPlaylists.map((playlist) => (
+                            <div key={playlist.id} className="col-6 col-md-4 col-lg-2" style={{ flex: '0 0 auto' }}>
                                 <PlaylistCard playlist={playlist} onClick={onPlaylistClick} />
                             </div>
                         ))}
-                        <div className="col-auto" style={{ minWidth: 80 }} />
+                        <div className="col-auto" style={{ minWidth: 40 }} />
                     </div>
                 </div>
             )}

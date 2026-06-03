@@ -1,41 +1,41 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
-import { ShowAllButton } from '@/shared/ui/ShowAllButton';
 import { ArtistCard, type ArtistCardData } from '@/entities/artist/ui/ArtistCard';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
+import type { SimilarArtistDto } from '@repo/api/client.ts';
 
 interface ArtistSimilarArtistsSectionProps {
     artistId: string;
-    /** TODO: замінити на хук — useGetApiArtistsIdSimilarArtists(artistId) */
-    artists?: ArtistCardData[];
+    artists?: SimilarArtistDto[];
     isLoading?: boolean;
     onArtistClick?: (id: string) => void;
 }
 
-const MOCK_ARTISTS: ArtistCardData[] = [
-    { id: '1', name: 'LE SSERAFIM', monthlyListeners: 234326, avatarUrl: null },
-    { id: '2', name: 'aespa',       monthlyListeners: 440243, avatarUrl: null },
-    { id: '3', name: 'Hwa Sa',      monthlyListeners: 294526, avatarUrl: null },
-    { id: '4', name: 'JENNIE',      monthlyListeners: 448563, avatarUrl: null },
-    { id: '5', name: 'ROSÉ',        monthlyListeners: 388206, avatarUrl: null },
-];
-
-/**
- * Секція: "Шанувальникам також подобаються"
- * Артисти схожого жанру
- *
- * Підключення даних:
- * 1. const { data, isLoading } = useGetApiArtistsIdSimilarArtists(artistId);
- * 2. <ArtistSimilarArtistsSection artists={data?.items} isLoading={isLoading} />
- */
 export const ArtistSimilarArtistsSection = ({
                                                 artistId,
-                                                artists = MOCK_ARTISTS,
+                                                artists = [], // Избавились от MOCK_ARTISTS
                                                 isLoading = false,
                                                 onArtistClick,
                                             }: ArtistSimilarArtistsSectionProps) => {
     const sliderRef = useRef<HTMLDivElement>(null);
+
+    // ─── Маппинг данных из SimilarArtistDto в формат ArtistCardData ──────────
+    const mappedArtists = useMemo<ArtistCardData[]>(() => {
+        if (!artists || artists.length === 0) return [];
+
+        return artists.map((a) => ({
+            id:               a.id ?? '',
+            name:             a.name ?? 'Невідомий виконавець',
+            // Мапим followersCount в поле отображения подписчиков/слушателей
+            monthlyListeners: a.followersCount ?? 0,
+            avatarUrl:        getImageUrl(a.avatarUrl),
+        }));
+    }, [artists]);
+
+    // Если загрузка завершена и похожих артистов нет — скрываем всю секцию
+    if (!isLoading && mappedArtists.length === 0) return null;
 
     const scroll = (dir: 'prev' | 'next') => {
         if (!sliderRef.current) return;
@@ -44,7 +44,7 @@ export const ArtistSimilarArtistsSection = ({
     };
 
     return (
-        <section className="mb-5">
+        <section className="artist-similar mb-5">
             <SectionHeader
                 title="Шанувальникам також подобаються"
                 highlightedWord="подобаються"
@@ -53,13 +53,17 @@ export const ArtistSimilarArtistsSection = ({
             />
 
             {isLoading ? (
-                <div className="d-flex gap-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className="d-flex flex-column align-items-center gap-2">
-                            <div className="skeleton skeleton--circle" style={{ width: 120, height: 120 }} />
-                            <div className="skeleton" style={{ height: 12, width: 80 }} />
-                        </div>
-                    ))}
+                // Скелетоны теперь тоже красиво выстроены в ленту скролла
+                <div className="section-slider-wrap">
+                    <div className="d-flex gap-4 overflow-hidden">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="d-flex flex-column align-items-center gap-2" style={{ flex: '0 0 auto', width: 140 }}>
+                                <div className="skeleton skeleton--circle" style={{ width: 120, height: 120 }} />
+                                <div className="skeleton mt-1" style={{ height: 13, width: '80%' }} />
+                                <div className="skeleton" style={{ height: 11, width: '50%' }} />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             ) : (
                 <div className="section-slider-wrap">
@@ -67,11 +71,12 @@ export const ArtistSimilarArtistsSection = ({
                         ref={sliderRef}
                         className="row g-4 flex-nowrap overflow-x-auto artist-slider"
                     >
-                        {artists.map((artist) => (
-                            <div key={artist.id} className="col-auto">
+                        {mappedArtists.map((artist) => (
+                            <div key={artist.id} className="col-auto" style={{ flex: '0 0 auto' }}>
                                 <ArtistCard artist={artist} onClick={onArtistClick} />
                             </div>
                         ))}
+                        <div className="col-auto" style={{ minWidth: 20 }} />
                     </div>
                 </div>
             )}

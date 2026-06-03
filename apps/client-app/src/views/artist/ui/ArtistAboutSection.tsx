@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 interface ArtistAboutSectionProps {
     artistId: string;
@@ -12,22 +15,19 @@ const formatListeners = (count?: number): string => {
     return count.toLocaleString('uk-UA') + ' слухачів за місяць';
 };
 
-/**
- * Секція: "Про виконавця"
- * Банер + кількість слухачів + текст біо
- *
- * Підключення даних — з useGetApiArtistsId(artistId):
- * bannerUrl, monthlyListeners, bio
- */
 export const ArtistAboutSection = ({
                                        artistId,
                                        monthlyListeners,
                                        bio,
                                        bannerUrl,
                                    }: ArtistAboutSectionProps) => {
-    const bannerSrc = bannerUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${bannerUrl}`
-        : `https://picsum.photos/seed/banner-${artistId}/800/400`;
+
+    // 🚨 ФИКС: Переводим на единый хелпер обработки изображений
+    const bannerSrc = getImageUrl(bannerUrl)
+        ?? `https://picsum.photos/seed/banner-${artistId}/1200/500`; // Немного увеличили разрешение для баннера
+
+    // Если нет ни описания, ни слушателей, ни баннера — скрываем пустую секцию
+    if (!monthlyListeners && !bio && !bannerUrl) return null;
 
     return (
         <section className="artist-about mb-5">
@@ -36,7 +36,7 @@ export const ArtistAboutSection = ({
             <div className="artist-about__card">
                 {/* Банер */}
                 <div className="artist-about__banner">
-                    <img src={bannerSrc} alt="About" />
+                    <img src={bannerSrc} alt="About artist banner" />
 
                     {/* Overlay з інфо */}
                     <div className="artist-about__overlay">
