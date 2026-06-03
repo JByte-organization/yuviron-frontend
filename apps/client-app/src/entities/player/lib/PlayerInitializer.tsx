@@ -5,10 +5,12 @@ import { usePlayerStore } from '../model/playerStore';
 import { playerAudioRef, playerAdAudioRef } from '../lib/playerRefs';
 import { usePlayer } from '../lib/usePlayer';
 
+import { getApiTracksIdPlay, type TrackStreamUrlResponse } from '@repo/api/client';
+
 export const PlayerInitializer = () => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const adAudioRef = useRef<HTMLAudioElement | null>(null);
-    const { next } = usePlayer(); // Беремо метод перемикання з хука
+    const { next } = usePlayer();
 
     const setDuration = usePlayerStore(s => s.setDuration);
     const setCurrentTime = usePlayerStore(s => s.setCurrentTime);
@@ -16,59 +18,63 @@ export const PlayerInitializer = () => {
     const currentTrack = usePlayerStore(s => s.currentTrack);
 
     useEffect(() => {
-        // Зберігаємо нативні елементи в твій глобальний Singleton Ref
         playerAudioRef.current = audioRef.current;
         playerAdAudioRef.current = adAudioRef.current;
 
         const audio = audioRef.current;
         if (!audio) return;
 
-        // 1. СИНХРОНІЗАЦІЯ ЧАСУ ТА ТРИВАЛОСТІ З ZUSTAND
         const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
         const handleDurationChange = () => setDuration(audio.duration || 0);
         const handleEnded = () => { void next(); };
 
-        // ФІКС ДЛЯ SAFARI / IOS (Повноцінний Silent Retry)
+        // 2. ОБНОВЛЕННЫЙ ФИКС ДЛЯ SAFARI / IOS
         const handleNativeError = async () => {
-            const audio = playerAudioRef.current;
-            if (!audio || !audio.error || !currentTrack) return;
+            const currentStatus = usePlayerStore.getState().status;
 
-            // Код 4 (MEDIA_ERR_SRC_NOT_SUPPORTED) або 2 (NETWORK_ERROR) вилітають при протуханні Signed URL
+            // Если плеер уже в idle (мы сами его остановили), полностью игнорируем любые ошибки тега!
+            if (!audio.error || !currentTrack || currentStatus === 'idle') return;
+
+            // Если до конца трека осталось меньше 2 секунд — это ложная ошибка конца файла
+            if (audio.duration && (audio.duration - audio.currentTime < 2)) {
+                console.log('[Player Safari] Конец трека, переключаем...');
+                void next();
+                return;
+            }
+
             const isAuthError = audio.error.code === 4 || audio.error.code === 2;
 
             if (isAuthError) {
-                console.warn('[Player Safari] Token expired or IP changed, refreshing stream...');
+                console.warn('[Player Safari] Токен протух или изменился IP, обновляем поток...');
 
                 try {
-                    const currentTime = audio.currentTime; // Запам'ятовуємо секунду
+                    const currentTime = audio.currentTime;
 
-                    // Смикаємо ендпоінт за свіжим Signed URL
-                    const res = await fetch(`/api/tracks/${currentTrack.id}/play`);
-                    const payload = await res.json();
+                    // ФИКС БАГА №2: Используем Orval-клиент, который знает про правильный домен бэка
+                    const res = await getApiTracksIdPlay(currentTrack.id);
+                    const data = res as unknown as { data?: TrackStreamUrlResponse } | TrackStreamUrlResponse;
+                    const payload: TrackStreamUrlResponse = 'data' in data && data.data ? data.data : (data as TrackStreamUrlResponse);
 
-                    // Витягуємо сирий URL (враховуючи пласку або вкладену структуру)
-                    const rawUrl = payload?.data?.audioUrl ?? payload?.audioUrl;
+                    const rawUrl = payload.audioUrl ?? null;
 
                     if (rawUrl) {
-                        // Формуємо абсолютний шлях (наш хелпер з урахуванням домену бекенду)
+                        // Собираем абсолютный URL (пока нет прокси)
                         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dev-api.yuviron.com/api';
                         const origin = apiUrl.replace(/\/api.*$/, '');
                         const newAudioUrl = rawUrl.startsWith('http') ? rawUrl : `${origin}${rawUrl}`;
 
-                        // Перезапускаємо нативний потік Safari
                         audio.src = newAudioUrl;
                         audio.load();
 
-                        // Повертаємо слухач на ту саму секунду після завантаження маніфесту
                         audio.onloadedmetadata = () => {
                             audio.currentTime = currentTime;
                             void audio.play();
                             usePlayerStore.getState().setAudioUrl(newAudioUrl);
-                            audio.onloadedmetadata = null; // Чистимо за собою
+                            audio.onloadedmetadata = null;
                         };
                     }
                 } catch (err) {
-                    console.error('[Player Safari] Silent retry failed:', err);
+                    console.error('[Player Safari] Нативный ретрай завершился ошибкой:', err);
                     setStatus('idle');
                 }
             }
@@ -85,7 +91,7 @@ export const PlayerInitializer = () => {
             audio.removeEventListener('ended', handleEnded);
             audio.removeEventListener('error', handleNativeError);
         };
-    }, [currentTrack, next, setCurrentTime, setDuration]);
+    }, [currentTrack, next, setCurrentTime, setDuration, setStatus]);
 
     return (
         <>
