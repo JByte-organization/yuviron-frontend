@@ -317,14 +317,19 @@ jobs:
           # one into a temp file; replace the committed spec only on success,
           # otherwise keep the committed one so orval still generates the client.
           # Drop this fetch entirely once /swagger/artist is reliably healthy.
+          # Replace the committed spec only if the fetched one is non-empty AND
+          # valid JSON — a 200-with-empty/garbage body would otherwise overwrite
+          # the good committed spec and break `pnpm api:gen`.
           if docker exec "yuviron-${DEPLOY_ENV}-backend" \
                wget -qO- http://127.0.0.1:5073/swagger/artist/swagger.json \
-               > packages/api/openapi/artist.swagger.json.tmp; then
+               > packages/api/openapi/artist.swagger.json.tmp \
+             && [ -s packages/api/openapi/artist.swagger.json.tmp ] \
+             && node -e "JSON.parse(require('fs').readFileSync('packages/api/openapi/artist.swagger.json.tmp','utf8'))" 2>/dev/null; then
             mv packages/api/openapi/artist.swagger.json.tmp packages/api/openapi/artist.swagger.json
             echo "Artist swagger fetched from backend."
           else
             rm -f packages/api/openapi/artist.swagger.json.tmp
-            echo "::warning::Artist swagger unavailable (HTTP error) — using committed packages/api/openapi/artist.swagger.json."
+            echo "::warning::Artist swagger unavailable or invalid — using committed packages/api/openapi/artist.swagger.json."
           fi
 
           pnpm api:gen

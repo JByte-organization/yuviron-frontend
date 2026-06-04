@@ -2,6 +2,17 @@
 
 import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import {
+    AppPermission,
+    useDeleteApiStudioArtistTracksId,
+    usePutApiStudioArtistTracksId,
+} from '@repo/api/artist.ts';
+import { usePostApiFilesUpload } from '@repo/api/client.ts';
+
+const extractFileId = (res: unknown): string | null => {
+    const r = res as { fileId?: string; data?: { fileId?: string } } | null;
+    return r?.data?.fileId ?? r?.fileId ?? null;
+};
 
 // ══════════════════════════════════════════════════════════
 // EDIT TRACK MODAL
@@ -24,21 +35,44 @@ export const EditTrackModal = ({ isOpen, trackId, trackTitle, onClose, onSuccess
         defaultValues: { title: trackTitle, explicit: false },
     });
 
+    const [coverFile,     setCoverFile]     = useState<File | null>(null);
     const [coverPreview,  setCoverPreview]  = useState<string | null>(null);
+    const [error,         setError]         = useState<string | null>(null);
     const coverRef = useRef<HTMLInputElement>(null);
+
+    const { mutateAsync: uploadFile } = usePostApiFilesUpload();
+    const { mutateAsync: updateTrack } = usePutApiStudioArtistTracksId();
 
     const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        setCoverFile(file);
         setCoverPreview(URL.createObjectURL(file));
     };
 
     const onSubmit = async (values: EditFormValues) => {
-        console.log('edit track', trackId, values);
-        // TODO: PUT /api/artist-dashboard/tracks/{trackId}
-        await new Promise(r => setTimeout(r, 500));
-        onSuccess();
-        onClose();
+        setError(null);
+        try {
+            // Обкладинку чіпаємо лише якщо вибрали новий файл — інакше не шлемо
+            // поле взагалі, щоб бек не скинув наявну обкладинку.
+            const coverFileId = coverFile
+                ? extractFileId(await uploadFile({ data: { file: coverFile } }))
+                : null;
+            await updateTrack({
+                id: trackId,
+                data: {
+                    trackId,
+                    title: values.title.trim(),
+                    explicit: values.explicit,
+                    ...(coverFileId ? { coverFileId } : {}),
+                    requiredPermission: AppPermission.StudioArtistManage,
+                },
+            });
+            onSuccess();
+            onClose();
+        } catch {
+            setError('Не вдалося зберегти зміни. Спробуйте ще раз.');
+        }
     };
 
     if (!isOpen) return null;
@@ -96,6 +130,7 @@ export const EditTrackModal = ({ isOpen, trackId, trackTitle, onClose, onSuccess
                     </div>
 
                     <div className="client-modal__footer">
+                        {error && <span className="client-modal__field-error me-auto">{error}</span>}
                         <button type="button" className="client-modal__btn client-modal__btn--ghost" onClick={onClose}>
                             Скасувати
                         </button>
@@ -123,15 +158,18 @@ interface DeleteProps {
 
 export const DeleteTrackModal = ({ isOpen, trackId, trackTitle, onClose, onSuccess }: DeleteProps) => {
     const [isDeleting, setIsDeleting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const { mutateAsync: deleteTrack } = useDeleteApiStudioArtistTracksId();
 
     const handleDelete = async () => {
+        setError(null);
         setIsDeleting(true);
         try {
-            console.log('delete track', trackId);
-            // TODO: DELETE /api/artist-dashboard/tracks/{trackId}
-            await new Promise(r => setTimeout(r, 500));
+            await deleteTrack({ id: trackId });
             onSuccess();
             onClose();
+        } catch {
+            setError('Не вдалося видалити трек.');
         } finally {
             setIsDeleting(false);
         }
@@ -153,6 +191,7 @@ export const DeleteTrackModal = ({ isOpen, trackId, trackTitle, onClose, onSucce
                     <p className="text-muted mb-1">Ви впевнені що хочете видалити трек?</p>
                     <p className="text-theme fw-semibold mb-0">«{trackTitle}»</p>
                     <p className="text-danger small mt-3 mb-0">Цю дію неможливо скасувати.</p>
+                    {error && <p className="client-modal__field-error mt-2 mb-0">{error}</p>}
                 </div>
 
                 <div className="client-modal__footer">
