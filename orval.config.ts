@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 
 const LOCAL_ADMIN_SWAGGER = './packages/api/openapi/admin.swagger.json';
 const LOCAL_CLIENT_SWAGGER = './packages/api/openapi/client.swagger.json';
+const LOCAL_ARTIST_SWAGGER = './packages/api/openapi/artist.swagger.json';
 
 const REMOTE_ADMIN_SWAGGER = 'https://dev-api.yuviron.com/swagger/admin/swagger.json';
 const REMOTE_CLIENT_SWAGGER = 'https://dev-api.yuviron.com/swagger/client/swagger.json';
