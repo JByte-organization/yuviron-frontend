@@ -1,19 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import {
+    getGetApiStudioArtistTracksQueryKey,
+    useGetApiStudioArtistTracks,
+    type StudioTrackListItemDto,
+} from '@repo/api/artist.ts';
+import { useQueryClient } from '@tanstack/react-query';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 import { UploadTrackModal } from '@/features/artist/track/ui/UploadTrackModal';
 import { EditTrackModal, DeleteTrackModal } from '@/features/artist/track/ui/EditDeleteArtistTrackModals';
+import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 
-// ─── Mock ──────────────────────────────────────────────────
-// TODO: замінити на useGetApiArtistDashboardTracks()
-const MOCK_TRACKS: TrackRowData[] = [
-    { id: 't1', index: 1, title: 'THE CONTORTIONIST', artistNames: ['МузикаВітч'], artistId: 'a1', albumId: 'al1', albumTitle: 'ДЛЯ НАСТРОЮ1', addedAt: '2025-03-01T00:00:00Z', durationMs: 210000, coverUrl: null },
-    { id: 't2', index: 2, title: 'Глубоко',           artistNames: ['МузикаВітч'], artistId: 'a1', albumId: 'al1', albumTitle: 'ДЛЯ НАСТРОЮ1', addedAt: '2025-03-05T00:00:00Z', durationMs: 195000, coverUrl: null },
-    { id: 't3', index: 3, title: 'Superman',          artistNames: ['МузикаВітч'], artistId: 'a1', albumId: 'al2', albumTitle: 'ДЛЯ НАСТРОЮ2', addedAt: '2025-04-10T00:00:00Z', durationMs: 224000, coverUrl: null },
-    { id: 't4', index: 4, title: 'Sweater Weather',   artistNames: ['МузикаВітч'], artistId: 'a1', albumId: 'al2', albumTitle: 'ДЛЯ НАСТРОЮ2', addedAt: '2025-04-15T00:00:00Z', durationMs: 240000, coverUrl: null },
-    { id: 't5', index: 5, title: 'Cry Me A River',    artistNames: ['МузикаВітч'], artistId: 'a1', albumId: 'al3', albumTitle: 'ПІДТРИМКА КО...', addedAt: '2025-05-01T00:00:00Z', durationMs: 188000, coverUrl: null },
-];
+const unwrapItems = <T,>(raw: unknown): T[] => {
+    if (!raw) return [];
+    const obj = raw as { items?: T[]; data?: { items?: T[] } };
+    return obj.items ?? obj.data?.items ?? [];
+};
 
 interface TrackToEdit {
     id: string;
@@ -22,16 +25,47 @@ interface TrackToEdit {
 }
 
 export const ArtistTracksPage = () => {
+    const artistId = useCurrentArtistId();
+    const queryClient = useQueryClient();
+
     const [search,       setSearch]       = useState('');
+    const [debounced,    setDebounced]    = useState('');
     const [showUpload,   setShowUpload]   = useState(false);
     const [editingTrack, setEditingTrack] = useState<TrackToEdit | null>(null);
     const [deletingTrack,setDeletingTrack]= useState<TrackToEdit | null>(null);
     const [currentTrack, setCurrentTrack] = useState<string | null>(null);
 
-    const filtered = MOCK_TRACKS.filter(t =>
-        t.title.toLowerCase().includes(search.toLowerCase()) ||
-        t.artistNames.join(' ').toLowerCase().includes(search.toLowerCase())
-    );
+    useEffect(() => {
+        const id = setTimeout(() => setDebounced(search.trim()), 300);
+        return () => clearTimeout(id);
+    }, [search]);
+
+    const params = {
+        ArtistId: artistId ?? undefined,
+        SearchTerm: debounced || undefined,
+        Page: 1,
+        PageSize: 100,
+    };
+    const { data: tracksRaw, isLoading } = useGetApiStudioArtistTracks(params, {
+        query: { enabled: !!artistId, queryKey: getGetApiStudioArtistTracksQueryKey(params) },
+    });
+
+    const tracks: TrackRowData[] = unwrapItems<StudioTrackListItemDto>(tracksRaw).map((t, i) => ({
+        id: t.id ?? '',
+        index: t.albumPosition ?? i + 1,
+        title: t.title ?? 'Без назви',
+        artistNames: t.artistNames ?? [],
+        artistId: artistId ?? '',
+        albumId: t.albumId ?? '',
+        albumTitle: t.albumTitle ?? null,
+        addedAt: t.createdAt ?? '',
+        durationMs: t.durationMs ?? 0,
+        coverUrl: t.coverUrl,
+    }));
+
+    // Інвалідовуємо список після create/edit/delete у модалках.
+    const refetchTracks = () =>
+        queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/tracks'] });
 
     return (
         <div className="artist-tracks-page">
@@ -40,7 +74,7 @@ export const ArtistTracksPage = () => {
             <div className="artist-tracks-page__header">
                 <div>
                     <h1 className="artist-tracks-page__title">Мої треки</h1>
-                    <p className="artist-tracks-page__subtitle">{MOCK_TRACKS.length} треків</p>
+                    <p className="artist-tracks-page__subtitle">{tracks.length} треків</p>
                 </div>
 
                 <div className="artist-tracks-page__controls">
@@ -89,12 +123,16 @@ export const ArtistTracksPage = () => {
             <hr className="artist-tracks-page__divider" />
 
             {/* ─── Список треків ─────────────────────── */}
-            {filtered.length === 0 ? (
+            {tracks.length === 0 ? (
                 <div className="artist-tracks-page__empty">
-                    {search ? `Нічого не знайдено для «${search}»` : 'Треків ще немає. Завантажте перший трек!'}
+                    {isLoading
+                        ? 'Завантаження…'
+                        : search
+                            ? `Нічого не знайдено для «${search}»`
+                            : 'Треків ще немає. Завантажте перший трек!'}
                 </div>
             ) : (
-                filtered.map(track => (
+                tracks.map(track => (
                     <div key={track.id} className="artist-tracks-page__row-wrap">
                         <TrackRow
                             track={track}
@@ -126,7 +164,7 @@ export const ArtistTracksPage = () => {
             <UploadTrackModal
                 isOpen={showUpload}
                 onClose={() => setShowUpload(false)}
-                onSuccess={() => { setShowUpload(false); /* TODO: refetch */ }}
+                onSuccess={() => { setShowUpload(false); refetchTracks(); }}
             />
 
             {editingTrack && (
@@ -135,7 +173,7 @@ export const ArtistTracksPage = () => {
                     trackId={editingTrack.id}
                     trackTitle={editingTrack.title}
                     onClose={() => setEditingTrack(null)}
-                    onSuccess={() => { setEditingTrack(null); /* TODO: refetch */ }}
+                    onSuccess={() => { setEditingTrack(null); refetchTracks(); }}
                 />
             )}
 
@@ -145,7 +183,7 @@ export const ArtistTracksPage = () => {
                     trackId={deletingTrack.id}
                     trackTitle={deletingTrack.title}
                     onClose={() => setDeletingTrack(null)}
-                    onSuccess={() => { setDeletingTrack(null); /* TODO: refetch */ }}
+                    onSuccess={() => { setDeletingTrack(null); refetchTracks(); }}
                 />
             )}
         </div>

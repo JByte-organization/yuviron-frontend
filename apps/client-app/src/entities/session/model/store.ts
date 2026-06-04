@@ -5,6 +5,10 @@ export interface SessionUser {
     id?: string;
     email?: string;
     role?: string;
+    // ID артист-профілю, яким керує користувач (роль ManagementUser). Бек МОЖЕ
+    // класти його в claim — резолвимо за кількома ймовірними іменами. Якщо клейму
+    // немає, лишається undefined, і кабінет бере artistId з localStorage (після create).
+    artistId?: string;
 }
 
 interface SessionState {
@@ -53,6 +57,13 @@ const userFromToken = (token: string | null): SessionUser | null => {
         role: pickClaim(payload, [
             'role',
             'http://schemas.microsoft.com/ws/2008/06/identity/claims/role',
+        ]),
+        artistId: pickClaim(payload, [
+            'artistId',
+            'artist_id',
+            'ArtistId',
+            'artistProfileId',
+            'artist_profile_id',
         ]),
     };
 };

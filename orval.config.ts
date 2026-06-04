@@ -21,7 +21,11 @@ const queryConfig = {
     useInfinite: true,
 };
 
-export default defineConfig({
+// Artist-свагер на бекенді нестабільний: /swagger/artist/swagger.json повертає
+// 500, тому генеруємо artist-клієнт ЛИШЕ якщо локальний спек реально завантажено
+// (CI кладе його лише за успішного wget). Жодного fallback на remote — інакше
+// orval упреться в той самий 500. Прибрати guard, коли бекенд полагодить групу.
+const config: Parameters<typeof defineConfig>[0] = {
     // ─── Адмінка ──────────────────────────────────────────
     yuviron_admin: {
         input: adminInput,
@@ -53,5 +57,25 @@ export default defineConfig({
             },
         },
     },
+};
 
-});
+// ─── Артист (опціонально, поки бекенд не полагодить /swagger/artist) ──────────
+if (existsSync(LOCAL_ARTIST_SWAGGER)) {
+    config.yuviron_artist = {
+        input: LOCAL_ARTIST_SWAGGER,
+        output: {
+            mode: 'tags',
+            target: './packages/api/src/generated/artist/endpoints',
+            schemas: './packages/api/src/generated/artist/models',
+            prettier: true,
+            client: 'react-query',
+            override: {
+                query: queryConfig,
+                mutator: mutatorConfig,
+            },
+        },
+    };
+}
+
+export default defineConfig(config);
+

@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
     "./admin": "./src/admin.ts",
+    "./artist": "./src/artist.ts",
     "./generated/*": "./src/generated/*"
   },
   "scripts": {

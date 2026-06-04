@@ -1,7 +1,18 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import {
+    AppPermission,
+    getGetApiStudioArtistProfileArtistIdQueryKey,
+    useGetApiStudioArtistProfileArtistId,
+    usePutApiStudioArtistProfileId,
+    type StudioArtistProfileDto,
+} from '@repo/api/artist.ts';
+import { usePostApiFilesUpload } from '@repo/api/client.ts';
+import { useQueryClient } from '@tanstack/react-query';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 
 type FormValues = {
     stageName: string;
@@ -9,51 +20,114 @@ type FormValues = {
     country: string;
 };
 
-const MOCK_ARTIST = {
-    stageName:  'МузикаВітч',
-    bio:        'Вітаю всіх! Дякую, що завітали на мою сторінку.',
-    country:    'Україна',
-    avatarUrl:  'https://picsum.photos/id/91/200/200',
-    bannerUrl:  null as string | null,
+const unwrap = <T,>(raw: unknown): T | undefined => {
+    if (!raw) return undefined;
+    const obj = raw as { data?: T };
+    return (obj.data ?? (raw as T)) as T;
+};
+
+const extractFileId = (res: unknown): string | null => {
+    const r = res as { fileId?: string; data?: { fileId?: string } } | null;
+    return r?.data?.fileId ?? r?.fileId ?? null;
 };
 
 export const ArtistSettingsPage = () => {
-    const {
-        register, handleSubmit, formState: { errors, isSubmitting, isDirty },
-    } = useForm<FormValues>({
-        defaultValues: {
-            stageName: MOCK_ARTIST.stageName,
-            bio:       MOCK_ARTIST.bio,
-            country:   MOCK_ARTIST.country,
+    const artistId = useCurrentArtistId();
+    const queryClient = useQueryClient();
+
+    const { data: profileRaw } = useGetApiStudioArtistProfileArtistId(artistId ?? '', {
+        query: {
+            enabled: !!artistId,
+            queryKey: getGetApiStudioArtistProfileArtistIdQueryKey(artistId ?? ''),
         },
     });
+    const profile = unwrap<StudioArtistProfileDto>(profileRaw);
 
-    const [avatarPreview, setAvatarPreview] = useState<string>(MOCK_ARTIST.avatarUrl);
-    const [bannerPreview, setBannerPreview] = useState<string | null>(MOCK_ARTIST.bannerUrl);
+    const { mutateAsync: uploadFile } = usePostApiFilesUpload();
+    const { mutateAsync: updateProfile } = usePutApiStudioArtistProfileId();
+
+    const {
+        register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty },
+    } = useForm<FormValues>({
+        defaultValues: { stageName: '', bio: '', country: '' },
+    });
+
+    const [avatarFile,    setAvatarFile]    = useState<File | null>(null);
+    const [bannerFile,    setBannerFile]    = useState<File | null>(null);
+    // Локальні object-URL для щойно вибраних файлів (мають пріоритет над тим, що з бека).
+    const [avatarObjectUrl, setAvatarObjectUrl] = useState<string | null>(null);
+    const [bannerObjectUrl, setBannerObjectUrl] = useState<string | null>(null);
     const [saved,         setSaved]         = useState(false);
+    const [error,         setError]         = useState<string | null>(null);
 
     const avatarRef = useRef<HTMLInputElement>(null);
     const bannerRef = useRef<HTMLInputElement>(null);
 
+    // Прев'ю виводимо під час рендера: новий файл → object-URL, інакше — з бека.
+    const avatarPreview = avatarObjectUrl ?? getImageUrl(profile?.details?.avatarUrl);
+    const bannerPreview = bannerObjectUrl ?? getImageUrl(profile?.details?.bannerUrl);
+
+    // Префіл текстових полів форми, коли профіль завантажився (reset — не setState).
+    useEffect(() => {
+        if (!profile) return;
+        reset({
+            stageName: profile.name ?? '',
+            bio: profile.details?.bio ?? '',
+            country: '',
+        });
+    }, [profile, reset]);
+
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        setAvatarPreview(URL.createObjectURL(file));
+        setAvatarFile(file);
+        setAvatarObjectUrl(URL.createObjectURL(file));
     };
 
     const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        setBannerPreview(URL.createObjectURL(file));
+        setBannerFile(file);
+        setBannerObjectUrl(URL.createObjectURL(file));
     };
 
     const onSubmit = async (values: FormValues) => {
-        console.log('save settings', values);
-        // TODO: PUT /api/artist-dashboard/profile
-        await new Promise(r => setTimeout(r, 800));
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
+        if (!artistId) return;
+        setError(null);
+        try {
+            // Опційні файли вантажимо окремо (як у create-флоу), отримуємо fileId.
+            let avatarFileId: string | null = null;
+            let bannerFileId: string | null = null;
+            if (avatarFile) avatarFileId = extractFileId(await uploadFile({ data: { file: avatarFile } }));
+            if (bannerFile) bannerFileId = extractFileId(await uploadFile({ data: { file: bannerFile } }));
+
+            await updateProfile({
+                id: artistId,
+                data: {
+                    artistId,
+                    name: values.stageName.trim(),
+                    bio: values.bio.trim() || null,
+                    avatarFileId,
+                    bannerFileId,
+                    requiredPermission: AppPermission.StudioArtistManage,
+                },
+            });
+
+            // Скидаємо вибрані файли (прев'ю візьметься зі свіжого профілю) та оновлюємо кеш.
+            setAvatarFile(null);
+            setBannerFile(null);
+            setAvatarObjectUrl(null);
+            setBannerObjectUrl(null);
+            await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/profile'] });
+            reset(values);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 3000);
+        } catch {
+            setError('Не вдалося зберегти зміни. Спробуйте ще раз.');
+        }
     };
+
+    const hasChanges = isDirty || !!avatarFile || !!bannerFile;
 
     return (
         <div className="artist-settings-page">
@@ -104,7 +178,13 @@ export const ArtistSettingsPage = () => {
                                 className="artist-settings-page__avatar"
                                 onClick={() => avatarRef.current?.click()}
                             >
-                                <img src={avatarPreview} alt="avatar" />
+                                {avatarPreview ? (
+                                    <img src={avatarPreview} alt="avatar" />
+                                ) : (
+                                    <div className="artist-settings-page__avatar-placeholder">
+                                        <i className="bi bi-person" />
+                                    </div>
+                                )}
                                 <div className="artist-settings-page__avatar-overlay">
                                     <i className="bi bi-pencil" />
                                 </div>
@@ -118,7 +198,7 @@ export const ArtistSettingsPage = () => {
                             {/* Ім'я артиста */}
                             <div className="mb-4">
                                 <label className="artist-settings-page__field-label">
-                                    Ім'я артиста *
+                                    Ім’я артиста *
                                 </label>
                                 <input
                                     type="text"
@@ -133,7 +213,7 @@ export const ArtistSettingsPage = () => {
                                 )}
                             </div>
 
-                            {/* Країна */}
+                            {/* Країна (поки не зберігається — бек не має поля) */}
                             <div className="mb-4">
                                 <label className="artist-settings-page__field-label">Країна</label>
                                 <input
@@ -167,6 +247,7 @@ export const ArtistSettingsPage = () => {
 
                 {/* ─── Кнопка зберегти ──────────────── */}
                 <div className="artist-settings-page__footer">
+                    {error && <span className="client-modal__field-error me-3">{error}</span>}
                     {saved && (
                         <span className="artist-settings-page__saved">
                             <i className="bi bi-check-circle me-2" />
@@ -176,7 +257,7 @@ export const ArtistSettingsPage = () => {
                     <button
                         type="submit"
                         className="client-modal__btn client-modal__btn--primary"
-                        disabled={isSubmitting || !isDirty}
+                        disabled={isSubmitting || !hasChanges || !artistId}
                     >
                         {isSubmitting
                             ? <><span className="spinner-border spinner-border-sm me-2" />Збереження...</>

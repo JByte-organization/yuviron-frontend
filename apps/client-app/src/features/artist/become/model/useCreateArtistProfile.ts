@@ -8,6 +8,7 @@ import {
     usePostApiFilesUpload,
 } from '@repo/api/client.ts';
 import { useSessionStore } from '@/entities/session/model/store';
+import { setStoredArtistId } from '@/entities/artist/model/currentArtist';
 import { extractApiError, extractFileId } from './helpers';
 
 // idle → submitting → success (рефреш не удался — показываем экран с ручной
@@ -43,7 +44,11 @@ export const useCreateArtistProfile = () => {
             }
             const res = await createProfile({ data: { name: name.trim(), avatarFileId } });
             const r = res as unknown as { artistId?: string; data?: { artistId?: string } };
-            setArtistId(r?.data?.artistId ?? r?.artistId ?? null);
+            const newArtistId = r?.data?.artistId ?? r?.artistId ?? null;
+            setArtistId(newArtistId);
+            // Зберігаємо для кабінету: studio-API вимагає artistId, а ендпоінта
+            // «мій артист» немає. Це єдине джерело id до появи claim у JWT.
+            setStoredArtistId(newArtistId);
 
             // Рефреш роли перед входом в студию.
             let refreshedOk = false;
