@@ -310,18 +310,21 @@ jobs:
             wget -qO- http://127.0.0.1:5073/swagger/client/swagger.json \
             > packages/api/openapi/client.swagger.json
 
-          # Artist swagger group is currently unstable on the backend (returns
-          # 500). It is not used by any app yet, so don't fail the deploy on it:
-          # fetch best-effort and drop any partial file so orval skips the artist
-          # client (see orval.config.ts guard). Remove this tolerance once the
-          # backend /swagger/artist endpoint is healthy.
+          # Artist swagger group is unstable on the backend (often returns 500),
+          # but the client-app artist studio (SCRUM-241) now depends on the
+          # generated artist client. So a spec is committed at
+          # packages/api/openapi/artist.swagger.json as a fallback. Fetch a fresh
+          # one into a temp file; replace the committed spec only on success,
+          # otherwise keep the committed one so orval still generates the client.
+          # Drop this fetch entirely once /swagger/artist is reliably healthy.
           if docker exec "yuviron-${DEPLOY_ENV}-backend" \
                wget -qO- http://127.0.0.1:5073/swagger/artist/swagger.json \
-               > packages/api/openapi/artist.swagger.json; then
-            echo "Artist swagger fetched."
+               > packages/api/openapi/artist.swagger.json.tmp; then
+            mv packages/api/openapi/artist.swagger.json.tmp packages/api/openapi/artist.swagger.json
+            echo "Artist swagger fetched from backend."
           else
-            echo "::warning::Artist swagger unavailable (HTTP error) — skipping artist client generation."
-            rm -f packages/api/openapi/artist.swagger.json
+            rm -f packages/api/openapi/artist.swagger.json.tmp
+            echo "::warning::Artist swagger unavailable (HTTP error) — using committed packages/api/openapi/artist.swagger.json."
           fi
 
           pnpm api:gen

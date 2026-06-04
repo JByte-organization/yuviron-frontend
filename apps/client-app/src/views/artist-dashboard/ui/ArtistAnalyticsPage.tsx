@@ -4,11 +4,26 @@ import React, { useState } from 'react';
 import {
     LineChart, Line, BarChart, Bar,
     XAxis, YAxis, CartesianGrid, Tooltip,
-    ResponsiveContainer, Legend, PieChart, Pie, Cell,
+    ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
 import { useTheme } from '@/shared/lib/ThemeProvider';
+import {
+    getGetApiStudioArtistStatsQueryKey,
+    useGetApiStudioArtistStats,
+    type ArtistAnalyticsDto,
+} from '@repo/api/artist.ts';
+import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 
-// ─── Mock ──────────────────────────────────────────────────
+const unwrap = <T,>(raw: unknown): T | undefined => {
+    if (!raw) return undefined;
+    const obj = raw as { data?: T };
+    return (obj.data ?? (raw as T)) as T;
+};
+
+// ─── Mock: бек віддає лише агрегати (ArtistAnalyticsDto), без часових рядів.
+// Графіки нижче (тиждень/місяць/рік, ріст підписників, джерела) і топ-5 —
+// демо-дані, доки бекенд не додасть відповідні ендпоінти. Summary-картки — реальні.
+// ───────────────────────────────────────────────────────────
 const PLAYS_WEEKLY = [
     { day: 'Пн', plays: 120 }, { day: 'Вт', plays: 240 },
     { day: 'Ср', plays: 180 }, { day: 'Чт', plays: 310 },
@@ -62,6 +77,13 @@ const COLORS = {
 export const ArtistAnalyticsPage = () => {
     const [period, setPeriod] = useState<Period>('week');
 
+    const artistId = useCurrentArtistId();
+    const statsParams = { artistId: artistId ?? undefined };
+    const { data: statsRaw } = useGetApiStudioArtistStats(statsParams, {
+        query: { enabled: !!artistId, queryKey: getGetApiStudioArtistStatsQueryKey(statsParams) },
+    });
+    const stats = unwrap<ArtistAnalyticsDto>(statsRaw);
+
     // Цвета осей/сетки графиков рисуются как SVG-атрибуты, где var() не резолвится,
     // поэтому подбираем их под активную тему вручную.
     const { theme } = useTheme();
@@ -74,10 +96,6 @@ export const ArtistAnalyticsPage = () => {
         : period === 'month'
             ? PLAYS_MONTHLY.map(d => ({ label: d.day,  value: d.plays }))
             : PLAYS_YEARLY.map(d =>  ({ label: d.month, value: d.plays }));
-
-    const totalPlays     = playsData.reduce((s, d) => s + d.value, 0).toLocaleString('uk-UA');
-    const totalFollowers = 56;
-    const totalTracks    = 5;
 
     return (
         <div className="artist-analytics-page">
@@ -103,10 +121,10 @@ export const ArtistAnalyticsPage = () => {
             {/* ─── Summary cards ─────────────────────── */}
             <div className="row g-3 mb-5">
                 {[
-                    { label: 'Прослуховувань',  value: totalPlays,                 icon: 'bi-headphones',    color: '#00A6FF' },
-                    { label: 'Підписників',     value: totalFollowers,             icon: 'bi-people',        color: '#7B61FF' },
-                    { label: 'Треків',          value: totalTracks,                icon: 'bi-music-note',    color: '#FF6B6B' },
-                    { label: 'Зростання',       value: '+12%',                     icon: 'bi-graph-up-arrow',color: '#2ECC71' },
+                    { label: 'Прослуховувань',  value: Number(stats?.totalPlays ?? 0).toLocaleString('uk-UA'), icon: 'bi-headphones',    color: '#00A6FF' },
+                    { label: 'Слухачів/міс',    value: (stats?.monthlyListeners ?? 0).toLocaleString('uk-UA'), icon: 'bi-people',        color: '#7B61FF' },
+                    { label: 'Треків',          value: stats?.totalTracks ?? 0,                                icon: 'bi-music-note',    color: '#FF6B6B' },
+                    { label: 'Альбомів',        value: stats?.totalAlbums ?? 0,                                icon: 'bi-collection',    color: '#2ECC71' },
                 ].map(card => (
                     <div key={card.label} className="col-6 col-lg-3">
                         <div className="artist-analytics-page__card">
