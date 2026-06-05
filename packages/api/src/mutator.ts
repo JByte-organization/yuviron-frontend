@@ -41,6 +41,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
  * Локально и на сервере запросы идут напрямую на бэкенд.
  * NEXT_PUBLIC_API_URL задаётся в .env.local
  */
+// touch: ретригер деплою client-app/admin після фіксу swagger-fallback у deploy.yml
 const getBaseUrl = (): string => {
     return process.env.NEXT_PUBLIC_API_URL ?? 'https://dev-api.yuviron.com/api';
 };
