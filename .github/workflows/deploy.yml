@@ -316,35 +316,32 @@ jobs:
 
           mkdir -p packages/api/openapi
 
-          docker exec "yuviron-${DEPLOY_ENV}-backend" \
-            wget -qO- http://127.0.0.1:5073/swagger/admin/swagger.json \
-            > packages/api/openapi/admin.swagger.json
+          # Swagger groups on the backend are unstable (often 500 / empty body).
+          # Each spec is committed at packages/api/openapi/<name>.swagger.json as a
+          # fallback. Fetch a fresh one into a temp file and replace the committed
+          # spec ONLY if the response is non-empty AND valid JSON — a 200-with-
+          # empty/garbage body (or a naked `wget > file` on a 500) would otherwise
+          # overwrite the good committed spec and break `pnpm api:gen`.
+          # Drop these fetches once /swagger is reliably healthy for all groups.
+          fetch_swagger() {
+            local name="$1"
+            local dest="packages/api/openapi/${name}.swagger.json"
+            if docker exec "yuviron-${DEPLOY_ENV}-backend" \
+                 wget -qO- "http://127.0.0.1:5073/swagger/${name}/swagger.json" \
+                 > "${dest}.tmp" \
+               && [ -s "${dest}.tmp" ] \
+               && node -e "JSON.parse(require('fs').readFileSync('${dest}.tmp','utf8'))" 2>/dev/null; then
+              mv "${dest}.tmp" "${dest}"
+              echo "${name} swagger fetched from backend."
+            else
+              rm -f "${dest}.tmp"
+              echo "::warning::${name} swagger unavailable or invalid — using committed ${dest}."
+            fi
+          }
 
-          docker exec "yuviron-${DEPLOY_ENV}-backend" \
-            wget -qO- http://127.0.0.1:5073/swagger/client/swagger.json \
-            > packages/api/openapi/client.swagger.json
-
-          # Artist swagger group is unstable on the backend (often returns 500),
-          # but the client-app artist studio (SCRUM-241) now depends on the
-          # generated artist client. So a spec is committed at
-          # packages/api/openapi/artist.swagger.json as a fallback. Fetch a fresh
-          # one into a temp file; replace the committed spec only on success,
-          # otherwise keep the committed one so orval still generates the client.
-          # Drop this fetch entirely once /swagger/artist is reliably healthy.
-          # Replace the committed spec only if the fetched one is non-empty AND
-          # valid JSON — a 200-with-empty/garbage body would otherwise overwrite
-          # the good committed spec and break `pnpm api:gen`.
-          if docker exec "yuviron-${DEPLOY_ENV}-backend" \
-               wget -qO- http://127.0.0.1:5073/swagger/artist/swagger.json \
-               > packages/api/openapi/artist.swagger.json.tmp \
-             && [ -s packages/api/openapi/artist.swagger.json.tmp ] \
-             && node -e "JSON.parse(require('fs').readFileSync('packages/api/openapi/artist.swagger.json.tmp','utf8'))" 2>/dev/null; then
-            mv packages/api/openapi/artist.swagger.json.tmp packages/api/openapi/artist.swagger.json
-            echo "Artist swagger fetched from backend."
-          else
-            rm -f packages/api/openapi/artist.swagger.json.tmp
-            echo "::warning::Artist swagger unavailable or invalid — using committed packages/api/openapi/artist.swagger.json."
-          fi
+          fetch_swagger admin
+          fetch_swagger client
+          fetch_swagger artist
 
           pnpm api:gen
           gha_pass_stage "API types generated from Swagger spec."
