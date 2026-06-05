@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation'; // 🚨 ФИКС: Импортируем роутер для переходов
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -12,7 +12,6 @@ import {
     useGetApiArtistsIdRelatedTracks,
     useGetApiArtistsIdPlaylists,
     useGetApiArtistsIdSimilarArtists,
-    useGetApiMeFollowingArtists,
     getGetApiMeFollowingArtistsQueryKey,
     usePostApiArtistsIdFollow,
     useDeleteApiArtistsIdFollow,
@@ -22,10 +21,8 @@ import {
     type RelatedTrackDto,
     type ArtistPlaylistDto,
     type SimilarArtistDto,
-    type FollowedArtistDto,
 } from '@repo/api/client.ts';
 
-import { useSessionStore } from '@/entities/session/model/store';
 import { useAuthGuard } from '@/shared/lib/useAuthGuard';
 
 import { ArtistPageHeader } from './ui/ArtistPageHeader';
@@ -59,7 +56,6 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
     const queryClient = useQueryClient();
     const { playQueue, togglePlay } = usePlayer();
     const { requireAuth } = useAuthGuard();
-    const accessToken = useSessionStore(s => s.accessToken);
 
     // Получаем состояние плеера для интерактивной кнопки Play в шапке
     const currentTrackId = usePlayerStore(s => s.currentTrack?.id);
@@ -82,23 +78,16 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
     const artist = (artistData?.data || artistData) as ArtistDetailsDto | undefined;
 
     // ─── Підписка на виконавця ───────────────────────────────────────────────
-    // ArtistDetailsDto не віддає isFollowed → початковий стан беремо зі списку
-    // «мої підписки» (лише для авторизованих). Стан тримаємо локально для
-    // оптимістичного апдейту, синхронізуючи з відповіддю API.
-    const followingParams = { PageSize: 1000 };
-    const { data: followingRaw } = useGetApiMeFollowingArtists(followingParams, {
-        query: {
-            enabled: !!accessToken,
-            queryKey: getGetApiMeFollowingArtistsQueryKey(followingParams),
-        },
-    });
-    const isFollowedFromApi = useMemo(
-        () => extractList<FollowedArtistDto>(followingRaw).some(a => a.artistId === artistId),
-        [followingRaw, artistId],
-    );
-
-    const [isFollowing, setIsFollowing] = useState(false);
-    useEffect(() => setIsFollowing(isFollowedFromApi), [isFollowedFromApi]);
+    // Початковий стан беремо прямо з профілю (ArtistDetailsDto.isFollowed).
+    // Тримаємо локально для оптимістичного апдейту; коли з API приходить нове
+    // значення — синхронізуємо під час рендера (патерн React «adjust state on prop change»).
+    const apiFollowed = artist?.isFollowed ?? false;
+    const [isFollowing, setIsFollowing] = useState(apiFollowed);
+    const [prevApiFollowed, setPrevApiFollowed] = useState(apiFollowed);
+    if (apiFollowed !== prevApiFollowed) {
+        setPrevApiFollowed(apiFollowed);
+        setIsFollowing(apiFollowed);
+    }
 
     const followMutation   = usePostApiArtistsIdFollow();
     const unfollowMutation = useDeleteApiArtistsIdFollow();
