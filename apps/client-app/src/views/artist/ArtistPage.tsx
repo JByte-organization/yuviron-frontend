@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'; // 🚨 ФИКС: Импортируем роутер для переходов
+import { useQueryClient } from '@tanstack/react-query';
 import {
     useGetApiArtistsId,
     useGetApiArtistsIdTopTracks,
@@ -11,13 +12,21 @@ import {
     useGetApiArtistsIdRelatedTracks,
     useGetApiArtistsIdPlaylists,
     useGetApiArtistsIdSimilarArtists,
+    useGetApiMeFollowingArtists,
+    getGetApiMeFollowingArtistsQueryKey,
+    usePostApiArtistsIdFollow,
+    useDeleteApiArtistsIdFollow,
     type ArtistDetailsDto,
     type ArtistTopTrackDto,
     type ArtistAlbumDto,
     type RelatedTrackDto,
     type ArtistPlaylistDto,
-    type SimilarArtistDto
+    type SimilarArtistDto,
+    type FollowedArtistDto,
 } from '@repo/api/client.ts';
+
+import { useSessionStore } from '@/entities/session/model/store';
+import { useAuthGuard } from '@/shared/lib/useAuthGuard';
 
 import { ArtistPageHeader } from './ui/ArtistPageHeader';
 import { ArtistMusicSection } from './ui/ArtistMusicSection';
@@ -47,7 +56,10 @@ const extractList = <T,>(raw: unknown): T[] => {
 
 export const ArtistPage = ({ artistId }: ArtistPageProps) => {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const { playQueue, togglePlay } = usePlayer();
+    const { requireAuth } = useAuthGuard();
+    const accessToken = useSessionStore(s => s.accessToken);
 
     // Получаем состояние плеера для интерактивной кнопки Play в шапке
     const currentTrackId = usePlayerStore(s => s.currentTrack?.id);
@@ -68,6 +80,48 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
     const { data: similarRaw, isLoading: isSimilarLoading } = useGetApiArtistsIdSimilarArtists(artistId);
 
     const artist = (artistData?.data || artistData) as ArtistDetailsDto | undefined;
+
+    // ─── Підписка на виконавця ───────────────────────────────────────────────
+    // ArtistDetailsDto не віддає isFollowed → початковий стан беремо зі списку
+    // «мої підписки» (лише для авторизованих). Стан тримаємо локально для
+    // оптимістичного апдейту, синхронізуючи з відповіддю API.
+    const followingParams = { PageSize: 1000 };
+    const { data: followingRaw } = useGetApiMeFollowingArtists(followingParams, {
+        query: {
+            enabled: !!accessToken,
+            queryKey: getGetApiMeFollowingArtistsQueryKey(followingParams),
+        },
+    });
+    const isFollowedFromApi = useMemo(
+        () => extractList<FollowedArtistDto>(followingRaw).some(a => a.artistId === artistId),
+        [followingRaw, artistId],
+    );
+
+    const [isFollowing, setIsFollowing] = useState(false);
+    useEffect(() => setIsFollowing(isFollowedFromApi), [isFollowedFromApi]);
+
+    const followMutation   = usePostApiArtistsIdFollow();
+    const unfollowMutation = useDeleteApiArtistsIdFollow();
+    const followPending = followMutation.isPending || unfollowMutation.isPending;
+
+    const handleFollow = () => {
+        requireAuth(() => {
+            const next = !isFollowing;
+            setIsFollowing(next); // оптимістично
+            const mutation = next ? followMutation : unfollowMutation;
+            mutation.mutate(
+                { id: artistId },
+                {
+                    onError: () => setIsFollowing(!next), // відкат
+                    onSuccess: () => {
+                        queryClient.invalidateQueries({
+                            queryKey: getGetApiMeFollowingArtistsQueryKey(),
+                        });
+                    },
+                },
+            );
+        });
+    };
 
     // ─── 2. РАЗВЕРТЫВАНИЕ СПИСКОВ ДЛЯ СЕКЦИЙ ─────────────────────────────────
     const popularReleases = extractList<ArtistAlbumDto>(popularRaw);
@@ -128,7 +182,9 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
                     monthlyListeners={artist.listenersCount}
                     isPlaying={isCollectionPlaying}
                     onPlay={handlePlayAllTopTracks}
-                    onFollow={() => console.log('follow hook integration')} // TODO: Інтегрувати мутацію підписки
+                    onFollow={handleFollow}
+                    isFollowing={isFollowing}
+                    followPending={followPending}
                 />
 
                 {/* Популярні треки */}
