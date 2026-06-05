@@ -122,8 +122,22 @@ export const ArtistSettingsPage = () => {
             reset(values);
             setSaved(true);
             setTimeout(() => setSaved(false), 3000);
-        } catch {
-            setError('Не вдалося зберегти зміни. Спробуйте ще раз.');
+        } catch (e) {
+            // Дістаємо реальну причину з axios-помилки, щоб не ховати 400/403/500 за загальним текстом.
+            const err = e as {
+                response?: { status?: number; data?: { detail?: string; title?: string; message?: string } };
+                message?: string;
+            };
+            const status = err?.response?.status;
+            const detail =
+                err?.response?.data?.detail ??
+                err?.response?.data?.title ??
+                err?.response?.data?.message ??
+                err?.message;
+            setError(
+                `Не вдалося зберегти зміни${status ? ` (${status})` : ''}.` +
+                    (detail ? ` ${detail}` : ' Спробуйте ще раз.'),
+            );
         }
     };
 
