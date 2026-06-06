@@ -283,16 +283,12 @@ jobs:
             "docker logs yuviron-${DEPLOY_ENV}-backend --tail 50"
           cd /opt/yuviron-server
 
-          is_running() {
-            docker inspect "yuviron-${DEPLOY_ENV}-backend" \
-              --format='{{.State.Running}}' 2>/dev/null | grep -q true
-          }
-
-          if ! is_running; then
-            echo "Backend container not running — starting stack without build or migrate"
-            timeout 600 python3 ./scripts/cli.py stack up "${DEPLOY_ENV}" \
-              --skip-migrate --no-build --skip-swagger
-          fi
+          # Always call stack up --no-build: it is idempotent on a healthy stack
+          # and will restart any running-but-unhealthy containers before bringing
+          # the stack up (Docker restart_policy never fires on healthcheck failure).
+          echo "Ensuring stack is up and all services are healthy..."
+          timeout 600 python3 ./scripts/cli.py stack up "${DEPLOY_ENV}" \
+            --skip-migrate --no-build --skip-swagger
 
           echo "Waiting for backend to become healthy..."
           for i in $(seq 1 60); do
