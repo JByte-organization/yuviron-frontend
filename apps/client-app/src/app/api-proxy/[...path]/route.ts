@@ -5,7 +5,24 @@
 
 import { NextRequest } from 'next/server';
 
-const BACKEND_BASE = process.env.BACKEND_URL ?? 'https://dev-api.yuviron.com/api';
+// Кандидаты upstream-а, по приоритету:
+// 1. BACKEND_URL — явная настройка окружения (прод обязан задать её сам).
+// 2. https://dev-api.yuviron.com/api — локальная разработка: имя резолвится
+//    через Tailscale split-DNS / hosts-файл разработчика.
+// 3. http://backend:5073/api — задеплоенный контейнер: dev-api.yuviron.com
+//    НЕ существует в публичном DNS (только в tailnet), поэтому изнутри
+//    docker-сети ходим напрямую в сервис `backend` (он слушает HTTP на 5073 —
+//    см. healthcheck/wget в deploy.yml). Это чинило 502 upstream_fetch_failed
+//    на dev.yuviron.com.
+const CANDIDATE_BASES = [
+    process.env.BACKEND_URL,
+    'https://dev-api.yuviron.com/api',
+    'http://backend:5073/api',
+].filter((base): base is string => !!base);
+
+// Первый кандидат, который реально ответил — кешируем, чтобы не дёргать
+// мёртвые базы на каждый запрос. Сбрасывается только рестартом процесса.
+let activeBase: string | null = null;
 
 // dev-api отдаёт сертификат внутреннего CA, которого нет в bundled-списке Node.
 // Локально это решает cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 в dev-скрипте,
@@ -13,7 +30,7 @@ const BACKEND_BASE = process.env.BACKEND_URL ?? 'https://dev-api.yuviron.com/api
 // в 502 на TLS. Включаем ТОЛЬКО для dev-бэкенда: прод обязан задать BACKEND_URL
 // с публично доверенным сертификатом, и валидация останется включённой.
 if (
-    BACKEND_BASE.includes('dev-api.yuviron.com') &&
+    !process.env.BACKEND_URL &&
     process.env.NODE_TLS_REJECT_UNAUTHORIZED === undefined
 ) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -53,7 +70,6 @@ const proxy = async (
 ) => {
     const { path } = await context.params;
     const url = new URL(request.url);
-    const target = `${BACKEND_BASE}/${path.join('/')}${url.search}`;
 
     const headers = new Headers();
     request.headers.forEach((value, key) => {
@@ -63,21 +79,43 @@ const proxy = async (
     });
 
     const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
+    // Тело буферизуем (не стримим) — оно нужно повторно при фолбеке на
+    // следующего кандидата upstream-а.
     const body = hasBody ? await request.arrayBuffer() : undefined;
 
-    let upstream: Response;
-    try {
-        upstream = await fetch(target, {
-            method: request.method,
-            headers,
-            body,
-            redirect: 'manual',
-        });
-    } catch (err) {
+    // Рабочую базу пробуем первой, остальные — фолбек на сетевую ошибку
+    // (HTTP-статусы вроде 4xx/5xx — это ОТВЕТ бэка, их не ретраим).
+    const bases = activeBase
+        ? [activeBase, ...CANDIDATE_BASES.filter((b) => b !== activeBase)]
+        : CANDIDATE_BASES;
+
+    let upstream: Response | null = null;
+    let lastError: Error | null = null;
+
+    for (const base of bases) {
+        const target = `${base}/${path.join('/')}${url.search}`;
+        try {
+            upstream = await fetch(target, {
+                method: request.method,
+                headers,
+                body,
+                redirect: 'manual',
+            });
+            activeBase = base;
+            break;
+        } catch (err) {
+            lastError = err as Error;
+            console.error(
+                `[api-proxy] upstream fetch failed for ${base}: ${(err as Error).message}`,
+            );
+        }
+    }
+
+    if (!upstream) {
         return new Response(
             JSON.stringify({
                 error: 'upstream_fetch_failed',
-                message: (err as Error).message,
+                message: lastError?.message ?? 'all upstream candidates failed',
             }),
             { status: 502, headers: { 'content-type': 'application/json' } },
         );
