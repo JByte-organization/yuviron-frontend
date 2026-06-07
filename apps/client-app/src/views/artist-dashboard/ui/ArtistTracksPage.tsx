@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import {
     getGetApiStudioArtistTracksQueryKey,
     useGetApiStudioArtistTracks,
-    type StudioTrackListItemDto,
 } from '@repo/api/artist.ts';
+import type { StudioTrackListItemFlex } from '@/entities/artist/model/studioListDtoFlex';
 import { useQueryClient } from '@tanstack/react-query';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 import { UploadTrackModal } from '@/features/artist/track/ui/UploadTrackModal';
@@ -50,7 +50,7 @@ export const ArtistTracksPage = () => {
         query: { enabled: !!artistId, queryKey: getGetApiStudioArtistTracksQueryKey(params) },
     });
 
-    const tracks: TrackRowData[] = unwrapItems<StudioTrackListItemDto>(tracksRaw).map((t, i) => ({
+    const tracks: TrackRowData[] = unwrapItems<StudioTrackListItemFlex>(tracksRaw).map((t, i) => ({
         id: t.id ?? '',
         index: t.albumPosition ?? i + 1,
         title: t.title ?? 'Без назви',

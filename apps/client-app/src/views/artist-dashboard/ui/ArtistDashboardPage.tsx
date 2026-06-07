@@ -13,9 +13,11 @@ import {
     useGetApiStudioArtistAlbums,
     type StudioArtistProfileDto,
     type ArtistAnalyticsDto,
-    type StudioTrackListItemDto,
-    type StudioAlbumListItemDto,
 } from '@repo/api/artist.ts';
+import type {
+    StudioAlbumListItemFlex,
+    StudioTrackListItemFlex,
+} from '@/entities/artist/model/studioListDtoFlex';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { TrackCard, type TrackCardData } from '@/entities/track/ui/TrackCard';
 import { AlbumCard, type AlbumCardData } from '@/entities/album/ui/AlbumCard';
@@ -190,14 +192,14 @@ export const ArtistDashboardPage = () => {
     const stats = unwrap<ArtistAnalyticsDto>(statsRaw);
     const artistName = profile?.name ?? '';
 
-    const tracks: TrackCardData[] = unwrapItems<StudioTrackListItemDto>(tracksRaw).map(t => ({
+    const tracks: TrackCardData[] = unwrapItems<StudioTrackListItemFlex>(tracksRaw).map(t => ({
         id: t.id ?? '',
         title: t.title ?? 'Без назви',
         artistNames: t.artistNames ?? (artistName ? [artistName] : []),
         coverUrl: t.coverUrl,
     }));
 
-    const albums: AlbumCardData[] = unwrapItems<StudioAlbumListItemDto>(albumsRaw).map(a => ({
+    const albums: AlbumCardData[] = unwrapItems<StudioAlbumListItemFlex>(albumsRaw).map(a => ({
         id: a.id ?? '',
         title: a.title ?? 'Без назви',
         artistName,

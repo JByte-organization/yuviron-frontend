@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import {
     getGetApiStudioArtistAlbumsQueryKey,
     useGetApiStudioArtistAlbums,
-    type StudioAlbumListItemDto,
 } from '@repo/api/artist.ts';
+import type { StudioAlbumListItemFlex } from '@/entities/artist/model/studioListDtoFlex';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlbumCard, type AlbumCardData } from '@/entities/album/ui/AlbumCard';
 import { AlbumDetailModal, CreateAlbumModal, DeleteAlbumModal } from '@/features/artist/album/ui/AlbumModals';
@@ -42,7 +42,7 @@ export const ArtistAlbumsPage = () => {
         query: { enabled: !!artistId, queryKey: getGetApiStudioArtistAlbumsQueryKey(params) },
     });
 
-    const albums: AlbumCardData[] = unwrapItems<StudioAlbumListItemDto>(albumsRaw).map(a => ({
+    const albums: AlbumCardData[] = unwrapItems<StudioAlbumListItemFlex>(albumsRaw).map(a => ({
         id: a.id ?? '',
         title: a.title ?? 'Без назви',
         artistName: '',
