@@ -91,8 +91,8 @@ export const CreateAlbumModal = ({ isOpen, onClose, onSuccess }: CreateProps) =>
     if (!isOpen) return null;
 
     return (
-        <div className="client-modal-overlay">
-            <div className="client-modal client-modal--sm">
+        <div className="client-modal-backdrop">
+            <div className="client-modal modal-dialog-sm">
                 <div className="client-modal__header">
                     <h2 className="client-modal__title">Створити альбом</h2>
                     <button className="client-modal__close" onClick={handleClose}>
@@ -208,8 +208,8 @@ export const AlbumDetailModal = ({ isOpen, album, onClose }: DetailProps) => {
     const coverSrc = album.coverUrl ?? `https://picsum.photos/seed/album-${album.id}/200/200`;
 
     return (
-        <div className="client-modal-overlay">
-            <div className="client-modal client-modal--lg">
+        <div className="client-modal-backdrop">
+            <div className="client-modal modal-dialog-lg">
                 <div className="client-modal__header">
                     <div className="d-flex align-items-center gap-3">
                         <div className="album-detail-modal__cover">
@@ -285,8 +285,8 @@ export const DeleteAlbumModal = ({ isOpen, album, onClose, onSuccess }: DeleteAl
     if (!isOpen) return null;
 
     return (
-        <div className="client-modal-overlay">
-            <div className="client-modal client-modal--xs">
+        <div className="client-modal-backdrop">
+            <div className="client-modal modal-dialog-sm">
                 <div className="client-modal__header">
                     <h2 className="client-modal__title">Видалити альбом</h2>
                     <button className="client-modal__close" onClick={onClose}>

@@ -13,6 +13,10 @@ import { usePostApiFilesUpload } from '@repo/api/client.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import {
+    ArtistSocialLinksBlock,
+    ArtistVerificationBlock,
+} from '@/features/artist/profile/ui/ArtistProfileExtras';
 
 type FormValues = {
     stageName: string;
@@ -280,6 +284,20 @@ export const ArtistSettingsPage = () => {
                     </button>
                 </div>
             </form>
+
+            {/* ─── Соцмережі + верифікація ───────────── */}
+            {artistId && (
+                <>
+                    <ArtistSocialLinksBlock
+                        artistId={artistId}
+                        initialLinks={profile?.socialLinks}
+                    />
+                    <ArtistVerificationBlock
+                        artistId={artistId}
+                        status={profile?.verificationStatus}
+                    />
+                </>
+            )}
         </div>
     );
 };
