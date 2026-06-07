@@ -10,6 +10,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 import { UploadTrackModal } from '@/features/artist/track/ui/UploadTrackModal';
 import { EditTrackModal, DeleteTrackModal } from '@/features/artist/track/ui/EditDeleteArtistTrackModals';
+import { TrackAnalyticsModal } from '@/features/artist/track/ui/TrackAnalyticsModal';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 
 const unwrapItems = <T,>(raw: unknown): T[] => {
@@ -33,6 +34,7 @@ export const ArtistTracksPage = () => {
     const [showUpload,   setShowUpload]   = useState(false);
     const [editingTrack, setEditingTrack] = useState<TrackToEdit | null>(null);
     const [deletingTrack,setDeletingTrack]= useState<TrackToEdit | null>(null);
+    const [analyticsTrack, setAnalyticsTrack] = useState<TrackToEdit | null>(null);
     const [currentTrack, setCurrentTrack] = useState<string | null>(null);
 
     useEffect(() => {
@@ -139,8 +141,15 @@ export const ArtistTracksPage = () => {
                             isPlaying={currentTrack === track.id}
                             onClick={id => setCurrentTrack(id === currentTrack ? null : id)}
                         />
-                        {/* Кнопки редагування/видалення */}
+                        {/* Кнопки аналітики/редагування/видалення */}
                         <div className="artist-tracks-page__row-actions">
+                            <button
+                                className="artist-tracks-page__row-btn"
+                                onClick={() => setAnalyticsTrack({ id: track.id, title: track.title, albumTitle: track.albumTitle })}
+                                title="Аналітика"
+                            >
+                                <i className="bi bi-graph-up" />
+                            </button>
                             <button
                                 className="artist-tracks-page__row-btn"
                                 onClick={() => setEditingTrack({ id: track.id, title: track.title, albumTitle: track.albumTitle })}
@@ -174,6 +183,15 @@ export const ArtistTracksPage = () => {
                     trackTitle={editingTrack.title}
                     onClose={() => setEditingTrack(null)}
                     onSuccess={() => { setEditingTrack(null); refetchTracks(); }}
+                />
+            )}
+
+            {analyticsTrack && (
+                <TrackAnalyticsModal
+                    isOpen={!!analyticsTrack}
+                    trackId={analyticsTrack.id}
+                    trackTitle={analyticsTrack.title}
+                    onClose={() => setAnalyticsTrack(null)}
                 />
             )}
 

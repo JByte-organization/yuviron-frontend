@@ -115,8 +115,8 @@ export const UploadTrackModal = ({ isOpen, onClose, onSuccess }: Props) => {
     if (!isOpen) return null;
 
     return (
-        <div className="client-modal-overlay">
-            <div className="client-modal client-modal--md">
+        <div className="client-modal-backdrop">
+            <div className="client-modal modal-dialog-md">
                 <div className="client-modal__header">
                     <h2 className="client-modal__title">Завантажити трек</h2>
                     <button className="client-modal__close" onClick={handleClose}>

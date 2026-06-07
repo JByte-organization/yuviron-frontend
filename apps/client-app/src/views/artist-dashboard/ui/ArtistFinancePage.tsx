@@ -1,0 +1,362 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { format, parseISO } from 'date-fns';
+import {
+    AppPermission,
+    PayoutMethod,
+    getGetApiStudioArtistFinancePayoutsQueryKey,
+    getGetApiStudioArtistFinanceSettingsQueryKey,
+    getGetApiStudioArtistFinanceTransactionsQueryKey,
+    getGetApiStudioArtistFinanceWalletQueryKey,
+    useGetApiStudioArtistFinancePayouts,
+    useGetApiStudioArtistFinanceSettings,
+    useGetApiStudioArtistFinanceTransactions,
+    useGetApiStudioArtistFinanceWallet,
+    usePostApiStudioArtistFinancePayouts,
+    usePostApiStudioArtistFinanceSettings,
+    type ArtistPayoutRequestDto,
+    type ArtistWalletDto,
+    type PayoutSettingsDto,
+    type WalletTransactionDto,
+} from '@repo/api/artist.ts';
+import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import { ChartError, ChartSkeleton } from '@/entities/artist/ui/AnalyticsChartParts';
+
+const unwrap = <T,>(raw: unknown): T | undefined => {
+    if (!raw) return undefined;
+    const obj = raw as { data?: T };
+    return (obj.data ?? (raw as T)) as T;
+};
+
+const unwrapItems = <T,>(raw: unknown): T[] => {
+    if (!raw) return [];
+    const obj = raw as { items?: T[]; data?: { items?: T[] } };
+    return obj.items ?? obj.data?.items ?? [];
+};
+
+const money = (value: number | undefined): string =>
+    (value ?? 0).toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const dateTime = (iso: string | undefined): string =>
+    iso ? format(parseISO(iso), 'dd.MM.yyyy HH:mm') : '—';
+
+// PayoutMethod у свагері — голий int 1|2|3 без імен; підписи погоджені «на око»,
+// звірити з беком, коли enum отримає рядкові значення.
+const PAYOUT_METHOD_LABELS: Record<number, string> = {
+    1: 'Банківська картка',
+    2: 'PayPal',
+    3: 'Банківський переказ (IBAN)',
+};
+
+const TRANSACTION_LABELS: Record<string, string> = {
+    RoyaltyAccrual:   'Нарахування роялті',
+    PayoutReserved:   'Резерв під виплату',
+    PayoutReleased:   'Повернення резерву',
+    PayoutCompleted:  'Виплату виконано',
+    ManualAdjustment: 'Коригування',
+};
+
+const PAYOUT_STATUS: Record<string, { label: string; color: string }> = {
+    Pending:  { label: 'Очікує',    color: '#FFB347' },
+    Approved: { label: 'Схвалено',  color: '#00A6FF' },
+    Rejected: { label: 'Відхилено', color: '#FF6B6B' },
+    Paid:     { label: 'Виплачено', color: '#2ECC71' },
+    Unknown:  { label: '—',         color: '#9AA7B8' },
+};
+
+export const ArtistFinancePage = () => {
+    const artistId = useCurrentArtistId();
+    const queryClient = useQueryClient();
+
+    // ─── Запити ─────────────────────────────────────────
+    const walletParams = { artistId: artistId ?? undefined };
+    const walletQuery = useGetApiStudioArtistFinanceWallet(walletParams, {
+        query: { enabled: !!artistId, queryKey: getGetApiStudioArtistFinanceWalletQueryKey(walletParams) },
+    });
+    const wallet = unwrap<ArtistWalletDto>(walletQuery.data);
+
+    const settingsParams = { artistId: artistId ?? undefined };
+    const settingsQuery = useGetApiStudioArtistFinanceSettings(settingsParams, {
+        query: { enabled: !!artistId, queryKey: getGetApiStudioArtistFinanceSettingsQueryKey(settingsParams) },
+    });
+    const settings = unwrap<PayoutSettingsDto>(settingsQuery.data);
+
+    const txParams = { ArtistId: artistId ?? undefined, Page: 1, PageSize: 20 };
+    const txQuery = useGetApiStudioArtistFinanceTransactions(txParams, {
+        query: { enabled: !!artistId, queryKey: getGetApiStudioArtistFinanceTransactionsQueryKey(txParams) },
+    });
+    const transactions = unwrapItems<WalletTransactionDto>(txQuery.data);
+
+    const payoutsParams = { ArtistId: artistId ?? undefined, Page: 1, PageSize: 20 };
+    const payoutsQuery = useGetApiStudioArtistFinancePayouts(payoutsParams, {
+        query: { enabled: !!artistId, queryKey: getGetApiStudioArtistFinancePayoutsQueryKey(payoutsParams) },
+    });
+    const payouts = unwrapItems<ArtistPayoutRequestDto>(payoutsQuery.data);
+
+    // ─── Запит виплати ──────────────────────────────────
+    const [amount, setAmount] = useState('');
+    const [payoutError, setPayoutError] = useState<string | null>(null);
+    const [payoutOk, setPayoutOk] = useState(false);
+    const { mutateAsync: requestPayout, isPending: isRequesting } = usePostApiStudioArtistFinancePayouts();
+
+    const available = wallet?.availableBalance ?? 0;
+    const amountNum = Number(amount.replace(',', '.'));
+    const amountValid = Number.isFinite(amountNum) && amountNum > 0 && amountNum <= available;
+
+    const submitPayout = async () => {
+        if (!artistId || !amountValid) return;
+        setPayoutError(null);
+        setPayoutOk(false);
+        try {
+            await requestPayout({
+                data: {
+                    artistId,
+                    amount: amountNum,
+                    requiredPermission: AppPermission.StudioArtistManage,
+                },
+            });
+            setAmount('');
+            setPayoutOk(true);
+            await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/finance/wallet'] });
+            await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/finance/payouts'] });
+            await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/finance/transactions'] });
+        } catch {
+            setPayoutError('Не вдалося створити запит на виплату. Спробуйте ще раз.');
+        }
+    };
+
+    // ─── Налаштування виплат ────────────────────────────
+    const [method, setMethod] = useState<number>(1);
+    const [accountDetails, setAccountDetails] = useState('');
+    const [settingsError, setSettingsError] = useState<string | null>(null);
+    const [settingsOk, setSettingsOk] = useState(false);
+    const { mutateAsync: saveSettings, isPending: isSavingSettings } = usePostApiStudioArtistFinanceSettings();
+
+    // Prefill після завантаження поточних налаштувань — синхронізація стану
+    // прямо під час рендера (react.dev/learn/you-might-not-need-an-effect).
+    const [syncedSettings, setSyncedSettings] = useState<PayoutSettingsDto | undefined>(undefined);
+    if (settings && settings !== syncedSettings) {
+        setSyncedSettings(settings);
+        if (settings.method) setMethod(Number(settings.method));
+        setAccountDetails(settings.accountDetails ?? '');
+    }
+
+    const submitSettings = async () => {
+        if (!artistId) return;
+        setSettingsError(null);
+        setSettingsOk(false);
+        try {
+            await saveSettings({
+                data: {
+                    artistId,
+                    method: method as PayoutMethod,
+                    accountDetails: accountDetails.trim(),
+                    requiredPermission: AppPermission.StudioArtistManage,
+                },
+            });
+            setSettingsOk(true);
+            await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/finance/settings'] });
+        } catch {
+            setSettingsError('Не вдалося зберегти налаштування виплат.');
+        }
+    };
+
+    return (
+        <div className="artist-analytics-page">
+
+            {/* ─── Заголовок ────────────────────────── */}
+            <div className="artist-analytics-page__header">
+                <h1 className="artist-analytics-page__title">Фінанси</h1>
+            </div>
+
+            {/* ─── Баланси ───────────────────────────── */}
+            {walletQuery.isLoading ? (
+                <ChartSkeleton height={120} />
+            ) : walletQuery.isError ? (
+                <ChartError error={walletQuery.error} />
+            ) : (
+                <div className="row g-3 mb-5">
+                    {[
+                        { label: 'Доступно до виплати', value: money(wallet?.availableBalance), icon: 'bi-wallet2',     color: '#2ECC71' },
+                        { label: 'У резерві',           value: money(wallet?.heldBalance),      icon: 'bi-hourglass',   color: '#FFB347' },
+                        { label: 'Зароблено всього',    value: money(wallet?.totalEarned),      icon: 'bi-cash-stack',  color: '#00A6FF' },
+                    ].map(card => (
+                        <div key={card.label} className="col-12 col-md-4">
+                            <div className="artist-analytics-page__card">
+                                <div className="artist-analytics-page__card-icon" style={{ color: card.color }}>
+                                    <i className={`bi ${card.icon}`} />
+                                </div>
+                                <div className="artist-analytics-page__card-value">{card.value}</div>
+                                <div className="artist-analytics-page__card-label">{card.label}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            <div className="row g-4 mb-5">
+                {/* ─── Запит на виплату ───────────────── */}
+                <div className="col-12 col-lg-6">
+                    <div className="artist-analytics-page__chart-block h-100">
+                        <h2 className="artist-analytics-page__chart-title">Запит на виплату</h2>
+                        <div className="mt-3">
+                            <label className="artist-settings-page__field-label">
+                                Сума (доступно: {money(available)})
+                            </label>
+                            <input
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                className="client-modal__input"
+                                placeholder="0.00"
+                                value={amount}
+                                onChange={e => { setAmount(e.target.value); setPayoutOk(false); }}
+                            />
+                            {amount && !amountValid && (
+                                <div className="client-modal__field-error mt-1">
+                                    Сума має бути більшою за 0 і не перевищувати доступний баланс.
+                                </div>
+                            )}
+                            {payoutError && <div className="client-modal__field-error mt-1">{payoutError}</div>}
+                            {payoutOk && (
+                                <div className="mt-1" style={{ color: '#2ECC71', fontSize: 13 }}>
+                                    Запит створено — очікуйте на рішення.
+                                </div>
+                            )}
+                            <button
+                                className="client-modal__btn client-modal__btn--primary mt-3"
+                                disabled={!amountValid || isRequesting}
+                                onClick={submitPayout}
+                            >
+                                {isRequesting ? 'Надсилаємо…' : 'Запросити виплату'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ─── Налаштування виплат ────────────── */}
+                <div className="col-12 col-lg-6">
+                    <div className="artist-analytics-page__chart-block h-100">
+                        <h2 className="artist-analytics-page__chart-title">Реквізити виплат</h2>
+                        {settingsQuery.isLoading ? (
+                            <ChartSkeleton height={120} />
+                        ) : (
+                            <div className="mt-3">
+                                <label className="artist-settings-page__field-label">Спосіб виплати</label>
+                                <select
+                                    className="client-modal__input"
+                                    value={method}
+                                    onChange={e => { setMethod(Number(e.target.value)); setSettingsOk(false); }}
+                                >
+                                    {Object.entries(PAYOUT_METHOD_LABELS).map(([value, label]) => (
+                                        <option key={value} value={value}>{label}</option>
+                                    ))}
+                                </select>
+
+                                <label className="artist-settings-page__field-label mt-3">Реквізити</label>
+                                <input
+                                    type="text"
+                                    className="client-modal__input"
+                                    placeholder="Номер картки / email / IBAN"
+                                    value={accountDetails}
+                                    onChange={e => { setAccountDetails(e.target.value); setSettingsOk(false); }}
+                                />
+
+                                {settingsError && <div className="client-modal__field-error mt-1">{settingsError}</div>}
+                                {settingsOk && (
+                                    <div className="mt-1" style={{ color: '#2ECC71', fontSize: 13 }}>
+                                        Збережено.
+                                    </div>
+                                )}
+                                <button
+                                    className="client-modal__btn client-modal__btn--primary mt-3"
+                                    disabled={isSavingSettings || !accountDetails.trim()}
+                                    onClick={submitSettings}
+                                >
+                                    {isSavingSettings ? 'Зберігаємо…' : 'Зберегти'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* ─── Заявки на виплату ─────────────────── */}
+            <div className="artist-analytics-page__chart-block mb-5">
+                <h2 className="artist-analytics-page__chart-title">Заявки на виплату</h2>
+                {payoutsQuery.isLoading ? (
+                    <ChartSkeleton height={120} />
+                ) : payoutsQuery.isError ? (
+                    <ChartError error={payoutsQuery.error} />
+                ) : payouts.length === 0 ? (
+                    <div className="text-secondary py-4 text-center">Заявок ще не було.</div>
+                ) : (
+                    <div className="d-flex flex-column gap-2 mt-3">
+                        {payouts.map(p => {
+                            const status = PAYOUT_STATUS[p.status ?? 'Unknown'] ?? PAYOUT_STATUS.Unknown!;
+                            return (
+                                <div key={p.id} className="artist-analytics-page__top-track">
+                                    <span className="artist-analytics-page__top-track-title">
+                                        {money(p.requestedAmount)}
+                                    </span>
+                                    <span style={{ color: status.color, fontSize: 13, fontWeight: 600 }}>
+                                        {status.label}
+                                    </span>
+                                    {p.decisionNote && (
+                                        <span className="text-secondary" style={{ fontSize: 13 }}>
+                                            {p.decisionNote}
+                                        </span>
+                                    )}
+                                    <span className="artist-analytics-page__top-track-plays ms-auto">
+                                        {dateTime(p.requestedAt)}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* ─── Транзакції ────────────────────────── */}
+            <div className="artist-analytics-page__chart-block">
+                <h2 className="artist-analytics-page__chart-title">Історія транзакцій</h2>
+                {txQuery.isLoading ? (
+                    <ChartSkeleton height={160} />
+                ) : txQuery.isError ? (
+                    <ChartError error={txQuery.error} />
+                ) : transactions.length === 0 ? (
+                    <div className="text-secondary py-4 text-center">Транзакцій ще немає.</div>
+                ) : (
+                    <div className="d-flex flex-column gap-2 mt-3">
+                        {transactions.map(tx => {
+                            const negative = (tx.amount ?? 0) < 0;
+                            return (
+                                <div key={tx.id} className="artist-analytics-page__top-track">
+                                    <span
+                                        style={{
+                                            color: negative ? '#FF6B6B' : '#2ECC71',
+                                            fontWeight: 700,
+                                            minWidth: 90,
+                                        }}
+                                    >
+                                        {negative ? '' : '+'}{money(tx.amount)}
+                                    </span>
+                                    <span className="artist-analytics-page__top-track-title">
+                                        {TRANSACTION_LABELS[tx.type ?? ''] ?? tx.type ?? 'Транзакція'}
+                                        {tx.description ? ` — ${tx.description}` : ''}
+                                    </span>
+                                    <span className="artist-analytics-page__top-track-plays ms-auto">
+                                        {dateTime(tx.createdAt)}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+        </div>
+    );
+};

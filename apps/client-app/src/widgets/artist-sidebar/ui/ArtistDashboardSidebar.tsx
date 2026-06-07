@@ -56,11 +56,17 @@ export const ArtistDashboardSidebar = () => {
                                 isActive={isActive('/artist-dashboard/albums')}
                                 icon={<i className="bi bi-collection" />}
                             />
+                            <NavItem
+                                href="/artist-dashboard/team"
+                                label="Команда"
+                                isActive={isActive('/artist-dashboard/team')}
+                                icon={<i className="bi bi-people" />}
+                            />
                         </nav>
                         <hr className="client-sidebar__divider" />
                     </div>
 
-                    {/* Аналітика */}
+                    {/* Аналітика та фінанси */}
                     <div className="client-sidebar__section">
                         <p className="client-sidebar__section-title">Аналітика</p>
                         <nav className="client-sidebar__nav">
@@ -69,6 +75,12 @@ export const ArtistDashboardSidebar = () => {
                                 label="Статистика"
                                 isActive={isActive('/artist-dashboard/analytics')}
                                 icon={<i className="bi bi-graph-up" />}
+                            />
+                            <NavItem
+                                href="/artist-dashboard/finance"
+                                label="Фінанси"
+                                isActive={isActive('/artist-dashboard/finance')}
+                                icon={<i className="bi bi-wallet2" />}
                             />
                         </nav>
                         <hr className="client-sidebar__divider" />

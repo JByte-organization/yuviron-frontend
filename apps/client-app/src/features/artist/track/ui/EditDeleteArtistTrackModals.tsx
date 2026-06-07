@@ -78,8 +78,8 @@ export const EditTrackModal = ({ isOpen, trackId, trackTitle, onClose, onSuccess
     if (!isOpen) return null;
 
     return (
-        <div className="client-modal-overlay">
-            <div className="client-modal client-modal--sm">
+        <div className="client-modal-backdrop">
+            <div className="client-modal modal-dialog-sm">
                 <div className="client-modal__header">
                     <h2 className="client-modal__title">Редагувати трек</h2>
                     <button className="client-modal__close" onClick={onClose}>
@@ -178,8 +178,8 @@ export const DeleteTrackModal = ({ isOpen, trackId, trackTitle, onClose, onSucce
     if (!isOpen) return null;
 
     return (
-        <div className="client-modal-overlay">
-            <div className="client-modal client-modal--xs">
+        <div className="client-modal-backdrop">
+            <div className="client-modal modal-dialog-sm">
                 <div className="client-modal__header">
                     <h2 className="client-modal__title">Видалити трек</h2>
                     <button className="client-modal__close" onClick={onClose}>
