@@ -3,20 +3,29 @@
 let getAccessToken: () => string | null = () => null;
 let onUnauthorized: () => void = () => {};
 let onTokenRefresh: (token: string) => void = () => {};
+let configuredBaseUrl: string | null = null;
 
 /**
  * Инициализация мутатора — вызывается один раз в ApiClientProvider.
  * Принимает геттер токена (читает из Zustand без подписки),
  * колбэк при истечении сессии и колбэк для сохранения нового токена после refresh.
+ *
+ * baseUrl (опционально) — переопределяет базовый URL API. client-app передаёт
+ * относительный '/api-proxy' (same-origin Route Handler), чтобы куки бэкенда
+ * (XSRF-TOKEN, refresh) были first-party — иначе со страницы dev.yuviron.com
+ * куку с dev-api.yuviron.com не прочитать → refresh падает 400 → разлогин на F5.
+ * admin не передаёт baseUrl и продолжает ходить напрямую.
  */
 export const configureApiClient = (config: {
     getToken: () => string | null;
     onUnauthorized: () => void;
     onTokenRefresh: (token: string) => void;
+    baseUrl?: string;
 }) => {
     getAccessToken = config.getToken;
     onUnauthorized = config.onUnauthorized;
     onTokenRefresh = config.onTokenRefresh;
+    if (config.baseUrl !== undefined) configuredBaseUrl = config.baseUrl;
 };
 
 let isRefreshing = false;
@@ -38,11 +47,16 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 /**
  * Базовый URL для API.
- * Локально и на сервере запросы идут напрямую на бэкенд.
- * NEXT_PUBLIC_API_URL задаётся в .env.local
+ * Приоритет: configureApiClient({ baseUrl }) → NEXT_PUBLIC_API_URL → прямой бэкенд.
+ * configuredBaseUrl выставляется только в браузере (configureApiClient зовётся
+ * в useEffect клиентского провайдера), поэтому SSR-запросы остаются абсолютными.
  */
 const getBaseUrl = (): string => {
-    return process.env.NEXT_PUBLIC_API_URL ?? 'https://dev-api.yuviron.com/api';
+    return (
+        configuredBaseUrl ??
+        process.env.NEXT_PUBLIC_API_URL ??
+        'https://dev-api.yuviron.com/api'
+    );
 };
 
 /**
