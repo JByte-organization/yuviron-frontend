@@ -7,6 +7,18 @@ import { NextRequest } from 'next/server';
 
 const BACKEND_BASE = process.env.BACKEND_URL ?? 'https://dev-api.yuviron.com/api';
 
+// dev-api отдаёт сертификат внутреннего CA, которого нет в bundled-списке Node.
+// Локально это решает cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 в dev-скрипте,
+// но в задеплоенном контейнере env не выставлен — без этого хака прокси падал бы
+// в 502 на TLS. Включаем ТОЛЬКО для dev-бэкенда: прод обязан задать BACKEND_URL
+// с публично доверенным сертификатом, и валидация останется включённой.
+if (
+    BACKEND_BASE.includes('dev-api.yuviron.com') &&
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED === undefined
+) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 const HOP_BY_HOP_REQUEST_HEADERS = new Set([
     'host',
     'connection',
@@ -73,10 +85,25 @@ const proxy = async (
 
     const responseHeaders = new Headers();
     upstream.headers.forEach((value, key) => {
-        if (!HOP_BY_HOP_RESPONSE_HEADERS.has(key.toLowerCase())) {
+        const lower = key.toLowerCase();
+        // set-cookie обрабатываем отдельно через getSetCookie() — forEach
+        // склеивает несколько кук в одну строку и ломает их.
+        if (!HOP_BY_HOP_RESPONSE_HEADERS.has(lower) && lower !== 'set-cookie') {
             responseHeaders.append(key, value);
         }
     });
+
+    // Куки бэкенда (XSRF-TOKEN, yuviron_csrf, refresh) должны сесть на НАШ
+    // origin (dev.yuviron.com / localhost), а не на dev-api — иначе браузер
+    // либо отбросит куку (Domain не совпадает с origin ответа), либо
+    // document.cookie её не увидит. Убираем атрибут Domain → кука становится
+    // host-only для домена страницы. Это и есть весь смысл same-origin прокси.
+    for (const cookie of upstream.headers.getSetCookie()) {
+        responseHeaders.append(
+            'set-cookie',
+            cookie.replace(/;\s*Domain=[^;]*/i, ''),
+        );
+    }
 
     return new Response(upstream.body, {
         status: upstream.status,
