@@ -78,6 +78,20 @@ const proxy = async (
         }
     });
 
+    // Бэкенд (ASP.NET, AntiforgeryOptions.Cookie.SecurePolicy = Always) отдаёт
+    // 400 «request is not an SSL request» на любой не-HTTPS запрос — а фолбек
+    // http://backend:5073 как раз голый HTTP внутри docker-сети. Поэтому явно
+    // говорим беку, что ИСХОДНЫЙ запрос пришёл по HTTPS: берём X-Forwarded-Proto,
+    // который выставил nginx (мы его срезали выше как hop-by-hop), либо протокол
+    // текущего запроса. Чтобы это сработало, бек должен доверять прокси
+    // (ForwardedHeaders middleware) — см. сообщение девопсам в тикете.
+    const forwardedProto =
+        request.headers.get('x-forwarded-proto') ?? url.protocol.replace(':', '');
+    const forwardedHost =
+        request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? url.host;
+    headers.set('x-forwarded-proto', forwardedProto);
+    headers.set('x-forwarded-host', forwardedHost);
+
     const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
     // Тело буферизуем (не стримим) — оно нужно повторно при фолбеке на
     // следующего кандидата upstream-а.
