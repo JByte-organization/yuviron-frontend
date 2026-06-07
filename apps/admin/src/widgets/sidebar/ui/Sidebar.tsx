@@ -100,6 +100,7 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
                     {navLink('/dashboard', 'Dashboard')}
                     {navLink('/users',     'Users')}
                     {navLink('/artists',   'Artists')}
+                    {navLink('/verification', 'Verification')}
 
                     <li className="nav-group">
                         <div
