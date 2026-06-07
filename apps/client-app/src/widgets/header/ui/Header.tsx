@@ -13,6 +13,7 @@ import {
     getGetApiNotificationsUnreadCountQueryKey,
 } from '@repo/api/client.ts';
 import { useSessionStore } from '@/entities/session/model/store';
+import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 import { useTheme } from '@/shared/lib/ThemeProvider';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { SearchDropdown } from './SearchDropdown';
@@ -22,6 +23,9 @@ export const Header = () => {
     const router = useRouter();
     const accessToken = useSessionStore(s => s.accessToken);
     const clearSession = useSessionStore(s => s.clearSession);
+    // Є artistId (JWT-claim або localStorage після create-флоу) → у меню
+    // «Кабінет артиста» замість «Стати артистом».
+    const artistId = useCurrentArtistId();
 
     // ─── Тема ─────────────────────────────────────────────
     const { theme, toggleTheme } = useTheme();
@@ -213,6 +217,7 @@ export const Header = () => {
                             <UserDropdown
                                 userId={me.id ?? ''}
                                 isPremium={me.isPremium}
+                                isArtist={!!artistId}
                                 onClose={() => setShowUserMenu(false)}
                                 onLogout={() => logout()}
                             />
