@@ -1,5 +1,6 @@
 // src/entities/session/model/store.ts
 import { create } from 'zustand';
+import { clearStoredArtistId } from '@/entities/artist/model/artistIdStorage';
 
 export interface SessionUser {
     id?: string;
@@ -68,9 +69,14 @@ const userFromToken = (token: string | null): SessionUser | null => {
     };
 };
 
-export const useSessionStore = create<SessionState>((set) => ({
+export const useSessionStore = create<SessionState>((set, get) => ({
     accessToken: null,
     user: null,
     setAccessToken: (token) => set({ accessToken: token, user: userFromToken(token) }),
-    clearSession: () => set({ accessToken: null, user: null }),
+    clearSession: () => {
+        // Прибираємо scoped-artistId поточного юзера (+ легасі-ключ), щоб
+        // наступний акаунт на цьому браузері не успадкував чужий кабінет.
+        clearStoredArtistId(get().user?.id);
+        set({ accessToken: null, user: null });
+    },
 }));

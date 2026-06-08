@@ -46,9 +46,11 @@ export const useCreateArtistProfile = () => {
             const r = res as unknown as { artistId?: string; data?: { artistId?: string } };
             const newArtistId = r?.data?.artistId ?? r?.artistId ?? null;
             setArtistId(newArtistId);
-            // Зберігаємо для кабінету: studio-API вимагає artistId, а ендпоінта
-            // «мій артист» немає. Це єдине джерело id до появи claim у JWT.
-            setStoredArtistId(newArtistId);
+            // Зберігаємо для кабінету (scoped на поточного юзера): studio-API
+            // вимагає artistId; це місток до моменту, коли claim приїде в JWT
+            // після рефреша нижче. Ключ привʼязаний до userId, щоб не протекти
+            // іншому акаунту на тому самому браузері.
+            setStoredArtistId(useSessionStore.getState().user?.id, newArtistId);
 
             // Рефреш роли перед входом в студию.
             let refreshedOk = false;
