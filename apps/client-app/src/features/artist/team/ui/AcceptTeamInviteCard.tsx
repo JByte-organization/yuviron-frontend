@@ -8,6 +8,7 @@ import {
     usePostApiStudioArtistTeamAcceptInvite,
 } from '@repo/api/artist.ts';
 import { setStoredArtistId } from '@/entities/artist/model/currentArtist';
+import { useSessionStore } from '@/entities/session/model/store';
 
 /**
  * Прийняття запрошення до команди артиста. Бек шле лист із посиланням
@@ -22,6 +23,8 @@ export const AcceptTeamInviteCard = () => {
     // на потрібному артисті (accept-invite повертає 204 без тіла).
     const artistIdFromLink = searchParams.get('artistId');
 
+    const userId = useSessionStore((s) => s.user?.id);
+
     const [error, setError] = useState<string | null>(null);
     const { mutateAsync: acceptInvite, isPending, isSuccess } = usePostApiStudioArtistTeamAcceptInvite();
 
@@ -31,7 +34,7 @@ export const AcceptTeamInviteCard = () => {
             await acceptInvite({
                 data: { token, requiredPermission: AppPermission.AccessBasic },
             });
-            if (artistIdFromLink) setStoredArtistId(artistIdFromLink);
+            if (artistIdFromLink) setStoredArtistId(userId, artistIdFromLink);
             setTimeout(() => router.push('/artist-dashboard'), 1200);
         } catch (e) {
             const data = (e as { response?: { data?: { detail?: string; title?: string } } })?.response?.data;
