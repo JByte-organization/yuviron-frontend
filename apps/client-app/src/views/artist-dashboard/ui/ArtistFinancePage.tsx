@@ -42,12 +42,14 @@ const money = (value: number | undefined): string =>
 const dateTime = (iso: string | undefined): string =>
     iso ? format(parseISO(iso), 'dd.MM.yyyy HH:mm') : '—';
 
-// PayoutMethod у свагері — голий int 1|2|3 без імен; підписи погоджені «на око»,
-// звірити з беком, коли enum отримає рядкові значення.
-const PAYOUT_METHOD_LABELS: Record<number, string> = {
-    1: 'Банківська картка',
-    2: 'PayPal',
-    3: 'Банківський переказ (IBAN)',
+// PayoutMethod у живому свагері — рядковий enum PayPal|Stripe|BankTransfer (бек
+// замінив старі int 1|2|3). Ключі = значення, які приймає бек; типізуємо як
+// Record<string,…>, щоб код компілювався і зі старим int-enum у закоміченому
+// fallback (CI генерує з живого — рядки), і не залежав від типу PayoutMethod.
+const PAYOUT_METHOD_LABELS: Record<string, string> = {
+    PayPal: 'PayPal',
+    Stripe: 'Stripe (картка)',
+    BankTransfer: 'Банківський переказ (IBAN)',
 };
 
 const TRANSACTION_LABELS: Record<string, string> = {
@@ -128,7 +130,7 @@ export const ArtistFinancePage = () => {
     };
 
     // ─── Налаштування виплат ────────────────────────────
-    const [method, setMethod] = useState<number>(1);
+    const [method, setMethod] = useState<string>('PayPal');
     const [accountDetails, setAccountDetails] = useState('');
     const [settingsError, setSettingsError] = useState<string | null>(null);
     const [settingsOk, setSettingsOk] = useState(false);
@@ -139,7 +141,7 @@ export const ArtistFinancePage = () => {
     const [syncedSettings, setSyncedSettings] = useState<PayoutSettingsDto | undefined>(undefined);
     if (settings && settings !== syncedSettings) {
         setSyncedSettings(settings);
-        if (settings.method) setMethod(Number(settings.method));
+        if (settings.method) setMethod(String(settings.method));
         setAccountDetails(settings.accountDetails ?? '');
     }
 
@@ -151,7 +153,9 @@ export const ArtistFinancePage = () => {
             await saveSettings({
                 data: {
                     artistId,
-                    method: method as PayoutMethod,
+                    // method тримаємо як рядок (значення живого enum); каст через
+                    // unknown — щоб компілювалось і зі старим int-enum у fallback.
+                    method: method as unknown as PayoutMethod,
                     accountDetails: accountDetails.trim(),
                     requiredPermission: AppPermission.StudioArtistManage,
                 },
@@ -248,7 +252,7 @@ export const ArtistFinancePage = () => {
                                 <select
                                     className="client-modal__input"
                                     value={method}
-                                    onChange={e => { setMethod(Number(e.target.value)); setSettingsOk(false); }}
+                                    onChange={e => { setMethod(e.target.value); setSettingsOk(false); }}
                                 >
                                     {Object.entries(PAYOUT_METHOD_LABELS).map(([value, label]) => (
                                         <option key={value} value={value}>{label}</option>
