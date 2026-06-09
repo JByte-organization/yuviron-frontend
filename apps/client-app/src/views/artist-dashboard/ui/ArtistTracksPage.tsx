@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
     getGetApiStudioArtistTracksQueryKey,
     useGetApiStudioArtistTracks,
@@ -35,7 +35,6 @@ export const ArtistTracksPage = () => {
     const [editingTrack, setEditingTrack] = useState<TrackToEdit | null>(null);
     const [deletingTrack,setDeletingTrack]= useState<TrackToEdit | null>(null);
     const [analyticsTrack, setAnalyticsTrack] = useState<TrackToEdit | null>(null);
-    const [currentTrack, setCurrentTrack] = useState<string | null>(null);
 
     useEffect(() => {
         const id = setTimeout(() => setDebounced(search.trim()), 300);
@@ -52,27 +51,27 @@ export const ArtistTracksPage = () => {
         query: { enabled: !!artistId, queryKey: getGetApiStudioArtistTracksQueryKey(params) },
     });
 
-    const tracks: TrackRowData[] = unwrapItems<StudioTrackListItemFlex>(tracksRaw).map((t, i) => ({
-        id: t.id ?? '',
-        index: t.albumPosition ?? i + 1,
-        title: t.title ?? 'Без назви',
-        artistNames: t.artistNames ?? [],
-        artistId: artistId ?? '',
-        albumId: t.albumId ?? '',
-        albumTitle: t.albumTitle ?? null,
-        addedAt: t.createdAt ?? '',
-        durationMs: t.durationMs ?? 0,
-        coverUrl: t.coverUrl,
-    }));
+    const tracks: TrackRowData[] = useMemo(() => {
+        return unwrapItems<StudioTrackListItemFlex>(tracksRaw).map((t, i) => ({
+            id:          t.id ?? '',
+            index:       t.albumPosition ?? i + 1,
+            title:       t.title ?? 'Без назви',
+            artistNames: t.artistNames ?? [],
+            artistId:    artistId ?? '',
+            albumId:     t.albumId ?? '',
+            albumTitle:  t.albumTitle ?? null,
+            addedAt:     t.createdAt ?? '',
+            durationMs:  t.durationMs ?? 0,
+            coverUrl:    t.coverUrl,
+            isSaved:     (t as any).isSaved ?? false,
+        }));
+    }, [tracksRaw, artistId]);
 
-    // Інвалідовуємо список після create/edit/delete у модалках.
     const refetchTracks = () =>
         queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/tracks'] });
 
     return (
         <div className="artist-tracks-page">
-
-            {/* ─── Заголовок ────────────────────────── */}
             <div className="artist-tracks-page__header">
                 <div>
                     <h1 className="artist-tracks-page__title">Мої треки</h1>
@@ -80,7 +79,6 @@ export const ArtistTracksPage = () => {
                 </div>
 
                 <div className="artist-tracks-page__controls">
-                    {/* Пошук */}
                     <div className="artist-tracks-page__search">
                         <i className="bi bi-search artist-tracks-page__search-icon" />
                         <input
@@ -100,7 +98,6 @@ export const ArtistTracksPage = () => {
                         )}
                     </div>
 
-                    {/* Кнопка завантажити */}
                     <button
                         className="artist-tracks-page__upload-btn"
                         onClick={() => setShowUpload(true)}
@@ -111,7 +108,6 @@ export const ArtistTracksPage = () => {
                 </div>
             </div>
 
-            {/* ─── Заголовки колонок ─────────────────── */}
             <div className="artist-tracks-page__columns">
                 <div className="artist-tracks-page__col-index">#</div>
                 <div className="artist-tracks-page__col-title">Назва</div>
@@ -124,7 +120,6 @@ export const ArtistTracksPage = () => {
 
             <hr className="artist-tracks-page__divider" />
 
-            {/* ─── Список треків ─────────────────────── */}
             {tracks.length === 0 ? (
                 <div className="artist-tracks-page__empty">
                     {isLoading
@@ -134,76 +129,49 @@ export const ArtistTracksPage = () => {
                             : 'Треків ще немає. Завантажте перший трек!'}
                 </div>
             ) : (
-                tracks.map(track => (
-                    <div key={track.id} className="artist-tracks-page__row-wrap">
-                        <TrackRow
-                            track={track}
-                            isPlaying={currentTrack === track.id}
-                            onClick={id => setCurrentTrack(id === currentTrack ? null : id)}
-                        />
-                        {/* Кнопки аналітики/редагування/видалення */}
-                        <div className="artist-tracks-page__row-actions">
-                            <button
-                                className="artist-tracks-page__row-btn"
-                                onClick={() => setAnalyticsTrack({ id: track.id, title: track.title, albumTitle: track.albumTitle })}
-                                title="Аналітика"
-                            >
-                                <i className="bi bi-graph-up" />
-                            </button>
-                            <button
-                                className="artist-tracks-page__row-btn"
-                                onClick={() => setEditingTrack({ id: track.id, title: track.title, albumTitle: track.albumTitle })}
-                                title="Редагувати"
-                            >
-                                <i className="bi bi-pencil" />
-                            </button>
-                            <button
-                                className="artist-tracks-page__row-btn artist-tracks-page__row-btn--danger"
-                                onClick={() => setDeletingTrack({ id: track.id, title: track.title, albumTitle: track.albumTitle })}
-                                title="Видалити"
-                            >
-                                <i className="bi bi-trash" />
-                            </button>
+                <div className="d-flex flex-column gap-1">
+                    {tracks.map(track => (
+                        <div key={track.id} className="artist-tracks-page__row-wrap">
+                            <TrackRow
+                                key={`${track.id}-${track.isSaved}`}
+                                track={track}
+                                allTracks={tracks}
+                                sourceType="ArtistProfile"
+                            />
+
+                            <div className="artist-tracks-page__row-actions">
+                                <button
+                                    className="artist-tracks-page__row-btn"
+                                    onClick={() => setAnalyticsTrack({ id: track.id, title: track.title, albumTitle: track.albumTitle })}
+                                    title="Аналітика"
+                                >
+                                    <i className="bi bi-graph-up" />
+                                </button>
+                                <button
+                                    className="artist-tracks-page__row-btn"
+                                    onClick={() => setEditingTrack({ id: track.id, title: track.title, albumTitle: track.albumTitle })}
+                                    title="Редагувати"
+                                >
+                                    <i className="bi bi-pencil" />
+                                </button>
+                                <button
+                                    className="artist-tracks-page__row-btn artist-tracks-page__row-btn--danger"
+                                    onClick={() => setDeletingTrack({ id: track.id, title: track.title, albumTitle: track.albumTitle })}
+                                    title="Видалити"
+                                >
+                                    <i className="bi bi-trash" />
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                ))
+                    ))}
+                </div>
             )}
 
-            {/* ─── Модалки ───────────────────────────── */}
-            <UploadTrackModal
-                isOpen={showUpload}
-                onClose={() => setShowUpload(false)}
-                onSuccess={() => { setShowUpload(false); refetchTracks(); }}
-            />
-
-            {editingTrack && (
-                <EditTrackModal
-                    isOpen={!!editingTrack}
-                    trackId={editingTrack.id}
-                    trackTitle={editingTrack.title}
-                    onClose={() => setEditingTrack(null)}
-                    onSuccess={() => { setEditingTrack(null); refetchTracks(); }}
-                />
-            )}
-
-            {analyticsTrack && (
-                <TrackAnalyticsModal
-                    isOpen={!!analyticsTrack}
-                    trackId={analyticsTrack.id}
-                    trackTitle={analyticsTrack.title}
-                    onClose={() => setAnalyticsTrack(null)}
-                />
-            )}
-
-            {deletingTrack && (
-                <DeleteTrackModal
-                    isOpen={!!deletingTrack}
-                    trackId={deletingTrack.id}
-                    trackTitle={deletingTrack.title}
-                    onClose={() => setDeletingTrack(null)}
-                    onSuccess={() => { setDeletingTrack(null); refetchTracks(); }}
-                />
-            )}
+            {/* Модалки */}
+            <UploadTrackModal isOpen={showUpload} onClose={() => setShowUpload(false)} onSuccess={() => { setShowUpload(false); refetchTracks(); }} />
+            {editingTrack && <EditTrackModal isOpen={!!editingTrack} trackId={editingTrack.id} trackTitle={editingTrack.title} onClose={() => setEditingTrack(null)} onSuccess={() => { setEditingTrack(null); refetchTracks(); }} />}
+            {analyticsTrack && <TrackAnalyticsModal isOpen={!!analyticsTrack} trackId={analyticsTrack.id} trackTitle={analyticsTrack.title} onClose={() => setAnalyticsTrack(null)} />}
+            {deletingTrack && <DeleteTrackModal isOpen={!!deletingTrack} trackId={deletingTrack.id} trackTitle={deletingTrack.title} onClose={() => setDeletingTrack(null)} onSuccess={() => { setDeletingTrack(null); refetchTracks(); }} />}
         </div>
     );
 };

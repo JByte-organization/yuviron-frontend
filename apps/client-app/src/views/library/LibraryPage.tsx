@@ -17,9 +17,11 @@ import type { TrackCardData } from '@/entities/track/ui/TrackCard';
 import type { ArtistCardData } from '@/entities/artist/ui/ArtistCard';
 import type { PlaylistCardData } from '@/entities/playlist/ui/PlaylistCard';
 
+// 🚨 ІМПОРТУЄМО ПЛЕЄР ДЛЯ ЗАПУСКУ ЧЕРГИ ТРЕКІВ
+import { usePlayer } from '@/entities/player/lib/usePlayer';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
+
 // ─── Маппінги ─────────────────────────────────────────────────────────────────
-// Перетворюємо відповіді API у формат, який очікують компоненти-секції.
-// Кожен маппінг живе тут, а не всередині секції — секції залишаються "тупими".
 
 const mapFavoriteTrack = (t: UserFavoriteTrackDto): TrackCardData => ({
     id:          t.trackId    ?? '',
@@ -28,14 +30,14 @@ const mapFavoriteTrack = (t: UserFavoriteTrackDto): TrackCardData => ({
     artistId:    t.artistNames?.[0]?.id ?? undefined,
     coverUrl:    t.coverUrl   ?? null,
     durationMs:  t.durationMs ?? undefined,
+    // 🚨 ГЛАВНИЙ ФІКС №1: Примусово ставимо true, бо це треки з Favorites!
+    isSaved:     true,
 });
-
 
 const mapFollowedArtist = (a: FollowedArtistDto): ArtistCardData => ({
     id:        a.artistId ?? '',
     name:      a.name     ?? '',
     avatarUrl: a.avatarUrl ?? null,
-    // followersCount є в DTO — передаємо як monthlyListeners (найближчий аналог)
     monthlyListeners: a.followersCount ?? undefined,
 });
 
@@ -49,6 +51,9 @@ const mapPlaylist = (p: UserPlaylistDto): PlaylistCardData => ({
 // ─── Компонент ────────────────────────────────────────────────────────────────
 export const LibraryPage = () => {
     const router = useRouter();
+
+    // 🚨 Ініціалізуємо плеєр
+    const { playQueue } = usePlayer();
 
     // ── Запити даних ──────────────────────────────────────────────────────────
     const {
@@ -66,7 +71,6 @@ export const LibraryPage = () => {
         isLoading: playlistsLoading,
     } = useGetApiMePlaylists({ Page: 1, PageSize: 10 });
 
-    
     const tracksData   = tracksRaw   as unknown as { items?: UserFavoriteTrackDto[] };
     const artistsData  = artistsRaw  as unknown as { items?: FollowedArtistDto[] };
     const playlistsData = playlistsRaw as unknown as { items?: UserPlaylistDto[] };
@@ -85,7 +89,9 @@ export const LibraryPage = () => {
                 showAllHref="/favorites"
                 tracks={tracks}
                 isLoading={tracksLoading}
-                onTrackClick={(id) => router.push(`/tracks/${id}`)}
+                onTrackClick={(_, index) => {
+                    playQueue(tracks, index, 'Playlist', 'favorites');
+                }}
             />
 
             {/* Плейлісти */}

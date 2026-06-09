@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode } from 'swiper/modules';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
@@ -16,14 +16,13 @@ interface TopTracksSectionProps {
     tracks?: TrackCardData[];
     isLoading?: boolean;
     showAllHref?: string;
-    // 🚨 ФІКС ОЧЕРЕДІ: Передаємо трек та його індекс для ініціалізації черги в плеєрі
     onTrackClick?: (track: TrackCardData, index: number) => void;
 }
 
 // ─── Компонент ────────────────────────────────────────────────────────────────
 export const TopTracksSection = ({
                                      sectionTitle = 'Топ популярна музика',
-                                     tracks = [], // Дефолтне значення, щоб уникнути undefined
+                                     tracks = [],
                                      isLoading = false,
                                      showAllHref = '/tracks',
                                      onTrackClick,
@@ -31,7 +30,6 @@ export const TopTracksSection = ({
 
     if (!isLoading && (!tracks || tracks.length === 0)) return null;
 
-    // Оптимізуємо розрахунок останнього слова через useMemo
     const lastWord = useMemo(() => {
         return sectionTitle.trim().split(' ').at(-1) ?? 'музика';
     }, [sectionTitle]);
@@ -57,7 +55,6 @@ export const TopTracksSection = ({
                 <Swiper
                     modules={[FreeMode]}
                     freeMode
-                    // 🚨 ФІКС КНОПКИ: переводимо в auto, щоб ShowAllButton не летіла далеко
                     slidesPerView={2}
                     spaceBetween={24}
                     breakpoints={{
@@ -69,17 +66,18 @@ export const TopTracksSection = ({
                     className="top-tracks-section__swiper"
                 >
                     {tracks.map((track, index) => (
-                        // Додаємо унікальний клас для трек-слайдів, щоб контролювати їх ширину в SCSS
-                        <SwiperSlide key={track.id} className="top-tracks-section__track-slide">
+                        <SwiperSlide
+                            key={`${track.id}-${track.isSaved}`}
+                            className="top-tracks-section__track-slide"
+                        >
                             <TrackCard
                                 track={track}
-                                // Передаємо наверх індекс для плеєра
                                 onClick={() => onTrackClick?.(track, index)}
                             />
                         </SwiperSlide>
                     ))}
 
-                    {/* Слайд із кнопкою тепер буде притиснутий впритул з відступом 24px */}
+                    {/* Слайд із кнопкою «Показати все» */}
                     <SwiperSlide className="top-tracks-section__show-all-slide align-items-center my-auto mx-0">
                         <ShowAllButton href={showAllHref} />
                     </SwiperSlide>

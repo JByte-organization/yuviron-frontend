@@ -4014,3 +4014,23 @@
   }
 }
 
+
+.playlist-page {
+
+  &__draggable-row-holder {
+    transition: background-color 0.15s ease, transform 0.15s ease;
+    border-radius: 8px;
+    touch-action: none; // Захищає від випадкових скролів екрану пальцем на мобільних
+
+    &--dragging {
+      background: rgba(255, 255, 255, 0.07) !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+
+      // Підсвічуємо внутрішній компонент під час левітації
+      .track-row {
+        background: rgba(255, 255, 255, 0.05) !important;
+      }
+    }
+  }
+}

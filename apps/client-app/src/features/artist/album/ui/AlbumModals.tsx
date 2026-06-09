@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import {
     AppPermission,
@@ -185,23 +185,26 @@ interface DetailProps {
 }
 
 export const AlbumDetailModal = ({ isOpen, album, onClose }: DetailProps) => {
-    const [currentTrack, setCurrentTrack] = useState<string | null>(null);
-
     const { data: tracksRaw, isLoading } = useGetApiStudioArtistAlbumsIdTracks(album.id, {
         query: { enabled: isOpen && !!album.id, queryKey: getGetApiStudioArtistAlbumsIdTracksQueryKey(album.id) },
     });
-    const tracks: TrackRowData[] = unwrapArray<StudioAlbumTrackDto>(tracksRaw).map((t) => ({
-        id: t.id ?? '',
-        index: t.position ?? 0,
-        title: t.title ?? 'Без назви',
-        artistNames: [album.artistName].filter(Boolean),
-        artistId: '',
-        albumId: album.id,
-        albumTitle: album.title,
-        addedAt: null,
-        durationMs: t.durationMs ?? 0,
-        coverUrl: t.coverUrl,
-    }));
+
+    // Формуємо чистий масив треків для таблиці
+    const tracks: TrackRowData[] = useMemo(() => {
+        return unwrapArray<StudioAlbumTrackDto>(tracksRaw).map((t, i) => ({
+            id:          t.id ?? '',
+            index:       t.position ?? i + 1,
+            title:       t.title ?? 'Без назви',
+            artistNames: [album.artistName].filter(Boolean),
+            artistId:    '',
+            albumId:     album.id,
+            albumTitle:  album.title,
+            addedAt:     null,
+            durationMs:  t.durationMs ?? 0,
+            coverUrl:    t.coverUrl,
+            isSaved:     (t as any).isSaved ?? false,
+        }));
+    }, [tracksRaw, album]);
 
     if (!isOpen) return null;
 
@@ -232,14 +235,18 @@ export const AlbumDetailModal = ({ isOpen, album, onClose }: DetailProps) => {
                             {isLoading ? 'Завантаження…' : 'У цьому альбомі ще немає треків.'}
                         </p>
                     ) : (
-                        tracks.map(track => (
-                            <TrackRow
-                                key={track.id}
-                                track={track}
-                                isPlaying={currentTrack === track.id}
-                                onClick={id => setCurrentTrack(id === currentTrack ? null : id)}
-                            />
-                        ))
+                        <div className="d-flex flex-column gap-1">
+                            {tracks.map(track => (
+                                /* 🚨 ФІКС: Передаємо сумісну сигнатуру пропсів автономного TrackRow */
+                                <TrackRow
+                                    key={`${track.id}-${track.isSaved}`}
+                                    track={track}
+                                    allTracks={tracks}
+                                    sourceType="Album"
+                                    sourceId={album.id}
+                                />
+                            ))}
+                        </div>
                     )}
                 </div>
 
