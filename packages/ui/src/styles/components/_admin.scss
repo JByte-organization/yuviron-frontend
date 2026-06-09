@@ -592,3 +592,88 @@ $active-blue: #40A2FF;
     transition: margin-left 0.25s ease;
   }
 }
+
+
+.recharts-default-tooltip {
+  background-color: $admin-secondary !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px);
+}
+
+.text-cyan {
+  color: $admin-btn-primary !important;
+  filter: drop-shadow(0 0 8px rgba($admin-btn-primary, 0.3));
+}
+
+.transition-all {
+  transition: all 0.2s ease-in-out;
+  &:hover {
+    transform: translateY(-2px);
+    border-color: $admin-btn-primary !important;
+  }
+}
+
+
+.trending-albums {
+  background-color: #1e2330;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid $admin-secondary;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+
+  &__icon {
+    color: $admin-btn-primary;
+    filter: drop-shadow(0 0 8px rgba($admin-btn-primary, 0.3));
+  }
+
+  &__item {
+    width: 100px;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      .trending-albums__cover {
+        border-color: $admin-btn-primary;
+      }
+    }
+  }
+
+  &__cover {
+    width: 100px;
+    height: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.4);
+    transition: border-color 0.25s ease;
+    margin-bottom: 10px;
+
+    &--empty {
+      background: linear-gradient(135deg, #325B76, #212631);
+
+      span {
+        font-size: 1.6rem;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+      }
+    }
+  }
+
+  &__image {
+    transition: transform 0.3s ease-in-out;
+  }
+
+  &__item-title {
+    font-size: 0.8rem;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+
+  &__item-plays {
+    font-size: 0.7rem;
+    color: $admin-text;
+  }
+
+  &__item-count {
+    color: $admin-btn-primary;
+    font-weight: 500;
+  }
+}

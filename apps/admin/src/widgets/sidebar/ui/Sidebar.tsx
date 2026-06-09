@@ -73,7 +73,7 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
             <div className="sidebar-header d-flex align-items-center justify-content-between justify-content-lg-start p-3">
                 <div className="d-flex align-items-center gap-2 justify-content-center">
                     <Image
-                        src="/images/Logo/logo-element.svg"
+                        src="/images/logo/logo-element.svg"
                         width={50}
                         height={40}
                         alt="logo"
