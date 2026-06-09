@@ -1,7 +1,7 @@
 'use client';
 
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthChangePassword } from '@repo/api/client.ts';
+import { usePostApiMeSecurityChangePassword } from '@repo/api/client.ts';
 
 const checkUppercase = (value: string) => /[A-Z]/.test(value);
 const checkLowercase = (value: string) => /[a-z]/.test(value);
@@ -56,7 +56,7 @@ export const ChangePasswordForm = () => {
     const [serverError, setServerError] = useState<string | null>(null);
     const [done, setDone] = useState(false);
 
-    const { mutate, isPending } = usePostApiAuthChangePassword({
+    const { mutate, isPending } = usePostApiMeSecurityChangePassword({
         mutation: {
             onSuccess: () => {
                 setDone(true);

@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { usePutApiUsersProfile, usePostApiFilesUpload } from '@repo/api/client.ts';
+import { usePutApiMeAccountProfile, usePostApiFilesUpload } from '@repo/api/client.ts';
 import { Modal } from '@/shared/ui/Modal';
 import { CoverUpload } from '@/shared/ui/CoverUpload';
 
@@ -40,7 +40,7 @@ export const EditProfileModal = ({
                                  }: EditProfileModalProps) => {
 
     const { mutateAsync: uploadFile } = usePostApiFilesUpload();
-    const { mutateAsync: updateProfile } = usePutApiUsersProfile();
+    const { mutateAsync: updateProfile } = usePutApiMeAccountProfile();
 
     const {
         register,

@@ -216,30 +216,8 @@ export const ArtistDashboardPage = () => {
         ref.current.scrollBy({ left: dir === 'next' ? amount : -amount, behavior: 'smooth' });
     };
 
-    // Немає artistId — користувач ще не артист (або id не зарезолвився).
-    if (!artistId) {
-        return (
-            <div className="artist-dashboard">
-                <div className="artist-dashboard__content">
-                    <div className="client-become-artist__result">
-                        <div className="client-become-artist__result-icon client-become-artist__result-icon--star">
-                            <i className="bi bi-mic" />
-                        </div>
-                        <h2 className="client-become-artist__result-title">Кабінет артиста недоступний</h2>
-                        <p className="client-become-artist__result-text">
-                            Схоже, у вас ще немає профілю артиста. Створіть його, щоб завантажувати музику.
-                        </p>
-                        <Link
-                            href="/become-artist"
-                            className="client-become-artist__btn client-become-artist__btn--primary"
-                        >
-                            Стати артистом
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    // Стан «ще не артист» тепер обробляє ArtistDashboardLayout (чистий екран без
+    // студійного хрому), тож сюди ми потрапляємо лише з валідним artistId.
 
     return (
         <div className="artist-dashboard">
