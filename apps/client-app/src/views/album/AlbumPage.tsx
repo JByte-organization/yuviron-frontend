@@ -17,27 +17,28 @@ import { useAvatarColor } from '@/shared/lib/useAvatarColor';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 import { AlbumHeader } from './ui/AlbumHeader';
 
+// 🚨 ІМПОРТУЄМО КЕРУВАННЯ ПЛЕЄРОМ ТА СТОРОМ
+import { usePlayer } from '@/entities/player/lib/usePlayer';
+import { usePlayerStore } from '@/entities/player/model/playerStore';
+
 interface AlbumPageProps {
     albumId: string;
 }
 
-// Інтерфейс для безпечного розгортання обгорток Orval/Axios
 interface OrvalDataWrapper<T> {
     data?: T;
 }
 
-// Розширюємо стандартний DTO треку для підтримки необов'язкових полів без any
 interface ExtendedAlbumTrackItem extends AlbumTrackItemDto {
     durationMs?: number | null;
     durationSeconds?: number | null;
     playsCount?: number;
-    isLiked?: boolean;
+    isSaved?: boolean; // 🚨 Оновлено на наше реальне поле
+    isLiked?: boolean; // Залишаємо для зворотної сумісності беку
 }
 
-// Безпечний універсальний анвраппер даних з суворою типізацією
 const unwrapOrvalData = <T,>(rawResponse: unknown): T | undefined => {
     if (!rawResponse || typeof rawResponse !== 'object') return undefined;
-
     const wrapper = rawResponse as OrvalDataWrapper<T>;
     if (wrapper.data && typeof wrapper.data === 'object') {
         return wrapper.data;
@@ -46,8 +47,12 @@ const unwrapOrvalData = <T,>(rawResponse: unknown): T | undefined => {
 };
 
 export const AlbumPage = ({ albumId }: AlbumPageProps) => {
+    // ─── ІНІЦІАЛІЗАЦІЯ ХУКІВ ПЛЕЄРА ──────────────────────────────────────────
+    const { playQueue, togglePlay } = usePlayer();
+    const currentTrackId = usePlayerStore((s) => s.currentTrack?.id);
+    const playerStatus   = usePlayerStore((s) => s.status);
 
-    // 1. Отримуємо дані метаданих та списку треків паралельно
+    // 1. Паралельні запити до API
     const { data: albumRaw, isLoading: albumLoading } = useGetApiAlbumsId(
         albumId,
         {
@@ -68,7 +73,6 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
         }
     );
 
-    // Безпечно витягуємо типізовані структури через наш хелпер
     const album = unwrapOrvalData<AlbumDetailsDto>(albumRaw);
 
     const rawTracks = useMemo<ExtendedAlbumTrackItem[]>(() => {
@@ -76,7 +80,7 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
         return Array.isArray(list) ? list : [];
     }, [tracksRaw]);
 
-    // 2. Меомізація обчислених властивостей для Хедера
+    // 2. Мемоізація метаданих для Хедера
     const albumArtistsNames = useMemo<string[]>(() => {
         const artists = album?.artists as TrackArtistDto[] | null | undefined;
         if (!artists || artists.length === 0) return ['Невідомий виконавець'];
@@ -88,14 +92,11 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
         return new Date(album.releaseDate).getFullYear();
     }, [album]);
 
-
     const albumCoverSrc = useMemo(() => {
         if (!album?.coverUrl) return '/images/album/placeholder.png';
-
         return getImageUrl(album.coverUrl) ?? '/images/album/placeholder.png';
     }, [album]);
 
-    // 3. Обробка CORS проксі для коректного зчитування колірної палітри
     const proxiedCoverUrl = useMemo(() => {
         if (albumCoverSrc && albumCoverSrc.startsWith('http')) {
             return `/api/image-proxy?url=${encodeURIComponent(albumCoverSrc)}`;
@@ -106,18 +107,31 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
     const detectedColor = useAvatarColor(album?.coverUrl ? proxiedCoverUrl : '');
     const dominantColor = detectedColor || '#282828';
 
-    // 4. Безпечне зведення треків у формат TrackRowData
+    // 3. Зведення треків у формат TrackRowData
     const mappedTracks = useMemo<TrackRowData[]>(() => {
         const artistsList = album?.artists as TrackArtistDto[] | null | undefined;
         const mainArtistId = artistsList?.[0]?.id;
 
         return rawTracks.map((track, index) => {
-            // Розраховуємо тривалість на основі наявних полей бекенду
+
             let calculatedDuration: number | null = null;
-            if (track.durationMs) {
-                calculatedDuration = track.durationMs;
-            } else if (track.durationSeconds) {
-                calculatedDuration = track.durationSeconds * 1000;
+
+            // Зчитуємо будь-яке можливе поле, яке міг згенерувати Orval
+            const rawDuration = (track as any).durationMs ?? (track as any).duration ?? (track as any).durationSeconds;
+
+            if (typeof rawDuration === 'number') {
+                // Якщо число велике (> 10000) — це мілісекунди. Якщо маленьке — секунди (множимо на 1000)
+                calculatedDuration = rawDuration > 10000 ? rawDuration : rawDuration * 1000;
+            } else if (typeof rawDuration === 'string') {
+                // Якщо бек повернув C# TimeSpan рядок на кшталт "03:45" або "00:03:45"
+                const parts = rawDuration.split(':').map(Number);
+                if (parts.length === 3) {
+                    // HH:MM:SS -> переводимо в мілісекунди
+                    calculatedDuration = ((parts[0] * 3600) + (parts[1] * 60) + parts[2]) * 1000;
+                } else if (parts.length === 2) {
+                    // MM:SS -> переводимо в мілісекунди
+                    calculatedDuration = ((parts[0] * 60) + parts[1]) * 1000;
+                }
             }
 
             return {
@@ -131,11 +145,50 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
                 coverUrl:    album?.coverUrl,
                 durationMs:  calculatedDuration,
                 playsCount:  track.playsCount ?? 0,
-                isLiked:     track.isLiked ?? false,
+                isSaved:     track.isSaved ?? track.isLiked ?? false,
                 addedAt:     album?.releaseDate ?? null,
             };
         });
     }, [rawTracks, album, albumArtistsNames]);
+    // ─── 4. РЕАКТИВНА ПЕРЕВІРКА: ЧИ ГРАЄ ЗАРАЗ ЦЕЙ АЛЬБОМ ──────────────────
+    const isCollectionPlaying = useMemo(() => {
+        if (playerStatus !== 'playing' || mappedTracks.length === 0) return false;
+        return mappedTracks.some((t) => t.id === currentTrackId);
+    }, [mappedTracks, currentTrackId, playerStatus]);
+
+    // Послідовне відтворення альбому
+    const handlePlayAll = () => {
+        if (mappedTracks.length === 0) return;
+
+        if (isCollectionPlaying) {
+            togglePlay();
+        } else {
+            const queue = mappedTracks.map((t) => ({
+                id:          t.id,
+                title:       t.title,
+                artistNames: t.artistNames,
+                coverUrl:    t.coverUrl,
+                durationMs:  t.durationMs ?? undefined,
+            }));
+            // Запускаємо з першої пісні, джерело — Альбом
+            playQueue(queue, 0, 'Album', albumId);
+        }
+    };
+
+    // Перемішане відтворення (Shuffle)
+    const handleShufflePlay = () => {
+        if (mappedTracks.length === 0) return;
+
+        const shuffledTracks = [...mappedTracks].sort(() => Math.random() - 0.5);
+        const queue = shuffledTracks.map((t) => ({
+            id:          t.id,
+            title:       t.title,
+            artistNames: t.artistNames,
+            coverUrl:    t.coverUrl,
+            durationMs:  t.durationMs ?? undefined,
+        }));
+        playQueue(queue, 0, 'Album', albumId);
+    };
 
     if (albumLoading || tracksLoading) {
         return (
@@ -150,7 +203,6 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
     return (
         <div className="album-page text-white">
 
-            {/* Винесений підкомпонент хедера */}
             <AlbumHeader
                 title={album.title ?? 'Без назви'}
                 coverUrl={albumCoverSrc}
@@ -160,16 +212,24 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
                 dominantColor={dominantColor}
             />
 
-            {/* Блок панелі дій */}
-            <div className="album-page__actions p-4 p-md-5 d-flex align-items-center gap-4 bg-black-20">
-                <button className="btn btn-success rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: 56, height: 56 }}>
-                    <i className="bi bi-play-fill fs-2 text-black" />
+            {/* ─── 5. ОНОВЛЕНИЙ БЛОК ПАНЕЛІ ДІЙ (ЯК У FAVORITES) ───────────────── */}
+            <div className="album-page__actions p-4 px-md-5 d-flex align-items-center gap-3 bg-black-20">
+                {/* Велика кнопка Play/Pause */}
+                <button
+                    className={`favorites-header__btn favorites-header__btn--play${isCollectionPlaying ? ' favorites-header__btn--active' : ''}`}
+                    onClick={handlePlayAll}
+                    aria-label={isCollectionPlaying ? 'Pause' : 'Play'}
+                >
+                    <i className={`bi ${isCollectionPlaying ? 'bi-pause-fill' : 'bi bi-play-fill'}`} />
                 </button>
-                <button className="btn text-secondary p-0 fs-3 hover-white">
-                    <i className="bi bi-shuffle" />
-                </button>
-                <button className="btn text-secondary p-0 fs-3 hover-white">
-                    <i className="bi bi-plus-circle" />
+
+                {/* Кнопка суворого клієнтського Shuffle */}
+                <button
+                    className="favorites-header__btn favorites-header__btn--icon"
+                    onClick={handleShufflePlay}
+                    aria-label="Shuffle"
+                >
+                    <i className="bi bi-shuffle" style={{ fontSize: '1.4rem' }} />
                 </button>
             </div>
 
@@ -190,11 +250,11 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
                             </div>
                         </div>
 
-                        {/* Перебір треків через сумісний TrackRow */}
+                        {/* Список треків */}
                         <div className="d-flex flex-column gap-1">
                             {mappedTracks.map((trackItem) => (
                                 <TrackRow
-                                    key={trackItem.id}
+                                    key={`${trackItem.id}-${trackItem.isSaved}`}
                                     track={trackItem}
                                     allTracks={mappedTracks}
                                     sourceType="Album"

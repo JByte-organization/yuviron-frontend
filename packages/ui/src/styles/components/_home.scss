@@ -963,6 +963,7 @@
   }
 
   // Like кнопка — знизу справа на обкладинці
+  // Like кнопка — знизу справа на обкладинці
   &__like-btn {
     position: absolute;
     bottom: 8px;
@@ -979,26 +980,35 @@
     font-size: 0.85rem;
     cursor: pointer;
     z-index: 2;
-    transition: color 0.15s ease, transform 0.15s ease;
+    transition: color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
 
     &:hover {
       transform: scale(1.1);
     }
 
-    &__like-btn--hidden {
+    // 🚨 ФІКС №1: Справжній селектор приховання для BEM вкладеності
+    &--hidden {
       opacity: 0;
       pointer-events: none;
     }
 
-    // Активний стан — серце заповнене зеленим
+    // 🚨 ФІКС №2: Активний стан — показуємо серце ЗАВЖДИ і фарбуємо в зелений
     &--active {
-      color: $green;
+      color: $green !important; // Якщо на FavoritesPage хочеш червоне, зміни тут на $red
+      opacity: 1 !important;
+      pointer-events: auto !important;
     }
 
     &:disabled {
       opacity: 0.6;
       cursor: default;
     }
+  }
+
+  // Показуємо дефолтне (сіре) серце при ховері на саму картку
+  &:hover &__like-btn,
+  &--hovered &__like-btn {
+    opacity: 1;
   }
 
   &__info {

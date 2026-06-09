@@ -48,10 +48,9 @@ const extractList = <T,>(raw: unknown): T[] => {
 };
 
 export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
-    // 🚨 Отримуємо метод запуску черги з нашого хука
     const { playQueue } = usePlayer();
 
-    // ─── Загальні запити (для всіх) ───────────────────────
+    // ─── Загальні запити ──────────────────────────────────
     const { data: bannersRaw,     isLoading: bannersLoading     } = useGetApiHomeBanners();
     const { data: moodsRaw,       isLoading: moodsLoading       } = useGetApiMoods({ limit: 10 });
     const { data: genresRaw,      isLoading: genresLoading      } = useGetApiGenres({ limit: 10 });
@@ -110,6 +109,8 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
             title:       t.title ?? '',
             artistNames: (t.artists ?? []).map((a: TrackArtistDto) => a.name ?? ''),
             coverUrl:    getImageUrl(t.coverUrl),
+            // 🚨 ФІКС: Передаємо реальний статус збереження треку з бази даних
+            isSaved:     t.isSaved ?? false,
         }));
     }, [topTracksRaw]);
 
@@ -122,7 +123,7 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
         coverUrl:    getImageUrl(a.coverUrl),
     }));
 
-    // ─── Артисти — залежно від авторизації ────────────────
+    // ─── Артисти ──────────────────────────────────────────
     const artists: ArtistCardData[] = isAuthenticated
         ? extractList<FollowedArtistDto>(followedArtistsRaw).map(a => ({
             id:               a.artistId       ?? '',
@@ -164,8 +165,6 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
                     isLoading={topTracksLoading}
                     sectionTitle={tracksTitle}
                     onTrackClick={(_, index) => {
-                        // Завантажуємо в плеєр весь масив topTracks, вказуємо поточний індекс,
-                        // тип джерела 'Search' (або можна 'Playlist' за потреби) та null для ID
                         playQueue(topTracks, index, 'Search', null);
                     }}
                 />

@@ -1,4 +1,4 @@
-// Ендпоінти Клієнта (твої теги з Orval)
+// Ендпоінти Клієнта
 export * from './generated/client/endpoints/files';
 export * from './generated/client/endpoints/auth';
 export * from './generated/client/endpoints/home';

@@ -23,14 +23,10 @@ export const Header = () => {
     const router = useRouter();
     const accessToken = useSessionStore(s => s.accessToken);
     const clearSession = useSessionStore(s => s.clearSession);
-    // Є artistId (JWT-claim або localStorage після create-флоу) → у меню
-    // «Кабінет артиста» замість «Стати артистом».
     const artistId = useCurrentArtistId();
 
     // ─── Тема ─────────────────────────────────────────────
     const { theme, toggleTheme } = useTheme();
-    // Іконка залежить від теми, яка читається з localStorage лише на клієнті —
-    // чекаємо монтування, щоб не словити hydration mismatch (сервер = 'dark').
     const [themeMounted, setThemeMounted] = useState(false);
     useEffect(() => setThemeMounted(true), []);
     const isLight = themeMounted && theme === 'light';
@@ -50,12 +46,10 @@ export const Header = () => {
         }
     }, [accessToken]);
 
-
     const me: CurrentUserDto | null = (meRaw as CurrentUserDto) ?? null;
-
     const avatarSrc = getImageUrl(me?.profile?.avatarUrl);
 
-    // ─── Лічильник непрочитаних (червона крапка на дзвіночку) ──
+    // ─── Лічильник непрочитаних ───────────────────────────
     const { data: unreadRaw } = useGetApiNotificationsUnreadCount({
         query: {
             enabled: !!accessToken,
@@ -63,9 +57,6 @@ export const Header = () => {
         },
     });
     const unreadCount = (unreadRaw as unknown as number) ?? 0;
-
-    console.log('[Header] accessToken:', accessToken);
-    console.log('[Header] meRaw:', meRaw);
 
     // ─── Пошук ────────────────────────────────────────────
     const [query,        setQuery]        = useState('');
@@ -104,18 +95,18 @@ export const Header = () => {
     return (
         <header className="client-header">
 
-            {/* ─── Лого ─────────────────────────────── */}
+            {/* Лого */}
             <Link href="/home" className="client-header__logo">
                 <Image src="/images/logo.svg" alt="Lumitune" width={32} height={32} />
             </Link>
 
-            {/* ─── Пошук ────────────────────────────── */}
+            {/* Пошук */}
             <div className="client-header__search-wrap" ref={searchRef}>
                 <i className="bi bi-search client-header__search-icon" />
                 <input
                     type="text"
                     className="client-header__search"
-                    placeholder="Виконавці, треки, подкасти..."
+                    placeholder="Виконавці, треки, плейлісти..."
                     value={query}
                     onChange={e => {
                         setQuery(e.target.value);
@@ -133,23 +124,18 @@ export const Header = () => {
                         <i className="bi bi-x" />
                     </button>
                 )}
-                <button className="client-header__mic-btn" aria-label="Voice search">
-                    <i className="bi bi-mic" />
-                </button>
 
+                {/* 🚨 ФІКС: Прибрали застарілі результати й лоадери, лишили тільки те, що вимагає пропс */}
                 {showDropdown && (
                     <SearchDropdown
                         query={query}
-                        results={[]}
-                        isLoading={false}
                         onClose={() => setShowDropdown(false)}
                     />
                 )}
             </div>
 
-            {/* ─── Праві дії ────────────────────────── */}
+            {/* Праві дії */}
             <div className="client-header__actions">
-
                 {/* Перемикач теми */}
                 <button
                     type="button"
@@ -163,7 +149,6 @@ export const Header = () => {
 
                 {accessToken && me ? (
                     <div className="client-header__user">
-
                         {/* Premium кнопка */}
                         {!me.isPremium && (
                             <Link href="/premium" className="client-header__premium-btn">
@@ -225,7 +210,7 @@ export const Header = () => {
                     </div>
                 ) : (
                     <div className="d-flex gap-2">
-                        <Link href="/login"    className="client-header__auth-btn client-header__auth-btn--ghost">
+                        <Link href="/login" className="client-header__auth-btn client-header__auth-btn--ghost">
                             Увійти
                         </Link>
                         <Link href="/register" className="client-header__auth-btn client-header__auth-btn--primary">
