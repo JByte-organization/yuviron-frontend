@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { usePutApiUsersProfile, usePostApiFilesUpload } from '@repo/api/client.ts';
+import { usePutApiMeAccountProfile, usePostApiFilesUpload } from '@repo/api/client.ts';
 import { Modal } from '@/shared/ui/Modal';
 import { CoverUpload } from '@/shared/ui/CoverUpload';
 
@@ -14,7 +14,7 @@ interface EditProfileModalProps {
         name: string;
         avatarUrl?: string | null;
     };
-    userId: string; // Передаємо userId для унікального ключа в localStorage
+    userId: string;
 }
 
 type FormValues = {
@@ -22,7 +22,6 @@ type FormValues = {
     avatarFile: File | null | undefined;
 };
 
-// Хелпер для переведення файлу в Base64
 const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -40,7 +39,9 @@ export const EditProfileModal = ({
                                  }: EditProfileModalProps) => {
 
     const { mutateAsync: uploadFile } = usePostApiFilesUpload();
-    const { mutateAsync: updateProfile } = usePutApiUsersProfile();
+
+    // 🚨 1. ІНІЦІАЛІЗУЄМО НОВИЙ ХУК МУТАЦІЇ
+    const { mutateAsync: updateProfile } = usePutApiMeAccountProfile();
 
     const {
         register,
@@ -82,11 +83,10 @@ export const EditProfileModal = ({
                 const resData = uploadResponse as unknown as { fileId?: string; data?: { fileId?: string } };
                 uploadedAvatarId = resData?.data?.fileId ?? resData?.fileId ?? null;
 
-                // 1. Отримуємо Base64 для збереження між перезавантаженнями сторінки
                 const base64Img = await fileToBase64(values.avatarFile);
                 localStorage.setItem(`yuviron_temp_avatar_${userId}`, JSON.stringify({
                     url: base64Img,
-                    expiresAt: Date.now() + 3 * 60 * 1000 // Кеш на 3 хвилини
+                    expiresAt: Date.now() + 3 * 60 * 1000
                 }));
 
                 localPreviewUrl = base64Img;
@@ -97,6 +97,7 @@ export const EditProfileModal = ({
                 localStorage.removeItem(`yuviron_temp_avatar_${userId}`);
             }
 
+            // Формуємо тіло запиту під новий контракт
             const requestBody = {
                 name: values.name,
                 bio: null,
@@ -104,7 +105,9 @@ export const EditProfileModal = ({
                 bannerFileId: null
             };
 
-            await updateProfile({ data: requestBody });
+            await updateProfile({
+                data: requestBody as Parameters<typeof updateProfile>[0]['data']
+            });
 
             onSuccess?.(localPreviewUrl);
             handleClose();
