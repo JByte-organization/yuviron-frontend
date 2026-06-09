@@ -125,6 +125,7 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
                                 {navLink('/genres',    'Genres')}
                                 {navLink('/moods',     'Moods')}
                                 {navLink('/playlists', 'Playlists')}
+                                {navLink('/payout', 'Finance')}
                             </ul>
                         )}
                     </li>

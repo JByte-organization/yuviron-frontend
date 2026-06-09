@@ -11,6 +11,7 @@ export * from './generated/admin/endpoints/admin-dashboard';
 export * from './generated/admin/endpoints/admin-playlists';
 export * from './generated/admin/endpoints/admin-auth';
 export * from './generated/admin/endpoints/admin-ads';
+export * from './generated/admin/endpoints/admin-finance';
 export * from './generated/admin/endpoints/admin-verification-requests';
 
 export * from './generated/client/endpoints/files';
