@@ -8,6 +8,7 @@ import {
     usePostApiAdminAuthLogin, postApiAdminAuthLoginResponse, LoginResponse,
 } from '@repo/api/admin.ts';
 import { useAdminSessionStore } from '@/entities/adminSession/model/store';
+import {apiClient} from "@/shared/api/apiClient.ts";
 
 // ══════════════════════════════════════════════════════════
 // TYPES
@@ -200,6 +201,19 @@ const OtpStep = ({ email, onBack }: OtpStepProps) => {
 export const LoginForm = () => {
     const [step,  setStep]  = useState<Step>('credentials');
     const [email, setEmail] = useState('');
+
+    // 🚨 НОВИЙ БЛОК: Одноразова ініціалізація CSRF-захисту при монтуванні сторінки
+    React.useEffect(() => {
+        const initCsrf = async () => {
+            try {
+                await apiClient.get('/auth/csrf-token');
+                console.log('CSRF protection successfully initialized for Admin Panel');
+            } catch (err) {
+                console.error('Failed to initialize CSRF token:', err);
+            }
+        };
+        initCsrf();
+    }, []);
 
     const handleCredentialsSuccess = (submittedEmail: string) => {
         setEmail(submittedEmail);

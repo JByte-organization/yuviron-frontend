@@ -26,6 +26,9 @@ importers:
 
   apps/admin:
     dependencies:
+      '@fingerprintjs/fingerprintjs':
+        specifier: ^5.2.0
+        version: 5.2.0
       '@repo/api':
         specifier: workspace:*
         version: link:../../packages/api
