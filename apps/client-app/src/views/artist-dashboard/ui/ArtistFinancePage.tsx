@@ -3,9 +3,16 @@
 import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
+import { uk } from 'date-fns/locale';
+import {
+    BarChart, Bar,
+    XAxis, YAxis, CartesianGrid, Tooltip,
+    ResponsiveContainer,
+} from 'recharts';
 import {
     AppPermission,
     PayoutMethod,
+    WalletTransactionType,
     getGetApiStudioArtistFinancePayoutsQueryKey,
     getGetApiStudioArtistFinanceSettingsQueryKey,
     getGetApiStudioArtistFinanceTransactionsQueryKey,
@@ -22,7 +29,15 @@ import {
     type WalletTransactionDto,
 } from '@repo/api/artist.ts';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
-import { ChartError, ChartSkeleton } from '@/entities/artist/ui/AnalyticsChartParts';
+import {
+    CHART_COLORS,
+    ChartError,
+    ChartSkeleton,
+    chartTooltipStyle,
+    useChartAxisColors,
+} from '@/entities/artist/ui/AnalyticsChartParts';
+import { Confetti } from '@/shared/ui/Confetti';
+import { useFinanceRealtime } from '@/entities/artist/model/useFinanceRealtime';
 
 const unwrap = <T,>(raw: unknown): T | undefined => {
     if (!raw) return undefined;
@@ -41,6 +56,16 @@ const money = (value: number | undefined): string =>
 
 const dateTime = (iso: string | undefined): string =>
     iso ? format(parseISO(iso), 'dd.MM.yyyy HH:mm') : '—';
+
+// Достаём человекочитаемое сообщение из ответа сервера (ProblemDetails.detail/title)
+// или из сырого текста — для тоста на 400 ("Сума менша за мінімальну" и т.п.).
+const serverMessage = (error: unknown): string | null => {
+    const data = (error as { response?: { data?: unknown } } | null)?.response?.data;
+    if (!data) return null;
+    if (typeof data === 'string') return data;
+    const d = data as { detail?: string; title?: string; rawText?: string };
+    return d.detail ?? d.title ?? d.rawText ?? null;
+};
 
 // PayoutMethod у живому свагері — рядковий enum PayPal|Stripe|BankTransfer (бек
 // замінив старі int 1|2|3). Ключі = значення, які приймає бек; типізуємо як
@@ -71,11 +96,13 @@ const PAYOUT_STATUS: Record<string, { label: string; color: string }> = {
 export const ArtistFinancePage = () => {
     const artistId = useCurrentArtistId();
     const queryClient = useQueryClient();
+    const chart = useChartAxisColors();
 
     // ─── Запити ─────────────────────────────────────────
     const walletParams = { artistId: artistId ?? undefined };
+    const walletKey = getGetApiStudioArtistFinanceWalletQueryKey(walletParams);
     const walletQuery = useGetApiStudioArtistFinanceWallet(walletParams, {
-        query: { enabled: !!artistId, queryKey: getGetApiStudioArtistFinanceWalletQueryKey(walletParams) },
+        query: { enabled: !!artistId, queryKey: walletKey },
     });
     const wallet = unwrap<ArtistWalletDto>(walletQuery.data);
 
@@ -84,8 +111,12 @@ export const ArtistFinancePage = () => {
         query: { enabled: !!artistId, queryKey: getGetApiStudioArtistFinanceSettingsQueryKey(settingsParams) },
     });
     const settings = unwrap<PayoutSettingsDto>(settingsQuery.data);
+    // Реквізити збережені, лише якщо заповнено accountDetails (бек віддає порожній
+    // DTO/ null, поки артист не вказав рахунок). Без них виплата заблокована.
+    const hasSettings = !!settings?.accountDetails;
 
-    const txParams = { ArtistId: artistId ?? undefined, Page: 1, PageSize: 20 };
+    // PageSize побільше — щоб вистачило точок для графіка доходів (бек пагінує).
+    const txParams = { ArtistId: artistId ?? undefined, Page: 1, PageSize: 100 };
     const txQuery = useGetApiStudioArtistFinanceTransactions(txParams, {
         query: { enabled: !!artistId, queryKey: getGetApiStudioArtistFinanceTransactionsQueryKey(txParams) },
     });
@@ -97,10 +128,55 @@ export const ArtistFinancePage = () => {
     });
     const payouts = unwrapItems<ArtistPayoutRequestDto>(payoutsQuery.data);
 
+    // ─── Дані графіка доходів ───────────────────────────
+    // Беремо лише RoyaltyAccrual, групуємо по днях: X = день, Y = сума роялті.
+    const revenueData = React.useMemo(() => {
+        const byDay = new Map<string, number>();
+        for (const tx of transactions) {
+            if (tx.type !== WalletTransactionType.RoyaltyAccrual || !tx.createdAt) continue;
+            const day = format(parseISO(tx.createdAt), 'yyyy-MM-dd');
+            byDay.set(day, (byDay.get(day) ?? 0) + (tx.amount ?? 0));
+        }
+        return Array.from(byDay.entries())
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([day, amount]) => ({
+                label: format(parseISO(day), 'dd MMM', { locale: uk }),
+                amount: Number(amount.toFixed(2)),
+            }));
+    }, [transactions]);
+
+    // ─── Тост + конфетті ────────────────────────────────
+    const [toast, setToast] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
+    const [confettiKey, setConfettiKey] = useState(0);
+    const toastTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+    const confettiTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const showToast = React.useCallback((kind: 'ok' | 'error', text: string) => {
+        if (toastTimer.current) clearTimeout(toastTimer.current);
+        setToast({ kind, text });
+        toastTimer.current = setTimeout(() => setToast(null), 5000);
+    }, []);
+
+    const fireConfetti = React.useCallback(() => {
+        if (confettiTimer.current) clearTimeout(confettiTimer.current);
+        setConfettiKey(k => k + 1);
+        confettiTimer.current = setTimeout(() => setConfettiKey(0), 3500);
+    }, []);
+
+    React.useEffect(() => () => {
+        if (toastTimer.current) clearTimeout(toastTimer.current);
+        if (confettiTimer.current) clearTimeout(confettiTimer.current);
+    }, []);
+
+    // ─── Realtime (SignalR): рефреш кошелька на події біллінгу ──
+    // payout_approved → зелений тост + фоновий рефреш; first_royalties → конфетті.
+    useFinanceRealtime({
+        onPayoutApproved: () => showToast('ok', 'Виплату схвалено — гроші в дорозі! 🎉'),
+        onFirstRoyalties: () => { fireConfetti(); showToast('ok', 'Перші роялті зараховано! 🎉'); },
+    });
+
     // ─── Запит виплати ──────────────────────────────────
     const [amount, setAmount] = useState('');
-    const [payoutError, setPayoutError] = useState<string | null>(null);
-    const [payoutOk, setPayoutOk] = useState(false);
     const { mutateAsync: requestPayout, isPending: isRequesting } = usePostApiStudioArtistFinancePayouts();
 
     const available = wallet?.availableBalance ?? 0;
@@ -108,9 +184,21 @@ export const ArtistFinancePage = () => {
     const amountValid = Number.isFinite(amountNum) && amountNum > 0 && amountNum <= available;
 
     const submitPayout = async () => {
-        if (!artistId || !amountValid) return;
-        setPayoutError(null);
-        setPayoutOk(false);
+        if (!artistId || !amountValid || !hasSettings) return;
+
+        // Оптимістично: одразу віднімаємо з «Доступно» і додаємо в «Резерв» —
+        // не чекаємо сервер (doc). На помилці відкочуємо знімок назад.
+        const prevWallet = queryClient.getQueryData<ArtistWalletDto>(walletKey);
+        queryClient.setQueryData<ArtistWalletDto>(walletKey, old =>
+            old
+                ? {
+                    ...old,
+                    availableBalance: (old.availableBalance ?? 0) - amountNum,
+                    heldBalance: (old.heldBalance ?? 0) + amountNum,
+                }
+                : old,
+        );
+
         try {
             await requestPayout({
                 data: {
@@ -120,19 +208,21 @@ export const ArtistFinancePage = () => {
                 },
             });
             setAmount('');
-            setPayoutOk(true);
+            fireConfetti();
+            showToast('ok', 'Запит на виплату створено — очікуйте на рішення.');
+            // Узгоджуємо локальний стан із сервером.
             await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/finance/wallet'] });
             await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/finance/payouts'] });
             await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/finance/transactions'] });
-        } catch {
-            setPayoutError('Не вдалося створити запит на виплату. Спробуйте ще раз.');
+        } catch (err) {
+            queryClient.setQueryData<ArtistWalletDto>(walletKey, prevWallet); // rollback
+            showToast('error', serverMessage(err) ?? 'Не вдалося створити запит на виплату.');
         }
     };
 
     // ─── Налаштування виплат ────────────────────────────
     const [method, setMethod] = useState<string>('PayPal');
     const [accountDetails, setAccountDetails] = useState('');
-    const [settingsError, setSettingsError] = useState<string | null>(null);
     const [settingsOk, setSettingsOk] = useState(false);
     const { mutateAsync: saveSettings, isPending: isSavingSettings } = usePostApiStudioArtistFinanceSettings();
 
@@ -147,7 +237,6 @@ export const ArtistFinancePage = () => {
 
     const submitSettings = async () => {
         if (!artistId) return;
-        setSettingsError(null);
         setSettingsOk(false);
         try {
             await saveSettings({
@@ -162,13 +251,15 @@ export const ArtistFinancePage = () => {
             });
             setSettingsOk(true);
             await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/finance/settings'] });
-        } catch {
-            setSettingsError('Не вдалося зберегти налаштування виплат.');
+        } catch (err) {
+            showToast('error', serverMessage(err) ?? 'Не вдалося зберегти налаштування виплат.');
         }
     };
 
     return (
         <div className="artist-analytics-page">
+
+            {confettiKey > 0 && <Confetti key={confettiKey} seed={confettiKey} />}
 
             {/* ─── Заголовок ────────────────────────── */}
             <div className="artist-analytics-page__header">
@@ -216,26 +307,28 @@ export const ArtistFinancePage = () => {
                                 className="client-modal__input"
                                 placeholder="0.00"
                                 value={amount}
-                                onChange={e => { setAmount(e.target.value); setPayoutOk(false); }}
+                                onChange={e => setAmount(e.target.value)}
                             />
                             {amount && !amountValid && (
                                 <div className="client-modal__field-error mt-1">
                                     Сума має бути більшою за 0 і не перевищувати доступний баланс.
                                 </div>
                             )}
-                            {payoutError && <div className="client-modal__field-error mt-1">{payoutError}</div>}
-                            {payoutOk && (
-                                <div className="mt-1" style={{ color: '#2ECC71', fontSize: 13 }}>
-                                    Запит створено — очікуйте на рішення.
+                            {!hasSettings && !settingsQuery.isLoading && (
+                                <div className="mt-1" style={{ color: '#FFB347', fontSize: 13 }}>
+                                    Спочатку вкажіть реквізити виплати →
                                 </div>
                             )}
-                            <button
-                                className="client-modal__btn client-modal__btn--primary mt-3"
-                                disabled={!amountValid || isRequesting}
-                                onClick={submitPayout}
-                            >
-                                {isRequesting ? 'Надсилаємо…' : 'Запросити виплату'}
-                            </button>
+                            {/* span-обгортка тримає тултип навіть на disabled-кнопці */}
+                            <span title={!hasSettings ? 'Спочатку вкажіть реквізити' : undefined} className="d-inline-block mt-3">
+                                <button
+                                    className="client-modal__btn client-modal__btn--primary"
+                                    disabled={!hasSettings || !amountValid || isRequesting}
+                                    onClick={submitPayout}
+                                >
+                                    {isRequesting ? 'Надсилаємо…' : 'Вивести кошти'}
+                                </button>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -268,7 +361,6 @@ export const ArtistFinancePage = () => {
                                     onChange={e => { setAccountDetails(e.target.value); setSettingsOk(false); }}
                                 />
 
-                                {settingsError && <div className="client-modal__field-error mt-1">{settingsError}</div>}
                                 {settingsOk && (
                                     <div className="mt-1" style={{ color: '#2ECC71', fontSize: 13 }}>
                                         Збережено.
@@ -287,9 +379,36 @@ export const ArtistFinancePage = () => {
                 </div>
             </div>
 
+            {/* ─── Графік доходів ────────────────────── */}
+            <div className="artist-analytics-page__chart-block mb-5">
+                <h2 className="artist-analytics-page__chart-title">Динаміка доходів (роялті)</h2>
+                {txQuery.isLoading ? (
+                    <ChartSkeleton />
+                ) : txQuery.isError ? (
+                    <ChartError error={txQuery.error} />
+                ) : revenueData.length === 0 ? (
+                    <div className="text-secondary py-4 text-center">
+                        Поки немає нарахувань роялті — графік з’явиться після першої виплати від платформи.
+                    </div>
+                ) : (
+                    <ResponsiveContainer width="100%" height={260}>
+                        <BarChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
+                            <XAxis dataKey="label" tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
+                            <Tooltip
+                                {...chartTooltipStyle}
+                                formatter={(value) => [`${money(Number(value))}`, 'Роялті']}
+                            />
+                            <Bar dataKey="amount" name="Роялті" fill={CHART_COLORS.accent} radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                )}
+            </div>
+
             {/* ─── Заявки на виплату ─────────────────── */}
             <div className="artist-analytics-page__chart-block mb-5">
-                <h2 className="artist-analytics-page__chart-title">Заявки на виплату</h2>
+                <h2 className="artist-analytics-page__chart-title">Запити на вивід</h2>
                 {payoutsQuery.isLoading ? (
                     <ChartSkeleton height={120} />
                 ) : payoutsQuery.isError ? (
@@ -309,9 +428,11 @@ export const ArtistFinancePage = () => {
                                         {status.label}
                                     </span>
                                     {p.decisionNote && (
-                                        <span className="text-secondary" style={{ fontSize: 13 }}>
-                                            {p.decisionNote}
-                                        </span>
+                                        <i
+                                            className="bi bi-info-circle"
+                                            title={p.decisionNote}
+                                            style={{ color: '#9AA7B8', cursor: 'help' }}
+                                        />
                                     )}
                                     <span className="artist-analytics-page__top-track-plays ms-auto">
                                         {dateTime(p.requestedAt)}
@@ -360,6 +481,30 @@ export const ArtistFinancePage = () => {
                     </div>
                 )}
             </div>
+
+            {/* ─── Тост (успіх / помилка) ────────────── */}
+            {toast && (
+                <div
+                    role="status"
+                    style={{
+                        position: 'fixed',
+                        bottom: 24,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: 10000,
+                        maxWidth: 440,
+                        padding: '12px 18px',
+                        borderRadius: 10,
+                        color: '#fff',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        boxShadow: '0 8px 24px rgba(0,0,0,.35)',
+                        background: toast.kind === 'ok' ? '#2ECC71' : '#FF6B6B',
+                    }}
+                >
+                    {toast.text}
+                </div>
+            )}
 
         </div>
     );
