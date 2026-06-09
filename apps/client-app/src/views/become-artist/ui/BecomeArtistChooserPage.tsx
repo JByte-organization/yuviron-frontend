@@ -1,9 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useRedirectIfArtist } from '@/features/artist/become';
 
 // Экран выбора пути: подтвердить существующего артиста или создать нового.
-export const BecomeArtistChooserPage = () => (
+export const BecomeArtistChooserPage = () => {
+    // Уже артист → у студію (не даємо повторно «ставати артистом»).
+    if (useRedirectIfArtist()) return null;
+
+    return (
     <section className="client-become-artist">
         <div className="client-become-artist__head">
             <h1 className="client-become-artist__title">Стати артистом на Yuviron</h1>
@@ -34,6 +39,7 @@ export const BecomeArtistChooserPage = () => (
             </Link>
         </div>
     </section>
-);
+    );
+};
 
 export default BecomeArtistChooserPage;
