@@ -268,10 +268,6 @@ export const Step2Profile = () => {
                     <label className="form-label client-register-profile-form__label">
                         Регіон проживання
                     </label>
-                    <div className="client-register-profile-form__hint">
-                        Для чого нам потрібне ваше місце проживання?
-                    </div>
-                    <div className="client-register-profile-form__hint-link">Докладніше</div>
 
                     <div className="client-register-profile-form__region-grid">
                         <div>
@@ -282,7 +278,7 @@ export const Step2Profile = () => {
                                 <select
                                     className={`form-select client-register-profile-form__select${errors.country ? ' is-invalid' : ''}`}
                                     value={state.country}
-                                    onChange={(event) => update('country', event.target.value)}
+                                    onChange={(event) => updateCountry(event.target.value)}
                                 >
                                     <option value="">Країна</option>
                                     {COUNTRIES.map(({ code, label }) => (
@@ -311,9 +307,12 @@ export const Step2Profile = () => {
                                     className={`form-select client-register-profile-form__select${errors.city ? ' is-invalid' : ''}`}
                                     value={state.city}
                                     onChange={(event) => update('city', event.target.value)}
+                                    disabled={!state.country}
                                 >
-                                    <option value="">Місто</option>
-                                    {CITIES.map((city) => (
+                                    <option value="">
+                                        {state.country ? 'Місто' : 'Спочатку оберіть країну'}
+                                    </option>
+                                    {cityOptions.map((city) => (
                                         <option key={city} value={city}>
                                             {city}
                                         </option>
