@@ -1,4 +1,4 @@
-import {ArtistListItemDto, type VerificationStatus} from '@repo/api';
+import {ArtistListItemDto, type VerificationStatus} from '@repo/api/admin.ts';
 
 export const ARTIST_COLUMNS_MAP: Partial<Record<keyof ArtistListItemDto, string>> = {
     avatarUrl: 'Avatar',

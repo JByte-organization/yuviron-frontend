@@ -43,7 +43,7 @@ export const SectionHeader = ({
 
     return (
         <div className={`d-flex align-items-center justify-content-between mb-3 ${className}`}>
-            <h2 className="section-header__title mb-0">{renderTitle()}</h2>
+            <p className="h4 section-header__title mb-2">{renderTitle()}</p>
 
             <div className="d-flex align-items-center gap-2">
                 {rightSlot}
@@ -71,7 +71,7 @@ export const SectionHeader = ({
                     <Link
                         href={showAllHref}
                         onClick={onShowAll}
-                        className="text-white d-md-none"
+                        className="text-theme d-md-none"
                         aria-label="Show all"
                     >
                         <i className="bi bi-chevron-right" />

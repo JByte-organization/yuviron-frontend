@@ -1,11 +1,45 @@
 @import "../abstract/variables";
 
+// Перекрашивание белых/светлых SVG-иконок в фирменный циан (~#00A6FF).
+// Рецепт: brightness(0) делает иконку чёрной, далее invert/sepia/hue дают синий.
+// Применяется на светлой теме (где белые иконки сливаются с фоном) и в активных пунктах.
+$icon-blue-filter: brightness(0) saturate(100%) invert(58%) sepia(80%)
+saturate(500%) hue-rotate(180deg) brightness(105%);
+
+// Тематизируемый фон/текст для <body> клиентского приложения.
+// Раньше тут висели Bootstrap-классы bg-dark/text-white, которые
+// форсили тёмную тему и ломали переключение на светлую.
+.client-body {
+  min-height: 100vh;
+  background: $client-bg;
+  color: $client-text;
+}
+
+// Тематизируемый аналог Bootstrap-утилиты .text-white: цвет следует за темой.
+// Использовать вместо text-white в клиентских компонентах.
+.text-theme {
+  color: $client-text;
+}
+
 // ══════════════════════════════════════════════════════════
 // LAYOUT
 // ══════════════════════════════════════════════════════════
 .client-layout {
   min-height: 100vh;
-  background: $client-bg;
+  background-image:
+          radial-gradient(circle at 50% 40%, rgba(33, 58, 128, 0.38) 0%, transparent 55%),
+
+            // Верхнее правое темно-изумрудное/бирюзовое свечение
+          radial-gradient(circle at 85% 20%, rgba(15, 76, 71, 0.35) 0%, transparent 45%),
+
+            // Верхнее левое приглушенное сине-зеленое свечение
+          radial-gradient(circle at 15% 15%, rgba(14, 52, 70, 0.35) 0%, transparent 45%),
+
+            // Нижнее правое очень мягкое синее пятно для объема
+          radial-gradient(circle at 85% 85%, rgba(20, 45, 80, 0.25) 0%, transparent 50%);
+
+  background-attachment: fixed;
+  background-size: cover;
   color: $client-text;
   display: flex;
   flex-direction: column;
@@ -21,17 +55,32 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    // відступ = ширина сайдбара + два margin
-    transition: margin-left 0.3s ease;
+    transition: margin-left 0.3s ease, margin-right 0.3s ease;
 
     @media (min-width: 992px) {
       margin-left: $sidebar-width + $sidebar-margin * 2;
     }
 
-    // коли сайдбар прихований — main розширюється
-    &--sidebar-collapsed {
+    &--left-collapsed {
       @media (min-width: 992px) {
-        margin-left: 32px; // залишаємо місце для кнопки відкрити
+        margin-left: 32px;
+      }
+    }
+
+    // Правий сайдбар відкритий
+    &--right-open {
+      @media (min-width: 1200px) {
+        margin-right: $right-sidebar-width + $sidebar-margin * 2;
+      }
+    }
+
+    // Обидва одночасно
+    &--left-collapsed#{&}--right-open {
+      @media (min-width: 992px) {
+        margin-left: 32px;
+      }
+      @media (min-width: 1200px) {
+        margin-right: $right-sidebar-width + $sidebar-margin * 2;
       }
     }
   }
@@ -47,7 +96,7 @@
   right: 0;
   z-index: 200;
   height: $header-height;
-  background: rgba(2, 10, 19, 0.92);
+  background: $client-header-bg;
   backdrop-filter: blur(12px);
   border-bottom: 1px solid $client-border;
   display: flex;
@@ -148,9 +197,9 @@
     display: none;
     padding: 6px 14px;
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    border: 1px solid $client-border-strong;
     background: transparent;
-    color: $white;
+    color: $client-text;
     font-size: 12px;
     font-weight: 600;
     text-decoration: none;
@@ -160,8 +209,8 @@
     @media (min-width: 1024px) { display: flex; align-items: center; }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: $white;
+      background: $client-hover;
+      color: $client-text;
       text-decoration: none;
     }
   }
@@ -203,7 +252,10 @@
     display: block;
     opacity: 0.6;
     transition: opacity 0.2s;
-    filter: invert(1); // для світлої SVG іконки
+    filter: invert(1); // біла SVG іконка на тёмній шапці
+
+    // На світлій шапці інверсія робить іконку темно-помаранчевою — фарбуємо в циан.
+    [data-theme="light"] & { filter: $icon-blue-filter; }
 
     .client-header__notif-btn:hover & { opacity: 1; }
   }
@@ -228,7 +280,9 @@
 
   // Аватар
   &__user {
-    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   &__avatar-btn {
@@ -262,7 +316,7 @@
   &__premium-badge {
     font-size: 11px;
     font-weight: 700;
-    color: #FFD700;
+    color: $client-premium;
     letter-spacing: 0.05em;
   }
 
@@ -286,10 +340,10 @@
 
     &--primary {
       border: none;
-      background: $white;
-      color: $black;
+      background: $client-solid-bg;
+      color: $client-solid-text;
 
-      &:hover { background: rgba(255,255,255,0.9); text-decoration: none; }
+      &:hover { background: $client-solid-bg-hover; text-decoration: none; }
     }
   }
 }
@@ -305,15 +359,15 @@
   background: $client-surface-2;
   border: 1px solid $client-border;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6); // Робимо тінь глибшою для відриву від бекграунду
   z-index: 300;
   overflow: hidden;
 
   &__loading,
   &__empty {
-    padding: 16px;
+    padding: 18px;
     font-size: 13px;
-    color: $client-text-muted;
+    color: rgba(255, 255, 255, 0.5) !important; // Безпечний дефолт, якщо токен занадто темний
     text-align: center;
   }
 
@@ -327,14 +381,20 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 10px;
+    padding: 8px 12px;
     border-radius: 8px;
-    text-decoration: none;
-    transition: background 0.15s ease;
+    text-decoration: none !important;
+    transition: background 0.2s ease;
+    color: inherit; // Захист від перевизначення кольору лінка браузером
 
     &:hover {
-      background: rgba(255, 255, 255, 0.06);
-      text-decoration: none;
+      background: $client-hover;
+      text-decoration: none !important;
+
+      // При наведенні на рядок робимо заголовок треку кришталево білим
+      .search-dropdown__title {
+        color: #ffffff !important;
+      }
     }
   }
 
@@ -344,10 +404,18 @@
     border-radius: 6px;
     overflow: hidden;
     flex-shrink: 0;
+    background-color: rgba(255, 255, 255, 0.05); // Слот-підкладка, якщо картинка довго вантажиться
 
-    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
-    &--round { border-radius: 50%; }
+    &--round {
+      border-radius: 50%;
+    }
   }
 
   &__info {
@@ -361,20 +429,26 @@
   &__title {
     font-size: 14px;
     font-weight: 500;
-    color: $client-text;
+    // 🚨 ГЛАВНИЙ ФІКС КОНТРАСТУ №1: Яскравий білий колір для назви треку/артиста
+    color: #ffffff !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.15s ease;
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    // 🚨 ГЛАВНИЙ ФІКС КОНТРАСТУ №2: Світло-сірий Spotify-style колір, що чітко читається
+    color: #b3b3b3 !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  &__subtitle {
-    font-size: 12px;
-    color: $client-text-muted;
-  }
-
   &__type-icon {
     font-size: 14px;
-    color: $client-text-muted;
+    color: rgba(255, 255, 255, 0.4) !important; // Помірна яскравість для службової іконки типу
     flex-shrink: 0;
   }
 
@@ -382,17 +456,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 16px;
+    padding: 12px 16px;
     font-size: 13px;
     font-weight: 500;
-    color: $client-accent;
-    text-decoration: none;
+    color: $client-accent !important; // Яскравий акцентний колір (наприклад, зелений або бренд-блакитний)
+    text-decoration: none !important;
     border-top: 1px solid $client-border;
-    transition: background 0.15s ease;
+    transition: background 0.2s ease, color 0.2s ease;
 
     &:hover {
-      background: rgba(0, 166, 255, 0.06);
-      text-decoration: none;
+      background: rgba(255, 255, 255, 0.03); // Універсальний світлий блік замість жорсткого хардкоду кольору
+      color: #ffffff !important; // Робимо кнопку "Показати всі результати" ще яскравішою при ховері
+      text-decoration: none !important;
     }
   }
 }
@@ -441,21 +516,21 @@
     cursor: pointer;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: $client-hover;
       color: $client-text;
       text-decoration: none;
     }
 
     &--accent {
-      color: #FFD700;
+      color: $client-premium;
 
-      &:hover { color: #FFD700; background: rgba(255, 215, 0, 0.08); }
+      &:hover { color: $client-premium; background: $client-hover; }
     }
 
     &--logout {
       color: rgba(255, 80, 80, 0.8);
 
-      &:hover { color: #ff5050; background: rgba(255, 80, 80, 0.08); }
+      &:hover { color: $client-danger; background: rgba(255, 80, 80, 0.08); }
     }
   }
 
@@ -472,13 +547,14 @@
 }
 
 // ══════════════════════════════════════════════════════════
-// SIDEBAR — floating card
+// CLIENT SIDEBAR
 // ══════════════════════════════════════════════════════════
 .client-sidebar {
   display: none;
 
   @media (min-width: 992px) {
-    display: block;
+    display: flex;
+    flex-direction: column;
     position: fixed;
     top: $header-height + $sidebar-margin;
     left: $sidebar-margin;
@@ -486,49 +562,162 @@
     width: $sidebar-width;
     z-index: 100;
 
-    // Плаваюча картка
     background: $client-surface;
     border: 1px solid $client-border;
     border-radius: 16px;
     box-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
 
-    // overflow: hidden НЕ ставимо тут — інакше обрізає кнопку toggle
-    // скрол і rounded corners обробляє __inner
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transition: width 0.3s ease;
   }
 
-  // ─── Collapsed — їде вліво ────────────────────────────
+  // ─── Collapsed — вузький сайдбар тільки з іконками ────
   &--collapsed {
-    transform: translateX(calc(-100% - #{$sidebar-margin}));
-    opacity: 0;
-    pointer-events: none;
+    width: 68px !important;
+
+    .client-sidebar__nav-label {
+      display: none;
+    }
+
+    .client-sidebar__nav-item {
+      justify-content: center;
+      padding: 12px 0;
+    }
+
+    .client-sidebar__nav-icon img {
+      width: 22px;
+      height: 22px;
+      opacity: 0.7;
+    }
+
+    .client-sidebar__inner {
+      padding: 16px 8px;
+      align-items: center;
+    }
+
+    .client-sidebar__nav {
+      width: 100%;
+    }
+
+    .client-sidebar__header {
+      justify-content: center;
+      padding-bottom: 16px;
+    }
+
+    hr {
+      width: 100%;
+      opacity: 0.15;
+    }
+
+    // В &--collapsed блоці або окремо:
+    &__playlist-item--collapsed {
+      padding: 4px 0;
+      justify-content: center;
+      position: relative;
+
+      // Тултіп при наведенні — назва і автор
+      &:hover::after {
+        content: attr(title);
+        position: absolute;
+        left: calc(100% + 8px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: $client-surface-2;
+        border: 1px solid $client-border;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 12px;
+        color: $client-text;
+        white-space: nowrap;
+        z-index: 200;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+      }
+    }
+
+    // Аватар в collapsed — трохи більший для зручності
+    &--collapsed &__playlist-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 6px;
+    }
   }
 
   // ─── Внутрішній скролл ────────────────────────────────
   &__inner {
     height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 24px 12px 20px;
+    padding: 20px 12px;
     scrollbar-width: thin;
     scrollbar-color: $client-border transparent;
-    border-radius: 16px; // повторює border-radius батька
+    border-radius: 16px;
+    overflow-y: auto;
+    overflow-x: hidden;
 
     display: flex;
     flex-direction: column;
   }
 
-  // ─── Секції ───────────────────────────────────────────
-  &__section {
-    margin-bottom: 28px;
-    &--grow { flex: 1; }
+  // ─── Заголовок "Меню" з кнопкою collapse ─────────────
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px 16px;
+    width: 100%;
+    flex-shrink: 0;
+
+    // Белые SVG подзаголовков на светлой теме красим в циан.
+    [data-theme="light"] & img {
+      filter: $icon-blue-filter;
+    }
   }
 
-  &__section-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: $client-text;
-    margin: 0 0 12px 8px;
+  &__header-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  // ─── Кнопка collapse ──────────────────────────────────
+  &__collapse-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid $client-border;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.2s, background 0.2s;
+
+    img {
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+
+    &:hover {
+      border-color: $client-accent;
+      background: rgba(0, 166, 255, 0.12);
+
+      img {
+        opacity: 1;
+      }
+    }
+  }
+
+  // ─── Секції ───────────────────────────────────────────
+  &__section {
+    margin-bottom: 20px;
+    flex-shrink: 0;
+
+    hr {
+      margin: 16px 0 0;
+      border-color: $client-border;
+      opacity: 0.2;
+    }
   }
 
   &__sub-header {
@@ -540,32 +729,28 @@
   }
 
   &__sub-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: $client-text;
     margin: 0;
+
+    i {
+      font-size: 16px;
+      color: $client-text-muted;
+    }
   }
 
-  &__icon-btn {
-    background: transparent;
-    border: none;
+  &__empty-text {
+    font-size: 13px;
     color: $client-text-muted;
-    padding: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    border-radius: 4px;
-    transition: color 0.2s;
-
-    img { opacity: 0.5; transition: opacity 0.2s; }
-    &:hover img { opacity: 1; }
+    padding: 8px 14px;
   }
 
   // ─── Nav ──────────────────────────────────────────────
   &__nav {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
   }
 
   &__nav-item {
@@ -586,13 +771,18 @@
     cursor: pointer;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: $client-hover;
       color: $client-text;
       text-decoration: none;
 
       .client-sidebar__nav-icon img {
         filter: brightness(0) invert(1);
         opacity: 1;
+
+        // На светлой теме белый hover невидим — оставляем циан.
+        [data-theme="light"] & {
+          filter: $icon-blue-filter;
+        }
       }
     }
 
@@ -603,13 +793,11 @@
                       rgba(0, 80, 140, 0.15) 100%
       );
       color: $client-text;
-      box-shadow:
-              inset 0 0 0 1px rgba(0, 166, 255, 0.25),
-              0 0 12px rgba(0, 166, 255, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(0, 166, 255, 0.25),
+      0 0 12px rgba(0, 166, 255, 0.12);
 
       .client-sidebar__nav-icon img {
-        filter: brightness(0) saturate(100%) invert(58%) sepia(80%)
-        saturate(500%) hue-rotate(180deg) brightness(105%);
+        filter: $icon-blue-filter;
         opacity: 1;
       }
 
@@ -621,8 +809,6 @@
         );
       }
     }
-
-    &--btn { /* спадкує nav-item */ }
   }
 
   &__nav-icon {
@@ -638,12 +824,16 @@
       height: 18px;
       opacity: 0.5;
       transition: opacity 0.2s, filter 0.2s;
+
+      // На светлой теме белые иконки сливаются с фоном — красим в циан.
+      [data-theme="light"] & {
+        filter: $icon-blue-filter;
+        opacity: 1;
+      }
     }
   }
 
-  &__nav-label { /* просто текст */ }
-
-  // ─── Плейлисти ────────────────────────────────────────
+  // ─── Плейлисти і нещодавно прослухані ────────────────
   &__playlist-list {
     display: flex;
     flex-direction: column;
@@ -659,15 +849,32 @@
     text-decoration: none;
     transition: background 0.2s;
 
-    &:hover { background: rgba(255, 255, 255, 0.06); text-decoration: none; }
+    &:hover {
+      background: $client-hover;
+      text-decoration: none;
+    }
   }
 
   &__playlist-avatar {
     width: 38px;
     height: 38px;
-    border-radius: 50%;
-    object-fit: cover;
+    border-radius: 4px;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+    background-color: $client-surface-2;
+
+    &--rounded {
+      border-radius: 50%;
+    }
+
+    i {
+      font-size: 16px;
+      color: $client-text-muted;
+    }
   }
 
   &__playlist-info {
@@ -691,80 +898,38 @@
     color: $client-text-muted;
   }
 
-  // ─── Vinyl ────────────────────────────────────────────
-  &__current-track {
-    display: flex;
-    justify-content: center;
-    padding: 8px 0 4px;
-  }
-
-  &__vinyl {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    border: 2px solid rgba(0, 166, 255, 0.5);
-    background: radial-gradient(circle at center, rgba(0, 166, 255, 0.08) 0%, transparent 70%);
-    box-shadow: 0 0 16px rgba(0, 166, 255, 0.15);
-  }
-
-  // ─── Toggle кнопка (collapse) — справа від картки ─────
-  &__toggle {
+  // ─── Resize handle ────────────────────────────────────
+  &__resize-handle {
     position: absolute;
-    top: 50%;
-    right: -14px;            // виступає за правий край картки
-    transform: translateY(-50%);
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 1px solid $client-border;
-    background: $client-surface-2;
-    color: $client-text-muted;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 101;
-    transition: border-color 0.2s, color 0.2s, background 0.2s;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    top: 0;
+    right: -4px;
+    width: 8px;
+    height: 100%;
+    cursor: ew-resize;
+    z-index: 102;
+    border-radius: 4px;
 
-    img { opacity: 0.6; transition: opacity 0.2s; }
-
-    &:hover {
-      border-color: $client-accent;
-      background: rgba(0, 166, 255, 0.12);
-      img { opacity: 1; }
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 100%;
+      background: transparent;
+      border-radius: 1px;
+      transition: background 0.2s;
     }
-  }
-}
 
-// ─── Кнопка "відкрити назад" коли collapsed ───────────────
-.client-sidebar__restore-btn {
-  display: none;
+    &:hover::after,
+    &:active::after {
+      background: $client-accent;
+    }
 
-  @media (min-width: 992px) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    top: 50%;
-    left: $sidebar-margin;
-    transform: translateY(-50%);
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 1px solid $client-border;
-    background: $client-surface-2;
-    cursor: pointer;
-    z-index: 101;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    transition: border-color 0.2s, background 0.2s;
-
-    img { opacity: 0.6; transition: opacity 0.2s; }
-
-    &:hover {
-      border-color: $client-accent;
-      background: rgba(0, 166, 255, 0.12);
-      img { opacity: 1; }
+    &__toggle,
+    &__restore-btn {
+      display: none !important;
     }
   }
 }
@@ -979,6 +1144,12 @@ $sidebar-margin: 12px;
       border-color: $client-accent;
       color: $client-accent;
     }
+  }
+
+
+  &__follow-btn--active {
+    border-color: $client-accent;
+    color: $client-accent;
   }
 
   // ─── Обкладинка ───────────────────────────────────────

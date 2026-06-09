@@ -1,5 +1,5 @@
 import React from 'react';
-import type { PopularAlbumDto } from '@repo/api';
+import type { PopularAlbumDto } from '@repo/api/admin.ts';
 
 interface Props {
     albums: PopularAlbumDto[];

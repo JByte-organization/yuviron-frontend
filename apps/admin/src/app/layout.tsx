@@ -4,13 +4,13 @@ import "@repo/ui/styles";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html>
+        <html lang="en">
         <body>
-        <ApiClientProvider>      {/* ← должен быть снаружи QueryProvider */}
-            <QueryProvider>
+        <QueryProvider>
+            <ApiClientProvider>
                 {children}
-            </QueryProvider>
-        </ApiClientProvider>
+            </ApiClientProvider>
+        </QueryProvider>
         </body>
         </html>
     );

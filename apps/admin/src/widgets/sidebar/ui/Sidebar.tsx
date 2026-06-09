@@ -1,26 +1,47 @@
 'use client';
 
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+
+import { useAdminSessionStore } from '@/entities/adminSession/model/store';
+import Image from "next/image";
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { SIDEBAR_WIDTH } from '@/shared/config/constants';
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
 }
 
-const SIDEBAR_WIDTH = 260;
 
 export const Sidebar = ({ isOpen, onClose }: Props) => {
     const pathname = usePathname();
     const [elementsOpen, setElementsOpen] = useState(true);
 
-    // Закрываем на мобиле при переходе
+    const router = useRouter();
+    const clearAdminSession = useAdminSessionStore((state) => state.clearAdminSession);
+
+    const handleLogout = async () => {
+        try {
+            await fetch('https://dev-api.yuviron.com/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    Authorization: `Bearer ${useAdminSessionStore.getState().adminAccessToken}`,
+                },
+            });
+        } catch {}
+
+        document.cookie = 'adminToken=; path=/; max-age=0; SameSite=Strict';
+        clearAdminSession();
+        router.replace('/login');
+    };
+
     useEffect(() => {
         if (window.innerWidth < 992) {
             onClose();
         }
-    }, [pathname]);
+    }, [pathname, onClose])
 
     const navLink = (href: string, label: string) => (
         <li key={href}>
@@ -49,19 +70,27 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
             }}
         >
             {/* Header */}
-            <div className="sidebar-header d-flex align-items-center justify-content-between p-4">
-                <div className="d-flex align-items-center gap-2">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 2L14.5 9H21L15.5 13.5L18 21L12 16.5L6 21L8.5 13.5L3 9H9.5L12 2Z" fill="#40A2FF" />
-                    </svg>
-                    <p className="m-0 fw-medium text-white h6 mb-0">Admin Dashboard</p>
+            <div className="sidebar-header d-flex align-items-center justify-content-between justify-content-lg-start p-3">
+                <div className="d-flex align-items-center gap-2 justify-content-center">
+                    <Image
+                        src="/images/Logo/logo-element.svg"
+                        width={50}
+                        height={40}
+                        alt="logo"
+                    />
+                    <p className="m-0 fw-medium text-white h5 mb-0">Admin Dashboard</p>
                 </div>
                 <button
-                    className="btn btn-sm btn-outline-secondary border-0"
+                    className="btn btn-sm btn-outline-secondary border-0 d-flex d-lg-none"
                     onClick={onClose}
                     title="Close sidebar"
                 >
-                    ✕
+                    <Image
+                        src="/images/icons/delete-btn.svg"
+                        width={16}
+                        height={16}
+                        alt="close"
+                    />
                 </button>
             </div>
 
@@ -71,6 +100,7 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
                     {navLink('/dashboard', 'Dashboard')}
                     {navLink('/users',     'Users')}
                     {navLink('/artists',   'Artists')}
+                    {navLink('/verification', 'Verification')}
 
                     <li className="nav-group">
                         <div
@@ -89,22 +119,25 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
 
                         {elementsOpen && (
                             <ul className="list-unstyled ps-4 submenu">
+                                {navLink('/banners',    'Banners')}
                                 {navLink('/tracks',    'Tracks')}
                                 {navLink('/albums',    'Albums')}
                                 {navLink('/genres',    'Genres')}
                                 {navLink('/moods',     'Moods')}
                                 {navLink('/playlists', 'Playlists')}
+                                {navLink('/payout', 'Finance')}
                             </ul>
                         )}
                     </li>
-
-                    {navLink('/settings', 'Settings')}
                 </ul>
             </nav>
 
             {/* Footer */}
             <div className="sidebar-footer p-3 border-top border-secondary">
-                <button className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                <button
+                    className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2"
+                    onClick={handleLogout}
+                >
                     <span>⇥</span> Exit
                 </button>
             </div>

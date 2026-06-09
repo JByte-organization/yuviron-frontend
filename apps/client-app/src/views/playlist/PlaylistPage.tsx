@@ -1,160 +1,279 @@
 'use client';
 
-import React, { useState } from 'react';
-import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
+import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+
+import {
+    useGetApiPlaylistsId,
+    useGetApiPlaylistsIdTracks,
+    useGetApiAuthMe,
+    usePutApiMePlaylistsId,
+    useDeleteApiMePlaylistsId,
+    usePatchApiMePlaylistsIdTracksTrackIdPosition,
+    getGetApiPlaylistsIdTracksQueryKey,
+    type PlaylistDetailsClientDto,
+    type PlaylistTrackItemClientDto,
+    type CurrentUserDto,
+    type UpdatePlaylistRequest,
+} from '@repo/api/client.ts';
+
+import { TrackRow, type TrackRowData as BaseTrackRowData } from '@/entities/track/ui/TrackRow';
 import { AddToPlaylistModal } from '@/features/playlist/add/ui/AddToPlaylistModal';
 import { EditPlaylistModal, type PlaylistToEdit } from '@/features/playlist/edit/ui/EditPlaylistModal';
 import { DeletePlaylistModal } from '@/features/playlist/detete/ui/DeletePlaylistModal';
 import { CreatePlaylistModal } from '@/features/playlist/create/ui/CreatePlaylistModal';
 import { PlaylistPageHeader } from './ui/PlaylistPageHeader';
 import { PlaylistRecommendations } from './ui/PlaylistRecommendations';
+import { PlaylistVisibility } from "@repo/api/generated/client/models";
 
 interface PlaylistPageProps {
     playlistId: string;
 }
 
-// ─── Mock ──────────────────────────────────────────────────
-// TODO: замінити на useGetApiPlaylistsId(playlistId)
-const MOCK_PLAYLIST = {
-    id: 'p1',
-    name: 'Мій плейліст №2',
-    description: null,
-    coverUrl: null,
-    isPrivate: false,
-    ownerId: 'current-user', // якщо збігається з userId — це наш плейліст
-    ownerName: 'HannaD',
-    tracksCount: 18,
-    isSubscribed: false,
-};
+interface TrackRowData extends BaseTrackRowData {
+    position: number;
+}
 
-const CURRENT_USER_ID = 'current-user'; // TODO: з useGetApiCurrentUser()
+// ─── ОНОВЛЕНИЙ ЧИСТИЙ МАППЕР ──────────────────────────────────────────────────
+const mapTrack = (t: PlaylistTrackItemClientDto, index: number): TrackRowData => ({
+    id:          t.trackId   ?? '',
+    index:       index + 1,
+    title:       t.title     ?? '',
+    artistNames: t.artists?.map(a => a.name ?? '') ?? [],
+    artistId:    t.artists?.[0]?.id ?? undefined,
+    albumId:     t.albumId   ?? undefined,
+    albumTitle:  null,
+    addedAt:     t.addedAt   ?? null,
+    durationMs:  t.durationMs ?? null,
+    coverUrl:    t.coverUrl  ?? null,
+    position:    t.position  ?? 0,
+    // 🚨 ГЛАВНИЙ ФІКС №1: Перевіряємо обидва варіанти поля лайку від бекенду
+    isSaved:     t.isSaved ?? (t as any).isLiked ?? false,
+});
 
-const MOCK_TRACKS: TrackRowData[] = [
-    { id: '1',  index: 1,  title: 'How You Like That',   artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a1', albumTitle: 'THE ALBUM',           addedAt: new Date().toISOString(),                           durationMs: 182000, coverUrl: null },
-    { id: '2',  index: 2,  title: 'Ice Cream',           artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a1', albumTitle: 'THE ALBUM',           addedAt: new Date().toISOString(),                           durationMs: 182000, coverUrl: null },
-    { id: '3',  index: 3,  title: 'Playing With Fire',   artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a2', albumTitle: 'The Show',            addedAt: new Date(Date.now() - 86400000).toISOString(),      durationMs: 162000, coverUrl: null },
-    { id: '4',  index: 4,  title: 'Lovesick Girls',      artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a2', albumTitle: 'The Show',            addedAt: new Date(Date.now() - 86400000).toISOString(),      durationMs: 224000, coverUrl: null },
-    { id: '5',  index: 5,  title: 'Crazy Over You',      artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a2', albumTitle: 'The Show',            addedAt: new Date(Date.now() - 2 * 86400000).toISOString(),  durationMs: 202000, coverUrl: null },
-    { id: '6',  index: 6,  title: 'Forever Young',       artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a2', albumTitle: 'The Show',            addedAt: new Date(Date.now() - 3 * 86400000).toISOString(),  durationMs: 202000, coverUrl: null },
-    { id: '7',  index: 7,  title: 'Bet Yiu Wanna',       artistNames: ['BLACKPINK'],          artistId: 'bp',    albumId: 'a1', albumTitle: 'THE ALBUM',           addedAt: new Date(Date.now() - 5 * 86400000).toISOString(),  durationMs: 182000, coverUrl: null },
-    { id: '8',  index: 8,  title: 'Rockstar',            artistNames: ['LISA'],               artistId: 'lisa',  albumId: 'a3', albumTitle: 'Alter Ego',           addedAt: '2025-04-02T00:00:00Z',                             durationMs: 166000, coverUrl: null },
-];
-
-/**
- * Сторінка: Плейліст /playlists/[id]
- *
- * Підключення даних:
- * 1. const { data: playlist } = useGetApiPlaylistsId(playlistId);
- * 2. const { data: tracks }   = useGetApiPlaylistsIdTracks(playlistId);
- * 3. const { data: me }       = useGetApiCurrentUser();
- * 4. isOwner = me?.id === playlist?.ownerId
- */
 export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
-    const playlist = MOCK_PLAYLIST;
-    const tracks   = MOCK_TRACKS;
-    const isOwner  = playlist.ownerId === CURRENT_USER_ID;
+    const router = useRouter();
+    const queryClient = useQueryClient();
 
-    // ─── Модалки ──────────────────────────────────────────
+    // ── Запити даних ──────────────────────────────────────────────────────────
+    const { data: playlistRaw, isLoading: playlistLoading, refetch: refetchPlaylist } = useGetApiPlaylistsId(playlistId);
+    const { data: meRaw } = useGetApiAuthMe();
+
+    const queryKey = getGetApiPlaylistsIdTracksQueryKey(playlistId, { Page: 1, PageSize: 50 });
+    const { data: tracksRaw, isLoading: tracksLoading } = useGetApiPlaylistsIdTracks(playlistId, { Page: 1, PageSize: 50 });
+
+    const playlist   = playlistRaw  as unknown as PlaylistDetailsClientDto;
+    const tracksData = tracksRaw   as unknown as { items?: PlaylistTrackItemClientDto[] };
+    const me         = meRaw        as unknown as CurrentUserDto;
+
+    // Сортуємо строго по зростанню дробових індексів position
+    const tracks: TrackRowData[] = useMemo(() => {
+        const list = (tracksData?.items ?? []).map(mapTrack);
+        return list.sort((a, b) => a.position - b.position).map((t, idx) => ({
+            ...t,
+            index: idx + 1
+        }));
+    }, [tracksData]);
+
+    const isOwner = !!me?.id && !!playlist?.creatorId && me.id === playlist.creatorId;
+
+    // ── Мутації ───────────────────────────────────────────────────────────────
+    const { mutateAsync: updatePlaylist } = usePutApiMePlaylistsId();
+    const { mutateAsync: deletePlaylist } = useDeleteApiMePlaylistsId();
+    const { mutateAsync: patchTrackPosition } = usePatchApiMePlaylistsIdTracksTrackIdPosition();
+
+    // ── Стан модалок ──────────────────────────────────────────────────────────
     const [addToPlaylistTrackId, setAddToPlaylistTrackId] = useState<string | null>(null);
     const [addToPlaylistTitle,   setAddToPlaylistTitle]   = useState('');
     const [showEdit,   setShowEdit]   = useState(false);
     const [showDelete, setShowDelete] = useState(false);
     const [showCreate, setShowCreate] = useState(false);
 
+    const calculateNewPosition = (items: TrackRowData[], movedIndex: number): number => {
+        if (items.length === 1) return 65536.0;
+
+        if (movedIndex === 0) {
+            const nextTrack = items[1];
+            return nextTrack.position - 65536.0;
+        }
+
+        if (movedIndex === items.length - 1) {
+            const previousTrack = items[items.length - 2];
+            return previousTrack.position + 65536.0;
+        }
+
+        const previousTrack = items[movedIndex - 1];
+        const nextTrack = items[movedIndex + 1];
+        return (previousTrack.position + nextTrack.position) / 2.0;
+    };
+
+    const handleDragEnd = async (result: DropResult) => {
+        const { source, destination } = result;
+        if (!destination) return;
+
+        const sourceIndex = source.index;
+        const destIndex = destination.index;
+        if (sourceIndex === destIndex) return;
+
+        const reorderedTracks = [...tracks];
+        const [movedTrack] = reorderedTracks.splice(sourceIndex, 1);
+
+        const updatedTrack = { ...movedTrack };
+        reorderedTracks.splice(destIndex, 0, updatedTrack);
+
+        const calculatedPos = calculateNewPosition(reorderedTracks, destIndex);
+        updatedTrack.position = calculatedPos;
+
+        queryClient.setQueryData(queryKey, (old: any) => {
+            if (!old || !old.items) return old;
+
+            const updatedItems = old.items.map((item: any) => {
+                if (item.trackId === updatedTrack.id) {
+                    return { ...item, position: calculatedPos };
+                }
+                return item;
+            });
+
+            return { ...old, items: updatedItems };
+        });
+
+        try {
+            await patchTrackPosition({
+                id: playlist?.id || playlistId,
+                trackId: updatedTrack.id,
+                data: { newPosition: calculatedPos } as Parameters<typeof patchTrackPosition>[0]['data']
+            });
+        } catch (error) {
+            console.error('[DND Error] Бекенд відхилив PATCH-запит позиції треку:', error);
+            void queryClient.invalidateQueries({ queryKey });
+        }
+    };
+
     const handleAddToPlaylist = (trackId: string, title: string) => {
         setAddToPlaylistTrackId(trackId);
         setAddToPlaylistTitle(title);
     };
 
+    const handleEditSuccess = async (values: { name: string; description?: string; coverUrl?: string | null; isPrivate: boolean; }) => {
+        const body: UpdatePlaylistRequest = {
+            title:       values.name,
+            coverFileId: values.coverUrl ?? null,
+            visibility:  values.isPrivate ? PlaylistVisibility.Private : PlaylistVisibility.Public,
+        };
+        await updatePlaylist({ id: playlistId, data: body });
+        refetchPlaylist();
+        setShowEdit(false);
+    };
+
+    const handleDeleteSuccess = async () => {
+        await deletePlaylist({ id: playlistId });
+        router.push('/library');
+    };
+
+    if (playlistLoading || tracksLoading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+                <div className="spinner-border text-light" role="status"><span className="visually-hidden">Завантаження...</span></div>
+            </div>
+        );
+    }
+
+    if (!playlist) return <div className="text-center text-secondary mt-5">Плейліст не знайдено</div>;
+
+    const playlistForHeader = {
+        id:           playlist.id          ?? '',
+        name:         playlist.title       ?? '',
+        description:  playlist.description ?? null,
+        coverUrl:     playlist.coverUrl    ?? null,
+        ownerName:    playlist.creatorName ?? '',
+        tracksCount:  playlist.totalTracks ?? tracks.length,
+        isSubscribed: false,
+    };
+
     const playlistToEdit: PlaylistToEdit = {
-        id:          playlist.id,
-        name:        playlist.name,
-        description: playlist.description,
-        coverUrl:    playlist.coverUrl,
-        isPrivate:   playlist.isPrivate,
+        id:          playlist.id          ?? '',
+        name:        playlist.title       ?? '',
+        description: playlist.description ?? null,
+        coverUrl:    playlist.coverUrl    ?? null,
+        isPrivate:   playlist.visibility  === PlaylistVisibility.Private,
     };
 
     return (
         <div className="playlist-page">
-
-            {/* ─── Хедер ─────────────────────────── */}
             <PlaylistPageHeader
-                playlist={playlist}
+                playlist={playlistForHeader}
                 isOwner={isOwner}
-                tracksCount={tracks.length}
-                onPlay={() => console.log('play all')}       // TODO: плеєр
+                tracks={tracks}
                 onEdit={() => setShowEdit(true)}
                 onDelete={() => setShowDelete(true)}
-                onShare={() => console.log('share')}         // TODO
-                onSubscribe={() => console.log('subscribe')} // TODO: usePostApiPlaylistsIdSubscribe
+                onShare={() => console.log('share')}
+                onSubscribe={() => console.log('subscribe')}
             />
 
-            {/* ─── Список треків ──────────────────── */}
-            <div className="playlist-page__tracks">
-                {/* Заголовки колонок */}
-                <div className="playlist-page__columns">
-                    <div className="playlist-page__col-index">#</div>
-                    <div className="playlist-page__col-title">Назва</div>
-                    <div className="playlist-page__col-album d-none d-md-block">Альбом</div>
-                    <div className="playlist-page__col-date d-none d-lg-block">Дата додавання</div>
-                    <div className="playlist-page__col-duration">
-                        <i className="bi bi-clock" />
+            <DragDropContext onDragEnd={handleDragEnd}>
+                <div className="playlist-page__tracks">
+                    <div className="playlist-page__columns">
+                        <div className="playlist-page__col-index">#</div>
+                        <div className="playlist-page__col-title">Назва</div>
+                        <div className="playlist-page__col-album d-none d-md-block">Альбом</div>
+                        <div className="playlist-page__col-date d-none d-lg-block">Дата додавання</div>
+                        <div className="playlist-page__col-duration"><i className="bi bi-clock" /></div>
                     </div>
+
+                    <hr className="playlist-page__divider" />
+
+                    {tracks.length === 0 ? (
+                        <p className="text-secondary text-center mt-4">У цьому плейлісті ще немає треків</p>
+                    ) : (
+                        <Droppable droppableId="playlist-tracks-droppable">
+                            {(provided) => (
+                                <div
+                                    ref={provided.innerRef}
+                                    {...provided.droppableProps}
+                                    className="d-flex flex-column gap-1"
+                                >
+                                    {tracks.map((track, index) => (
+                                        <Draggable
+                                            key={track.id}
+                                            draggableId={track.id}
+                                            index={index}
+                                            isDragDisabled={!isOwner}
+                                        >
+                                            {(dragProvided, snapshot) => (
+                                                <div
+                                                    ref={dragProvided.innerRef}
+                                                    {...dragProvided.draggableProps}
+                                                    {...dragProvided.dragHandleProps}
+                                                    className={`playlist-page__draggable-row-holder ${snapshot.isDragging ? 'playlist-page__draggable-row-holder--dragging' : ''}`}
+                                                >
+                                                    {/* 🚨 ГЛАВНИЙ ФІКС №2: Динамічний комбінований ключ для синхронізації станів серця */}
+                                                    <TrackRow
+                                                        key={`${track.id}-${track.isSaved}`}
+                                                        track={track}
+                                                        allTracks={tracks}
+                                                        sourceType="Playlist"
+                                                        sourceId={playlistId}
+                                                    />
+                                                </div>
+                                            )}
+                                        </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>
+                    )}
                 </div>
+            </DragDropContext>
 
-                <hr className="playlist-page__divider" />
+            <PlaylistRecommendations playlistId={playlistId} isOwner={isOwner} onAddToPlaylist={handleAddToPlaylist} />
 
-                {/* Рядки треків */}
-                {tracks.map((track) => (
-                    <TrackRow
-                        key={track.id}
-                        track={track}
-                        onClick={(id) => console.log('play', id)}  // TODO: плеєр
-                        onLike={(id) => console.log('like', id)}   // TODO: хук
-                        onAddToPlaylist={(id) => handleAddToPlaylist(id, track.title)}
-                        showAddToPlaylist
-                    />
-                ))}
-            </div>
-
-            {/* ─── Рекомендації (завжди) ──────────── */}
-            <PlaylistRecommendations
-                playlistId={playlistId}
-                isOwner={isOwner}
-                onAddToPlaylist={handleAddToPlaylist}
-            />
-
-            {/* ─── Модалки ────────────────────────── */}
-            <AddToPlaylistModal
-                isOpen={!!addToPlaylistTrackId}
-                onClose={() => setAddToPlaylistTrackId(null)}
-                trackId={addToPlaylistTrackId ?? ''}
-                trackTitle={addToPlaylistTitle}
-                onCreatePlaylist={() => { setAddToPlaylistTrackId(null); setShowCreate(true); }}
-            />
-
-            {showEdit && (
-                <EditPlaylistModal
-                    isOpen={showEdit}
-                    onClose={() => setShowEdit(false)}
-                    onSuccess={() => setShowEdit(false)}
-                    playlist={playlistToEdit}
-                />
-            )}
-
-            <DeletePlaylistModal
-                isOpen={showDelete}
-                onClose={() => setShowDelete(false)}
-                onSuccess={() => { setShowDelete(false); /* TODO: redirect */ }}
-                playlistName={playlist.name}
-                playlistId={playlist.id}
-            />
-
-            <CreatePlaylistModal
-                isOpen={showCreate}
-                onClose={() => setShowCreate(false)}
-                onSuccess={() => setShowCreate(false)}
-            />
+            <AddToPlaylistModal isOpen={!!addToPlaylistTrackId} onClose={() => setAddToPlaylistTrackId(null)} trackId={addToPlaylistTrackId ?? ''} trackTitle={addToPlaylistTitle} onCreatePlaylist={() => { setAddToPlaylistTrackId(null); setShowCreate(true); }} />
+            {showEdit && <EditPlaylistModal isOpen={showEdit} onClose={() => setShowEdit(false)} onSuccess={handleEditSuccess} playlist={playlistToEdit} />}
+            <DeletePlaylistModal isOpen={showDelete} onClose={() => setShowDelete(false)} onSuccess={handleDeleteSuccess} playlistName={playlist.title ?? ''} playlistId={playlist.id ?? ''} />
+            <CreatePlaylistModal isOpen={showCreate} onClose={() => setShowCreate(false)} onSuccess={() => setShowCreate(false)} />
         </div>
     );
 };

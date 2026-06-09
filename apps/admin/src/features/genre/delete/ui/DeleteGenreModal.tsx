@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useDeleteApiAdminGenresId, type GenreListItemDto } from '@repo/api';
+import { useDeleteApiAdminGenresId, type GenreListItemDto } from '@repo/api/admin.ts';
 
 interface Props {
     genre: GenreListItemDto | null;

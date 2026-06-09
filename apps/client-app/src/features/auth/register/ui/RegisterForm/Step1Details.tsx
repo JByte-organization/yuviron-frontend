@@ -55,7 +55,7 @@ export const Step1Details = () => {
             <div className="client-register-details-form__logo">
                 <img
                     src="/logo.svg"
-                    alt="LumiTune"
+                    alt="Yuviron"
                     className="client-register-details-form__logo-image"
                 />
             </div>

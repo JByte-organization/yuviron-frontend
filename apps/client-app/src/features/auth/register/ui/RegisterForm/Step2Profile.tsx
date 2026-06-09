@@ -3,13 +3,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthRegister, postApiAuthLogin } from '@repo/api';
-import { useSessionStore } from '@/entities/session/model/store';
-import {
-    clearRegisterDraft,
-    getRegisterDraft,
-    setRegisterDraft,
-} from '../../model/registerDraft';
+import { getRegisterDraft, setRegisterDraft } from '../../model/registerDraft';
+import { useRegisterSubmit } from '../../model/useRegisterSubmit';
+import { EmailTakenModal } from '../EmailTakenModal';
 
 type ProfileErrors = {
     name?: string;
@@ -18,7 +14,6 @@ type ProfileErrors = {
     year?: string;
     country?: string;
     city?: string;
-    role?: string;
 };
 
 const MONTHS = [
@@ -36,14 +31,13 @@ const MONTHS = [
     'Грудень',
 ];
 
-const COUNTRIES = ['Україна', 'Польща', 'Німеччина'];
-// Міста згруповані за країною — щоб місто відповідало обраній країні
-// (інакше при «Польща» лишалося українське «Київ»).
-const CITIES_BY_COUNTRY: Record<string, string[]> = {
-    'Україна': ['Київ', 'Львів', 'Одеса', 'Харків', 'Дніпро'],
-    'Польща': ['Варшава', 'Краків', 'Ґданськ', 'Вроцлав', 'Познань'],
-    'Німеччина': ['Берлін', 'Мюнхен', 'Гамбург', 'Кельн', 'Франкфурт'],
-};
+// Бэк хранит код страны в короткой колонке (VARCHAR(2-3)) и ждёт ISO 3166-1 alpha-2.
+const COUNTRIES: ReadonlyArray<{ code: string; label: string }> = [
+    { code: 'UA', label: 'Україна' },
+    { code: 'PL', label: 'Польща' },
+    { code: 'DE', label: 'Німеччина' },
+];
+const CITIES = ['Київ', 'Львів', 'Одеса'];
 
 const CURRENT_YEAR = new Date().getFullYear();
 const MIN_AGE_YEARS = 16;
@@ -55,7 +49,6 @@ type ProfileState = {
     year: string;
     country: string;
     city: string;
-    role: string;
 };
 
 const isAtLeastMinAge = (year: number, month: number, day: number): boolean => {
@@ -94,29 +87,38 @@ const validate = (state: ProfileState): ProfileErrors => {
 
     if (!state.country) errors.country = 'Оберіть країну';
     if (!state.city) errors.city = 'Оберіть місто';
-    if (!state.role) errors.role = 'Оберіть роль';
 
     return errors;
 };
 
 export const Step2Profile = () => {
     const router = useRouter();
-    const setAccessToken = useSessionStore((s) => s.setAccessToken);
     const [state, setState] = useState<ProfileState>(() => {
         const draft = getRegisterDraft();
+        // Защита от старых черновиков, где country хранился как полное название
+        // ("Україна") до того, как мы перешли на ISO-коды ("UA"). Если значение
+        // не входит в текущий список — сбрасываем, иначе селект выглядит
+        // заполненным, а на бэк уезжает мусор.
+        const draftCountry = draft.country ?? '';
+        const country = COUNTRIES.some((c) => c.code === draftCountry) ? draftCountry : '';
+        const draftCity = draft.city ?? '';
+        const city = CITIES.includes(draftCity) ? draftCity : '';
         return {
             name: draft.firstName ?? '',
             day: draft.day ?? '',
             month: draft.month ?? '',
             year: draft.year ?? '',
-            country: draft.country ?? '',
-            city: draft.city ?? '',
-            role: draft.role ?? '',
+            country,
+            city,
         };
     });
     const [errors, setErrors] = useState<ProfileErrors>({});
     const [submitted, setSubmitted] = useState(false);
-    const [serverError, setServerError] = useState<string | null>(null);
+
+    // Отправку register держит общий хук: он же ловит 409 (почта занята) и ведёт
+    // на экран подтверждения по ссылке. Введённые данные при 409 не сбрасываются —
+    // компонент остаётся смонтированным, стейт формы живёт.
+    const { submit, isPending, emailTaken, closeEmailTaken, serverError } = useRegisterSubmit();
 
     const update = <K extends keyof ProfileState>(key: K, value: ProfileState[K]) => {
         const next = { ...state, [key]: value };
@@ -124,69 +126,20 @@ export const Step2Profile = () => {
         if (submitted) setErrors(validate(next));
     };
 
-    // Місто залежить від країни; зміна країни скидає раніше обране місто,
-    // щоб не лишалося невідповідне (напр. «Київ» при «Польща»).
-    const cityOptions = CITIES_BY_COUNTRY[state.country] ?? [];
-    const updateCountry = (value: string) => {
-        const next = { ...state, country: value, city: '' };
-        setState(next);
-        if (submitted) setErrors(validate(next));
-    };
-
-    const { mutate, isPending } = usePostApiAuthRegister({
-        mutation: {
-            onSuccess: async (_response, variables) => {
-                const { email, password } = variables.data;
-                clearRegisterDraft();
-                try {
-                    const loginRes: any = await postApiAuthLogin({ email, password });
-                    const token = loginRes?.data?.token ?? loginRes?.token;
-                    if (token) {
-                        setAccessToken(token);
-                        router.push('/');
-                    } else {
-                        router.push('/login');
-                    }
-                } catch {
-                    router.push('/login');
-                }
-            },
-            onError: (error: any) => {
-                console.log('[register] status:', error?.response?.status);
-                console.log('[register] data:', JSON.stringify(error?.response?.data, null, 2));
-                const data = error?.response?.data;
-                const fieldErrors = data?.errors
-                    ? Object.values(data.errors).flat().join(' ')
-                    : null;
-                const message =
-                    fieldErrors ||
-                    data?.detail ||
-                    data?.title ||
-                    data?.message ||
-                    data?.error ||
-                    (typeof data === 'string' ? data : null) ||
-                    'Не вдалося зареєструватися. Спробуйте ще раз.';
-                setServerError(message);
-            },
-        },
-    });
-
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitted(true);
-        setServerError(null);
         const next = validate(state);
         setErrors(next);
         if (Object.keys(next).length > 0) return;
 
         setRegisterDraft({
-            firstName: state.name,
+            firstName: state.name.trim(),
             day: state.day,
             month: state.month,
             year: state.year,
             country: state.country,
             city: state.city,
-            role: state.role as 'listener' | 'author',
         });
 
         const draft = getRegisterDraft();
@@ -195,28 +148,7 @@ export const Step2Profile = () => {
             return;
         }
 
-        const dateOfBirth = new Date(
-            Date.UTC(
-                Number(state.year),
-                Number(state.month) - 1,
-                Number(state.day),
-            ),
-        ).toISOString();
-        const isArtist = state.role === 'author';
-
-        mutate({
-            data: {
-                email: draft.email,
-                password: draft.password,
-                firstName: state.name.trim(),
-                dateOfBirth,
-                gender: 0 as any,
-                acceptMarketing: false,
-                acceptTerms: true,
-                isArtist,
-                artistName: isArtist ? state.name.trim() : null,
-            },
-        });
+        submit();
     };
 
     const dateInvalid = errors.day || errors.month || errors.year;
@@ -235,7 +167,7 @@ export const Step2Profile = () => {
             <div className="client-register-profile-form__logo">
                 <img
                     src="/logo.svg"
-                    alt="LumiTune"
+                    alt="Yuviron"
                     className="client-register-profile-form__logo-image"
                 />
             </div>
@@ -349,9 +281,9 @@ export const Step2Profile = () => {
                                     onChange={(event) => updateCountry(event.target.value)}
                                 >
                                     <option value="">Країна</option>
-                                    {COUNTRIES.map((country) => (
-                                        <option key={country} value={country}>
-                                            {country}
+                                    {COUNTRIES.map(({ code, label }) => (
+                                        <option key={code} value={code}>
+                                            {label}
                                         </option>
                                     ))}
                                 </select>
@@ -399,37 +331,6 @@ export const Step2Profile = () => {
                     </div>
                 </div>
 
-                <div className="mb-4">
-                    <div className="client-register-profile-form__label">Хто ви?</div>
-
-                    <div className="client-register-profile-form__radio-list">
-                        <label className="client-register-profile-form__radio">
-                            <input
-                                type="radio"
-                                name="role"
-                                value="listener"
-                                checked={state.role === 'listener'}
-                                onChange={(event) => update('role', event.target.value)}
-                            />
-                            <span>Я звичайний користувач</span>
-                        </label>
-
-                        <label className="client-register-profile-form__radio">
-                            <input
-                                type="radio"
-                                name="role"
-                                value="author"
-                                checked={state.role === 'author'}
-                                onChange={(event) => update('role', event.target.value)}
-                            />
-                            <span>Я автор пісень</span>
-                        </label>
-                    </div>
-                    {errors.role && (
-                        <div className="client-register-profile-form__error">{errors.role}</div>
-                    )}
-                </div>
-
                 {serverError && (
                     <div className="client-register-profile-form__error mb-3">{serverError}</div>
                 )}
@@ -442,6 +343,14 @@ export const Step2Profile = () => {
                     {isPending ? 'Реєстрація…' : 'Зареєструватися'}
                 </button>
             </form>
+
+            {/* «Змінити пошту» уводит на email-шаг: пароль и анкета уже в черновике,
+                сменив только почту, юзер по «Далі» сразу попадёт на финальный register. */}
+            <EmailTakenModal
+                isOpen={emailTaken}
+                onClose={closeEmailTaken}
+                onChangeEmail={() => router.push('/register')}
+            />
         </div>
     );
 };

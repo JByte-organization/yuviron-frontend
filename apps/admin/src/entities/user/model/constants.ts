@@ -1,22 +1,21 @@
 // src/entities/user/model/constants.ts
-import { UserDetailsDto } from '@repo/api';
+import { UserDetailsDto } from '@repo/api/admin.ts';
 
 /**
- * Описываем маппинг: Ключ из API -> Название для заголовка таблицы.
+ * Ключ из API -> Название для заголовка таблицы.
  * Используем Partial<Record<keyof UserDto, string>>, чтобы TS
  * проверял существование ключей в модели UserDto.
  */
 export const USER_COLUMNS_MAP: Partial<Record<keyof UserDetailsDto, string>> = {
     firstName: 'User',
     email: 'Email',
-    roles: 'Status/Roles',
+    roles: 'Role',
     accountState: 'Account State',
     createdAt: 'Registered',
     lastLoginAt: 'Last Login',
     id: 'ID'
 };
 
-// Исправление: Добавляем as string[], чтобы убрать undefined из типа
 export const tableColumns = Object.values(USER_COLUMNS_MAP) as string[];
 
 // Экспортируем ключи, чтобы UserRow знал, в каком порядке рендерить ячейки

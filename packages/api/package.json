@@ -7,6 +7,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./admin": "./src/admin.ts",
+    "./artist": "./src/artist.ts",
     "./generated/*": "./src/generated/*"
   },
   "scripts": {
@@ -14,6 +17,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^5.2.0",
     "axios": "^1.7.9"
   },
   "peerDependencies": {

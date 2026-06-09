@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { type AlbumListItemDto, VisibilityStatus } from '@repo/api';
+import { type AlbumListItemDto, VisibilityStatus } from '@repo/api/admin.ts';
 
 interface Props {
     album: AlbumListItemDto;
@@ -66,7 +66,7 @@ export const AlbumRow = ({ album, isSelected, onSelect, onEdit, onDelete }: Prop
 
             {/* Artists */}
             <td className="text-secondary small text-nowrap">
-                {album.artistNames?.join(', ') || '—'}
+                {album.artists?.join(', ') || '—'}
             </td>
 
             {/* Tracks */}

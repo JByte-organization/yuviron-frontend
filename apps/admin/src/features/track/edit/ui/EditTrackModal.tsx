@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import {
     useGetApiAdminTracksId,
     getGetApiAdminTracksIdQueryKey,
     usePutApiAdminTracksId,
     VisibilityStatus,
-    type TrackListItemDto,
-} from '@repo/api';
+    postApiFilesUpload,
+    type TrackListItemDto, ArtistRole, TrackGenreSimpleDto, TrackMoodSimpleDto, TrackArtistSimpleDto, TrackDetailsDto,
+} from '@repo/api/admin.ts';
 import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
     track: TrackListItemDto | null;
@@ -25,8 +27,6 @@ interface Props {
 type FormValues = {
     title: string;
     albumPosition: number;
-    audioStorageKey: string;
-    coverUrl: string;
     explicit: boolean;
     visibilityStatus: string;
 };
@@ -44,6 +44,16 @@ export const EditTrackModal = ({
     const [artists, setArtists] = useState<SelectOption[]>([]);
     const [genres,  setGenres]  = useState<SelectOption[]>([]);
     const [moods,   setMoods]   = useState<SelectOption[]>([]);
+    const [audioFileId,      setAudioFileId]      = useState<string | null>(null);
+    const [isAudioUploading, setIsAudioUploading] = useState(false);
+    const [audioUploadError, setAudioUploadError] = useState<string | null>(null);
+    const audioInputRef = useRef<HTMLInputElement>(null);
+
+    const [coverFileId, setCoverFileId] = useState<string | null>(null);
+    const [previewUrl,  setPreviewUrl]  = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const trackId = track?.id ?? '';
 
@@ -56,27 +66,81 @@ export const EditTrackModal = ({
 
     const { mutateAsync: updateTrack, isPending } = usePutApiAdminTracksId();
 
+    const handleAudioChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setIsAudioUploading(true);
+        setAudioUploadError(null);
+        try {
+            const res = await postApiFilesUpload({ file });
+            const data = res as { fileId?: string; url?: string };
+            if (!data.fileId) throw new Error('No fileId in response');
+            setAudioFileId(data.fileId);
+        } catch {
+            setAudioUploadError('Failed to upload audio. Please try again.');
+        } finally {
+            setIsAudioUploading(false);
+        }
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setIsUploading(true);
+        setUploadError(null);
+        try {
+            const res = await postApiFilesUpload({ file });
+            const data = res as { fileId?: string; url?: string };
+            if (!data.fileId) throw new Error('No fileId in response');
+            setCoverFileId(data.fileId);
+            setPreviewUrl(data.url ?? null);
+        } catch {
+            setUploadError('Failed to upload image. Please try again.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     useEffect(() => {
         if (!details) return;
-        const d = (details as any).data || details;
+
+        // Orval повертає { data: TrackDetailsDto, status: 200 }
+        const d = (details as { data?: TrackDetailsDto }).data ?? details as TrackDetailsDto;
+
+        const newAlbum: SelectOption[] = d.albumId && d.albumTitle
+            ? [{ id: d.albumId, label: d.albumTitle }]
+            : [];
+
+        const newArtists: SelectOption[] = (d.artists ?? [])
+            .map((a: TrackArtistSimpleDto) => ({
+                id:    a.artistId ?? '',
+                label: a.name     ?? '',
+            }));
+
+        const newGenres: SelectOption[] = (d.genres ?? [])
+            .map((g: TrackGenreSimpleDto) => ({
+                id:    g.genreId ?? '',
+                label: g.name    ?? '',
+            }));
+
+        const newMoods: SelectOption[] = (d.moods ?? [])
+            .map((m: TrackMoodSimpleDto) => ({
+                id:    m.moodId ?? '',
+                label: m.name   ?? '',
+            }));
+
+        // Всі setState разом — один ре-рендер
+        setAlbum(newAlbum);
+        setArtists(newArtists);
+        setGenres(newGenres);
+        setMoods(newMoods);
 
         reset({
-            title:            d.title ?? '',
-            albumPosition:    d.albumPosition && d.albumPosition > 0 ? d.albumPosition : 1,
-            audioStorageKey:  d.audioStorageKey ?? '',
-            coverUrl:         d.coverUrl ?? '',
-            explicit:         d.explicit ?? false,
+            title:            d.title            ?? '',
+            albumPosition:    (d.albumPosition ?? 0) > 0 ? d.albumPosition! : 1,
+            explicit:         d.explicit         ?? false,
             visibilityStatus: d.visibilityStatus ?? VisibilityStatus.Draft,
         });
-
-        // Предзаполняем альбом
-        if (d.albumId && d.albumTitle) {
-            setAlbum([{ id: d.albumId, label: d.albumTitle }]);
-        }
-
-        setArtists((d.artists ?? []).map((a: any) => ({ id: a.artistId, label: a.name })));
-        setGenres( (d.genres  ?? []).map((g: any) => ({ id: g.genreId,  label: g.name })));
-        setMoods(  (d.moods   ?? []).map((m: any) => ({ id: m.moodId,   label: m.name })));
     }, [details, reset]);
 
     const onSubmit = async (values: FormValues) => {
@@ -97,11 +161,15 @@ export const EditTrackModal = ({
                     albumPosition:    Number.isFinite(values.albumPosition) && values.albumPosition > 0
                         ? values.albumPosition
                         : 1,
-                    audioStorageKey:  values.audioStorageKey || null,
-                    coverUrl:         values.coverUrl || null,
+                    audioFileId:      audioFileId ?? null,
+                    coverFileId:      coverFileId ?? null,
                     explicit:         values.explicit,
                     visibilityStatus: values.visibilityStatus as any,
-                    artistIds: artists.map(a => a.id),
+                    artists: artists.map(a => ({
+                        id:   a.id,
+                        name: a.label ?? null,
+                        role: ArtistRole.Main,
+                    })),
                     genreIds:  genres.map(g => g.id),
                     moodIds:   moods.map(m => m.id),
                 },
@@ -124,9 +192,8 @@ export const EditTrackModal = ({
 
     if (!isOpen || !track) return null;
 
-    const coverSrc = track.coverUrl
-        ? `https://api.yuviron.com/storage/${track.coverUrl}`
-        : null;
+    //Image
+    const coverSrc = getImageUrl(track.coverUrl);
 
     return (
         <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050 }}>
@@ -216,24 +283,41 @@ export const EditTrackModal = ({
                                     </div>
                                 </div>
 
-                                {/* Audio key */}
+                                {/* Audio */}
                                 <div className="mb-4">
-                                    <label className="form-label admin-text small fw-bold">AUDIO STORAGE KEY</label>
-                                    <input
-                                        type="text"
-                                        className="form-control admin-login__input text-secondary"
-                                        {...register('audioStorageKey')}
-                                    />
+                                    <label className="form-label admin-text small fw-bold">AUDIO FILE</label>
+                                    <div
+                                        className={`upload-input ${audioFileId ? 'border-success' : ''}`}
+                                        onClick={() => audioInputRef.current?.click()}
+                                        style={{ cursor: 'pointer', minHeight: '38px' }}
+                                    >
+                                        <p className="mb-0 small mt-1 text-center text-secondary">
+                                            {audioFileId ? 'New audio uploaded' : 'Click to replace audio (leave empty to keep current)'}
+                                        </p>
+                                    </div>
+                                    <input ref={audioInputRef} type="file" accept="audio/*" className="d-none" onChange={handleAudioChange} />
+                                    {isAudioUploading && <p className="text-info small mt-1">Uploading...</p>}
+                                    {audioUploadError && <p className="text-danger small mt-1">{audioUploadError}</p>}
+                                    {audioFileId && !audioUploadError && <p className="text-success small mt-1">New audio uploaded</p>}
                                 </div>
 
                                 {/* Cover */}
                                 <div className="mb-4">
-                                    <label className="form-label admin-text small fw-bold">COVER PATH</label>
-                                    <input
-                                        type="text"
-                                        className="form-control admin-login__input text-secondary"
-                                        {...register('coverUrl')}
-                                    />
+                                    <label className="form-label admin-text small fw-bold">COVER IMAGE</label>
+                                    <div
+                                        className={`upload-input ${coverFileId ? 'border-success' : ''}`}
+                                        onClick={() => fileInputRef.current?.click()}
+                                        style={{ cursor: 'pointer', minHeight: '38px' }}
+                                    >
+                                        {previewUrl
+                                            ? <img src={previewUrl} alt="cover preview" className="img-fluid rounded" style={{ maxHeight: '80px' }} />
+                                            : <p className="mb-0 small mt-1 text-center text-secondary">Click to replace (leave empty to keep current)</p>
+                                        }
+                                    </div>
+                                    <input ref={fileInputRef} type="file" accept="image/*" className="d-none" onChange={handleFileChange} />
+                                    {isUploading && <p className="text-info small mt-1">Uploading...</p>}
+                                    {uploadError && <p className="text-danger small mt-1">{uploadError}</p>}
+                                    {coverFileId && !uploadError && <p className="text-success small mt-1">New cover uploaded</p>}
                                 </div>
 
                                 {/* Explicit */}
@@ -277,7 +361,7 @@ export const EditTrackModal = ({
                                 <button
                                     type="submit"
                                     className="btn btn-primary px-5 fw-bold"
-                                    disabled={isPending || isSubmitting}
+                                    disabled={isPending || isSubmitting || isAudioUploading || isUploading}
                                 >
                                     {isPending ? 'Saving...' : 'Save Changes'}
                                 </button>

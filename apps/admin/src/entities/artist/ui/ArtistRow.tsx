@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
-import {ArtistListItemDto, UserListItemDto, VerificationStatus} from '@repo/api';
+import {ArtistListItemDto, VerificationStatus} from '@repo/api/admin.ts';
+import Image from "next/image";
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface ArtistRowProps {
     artist: ArtistListItemDto;
@@ -26,10 +28,9 @@ export const ArtistRow = ({ artist, isSelected, onSelect, onDelete, onEdit }: Ar
         );
     };
 
+
     // Путь к аватару
-    const avatarSrc = artist.avatarUrl
-        ? `https://api.yuviron.com/storage/${artist.avatarUrl}`
-        : null;
+    const avatarSrc = getImageUrl(artist.avatarUrl);
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{backgroundColor: '#212631'}}>
@@ -94,16 +95,26 @@ export const ArtistRow = ({ artist, isSelected, onSelect, onDelete, onEdit }: Ar
             {/* Actions */}
             <td className="text-end px-4">
                 <div className="d-flex justify-content-end gap-2">
-                    <button className="btn btn-sm btn-outline-info border-0 shadow-none"
+                    <button className="btn btn-sm btn-secondary border-0 shadow-none"
                     onClick={() => onEdit(artist)}
                     >
-                        ✏️
+                        <Image
+                            src="/images/icons/edit-btn.svg"
+                            width={16}
+                            height={16}
+                            alt="edit icon"
+                        />
                     </button>
                     <button
-                        className="btn btn-sm btn-outline-danger border-0 shadow-none"
+                        className="btn btn-sm btn-secondary border-0 shadow-none"
                         onClick={() => onDelete(artist)}
                     >
-                        ❌
+                        <Image
+                            src="/images/icons/delete-btn.svg"
+                            width={16}
+                            height={16}
+                            alt="delete icon"
+                        />
                     </button>
                 </div>
             </td>

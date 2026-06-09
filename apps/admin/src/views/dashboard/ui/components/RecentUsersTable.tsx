@@ -1,5 +1,5 @@
 import React from 'react';
-import type { RecentUserDto } from '@repo/api';
+import type { RecentUserDto } from '@repo/api/admin.ts';
 
 interface Props {
     users: RecentUserDto[];

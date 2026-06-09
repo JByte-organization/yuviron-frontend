@@ -1,5 +1,7 @@
 import React from 'react';
-import { AccountState, type UserListItemDto } from '@repo/api';
+import { AccountState, type UserListItemDto } from '@repo/api/admin.ts';
+import Image from 'next/image'
+import {getImageUrl} from "@/shared/lib/getImageUrl";
 
 interface Props {
     user: UserListItemDto;
@@ -56,12 +58,12 @@ const StateBadge = ({ state }: { state?: AccountState | string | number }) => {
 };
 
 export const UserRow = ({ user, onEdit, onDelete, isSelected, onSelect }: Props) => {
-    const avatarSrc = user.avatarUrl
-        ? `https://api.yuviron.com/storage/${user.avatarUrl}`
-        : null;
+
+    // Путь к аватару
+    const avatarSrc = getImageUrl(user.avatarUrl);
 
     return (
-        <tr className="border-bottom border-secondary align-middle" style={{backgroundColor: '#212631'}}>
+        <tr className="border-bottom border-secondary align-middle" style={{backgroundColor: '#3B4452'}}>
 
             {/* Checkbox */}
             <td className="px-4">
@@ -74,7 +76,7 @@ export const UserRow = ({ user, onEdit, onDelete, isSelected, onSelect }: Props)
             </td>
 
             {/* Avatar + Name */}
-            <td className="py-3 ">
+            <td className="py-3">
                 <div className="d-flex align-items-center gap-3">
                     <div
                         className="rounded-circle bg-secondary d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0"
@@ -117,18 +119,28 @@ export const UserRow = ({ user, onEdit, onDelete, isSelected, onSelect }: Props)
             <td className="px-4">
                 <div className="d-flex justify-content-end gap-1">
                     <button
-                        className="btn btn-sm btn-outline-warning border-0 shadow-none px-2"
+                        className="btn btn-sm btn-secondary border-0 shadow-none px-2"
                         title="Edit"
                         onClick={() => onEdit(user)}
                     >
-                        ✏️
+                        <Image
+                            src="/images/icons/edit-btn.svg"
+                            width={16}
+                            height={16}
+                            alt="edit icon"
+                        />
                     </button>
                     <button
-                        className="btn btn-sm btn-outline-danger border-0 shadow-none px-2"
+                        className="btn btn-sm btn-secondary border-0 shadow-none px-2"
                         title="Delete"
                         onClick={() => onDelete(user)}
                     >
-                        🗑️
+                        <Image
+                            src="/images/icons/delete-btn.svg"
+                            width={16}
+                            height={16}
+                            alt="delete icon"
+                        />
                     </button>
                 </div>
             </td>

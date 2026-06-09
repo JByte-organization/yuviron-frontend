@@ -1,109 +1,86 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { Header } from '@/widgets/header/ui/Header';
 import { Sidebar } from '@/widgets/sidebar/ui/Sidebar';
+import { GuestSidebar } from '@/widgets/sidebar/ui/GuestSidebar';
+import { useSessionStore } from '@/entities/session/model/store';
 import { Footer } from '@/widgets/footer/ui/Footer';
 import { RightSidebar } from '@/widgets/right-sidebar/ui/RightSidebar';
-import { ThemeProvider } from '@/shared/lib/ThemeProvider';
 import { PlaylistToastProvider } from '@/shared/ui/PlaylistToast';
+import { AuthGuardProvider } from '@/shared/lib/useAuthGuard';
+import { PlayerBar } from '@/widgets/player/ui/PlayerBar';
 
-// ══════════════════════════════════════════════════════════
-// LEFT SIDEBAR CONTEXT
-// ══════════════════════════════════════════════════════════
-interface SidebarContextValue {
-    collapsed: boolean;
-    setCollapsed: (v: boolean) => void;
-}
+import {
+    SidebarContext,
+    RightSidebarContext,
+    SIDEBAR_ICON_WIDTH,
+} from '../model/contexts';
+import { useSidebarResize } from '../lib/useSidebarResize';
+import { useRightSidebarState } from '../lib/useRightSidebarState';
+import { useIsDesktop } from '../lib/useIsDesktop';
+import {PlayerInitializer} from "@/entities/player/lib/PlayerInitializer.tsx";
 
-export const SidebarContext = createContext<SidebarContextValue>({
-    collapsed: false,
-    setCollapsed: () => {},
-});
-
-export const useSidebar = () => useContext(SidebarContext);
-
-// ══════════════════════════════════════════════════════════
-// RIGHT SIDEBAR CONTEXT
-// ══════════════════════════════════════════════════════════
-interface RightSidebarContextValue {
-    isOpen: boolean;
-    userClosed: boolean;
-    open: () => void;
-    close: () => void;
-}
-
-export const RightSidebarContext = createContext<RightSidebarContextValue>({
-    isOpen: false,
-    userClosed: false,
-    open: () => {},
-    close: () => {},
-});
-
-export const useRightSidebar = () => useContext(RightSidebarContext);
-
-// ══════════════════════════════════════════════════════════
-// CLIENT LAYOUT
-// ══════════════════════════════════════════════════════════
 interface ClientLayoutProps {
     children: React.ReactNode;
 }
 
 export const ClientLayout = ({ children }: ClientLayoutProps) => {
-    // Лівий сайдбар
+    const isDesktop = useIsDesktop();
+
+    // ─── Лівий сайдбар ────────────────────────────────────
     const [collapsed, setCollapsed] = useState(false);
+    const { sidebarWidth, isResizing, onResizeStart } = useSidebarResize();
 
-    // Правий сайдбар
-    const [isOpen, setIsOpen] = useState(false);
-    const [userClosed, setUserClosed] = useState(false);
+    // ─── Правий сайдбар ───────────────────────────────────
+    const { isOpen, userClosed, open, close, openManually } = useRightSidebarState();
 
-    const open = () => {
-        // Відкриваємо тільки якщо користувач не закрив вручну
-        if (!userClosed) {
-            setIsOpen(true);
-        }
-    };
+    const accessToken = useSessionStore(s => s.accessToken);
 
-    const close = () => {
-        setIsOpen(false);
-        setUserClosed(true); // запам'ятовуємо що користувач закрив
-    };
-
-    // Відкрити вручну (скидає userClosed)
-    const openManually = () => {
-        setUserClosed(false);
-        setIsOpen(true);
-    };
+    // На мобайлі marginLeft = 0, сайдбар display:none через CSS
+    const marginLeft = !isDesktop
+        ? 0
+        : collapsed
+            ? SIDEBAR_ICON_WIDTH + 16
+            : sidebarWidth + 24;
 
     return (
-        <ThemeProvider>
-        <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
+        <SidebarContext.Provider value={{ collapsed, setCollapsed, sidebarWidth }}>
             <RightSidebarContext.Provider value={{ isOpen, userClosed, open, close }}>
-                <div className="client-layout">
-                    <Header />
+                <AuthGuardProvider>
+                    <div className="client-layout">
+                        <Header />
 
-                    <div className="client-layout__body">
-                        {/* Лівий сайдбар */}
-                        <Sidebar />
+                        <div className="client-layout__body">
+                            {accessToken
+                                ? <Sidebar onResizeStart={onResizeStart} />
+                                : <GuestSidebar onResizeStart={onResizeStart} />
+                            }
 
-                        {/* Основний контент */}
-                        <main className={[
-                            'client-layout__main',
-                            collapsed ? 'client-layout__main--left-collapsed' : '',
-                            isOpen    ? 'client-layout__main--right-open' : '',
-                        ].filter(Boolean).join(' ')}>
+                            <main
+                                className={[
+                                    'client-layout__main',
+                                    isOpen ? 'client-layout__main--right-open' : '',
+                                ].filter(Boolean).join(' ')}
+                                style={{
+                                    marginLeft,
+                                    transition: isResizing.current ? 'none' : 'margin-left 0.3s ease',
+                                }}
+                            >
                                 <PlaylistToastProvider>
+                                    <PlayerInitializer />
                                     {children}
                                 </PlaylistToastProvider>
-                            <Footer />
-                        </main>
+                                <Footer />
+                            </main>
 
-                        {/* Правий сайдбар */}
-                        <RightSidebar onOpenManually={openManually} />
+                            <RightSidebar onOpenManually={openManually} />
+                        </div>
+
+                        <PlayerBar />
                     </div>
-                </div>
+                </AuthGuardProvider>
             </RightSidebarContext.Provider>
         </SidebarContext.Provider>
-        </ThemeProvider>
     );
 };

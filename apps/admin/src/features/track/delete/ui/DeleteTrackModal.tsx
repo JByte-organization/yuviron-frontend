@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useDeleteApiAdminTracksId, type TrackListItemDto } from '@repo/api';
+import { useDeleteApiAdminTracksId, type TrackListItemDto } from '@repo/api/admin.ts';
 
 interface Props {
     track: TrackListItemDto | null;

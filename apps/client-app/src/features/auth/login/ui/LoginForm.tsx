@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthLogin } from '@repo/api';
+import { usePostApiAuthLogin, usePostApiAuthSendCode } from '@repo/api/client.ts';
 import { useSessionStore } from '@/entities/session/model/store';
+import { useQueryClient } from '@tanstack/react-query';
+import { getGetApiAuthMeQueryKey } from '@repo/api/client.ts';
 
 type LoginErrors = {
     identifier?: string;
@@ -32,6 +34,7 @@ const validate = (identifier: string, password: string): LoginErrors => {
 export const LoginForm = () => {
     const router = useRouter();
     const setAccessToken = useSessionStore((state) => state.setAccessToken);
+    const queryClient = useQueryClient();
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -51,7 +54,8 @@ export const LoginForm = () => {
                 }
 
                 setAccessToken(token);
-                router.push('/');
+                queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
+                router.push('/home');
             },
             onError: (error: any) => {
                 console.log('[login] status:', error?.response?.status);
@@ -78,9 +82,40 @@ export const LoginForm = () => {
         },
     });
 
+    // Вход без пароля: send-code шлёт 6-значный код на почту, дальше на
+    // /verify-code юзер вводит его и логинится через login-with-code.
+    const { mutate: sendCode, isPending: isSendingCode } = usePostApiAuthSendCode({
+        mutation: {
+            onSuccess: (_res, variables) => {
+                const email = variables.data.email ?? '';
+                router.push(`/verify-code?email=${encodeURIComponent(email)}`);
+            },
+            onError: (error: any) => {
+                const data = error?.response?.data;
+                setServerError(
+                    data?.detail ||
+                        data?.title ||
+                        data?.message ||
+                        'Не вдалося надіслати код. Спробуйте ще раз.',
+                );
+            },
+        },
+    });
+
     const runValidation = (next: { identifier?: string; password?: string }) => {
         if (!submitted) return;
         setErrors(validate(next.identifier ?? identifier, next.password ?? password));
+    };
+
+    const handleCodeLogin = () => {
+        setServerError(null);
+        const id = identifier.trim();
+        if (!id) {
+            setSubmitted(true);
+            setErrors((prev) => ({ ...prev, identifier: 'Введіть електронну пошту' }));
+            return;
+        }
+        sendCode({ data: { email: id } });
     };
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -197,12 +232,21 @@ export const LoginForm = () => {
                 {isPending ? 'Вхід…' : 'Увійти'}
             </button>
 
+            <button
+                type="button"
+                className="btn client-login-form__alt-btn w-100"
+                onClick={handleCodeLogin}
+                disabled={isPending || isSendingCode}
+            >
+                {isSendingCode ? 'Надсилання…' : 'Увійти за кодом'}
+            </button>
+
             <div className="client-login-form__bottom-divider" />
 
             <div className="client-login-form__register text-center">
                 <span>Немає акаунта?</span>
                 <Link href="/register" className="client-login-form__register-link text-decoration-none">
-                    Реєстрація у LumiTune
+                    Реєстрація у Yuviron
                 </Link>
             </div>
         </form>

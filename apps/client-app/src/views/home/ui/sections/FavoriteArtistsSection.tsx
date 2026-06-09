@@ -1,11 +1,16 @@
 'use client';
 
 import React from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { FreeMode } from 'swiper/modules';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { ArtistCard, type ArtistCardData } from '@/entities/artist/ui/ArtistCard';
 
+import 'swiper/css';
+import 'swiper/css/free-mode';
+
+// ─── Типи ─────────────────────────────────────────────────────────────────────
 interface FavoriteArtistsSectionProps {
-    /** TODO: заменить на хук — useGetApiHomeFavoriteArtists() */
     sectionTitle?: string;
     artists?: ArtistCardData[];
     isLoading?: boolean;
@@ -13,31 +18,26 @@ interface FavoriteArtistsSectionProps {
     onArtistClick?: (id: string) => void;
 }
 
-const MOCK_ARTISTS: ArtistCardData[] = [
-    { id: '1', name: 'Lana Del Rey',   monthlyListeners: 4690563, avatarUrl: null },
-    { id: '2', name: 'Lady Gaga',      monthlyListeners: 4690563, avatarUrl: null },
-    { id: '3', name: 'Shakira',        monthlyListeners: 4690563, avatarUrl: null },
-    { id: '4', name: 'Jennifer Lopez', monthlyListeners: 4690563, avatarUrl: null },
-];
-
-/**
- * Секція: "Твої улюблені виконавці"
- *
- * Підключення даних:
- * 1. const { data, isLoading } = useGetApiHomeFavoriteArtists();
- * 2. <FavoriteArtistsSection artists={data?.items} isLoading={isLoading} />
- */
+// ─── Компонент ────────────────────────────────────────────────────────────────
+// Секція відповідає тільки за відображення.
+// Дані (artists, isLoading) приходять з батьківського компонента.
 export const FavoriteArtistsSection = ({
-                                           artists = MOCK_ARTISTS,
+                                           sectionTitle = 'Популярні виконавці',
+                                           artists,
                                            isLoading = false,
                                            showAllHref = '/artists',
                                            onArtistClick,
                                        }: FavoriteArtistsSectionProps) => {
+
+    if (!isLoading && (!artists || artists.length === 0)) return null;
+
+    const lastWord = sectionTitle.trim().split(' ').at(-1) ?? '';
+
     return (
-        <section className="mb-4">
+        <section className="favorite-artists-section mb-4 mb-md-5">
             <SectionHeader
-                title="Твої улюблені виконавці"
-                highlightedWord="виконавці"
+                title={sectionTitle}
+                highlightedWord={lastWord}
                 showAll
                 showAllHref={showAllHref}
             />
@@ -45,20 +45,34 @@ export const FavoriteArtistsSection = ({
             {isLoading ? (
                 <ArtistsSkeleton />
             ) : (
-                <div className="h-scroll">
-                    {artists.map((artist) => (
-                        <ArtistCard
-                            key={artist.id}
-                            artist={artist}
-                            onClick={onArtistClick}
-                        />
+                <Swiper
+                    modules={[FreeMode]}
+                    freeMode
+                    slidesPerView={2}
+                    spaceBetween={24}
+                    breakpoints={{
+                        480:  { slidesPerView: 3 },
+                        768:  { slidesPerView: 3 },
+                        992:  { slidesPerView: 5 },
+                        1200: { slidesPerView: 7 },
+                    }}
+                    className="favorite-artists-section__swiper"
+                >
+                    {artists!.map((artist) => (
+                        <SwiperSlide key={artist.id}>
+                            <ArtistCard
+                                artist={artist}
+                                onClick={onArtistClick}
+                            />
+                        </SwiperSlide>
                     ))}
-                </div>
+                </Swiper>
             )}
         </section>
     );
 };
 
+// ─── Скелетон ─────────────────────────────────────────────────────────────────
 const ArtistsSkeleton = () => (
     <div className="d-flex gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
