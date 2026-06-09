@@ -37,7 +37,13 @@ const MONTHS = [
 ];
 
 const COUNTRIES = ['Україна', 'Польща', 'Німеччина'];
-const CITIES = ['Київ', 'Львів', 'Одеса'];
+// Міста згруповані за країною — щоб місто відповідало обраній країні
+// (інакше при «Польща» лишалося українське «Київ»).
+const CITIES_BY_COUNTRY: Record<string, string[]> = {
+    'Україна': ['Київ', 'Львів', 'Одеса', 'Харків', 'Дніпро'],
+    'Польща': ['Варшава', 'Краків', 'Ґданськ', 'Вроцлав', 'Познань'],
+    'Німеччина': ['Берлін', 'Мюнхен', 'Гамбург', 'Кельн', 'Франкфурт'],
+};
 
 const CURRENT_YEAR = new Date().getFullYear();
 const MIN_AGE_YEARS = 16;
@@ -114,6 +120,15 @@ export const Step2Profile = () => {
 
     const update = <K extends keyof ProfileState>(key: K, value: ProfileState[K]) => {
         const next = { ...state, [key]: value };
+        setState(next);
+        if (submitted) setErrors(validate(next));
+    };
+
+    // Місто залежить від країни; зміна країни скидає раніше обране місто,
+    // щоб не лишалося невідповідне (напр. «Київ» при «Польща»).
+    const cityOptions = CITIES_BY_COUNTRY[state.country] ?? [];
+    const updateCountry = (value: string) => {
+        const next = { ...state, country: value, city: '' };
         setState(next);
         if (submitted) setErrors(validate(next));
     };
@@ -321,10 +336,6 @@ export const Step2Profile = () => {
                     <label className="form-label client-register-profile-form__label">
                         Регіон проживання
                     </label>
-                    <div className="client-register-profile-form__hint">
-                        Для чого нам потрібне ваше місце проживання?
-                    </div>
-                    <div className="client-register-profile-form__hint-link">Докладніше</div>
 
                     <div className="client-register-profile-form__region-grid">
                         <div>
@@ -335,7 +346,7 @@ export const Step2Profile = () => {
                                 <select
                                     className={`form-select client-register-profile-form__select${errors.country ? ' is-invalid' : ''}`}
                                     value={state.country}
-                                    onChange={(event) => update('country', event.target.value)}
+                                    onChange={(event) => updateCountry(event.target.value)}
                                 >
                                     <option value="">Країна</option>
                                     {COUNTRIES.map((country) => (
@@ -364,9 +375,12 @@ export const Step2Profile = () => {
                                     className={`form-select client-register-profile-form__select${errors.city ? ' is-invalid' : ''}`}
                                     value={state.city}
                                     onChange={(event) => update('city', event.target.value)}
+                                    disabled={!state.country}
                                 >
-                                    <option value="">Місто</option>
-                                    {CITIES.map((city) => (
+                                    <option value="">
+                                        {state.country ? 'Місто' : 'Спочатку оберіть країну'}
+                                    </option>
+                                    {cityOptions.map((city) => (
                                         <option key={city} value={city}>
                                             {city}
                                         </option>
