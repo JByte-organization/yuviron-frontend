@@ -40,7 +40,6 @@ export const EditProfileModal = ({
 
     const { mutateAsync: uploadFile } = usePostApiFilesUpload();
 
-    // 🚨 1. ІНІЦІАЛІЗУЄМО НОВИЙ ХУК МУТАЦІЇ
     const { mutateAsync: updateProfile } = usePutApiMeAccountProfile();
 
     const {

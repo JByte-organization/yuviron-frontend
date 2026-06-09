@@ -34,7 +34,8 @@ export const ApiClientProvider = ({ children }: { children: React.ReactNode }) =
                 // Получаем куку XSRF-TOKEN ДО refresh — иначе бэк вернёт 400.
                 await initCsrfToken();
                 const data = await postApiAuthRefresh();
-                const token = (data as any)?.accessToken ?? (data as any)?.token;
+                const refreshed = data as { accessToken?: string; token?: string };
+                const token = refreshed?.accessToken ?? refreshed?.token;
                 if (token) {
                     useSessionStore.getState().setAccessToken(token);
                 }
@@ -43,6 +44,9 @@ export const ApiClientProvider = ({ children }: { children: React.ReactNode }) =
                 // це нормальний шлях. Але БІЛЬШЕ не глушимо мовчки: саме тихий
                 // catch ховав зламаний CSRF-refresh (розлогін на кожному F5).
                 console.warn('[auth] restore session failed:', error);
+            } finally {
+                // Сесію відновлено (успішно чи ні) — гейти можуть приймати рішення.
+                useSessionStore.getState().markAuthResolved();
             }
         };
 
