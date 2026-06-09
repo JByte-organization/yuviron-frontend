@@ -52,7 +52,7 @@ export const DashboardPage = () => {
     }
 
     return (
-        <div className="p-3 p-md-4" style={{ minHeight: '100vh', backgroundColor: '#222731' }}>
+        <div className="p-3 p-md-4" style={{ minHeight: '100vh'}}>
 
             {/* Header */}
             <div className="d-flex justify-content-between align-items-center mb-4">

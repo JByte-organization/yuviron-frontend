@@ -19,26 +19,20 @@ const cards = (s?: DashboardSummaryDto) => [
 ];
 
 export const SummaryCards = ({ summary }: Props) => (
-    <div className="row g-3 mb-4">
+    <div className="row g-3 mb-4 summary-cards">
         {cards(summary).map(({ icon, label, value, color }) => (
             <div key={label} className="col-6 col-sm-4 col-md-3 col-xl">
-                <div
-                    className="rounded-3 p-3 h-100 d-flex align-items-center gap-3 transition-all"
-                    style={{
-                        backgroundColor: '#1e2330',
-                        border: '1px solid #353E4B',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)'
-                    }}
-                >
+                <div className="summary-cards__card">
+                    {/* Передаємо колір як CSS-змінну для використання всередині SCSS */}
                     <div
-                        className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                        style={{ width: '40px', height: '40px', backgroundColor: '#212631', fontSize: '1.2rem', color: color }}
+                        className="summary-cards__icon-box"
+                        style={{ '--card-icon-color': color } as React.CSSProperties}
                     >
                         <i className={`bi ${icon}`} />
                     </div>
-                    <div className="min-w-0">
-                        <div className="small text-truncate" style={{ color: '#718096', fontWeight: 500, fontSize: 12 }}>{label}</div>
-                        <div className="fw-bold fs-5" style={{ color: '#fff', letterSpacing: '-0.5px' }}>{value}</div>
+                    <div className="min-w-0 summary-cards__content">
+                        <div className="summary-cards__label">{label}</div>
+                        <div className="fw-bold fs-5 summary-cards__value">{value}</div>
                     </div>
                 </div>
             </div>

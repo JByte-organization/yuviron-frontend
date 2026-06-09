@@ -10,11 +10,7 @@ interface Props {
     items: TopEntityDto[];
 }
 
-
 export const TopEntityTable = ({ title, items }: Props) => {
-    const ACCENT_COLOR = '#7AE0FF'; // $admin-btn-primary
-    const STROKE_COLOR = '#353E4B'; // $admin-secondary
-
     // Динамічний вибір іконки в шапці залежно від назви секції
     const getHeaderIcon = (headerTitle: string): string => {
         const t = headerTitle.toLowerCase();
@@ -23,31 +19,28 @@ export const TopEntityTable = ({ title, items }: Props) => {
         return 'bi-fire';
     };
 
+    // Повертає відповідний клас для підсвічування лідерів рейтингу
+    const getRankModifier = (index: number): string => {
+        if (index === 0) return 'top-entity-table__rank--first';
+        if (index === 1) return 'top-entity-table__rank--second';
+        return '';
+    };
+
     return (
-        <div
-            className="rounded-3 overflow-hidden h-100"
-            style={{
-                backgroundColor: '#1e2330',
-                border: `1px solid ${STROKE_COLOR}`,
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)'
-            }}
-        >
+        <div className="top-entity-table h-100">
             {/* Текстовий заголовок віджета */}
             <div className="px-4 pt-4 pb-3">
                 <h6 className="text-white fw-bold mb-0 d-flex align-items-center gap-2">
-                    <i className={`bi ${getHeaderIcon(title)}`} style={{ color: ACCENT_COLOR }} />
+                    <i className={`bi ${getHeaderIcon(title)} top-entity-table__title-icon`} />
                     {title}
                 </h6>
             </div>
 
             {/* Службова шапка колонок */}
-            <div
-                className="d-flex align-items-center px-4 py-2 border-bottom"
-                style={{ backgroundColor: '#1a1f2e', borderColor: STROKE_COLOR }}
-            >
-                <span className="text-secondary small fw-semibold flex-shrink-0" style={{ width: '32px' }}>#</span>
-                <span className="text-secondary small fw-semibold flex-grow-1">Title / Category</span>
-                <span className="text-secondary small fw-semibold text-end flex-shrink-0" style={{ width: '90px' }}>Total Plays</span>
+            <div className="d-flex align-items-center px-4 py-2 top-entity-table__th">
+                <span className="small fw-semibold flex-shrink-0 top-entity-table__col-idx">#</span>
+                <span className="small fw-semibold flex-grow-1 top-entity-table__col-profile">Title / Category</span>
+                <span className="small fw-semibold text-end flex-shrink-0 top-entity-table__col-plays">Total Plays</span>
             </div>
 
             {/* Список елементів рейтингу */}
@@ -63,34 +56,19 @@ export const TopEntityTable = ({ title, items }: Props) => {
                     return (
                         <div
                             key={item.id ?? i}
-                            className="d-flex align-items-center px-4 py-3 transition-all"
-                            style={{
-                                backgroundColor: i % 2 === 0 ? '#212631' : '#1e2330',
-                                borderColor: 'rgba(255, 255, 255, 0.03)',
-                                cursor: 'default'
-                            }}
+                            className="d-flex align-items-center px-4 py-3 top-entity-table__row"
                         >
-                            {/* Порядковий індекс у топі (Захищений від стиснення) */}
-                            <span
-                                className="small flex-shrink-0 fw-semibold"
-                                style={{
-                                    width: '32px',
-                                    color: i === 0 ? ACCENT_COLOR : i === 1 ? '#4B7490' : '#718096'
-                                }}
-                            >
+                            {/* Порядковий індекс у топі */}
+                            <span className={`small flex-shrink-0 fw-semibold top-entity-table__rank ${getRankModifier(i)}`}>
                                 {i + 1}
                             </span>
 
                             {/* Обкладинка + Назва елемента */}
                             <div className="d-flex align-items-center gap-3 flex-grow-1 min-w-0">
                                 <div
-                                    className="rounded d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0"
-                                    style={{
-                                        width: '32px',
-                                        height: '32px',
-                                        background: coverSrc ? 'transparent' : 'linear-gradient(135deg, #325B76, #212631)',
-                                        border: '1px solid rgba(255, 255, 255, 0.08)'
-                                    }}
+                                    className={`rounded d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0 top-entity-table__cover ${
+                                        !coverSrc ? 'top-entity-table__cover--empty' : ''
+                                    }`}
                                 >
                                     {coverSrc ? (
                                         <img
@@ -99,7 +77,7 @@ export const TopEntityTable = ({ title, items }: Props) => {
                                             className="w-100 h-100 object-fit-cover"
                                         />
                                     ) : (
-                                        <i className="bi bi-music-note" style={{ fontSize: '0.8rem', color: ACCENT_COLOR }} />
+                                        <i className="bi bi-music-note" />
                                     )}
                                 </div>
                                 <span className="text-white small fw-semibold text-truncate">
@@ -107,12 +85,10 @@ export const TopEntityTable = ({ title, items }: Props) => {
                                 </span>
                             </div>
 
-                            {/* Кількість прослуховувань (Захищена від згортання) */}
-                            <span
-                                className="text-white-50 small text-end text-nowrap flex-shrink-0 fw-medium"
-                                style={{ width: '90px', color: '#e2e8f0' }}
-                            >
-                                {formatNumber(item.totalPlays)} <span className="text-muted" style={{ fontSize: '0.75rem' }}>plays</span>
+                            {/* Кількість прослуховувань */}
+                            <span className="small text-end text-nowrap flex-shrink-0 fw-medium top-entity-table__plays-count">
+                                {formatNumber(item.totalPlays)}{' '}
+                                <span className="top-entity-table__plays-label">plays</span>
                             </span>
                         </div>
                     );
