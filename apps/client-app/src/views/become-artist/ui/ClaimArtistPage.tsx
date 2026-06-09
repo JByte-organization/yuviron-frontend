@@ -1,9 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { ClaimArtistFlow } from '@/features/artist/become';
+import { ClaimArtistFlow, useRedirectIfArtist } from '@/features/artist/become';
 
-export const ClaimArtistPage = () => (
+export const ClaimArtistPage = () => {
+    if (useRedirectIfArtist()) return null;
+
+    return (
     <section className="client-become-artist client-become-artist--narrow">
         <Link href="/become-artist" className="client-become-artist__back">
             <i className="bi bi-arrow-left" /> Назад
@@ -18,6 +21,7 @@ export const ClaimArtistPage = () => (
 
         <ClaimArtistFlow />
     </section>
-);
+    );
+};
 
 export default ClaimArtistPage;
