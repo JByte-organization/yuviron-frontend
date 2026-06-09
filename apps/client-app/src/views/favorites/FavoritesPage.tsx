@@ -94,7 +94,6 @@ export const FavoritesPage = () => {
                 ) : (
                     processedTracks.map(track => (
                         <TrackRow
-                            // Суворий комбінований ключ змусить React миттєво прибрати трек, якщо його статус зміниться
                             key={`${track.id}-${track.isSaved}`}
                             track={track}
                             allTracks={processedTracks}
