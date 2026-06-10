@@ -184,7 +184,6 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
 
                 {/* Музика — популярні релизы, альбоми, сингли */}
                 <ArtistMusicSection
-                    artistId={artistId}
                     artistName={artist.name ?? ''}
                     popularReleases={popularReleases}
                     albums={albums}
@@ -195,7 +194,6 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
 
                 {/* Вас може зацікавити */}
                 <ArtistRelatedTracksSection
-                    artistId={artistId}
                     tracks={relatedTracks}
                     isLoading={isRelatedLoading}
                     onTrackClick={(queue, index) => {
@@ -205,7 +203,6 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
 
                 {/* Шанувальникам також подобаються */}
                 <ArtistSimilarArtistsSection
-                    artistId={artistId}
                     artists={similarArtists}
                     isLoading={isSimilarLoading}
                     onArtistClick={(id) => router.push(`/artists/${id}`)}
@@ -213,7 +210,6 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
 
                 {/* Плейлісти виконавця */}
                 <ArtistPlaylistsSection
-                    artistId={artistId}
                     artistName={artist.name ?? ''}
                     playlists={playlists}
                     isLoading={isPlaylistsLoading}

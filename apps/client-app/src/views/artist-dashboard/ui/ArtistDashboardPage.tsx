@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
     getGetApiStudioArtistProfileArtistIdQueryKey,
@@ -24,6 +24,7 @@ import { AlbumCard, type AlbumCardData } from '@/entities/album/ui/AlbumCard';
 import { ShowAllButton } from '@/shared/ui/ShowAllButton';
 import { useAvatarColor } from '@/shared/lib/useAvatarColor';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { useHasOverflow } from '@/shared/lib/useHasOverflow';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 import { unwrap, unwrapItems } from '@/shared/lib/unwrapApi';
 
@@ -194,8 +195,9 @@ export const ArtistDashboardPage = () => {
         coverUrl: a.coverUrl,
     }));
 
-    const tracksRef = useRef<HTMLDivElement>(null);
-    const albumsRef = useRef<HTMLDivElement>(null);
+    // Стрілки прокрутки показуємо лише коли є що гортати (контент переповнює слайдер).
+    const [tracksRef, tracksOverflow] = useHasOverflow<HTMLDivElement>([tracks]);
+    const [albumsRef, albumsOverflow] = useHasOverflow<HTMLDivElement>([albums]);
 
     const scroll = (ref: React.RefObject<HTMLDivElement | null>, dir: 'prev' | 'next') => {
         if (!ref.current) return;
@@ -217,8 +219,8 @@ export const ArtistDashboardPage = () => {
                         title="Ваші треки"
                         showAll
                         showAllHref="/artist-dashboard/tracks"
-                        onPrev={() => scroll(tracksRef, 'prev')}
-                        onNext={() => scroll(tracksRef, 'next')}
+                        onPrev={tracksOverflow ? () => scroll(tracksRef, 'prev') : undefined}
+                        onNext={tracksOverflow ? () => scroll(tracksRef, 'next') : undefined}
                     />
                     {tracks.length === 0 ? (
                         <p className="artist-dashboard__empty">
@@ -247,8 +249,8 @@ export const ArtistDashboardPage = () => {
                         title="Ваші створені альбоми"
                         showAll
                         showAllHref="/artist-dashboard/albums"
-                        onPrev={() => scroll(albumsRef, 'prev')}
-                        onNext={() => scroll(albumsRef, 'next')}
+                        onPrev={albumsOverflow ? () => scroll(albumsRef, 'prev') : undefined}
+                        onNext={albumsOverflow ? () => scroll(albumsRef, 'next') : undefined}
                     />
                     {albums.length === 0 ? (
                         <p className="artist-dashboard__empty">
