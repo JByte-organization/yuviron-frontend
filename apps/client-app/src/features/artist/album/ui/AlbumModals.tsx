@@ -16,6 +16,7 @@ import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 import type { AlbumCardData } from '@/entities/album/ui/AlbumCard';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 import { extractFileId } from '@/shared/lib/unwrapApi';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 // ══════════════════════════════════════════════════════════
 // CREATE ALBUM MODAL
@@ -204,7 +205,7 @@ export const AlbumDetailModal = ({ isOpen, album, onClose }: DetailProps) => {
 
     if (!isOpen) return null;
 
-    const coverSrc = album.coverUrl ?? `https://picsum.photos/seed/album-${album.id}/200/200`;
+    const coverSrc = getImageUrl(album.coverUrl) ?? `https://picsum.photos/seed/album-${album.id}/200/200`;
 
     return (
         <div className="client-modal-backdrop">
