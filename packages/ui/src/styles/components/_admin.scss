@@ -936,3 +936,16 @@ $active-blue: #40A2FF;
 .admin-audio-native {
   filter: invert(0.9) hue-rotate(180deg);
 }
+
+.btn-outline-info {
+  color: #7AE0FF !important;
+  border-color: rgba(122, 224, 255, 0.3) !important;
+  background-color: rgba(122, 224, 255, 0.02);
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: rgba(122, 224, 255, 0.08) !important;
+    border-color: #7AE0FF !important;
+    box-shadow: 0 0 12px rgba(122, 224, 255, 0.15);
+  }
+}
