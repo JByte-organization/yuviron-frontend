@@ -15,11 +15,7 @@ import { usePostApiFilesUpload } from '@repo/api/client.ts';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 import type { AlbumCardData } from '@/entities/album/ui/AlbumCard';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
-
-const extractFileId = (res: unknown): string | null => {
-    const r = res as { fileId?: string; data?: { fileId?: string } } | null;
-    return r?.data?.fileId ?? r?.fileId ?? null;
-};
+import { extractFileId } from '@/shared/lib/unwrapApi';
 
 // ══════════════════════════════════════════════════════════
 // CREATE ALBUM MODAL

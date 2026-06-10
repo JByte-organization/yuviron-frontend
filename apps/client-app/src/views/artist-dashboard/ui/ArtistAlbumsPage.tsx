@@ -10,12 +10,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { AlbumCard, type AlbumCardData } from '@/entities/album/ui/AlbumCard';
 import { AlbumDetailModal, CreateAlbumModal, DeleteAlbumModal } from '@/features/artist/album/ui/AlbumModals';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
-
-const unwrapItems = <T,>(raw: unknown): T[] => {
-    if (!raw) return [];
-    const obj = raw as { items?: T[]; data?: { items?: T[] } };
-    return obj.items ?? obj.data?.items ?? [];
-};
+import { unwrapItems } from '@/shared/lib/unwrapApi';
 
 export const ArtistAlbumsPage = () => {
     const artistId = useCurrentArtistId();

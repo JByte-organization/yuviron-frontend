@@ -25,20 +25,7 @@ import { ShowAllButton } from '@/shared/ui/ShowAllButton';
 import { useAvatarColor } from '@/shared/lib/useAvatarColor';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
-
-// Кастомний mutator може віддати тіло напряму або обгорнуте в { data } — читаємо обидва.
-const unwrap = <T,>(raw: unknown): T | undefined => {
-    if (!raw) return undefined;
-    const obj = raw as { data?: T };
-    return (obj.data ?? (raw as T)) as T;
-};
-
-// Paginated-список: items лежать у raw.items або raw.data.items.
-const unwrapItems = <T,>(raw: unknown): T[] => {
-    if (!raw) return [];
-    const obj = raw as { items?: T[]; data?: { items?: T[] } };
-    return obj.items ?? obj.data?.items ?? [];
-};
+import { unwrap, unwrapItems } from '@/shared/lib/unwrapApi';
 
 const formatCount = (n: number) => {
     if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + ' млн';

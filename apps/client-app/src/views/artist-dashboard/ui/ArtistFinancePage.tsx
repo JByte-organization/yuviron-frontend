@@ -23,18 +23,7 @@ import {
 } from '@repo/api/artist.ts';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 import { ChartError, ChartSkeleton } from '@/entities/artist/ui/AnalyticsChartParts';
-
-const unwrap = <T,>(raw: unknown): T | undefined => {
-    if (!raw) return undefined;
-    const obj = raw as { data?: T };
-    return (obj.data ?? (raw as T)) as T;
-};
-
-const unwrapItems = <T,>(raw: unknown): T[] => {
-    if (!raw) return [];
-    const obj = raw as { items?: T[]; data?: { items?: T[] } };
-    return obj.items ?? obj.data?.items ?? [];
-};
+import { unwrap, unwrapItems } from '@/shared/lib/unwrapApi';
 
 const money = (value: number | undefined): string =>
     (value ?? 0).toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

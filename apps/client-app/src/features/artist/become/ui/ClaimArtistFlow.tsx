@@ -78,6 +78,7 @@ export const ClaimArtistFlow = () => {
                         type="button"
                         className="client-become-artist__selected-change"
                         onClick={() => setArtist(null)}
+                        disabled={isSubmitting}
                     >
                         Змінити
                     </button>
@@ -91,6 +92,7 @@ export const ClaimArtistFlow = () => {
                     className={`client-become-artist__input${emailError ? ' is-invalid' : ''}`}
                     placeholder="artist@label.com"
                     value={fields.officialEmail}
+                    disabled={isSubmitting}
                     onChange={(event) => {
                         update('officialEmail', event.target.value);
                         if (emailError) setEmailError(undefined);
@@ -106,6 +108,7 @@ export const ClaimArtistFlow = () => {
                     className="client-become-artist__input"
                     placeholder="https://instagram.com/…"
                     value={fields.links}
+                    disabled={isSubmitting}
                     onChange={(event) => update('links', event.target.value)}
                 />
             </div>
@@ -117,6 +120,7 @@ export const ClaimArtistFlow = () => {
                     rows={3}
                     placeholder="Розкажіть, чому це ваш профіль"
                     value={fields.message}
+                    disabled={isSubmitting}
                     onChange={(event) => update('message', event.target.value)}
                 />
             </div>
@@ -125,7 +129,7 @@ export const ClaimArtistFlow = () => {
                 <label className="client-become-artist__label">
                     Документ-підтвердження (необов’язково)
                 </label>
-                <CoverUpload value={fields.proof} onChange={(file) => update('proof', file)} />
+                <CoverUpload value={fields.proof} onChange={(file) => update('proof', file)} disabled={isSubmitting} />
             </div>
 
             {error && <div className="client-become-artist__error mb-2">{error}</div>}

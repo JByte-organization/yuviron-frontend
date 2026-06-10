@@ -17,13 +17,7 @@ import {
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 import { ChartError, ChartSkeleton } from '@/entities/artist/ui/AnalyticsChartParts';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
-
-const unwrapList = <T,>(raw: unknown): T[] => {
-    if (!raw) return [];
-    if (Array.isArray(raw)) return raw as T[];
-    const obj = raw as { data?: T[] };
-    return Array.isArray(obj.data) ? obj.data : [];
-};
+import { unwrapList } from '@/shared/lib/unwrapApi';
 
 /** Ролі, які можна призначити (Owner лише один — створювач профілю). */
 const ASSIGNABLE_ROLES: { value: ArtistTeamRole; label: string }[] = [

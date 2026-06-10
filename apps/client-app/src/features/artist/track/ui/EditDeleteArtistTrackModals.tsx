@@ -8,11 +8,7 @@ import {
     usePutApiStudioArtistTracksId,
 } from '@repo/api/artist.ts';
 import { usePostApiFilesUpload } from '@repo/api/client.ts';
-
-const extractFileId = (res: unknown): string | null => {
-    const r = res as { fileId?: string; data?: { fileId?: string } } | null;
-    return r?.data?.fileId ?? r?.fileId ?? null;
-};
+import { extractFileId } from '@/shared/lib/unwrapApi';
 
 // ══════════════════════════════════════════════════════════
 // EDIT TRACK MODAL

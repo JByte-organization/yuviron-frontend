@@ -1,9 +1,6 @@
-// Достаёт fileId из ответа /api/files/upload. Сгенерированный клиент оборачивает
-// тело как { data }, но кастомный mutator отдаёт уже распарсенное тело — читаем оба.
-export const extractFileId = (res: unknown): string | null => {
-    const r = res as { fileId?: string; data?: { fileId?: string } } | null;
-    return r?.data?.fileId ?? r?.fileId ?? null;
-};
+// extractFileId живёт в @/shared/lib/unwrapApi (общий хелпер для всего приложения);
+// реэкспортим для обратной совместимости импортов become-хуков.
+export { extractFileId } from '@/shared/lib/unwrapApi';
 
 interface ApiErrorBody {
     errors?: Record<string, string[]>;

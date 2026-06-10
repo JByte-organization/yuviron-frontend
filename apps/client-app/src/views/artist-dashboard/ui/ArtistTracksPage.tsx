@@ -12,12 +12,7 @@ import { UploadTrackModal } from '@/features/artist/track/ui/UploadTrackModal';
 import { EditTrackModal, DeleteTrackModal } from '@/features/artist/track/ui/EditDeleteArtistTrackModals';
 import { TrackAnalyticsModal } from '@/features/artist/track/ui/TrackAnalyticsModal';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
-
-const unwrapItems = <T,>(raw: unknown): T[] => {
-    if (!raw) return [];
-    const obj = raw as { items?: T[]; data?: { items?: T[] } };
-    return obj.items ?? obj.data?.items ?? [];
-};
+import { unwrapItems } from '@/shared/lib/unwrapApi';
 
 interface TrackToEdit {
     id: string;

@@ -18,21 +18,12 @@ import {
     ArtistVerificationBlock,
 } from '@/features/artist/profile/ui/ArtistProfileExtras';
 
+import { unwrap, extractFileId } from '@/shared/lib/unwrapApi';
+
 type FormValues = {
     stageName: string;
     bio: string;
     country: string;
-};
-
-const unwrap = <T,>(raw: unknown): T | undefined => {
-    if (!raw) return undefined;
-    const obj = raw as { data?: T };
-    return (obj.data ?? (raw as T)) as T;
-};
-
-const extractFileId = (res: unknown): string | null => {
-    const r = res as { fileId?: string; data?: { fileId?: string } } | null;
-    return r?.data?.fileId ?? r?.fileId ?? null;
 };
 
 export const ArtistSettingsPage = () => {

@@ -9,6 +9,7 @@ export * from './generated/artist/endpoints/studio-artist-finance';
 export * from './generated/artist/endpoints/studio-artist-team';
 export * from './generated/artist/endpoints/studio-artist-payments';
 export * from './generated/artist/endpoints/studio-artist-playlists';
+export * from './generated/artist/endpoints/studio-artist-marketing';
 
 // Моделі артиста
 export * from './generated/artist/models';

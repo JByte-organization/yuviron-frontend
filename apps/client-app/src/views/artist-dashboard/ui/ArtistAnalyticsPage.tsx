@@ -27,12 +27,7 @@ import {
     useChartAxisColors,
 } from '@/entities/artist/ui/AnalyticsChartParts';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
-
-const unwrap = <T,>(raw: unknown): T | undefined => {
-    if (!raw) return undefined;
-    const obj = raw as { data?: T };
-    return (obj.data ?? (raw as T)) as T;
-};
+import { unwrap } from '@/shared/lib/unwrapApi';
 
 const DEVICE_COLORS = ['#00A6FF', '#7B61FF', '#FF6B6B', '#FFB347', '#2ECC71', '#9AA7B8'];
 
