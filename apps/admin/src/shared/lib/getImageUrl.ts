@@ -1,16 +1,20 @@
 /**
  * Формує URL зображення з медіа-домену.
  *
- * Бекенд повертає шлях у форматі "папка/хеш" (наприклад "banners/a9285ad7...")
- * або просто хеш. Ця функція витягує тільки хеш і склеює з базовим URL.
+ * Бекенд повертає ПОВНИЙ ключ обʼєкта в медіа-сторі — "папка/хеш" або
+ * "папка/підпапка/хеш" (наприклад "avatars/d4c4256b...",
+ * "artists/banners/7c1d1ae2..."). Медіа-сервер адресує файли саме за цим
+ * ключем, тож зберігаємо повний шлях. (Раніше тут лишався тільки останній
+ * сегмент — однорівневі аватари випадково працювали, а дворівневі банери 404.)
  *
  * @example
- * getImageUrl("banners/a9285ad7348141f9ad8054413d60abfc")
- * // → "https://dev-i.yuviron.com/a9285ad7348141f9ad8054413d60abfc"
+ * getImageUrl("artists/banners/7c1d1ae2e3e646fb8ddb4dade665dadb")
+ * // → "https://dev-i.yuviron.com/artists/banners/7c1d1ae2e3e646fb8ddb4dade665dadb"
  *
- * getImageUrl("2e5747900bb1478eb59f5278a88cec2f")
- * // → "https://dev-i.yuviron.com/2e5747900bb1478eb59f5278a88cec2f"
+ * getImageUrl("avatars/d4c4256b0fbd4dd6b60dc27f9487c88d")
+ * // → "https://dev-i.yuviron.com/avatars/d4c4256b0fbd4dd6b60dc27f9487c88d"
  *
+ * getImageUrl("https://i.scdn.co/image/abc") // → "https://i.scdn.co/image/abc" (вже абсолютний)
  * getImageUrl(null) // → null
  */
 
@@ -18,7 +22,10 @@ const IMAGE_BASE_URL = 'https://dev-i.yuviron.com';
 
 export const getImageUrl = (path?: string | null): string | null => {
     if (!path) return null;
-    const hash = path.split('/').pop();
-    if (!hash) return null;
-    return `${IMAGE_BASE_URL}/${hash}`;
+    // Вже абсолютний URL (зовнішні каталожні імпорти) — віддаємо як є.
+    if (/^https?:\/\//i.test(path)) return path;
+    // Зберігаємо повний ключ обʼєкта, прибравши лише провідні слеші.
+    const key = path.replace(/^\/+/, '');
+    if (!key) return null;
+    return `${IMAGE_BASE_URL}/${key}`;
 };
