@@ -4,7 +4,6 @@ import Image from 'next/image'
 interface BaseTableProps {
     title: string;
     subtitle?: string;
-    /** Без onNewClick кнопка «+ New» не рендериться (напр., read-only списки заявок). */
     onNewClick?: () => void;
     searchPlaceholder?: string;
     searchValue?: string;
