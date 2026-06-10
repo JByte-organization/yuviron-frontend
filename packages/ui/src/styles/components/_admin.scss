@@ -603,7 +603,6 @@ $active-blue: #40A2FF;
 
 .text-cyan {
   color: $admin-btn-primary !important;
-  filter: drop-shadow(0 0 8px rgba($admin-btn-primary, 0.3));
 }
 
 .transition-all {
@@ -888,4 +887,52 @@ $active-blue: #40A2FF;
     color: rgba(255, 255, 255, 0.5);
     font-size: 0.8rem;
   }
+}
+
+.admin-ads-row {
+  background-color: #212631;
+  border-bottom: 1px solid $admin-secondary;
+  transition: background-color 0.2s ease;
+
+  &__cover-container {
+    &:hover .admin-ads-row__player-overlay {
+      opacity: 1;
+    }
+  }
+
+  &:hover {
+    background-color: #262c3a !important;
+  }
+
+  &__player-overlay {
+    background-color: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    backdrop-filter: blur(1px);
+
+    &--active {
+      opacity: 1 !important;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  &__switch {
+    width: 2.2em !important;
+    height: 1.1em !important;
+    background-color: #1a1f2e !important;
+    border-color: $admin-secondary !important;
+    cursor: pointer;
+
+    &:checked {
+      background-color: $admin-btn-primary !important;
+    }
+
+    &:focus {
+      box-shadow: none !important;
+    }
+  }
+}
+
+.admin-audio-native {
+  filter: invert(0.9) hue-rotate(180deg);
 }
