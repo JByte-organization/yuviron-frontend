@@ -12,7 +12,7 @@ import {
 import { usePostApiFilesUpload } from '@repo/api/client.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
-import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import { useCurrentArtist } from '@/entities/artist/model/currentArtist';
 import {
     ArtistSocialLinksBlock,
     ArtistVerificationBlock,
@@ -27,7 +27,7 @@ type FormValues = {
 };
 
 export const ArtistSettingsPage = () => {
-    const artistId = useCurrentArtistId();
+    const { artistId, canManage } = useCurrentArtist();
     const queryClient = useQueryClient();
 
     const { data: profileRaw } = useGetApiStudioArtistProfileArtistId(artistId ?? '', {
@@ -266,7 +266,7 @@ export const ArtistSettingsPage = () => {
                     <button
                         type="submit"
                         className="client-modal__btn client-modal__btn--primary"
-                        disabled={isSubmitting || !hasChanges || !artistId}
+                        disabled={isSubmitting || !hasChanges || !artistId || !canManage}
                     >
                         {isSubmitting
                             ? <><span className="spinner-border spinner-border-sm me-2" />Збереження...</>
@@ -276,8 +276,8 @@ export const ArtistSettingsPage = () => {
                 </div>
             </form>
 
-            {/* ─── Соцмережі + верифікація ───────────── */}
-            {artistId && (
+            {/* ─── Соцмережі + верифікація (тільки для тих, хто може керувати) ─── */}
+            {artistId && canManage && (
                 <>
                     <ArtistSocialLinksBlock
                         artistId={artistId}

@@ -3,10 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import {
     AppPermission,
     usePostApiStudioArtistTeamAcceptInvite,
 } from '@repo/api/artist.ts';
+import { getGetApiAuthMeQueryKey } from '@repo/api/client.ts';
 import { setStoredArtistId } from '@/entities/artist/model/currentArtist';
 import { useSessionStore } from '@/entities/session/model/store';
 
@@ -24,6 +26,7 @@ export const AcceptTeamInviteCard = () => {
     const artistIdFromLink = searchParams.get('artistId');
 
     const userId = useSessionStore((s) => s.user?.id);
+    const queryClient = useQueryClient();
 
     const [error, setError] = useState<string | null>(null);
     const { mutateAsync: acceptInvite, isPending, isSuccess } = usePostApiStudioArtistTeamAcceptInvite();
@@ -35,6 +38,8 @@ export const AcceptTeamInviteCard = () => {
                 data: { token, requiredPermission: AppPermission.AccessBasic },
             });
             if (artistIdFromLink) setStoredArtistId(userId, artistIdFromLink);
+            // Тепер юзер у команді артиста → /auth/me поверне його в managedArtists.
+            await queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
             setTimeout(() => router.push('/artist-dashboard'), 1200);
         } catch (e) {
             const data = (e as { response?: { data?: { detail?: string; title?: string } } })?.response?.data;

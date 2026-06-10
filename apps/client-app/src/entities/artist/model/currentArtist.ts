@@ -2,33 +2,69 @@
 
 import { useSyncExternalStore } from 'react';
 import { useSessionStore } from '@/entities/session/model/store';
-import { getStoredArtistId } from './artistIdStorage';
+import { getStoredArtistId, subscribeArtistId } from './artistIdStorage';
+import { useManagedArtists } from './managedArtists';
 
-// У свагері artist-кабінету немає ендпоінта «список моїх артистів», а майже всі
-// запити вимагають artistId (профіль — у шляху). Тому резолвимо «поточного артиста»
-// з двох джерел за пріоритетом:
-//   1. JWT-claim (бек кладе artistId у токен ManagementUser);
-//   2. localStorage, СКОУПЛЕНИЙ на userId — записуємо після create-флоу/інвайту.
-// Якщо жодного немає → null, і сторінки показують стан «немає артиста» з CTA.
+// «Поточний артист» резолвиться за пріоритетом:
+//   1. managedArtists з /auth/me — АВТОРИТЕТНЕ джерело (бек віддає список артистів,
+//      якими керує юзер). З'явилось у свагері — раніше його не було, звідси костилі нижче.
+//   2. JWT-claim artistId — швидкий шлях, поки /auth/me ще вантажиться (анти-мерехтіння).
+//   3. localStorage, СКОУПЛЕНИЙ на userId — місток одразу після create-флоу/інвайту,
+//      доки /auth/me не перечитав свіжий managedArtists.
+// Жодного → null, сторінки показують стан «немає артиста» з CTA.
 //
 // Сховище — у окремому artistIdStorage.ts (без імпорту session-стора), щоб
 // clearSession міг чистити його без циклічного імпорту.
 export { setStoredArtistId } from './artistIdStorage';
 
-// Підписка-заглушка: значення в localStorage міняється лише через setStoredArtistId
-// у цьому ж табі (без cross-tab синхронізації) — перечитуємо на кожен рендер,
-// що ререндериться при зміні user у session-сторі (зміна акаунта → новий ключ).
-const subscribe = () => () => {};
-
 // Читаємо scoped-localStorage через useSyncExternalStore: на сервері — null (без
 // hydration mismatch), на клієнті — актуальне значення для поточного userId.
+// Підписка реальна (subscribeArtistId): switcher пише новий вибір → всі споживачі
+// перечитують і перемикаються на нового артиста без перезавантаження.
 const useStoredArtistId = (userId: string | null | undefined): string | null =>
-    useSyncExternalStore(subscribe, () => getStoredArtistId(userId), () => null);
+    useSyncExternalStore(subscribeArtistId, () => getStoredArtistId(userId), () => null);
 
-// Повертає artistId поточного кабінету або null, поки резолвиться (SSR/перший рендер).
-export const useCurrentArtistId = (): string | null => {
+interface CurrentArtist {
+    /** artistId поточного кабінету або null, поки не резолвилось. */
+    artistId: string | null;
+    /** Роль у цьому артисті (Owner/Manager/Editor/Viewer) з managedArtists, якщо відома. */
+    role: string | null;
+    /**
+     * Чи може користувач керувати (створювати/редагувати/видаляти). Read-only лише
+     * для явного Viewer; Owner/Manager/Editor та невідома роль (null/Unknown) —
+     * повний доступ, щоб НЕ зламати власників (їх роль ≠ Viewer). Бек все одно
+     * перевіряє права — це лише UX, ховаємо кнопки, які все одно дали б 403.
+     */
+    canManage: boolean;
+    /** true, доки /auth/me вантажиться І немає швидкого fallback'у — гейту не мигати. */
+    isResolving: boolean;
+}
+
+// Богатий резолвер: artistId + роль + ознака «ще резолвиться» (для гейта/світчера).
+export const useCurrentArtist = (): CurrentArtist => {
     const claimArtistId = useSessionStore((s) => s.user?.artistId);
     const userId = useSessionStore((s) => s.user?.id);
     const stored = useStoredArtistId(userId);
-    return claimArtistId ?? stored ?? null;
+    const { artists, isLoading } = useManagedArtists();
+
+    // Якщо збережений вибір (switcher) є СЕРЕД керованих артистів — поважаємо його;
+    // інакше дефолт на перший. До завантаження /auth/me (список порожній) — fast-path
+    // claim/stored, щоб кабінет не мигав гейтом.
+    const managedId = artists[0]?.artistId ?? null;
+    const selectedIsManaged = !!stored && artists.some((a) => a.artistId === stored);
+    const artistId = selectedIsManaged
+        ? stored
+        : (managedId ?? claimArtistId ?? stored ?? null);
+    const role = artists.find((a) => a.artistId === artistId)?.role ?? null;
+    const canManage = role !== 'Viewer';
+
+    // Поки /auth/me вантажиться, але вже є claim/stored — НЕ резолвимось (показуємо
+    // кабінет одразу, без мигання гейтом). Резолвимось лише коли іншого id немає.
+    const isResolving = isLoading && !claimArtistId && !stored;
+
+    return { artistId, role, canManage, isResolving };
 };
+
+// Повертає artistId поточного кабінету або null. Тонка обгортка над useCurrentArtist
+// для 16+ існуючих споживачів, яким потрібен лише id.
+export const useCurrentArtistId = (): string | null => useCurrentArtist().artistId;

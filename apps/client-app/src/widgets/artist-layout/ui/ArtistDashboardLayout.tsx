@@ -9,7 +9,7 @@ import { ArtistGateScreen } from './ArtistGateScreen';
 
 import { SidebarContext, RightSidebarContext } from '@/widgets/layout/model/contexts';
 import { useState } from 'react';
-import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import { useCurrentArtist } from '@/entities/artist/model/currentArtist';
 import { useSessionStore } from '@/entities/session/model/store';
 
 interface ArtistDashboardLayoutProps {
@@ -20,11 +20,12 @@ export const ArtistDashboardLayout = ({ children }: ArtistDashboardLayoutProps) 
     const [collapsed, setCollapsed] = useState(false);
     const [sidebarWidth, setSidebarWidth] = useState(260);
 
-    const artistId = useCurrentArtistId();
+    const { artistId, isResolving, canManage } = useCurrentArtist();
     const authResolved = useSessionStore((s) => s.authResolved);
 
-    // Поки сесія не відновилась — лоадер (інакше реальний артист мигне блокером).
-    if (!authResolved) return <ArtistGateScreen loading />;
+    // Поки сесія не відновилась АБО /auth/me ще тягне managedArtists (без швидкого
+    // claim/stored fallback) — лоадер, інакше реальний артист мигне блокером.
+    if (!authResolved || isResolving) return <ArtistGateScreen loading />;
 
     // Сесія відома, але артиста немає → чистий екран як в auth, без студійного хрому
     // (хедер/сайдбар/футер). Стосується всіх роутів кабінету (фінанси, аналітика…).
@@ -50,6 +51,12 @@ export const ArtistDashboardLayout = ({ children }: ArtistDashboardLayoutProps) 
                                 'client-layout__main',
                                 collapsed ? 'client-layout__main--left-collapsed' : '',
                             ].filter(Boolean).join(' ')}>
+                                {!canManage && (
+                                    <div className="artist-readonly-banner">
+                                        <i className="bi bi-eye" />
+                                        Режим перегляду — у вас немає прав на редагування цього кабінету.
+                                    </div>
+                                )}
                                 <PlaylistToastProvider>
                                     {children}
                                 </PlaylistToastProvider>
