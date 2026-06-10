@@ -1,15 +1,21 @@
 'use client';
 
 import React from 'react';
-import { type TrackListItemDto, VisibilityStatus } from '@repo/api/admin.ts';
-import {getImageUrl} from "@/shared/lib/getImageUrl";
+import Image from 'next/image';
+import type { TrackListItemDto } from '@repo/api/admin.ts';
+import { formatDate } from '@/shared/lib/formatDate';
+import { formatNumber } from '@/shared/lib/formatNumber';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 interface Props {
     track: TrackListItemDto;
     isSelected: boolean;
+    isPlaying: boolean;
+    isLoading: boolean;
     onSelect: () => void;
     onEdit: (track: TrackListItemDto) => void;
     onDelete: (track: TrackListItemDto) => void;
+    onPlayToggle: (trackId: string) => void;
 }
 
 const formatDuration = (ms?: number): string => {
@@ -20,34 +26,23 @@ const formatDuration = (ms?: number): string => {
     return `${min}:${sec.toString().padStart(2, '0')}`;
 };
 
-const formatDate = (dateString?: string): string => {
-    if (!dateString) return '—';
-    return new Date(dateString).toLocaleDateString('ru-RU', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-    });
-};
-
 const StatusBadge = ({ status }: { status?: string }) => {
     const map: Record<string, { cls: string; label: string }> = {
-        Published: { cls: 'bg-success',              label: 'Published' },
-        Draft:     { cls: 'bg-secondary',             label: 'Draft'     },
-        Scheduled: { cls: 'bg-warning text-dark',     label: 'Scheduled' },
-        Hidden:    { cls: 'bg-danger',                label: 'Hidden'    },
+        Published: { cls: 'admin-track-status--published', label: 'Published' },
+        Draft:     { cls: 'admin-track-status--draft',     label: 'Draft'     },
+        Scheduled: { cls: 'admin-track-status--scheduled', label: 'Scheduled' },
+        Hidden:    { cls: 'admin-track-status--hidden',    label: 'Hidden'    },
     };
-    const s = map[status ?? ''] ?? { cls: 'bg-secondary', label: status ?? '—' };
+    const s = map[status ?? ''] ?? { cls: 'admin-track-status--draft', label: status ?? '—' };
     return <span className={`badge ${s.cls}`}>{s.label}</span>;
 };
 
-export const TrackRow = ({ track, isSelected, onSelect, onEdit, onDelete }: Props) => {
-
+export const TrackRow = ({ track, isSelected, isPlaying, isLoading, onSelect, onEdit, onDelete, onPlayToggle }: Props) => {
+    // 🚨 ФІКС КАРТИНКИ: Пропускаємо через хелпер для отримання повного шляху CDN
     const coverSrc = getImageUrl(track.coverUrl);
 
-
     return (
-        <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>
-
+        <tr className="admin-tracks-row align-middle">
             <td className="px-4">
                 <input
                     type="checkbox"
@@ -57,71 +52,81 @@ export const TrackRow = ({ track, isSelected, onSelect, onEdit, onDelete }: Prop
                 />
             </td>
 
-            {/* Cover */}
+            {/* Обложка трека */}
             <td className="py-3">
                 <div
-                    className="rounded bg-secondary d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0"
-                    style={{ width: '40px', height: '40px' }}
+                    className="rounded overflow-hidden bg-secondary d-flex align-items-center justify-content-center flex-shrink-0"
+                    style={{
+                        width: '40px',
+                        height: '40px',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        background: coverSrc ? 'transparent' : 'linear-gradient(135deg, #325B76, #212631)'
+                    }}
                 >
-                    {coverSrc
-                        ? <img src={coverSrc} alt="cover" className="w-100 h-100 object-fit-cover" />
-                        : <span className="text-white-50 small">🎵</span>
-                    }
+                    {coverSrc ? (
+                        <img src={coverSrc} alt="cover" className="w-100 h-100 object-fit-cover" />
+                    ) : (
+                        <i className="bi bi-music-note text-secondary" style={{ fontSize: '1.1rem' }} />
+                    )}
                 </div>
             </td>
 
-            {/* Title + explicit */}
-            <td className="text-white fw-semibold text-nowrap">
-                {track.title || '—'}
-                {track.explicit && (
-                    <span className="badge bg-danger ms-2 small">E</span>
-                )}
+            <td>
+                <div className="d-flex align-items-center gap-2">
+                    <span className="text-white fw-semibold text-truncate" style={{ maxWidth: '220px' }}>
+                        {track.title || '—'}
+                    </span>
+                    {track.explicit && (
+                        <span className="badge bg-danger-subtle text-danger border border-danger border-opacity-25 small px-1.5 py-0.5" style={{ fontSize: '10px' }}>E</span>
+                    )}
+                </div>
             </td>
 
-            {/* Artists */}
-            <td className="text-secondary small text-nowrap">
+            <td className="text-secondary small text-truncate" style={{ maxWidth: '180px' }}>
                 {track.artistNames?.join(', ') || '—'}
             </td>
 
-            {/* Album */}
-            <td className="text-secondary small text-nowrap">
+            <td className="text-secondary small text-truncate" style={{ maxWidth: '180px' }}>
                 {track.albumTitle || '—'}
             </td>
 
-            {/* Duration */}
-            <td className="text-secondary small text-nowrap">
+            <td className="text-secondary small font-monospace">
                 {formatDuration(track.durationMs)}
             </td>
 
-            {/* Status */}
             <td><StatusBadge status={track.visibilityStatus} /></td>
 
-            {/* Play count */}
-            <td className="text-center text-white">
-                {track.playCount ?? 0}
+            <td className="text-center text-white font-monospace">
+                {formatNumber(track.playCount)}
             </td>
 
-            {/* Created */}
             <td className="text-secondary small text-nowrap">
                 {formatDate(track.createdAt)}
             </td>
 
-            {/* Actions */}
-            <td className="px-4">
-                <div className="d-flex justify-content-end gap-1">
+            {/* Блок дій */}
+            <td className="px-4 text-end">
+                <div className="d-flex justify-content-end gap-2">
+                    {/* Кнопка Play/Pause з підтримкою лоадера */}
                     <button
-                        className="btn btn-sm btn-outline-warning border-0 shadow-none px-2"
-                        title="Edit"
-                        onClick={() => onEdit(track)}
+                        className="btn btn-sm btn-secondary border-0 shadow-none d-flex align-items-center justify-content-center"
+                        title={isPlaying ? 'Pause Track' : 'Play Track'}
+                        onClick={() => track.id && onPlayToggle(track.id)}
+                        disabled={isLoading}
+                        style={{ width: '32px', height: '32px', borderRadius: '50%' }}
                     >
-                        ✏️
+                        {isLoading ? (
+                            <span className="spinner-border spinner-border-sm text-cyan" role="status" style={{ width: '14px', height: '14px' }} />
+                        ) : (
+                            <i className={`bi ${isPlaying ? 'bi-pause-fill text-cyan' : 'bi-play-fill text-white'} fs-5`} />
+                        )}
                     </button>
-                    <button
-                        className="btn btn-sm btn-outline-danger border-0 shadow-none px-2"
-                        title="Delete"
-                        onClick={() => onDelete(track)}
-                    >
-                        🗑️
+
+                    <button className="btn btn-sm btn-secondary border-0 shadow-none" title="Edit Track" onClick={() => onEdit(track)}>
+                        <Image src="/images/icons/edit-btn.svg" width={16} height={16} alt="edit" />
+                    </button>
+                    <button className="btn btn-sm btn-secondary border-0 shadow-none" title="Delete Track" onClick={() => onDelete(track)}>
+                        <Image src="/images/icons/delete-btn.svg" width={16} height={16} alt="delete" />
                     </button>
                 </div>
             </td>
