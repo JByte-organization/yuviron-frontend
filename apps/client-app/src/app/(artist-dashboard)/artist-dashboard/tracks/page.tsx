@@ -2,6 +2,6 @@
 
 import { ArtistTracksPage } from '@/views/artist-dashboard/ui/ArtistTracksPage';
 
-export default function Login() {
+export default function TracksPage() {
     return <ArtistTracksPage />;
 }

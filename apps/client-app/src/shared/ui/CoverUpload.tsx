@@ -7,9 +7,10 @@ interface CoverUploadProps {
     previewUrl?: string | null;
     onChange: (file: File | null) => void;
     error?: string;
+    disabled?: boolean;
 }
 
-export const CoverUpload = ({ value, previewUrl, onChange, error }: CoverUploadProps) => {
+export const CoverUpload = ({ value, previewUrl, onChange, error, disabled }: CoverUploadProps) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const [preview, setPreview] = useState<string | null>(previewUrl ?? null);
 
@@ -32,23 +33,27 @@ export const CoverUpload = ({ value, previewUrl, onChange, error }: CoverUploadP
     return (
         <div className="cover-upload">
             <div
-                className={`cover-upload__zone${error ? ' cover-upload__zone--error' : ''}`}
-                onClick={() => inputRef.current?.click()}
+                className={`cover-upload__zone${error ? ' cover-upload__zone--error' : ''}${disabled ? ' cover-upload__zone--disabled' : ''}`}
+                onClick={() => { if (!disabled) inputRef.current?.click(); }}
             >
                 {preview ? (
                     <>
                         <img src={preview} alt="Обкладинка" className="cover-upload__preview" />
                         <div className="cover-upload__overlay">
                             <button
+                                type="button"
                                 className="cover-upload__edit-btn"
                                 onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
+                                disabled={disabled}
                                 aria-label="Змінити фото"
                             >
                                 <i className="bi bi-pencil" />
                             </button>
                             <button
+                                type="button"
                                 className="cover-upload__remove-btn"
                                 onClick={handleRemove}
+                                disabled={disabled}
                                 aria-label="Видалити фото"
                             >
                                 <i className="bi bi-trash" />
@@ -68,6 +73,7 @@ export const CoverUpload = ({ value, previewUrl, onChange, error }: CoverUploadP
                 type="file"
                 accept="image/*"
                 className="d-none"
+                disabled={disabled}
                 onChange={handleFileChange}
             />
 

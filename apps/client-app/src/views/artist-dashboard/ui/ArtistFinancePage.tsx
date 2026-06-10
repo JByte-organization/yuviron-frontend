@@ -223,6 +223,7 @@ export const ArtistFinancePage = () => {
     // ─── Налаштування виплат ────────────────────────────
     const [method, setMethod] = useState<string>('PayPal');
     const [accountDetails, setAccountDetails] = useState('');
+    const [settingsError, setSettingsError] = useState<string | null>(null);
     const [settingsOk, setSettingsOk] = useState(false);
     const { mutateAsync: saveSettings, isPending: isSavingSettings } = usePostApiStudioArtistFinanceSettings();
 

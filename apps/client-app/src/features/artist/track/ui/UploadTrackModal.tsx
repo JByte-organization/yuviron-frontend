@@ -11,6 +11,7 @@ import {
 } from '@repo/api/artist.ts';
 import { usePostApiFilesUpload } from '@repo/api/client.ts';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import { extractFileId } from '@/shared/lib/unwrapApi';
 
 interface Props {
     isOpen: boolean;
@@ -24,10 +25,6 @@ type FormValues = {
     albumId: string;
 };
 
-const extractFileId = (res: unknown): string | null => {
-    const r = res as { fileId?: string; data?: { fileId?: string } } | null;
-    return r?.data?.fileId ?? r?.fileId ?? null;
-};
 
 const unwrapItems = <T,>(raw: unknown): T[] => {
     if (!raw) return [];

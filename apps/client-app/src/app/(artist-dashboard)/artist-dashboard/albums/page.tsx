@@ -2,6 +2,6 @@
 
 import { ArtistAlbumsPage } from '@/views/artist-dashboard/ui/ArtistAlbumsPage';
 
-export default function Login() {
+export default function AlbumsPage() {
     return <ArtistAlbumsPage />;
 }
