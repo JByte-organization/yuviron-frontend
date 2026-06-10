@@ -9,7 +9,7 @@ import { useSearchParams } from 'next/navigation';
 // ще раз» здесь нет (в отличие от входа по коду).
 export const CheckEmailNotice = () => {
     const searchParams = useSearchParams();
-    const email = searchParams.get('email') ?? '';
+    const email = searchParams?.get('email') ?? '';
 
     return (
         <div className="client-forgot-form">

@@ -28,7 +28,7 @@ export const ArtistDashboardSidebar = () => {
     const { collapsed, setCollapsed } = useSidebar();
 
     const isActive = (href: string) =>
-        pathname === href || pathname.startsWith(href + '/');
+        pathname === href || (pathname?.startsWith(href + '/') ?? false);
 
     return (
         <>

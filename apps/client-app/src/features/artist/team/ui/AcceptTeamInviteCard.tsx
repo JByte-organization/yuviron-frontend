@@ -20,10 +20,10 @@ import { useSessionStore } from '@/entities/session/model/store';
 export const AcceptTeamInviteCard = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const token = searchParams.get('token') ?? '';
+    const token = searchParams?.get('token') ?? '';
     // Якщо лист містить artistId — збережемо, щоб кабінет одразу відкрився
     // на потрібному артисті (accept-invite повертає 204 без тіла).
-    const artistIdFromLink = searchParams.get('artistId');
+    const artistIdFromLink = searchParams?.get('artistId') ?? null;
 
     const userId = useSessionStore((s) => s.user?.id);
     const queryClient = useQueryClient();

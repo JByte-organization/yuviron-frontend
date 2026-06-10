@@ -1,25 +1,25 @@
 'use client';
 
-import React, { useRef, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { ArtistCard, type ArtistCardData } from '@/entities/artist/ui/ArtistCard';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { useHasOverflow } from '@/shared/lib/useHasOverflow';
 import type { SimilarArtistDto } from '@repo/api/client.ts';
 
 interface ArtistSimilarArtistsSectionProps {
-    artistId: string;
     artists?: SimilarArtistDto[];
     isLoading?: boolean;
     onArtistClick?: (id: string) => void;
 }
 
 export const ArtistSimilarArtistsSection = ({
-                                                artistId,
                                                 artists = [], // Избавились от MOCK_ARTISTS
                                                 isLoading = false,
                                                 onArtistClick,
                                             }: ArtistSimilarArtistsSectionProps) => {
-    const sliderRef = useRef<HTMLDivElement>(null);
+    // Стрілки — лише коли контент переповнює слайдер (є що гортати).
+    const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([artists]);
 
     // ─── Маппинг данных из SimilarArtistDto в формат ArtistCardData ──────────
     const mappedArtists = useMemo<ArtistCardData[]>(() => {
@@ -48,8 +48,8 @@ export const ArtistSimilarArtistsSection = ({
             <SectionHeader
                 title="Шанувальникам також подобаються"
                 highlightedWord="подобаються"
-                onPrev={() => scroll('prev')}
-                onNext={() => scroll('next')}
+                onPrev={hasOverflow ? () => scroll('prev') : undefined}
+                onNext={hasOverflow ? () => scroll('next') : undefined}
             />
 
             {isLoading ? (
