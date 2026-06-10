@@ -28,7 +28,7 @@ import {
     type PayoutSettingsDto,
     type WalletTransactionDto,
 } from '@repo/api/artist.ts';
-import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import { useCurrentArtist } from '@/entities/artist/model/currentArtist';
 import {
     CHART_COLORS,
     ChartError,
@@ -94,7 +94,7 @@ const PAYOUT_STATUS: Record<string, { label: string; color: string }> = {
 };
 
 export const ArtistFinancePage = () => {
-    const artistId = useCurrentArtistId();
+    const { artistId, canManage } = useCurrentArtist();
     const queryClient = useQueryClient();
     const chart = useChartAxisColors();
 
@@ -292,6 +292,7 @@ export const ArtistFinancePage = () => {
                 </div>
             )}
 
+            {canManage && (
             <div className="row g-4 mb-5">
                 {/* ─── Запит на виплату ───────────────── */}
                 <div className="col-12 col-lg-6">
@@ -379,6 +380,7 @@ export const ArtistFinancePage = () => {
                     </div>
                 </div>
             </div>
+            )}
 
             {/* ─── Графік доходів ────────────────────── */}
             <div className="artist-analytics-page__chart-block mb-5">

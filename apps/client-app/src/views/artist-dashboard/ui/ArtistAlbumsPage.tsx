@@ -9,11 +9,11 @@ import type { StudioAlbumListItemFlex } from '@/entities/artist/model/studioList
 import { useQueryClient } from '@tanstack/react-query';
 import { AlbumCard, type AlbumCardData } from '@/entities/album/ui/AlbumCard';
 import { AlbumDetailModal, CreateAlbumModal, DeleteAlbumModal } from '@/features/artist/album/ui/AlbumModals';
-import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import { useCurrentArtist } from '@/entities/artist/model/currentArtist';
 import { unwrapItems } from '@/shared/lib/unwrapApi';
 
 export const ArtistAlbumsPage = () => {
-    const artistId = useCurrentArtistId();
+    const { artistId, canManage } = useCurrentArtist();
     const queryClient = useQueryClient();
 
     const [search,          setSearch]          = useState('');
@@ -75,13 +75,15 @@ export const ArtistAlbumsPage = () => {
                         )}
                     </div>
 
-                    <button
-                        className="artist-tracks-page__upload-btn"
-                        onClick={() => setShowCreate(true)}
-                    >
-                        <i className="bi bi-plus-lg" />
-                        Створити альбом
-                    </button>
+                    {canManage && (
+                        <button
+                            className="artist-tracks-page__upload-btn"
+                            onClick={() => setShowCreate(true)}
+                        >
+                            <i className="bi bi-plus-lg" />
+                            Створити альбом
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -103,13 +105,15 @@ export const ArtistAlbumsPage = () => {
                                     album={album}
                                     onClick={() => setSelectedAlbum(album)}
                                 />
-                                <button
-                                    className="artist-albums-page__delete-btn"
-                                    onClick={e => { e.stopPropagation(); setDeletingAlbum(album); }}
-                                    title="Видалити альбом"
-                                >
-                                    <i className="bi bi-trash" />
-                                </button>
+                                {canManage && (
+                                    <button
+                                        className="artist-albums-page__delete-btn"
+                                        onClick={e => { e.stopPropagation(); setDeletingAlbum(album); }}
+                                        title="Видалити альбом"
+                                    >
+                                        <i className="bi bi-trash" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}

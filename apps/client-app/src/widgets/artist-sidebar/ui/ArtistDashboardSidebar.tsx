@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/widgets/layout/model/contexts';
+import { ArtistSwitcher } from './ArtistSwitcher';
 
 interface NavItemProps {
     label: string;
@@ -33,6 +34,9 @@ export const ArtistDashboardSidebar = () => {
         <>
             <aside className={`client-sidebar${collapsed ? ' client-sidebar--collapsed' : ''}`}>
                 <div className="client-sidebar__inner">
+
+                    {/* Перемикач артистів (лише якщо керованих > 1) */}
+                    <ArtistSwitcher />
 
                     {/* Кабінет */}
                     <div className="client-sidebar__section">

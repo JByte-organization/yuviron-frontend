@@ -14,7 +14,7 @@ import {
     usePutApiStudioArtistTeamArtistIdTargetUserIdRole,
     type TeamMemberDto,
 } from '@repo/api/artist.ts';
-import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import { useCurrentArtist } from '@/entities/artist/model/currentArtist';
 import { ChartError, ChartSkeleton } from '@/entities/artist/ui/AnalyticsChartParts';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { unwrapList } from '@/shared/lib/unwrapApi';
@@ -35,7 +35,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export const ArtistTeamPage = () => {
-    const artistId = useCurrentArtistId();
+    const { artistId, canManage } = useCurrentArtist();
     const queryClient = useQueryClient();
 
     const teamQuery = useGetApiStudioArtistTeamArtistId(artistId ?? '', {
@@ -132,7 +132,8 @@ export const ArtistTeamPage = () => {
                 <h1 className="artist-analytics-page__title">Команда</h1>
             </div>
 
-            {/* ─── Інвайт ────────────────────────────── */}
+            {/* ─── Інвайт (лише для тих, хто може керувати) ─── */}
+            {canManage && (
             <div className="artist-analytics-page__chart-block mb-5">
                 <h2 className="artist-analytics-page__chart-title">Запросити учасника</h2>
                 <div className="row g-3 mt-1 align-items-end">
@@ -175,6 +176,7 @@ export const ArtistTeamPage = () => {
                     </div>
                 )}
             </div>
+            )}
 
             {/* ─── Список учасників ──────────────────── */}
             <div className="artist-analytics-page__chart-block">
@@ -234,6 +236,7 @@ export const ArtistTeamPage = () => {
                                             className="client-modal__input"
                                             style={{ width: 'auto', minWidth: 140 }}
                                             value={member.role ?? ArtistTeamRole.Viewer}
+                                            disabled={!canManage}
                                             onChange={e => handleRoleChange(member, e.target.value as ArtistTeamRole)}
                                         >
                                             {ASSIGNABLE_ROLES.map(role => (
@@ -246,7 +249,7 @@ export const ArtistTeamPage = () => {
                                         {member.addedAt ? format(parseISO(member.addedAt), 'dd.MM.yyyy') : ''}
                                     </span>
 
-                                    {!isOwner && (
+                                    {!isOwner && canManage && (
                                         <button
                                             className="artist-tracks-page__row-btn artist-tracks-page__row-btn--danger"
                                             title="Видалити з команди"
