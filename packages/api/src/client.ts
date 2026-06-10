@@ -15,7 +15,9 @@ export * from './generated/client/endpoints/notifications';
 export * from './generated/client/endpoints/users';
 export * from './generated/client/endpoints/albums';
 export * from './generated/client/endpoints/account';
+
 export * from './generated/client/endpoints/security';
+
 export { postApiAnalyticsPlayStart, postApiAnalyticsPlayCommit } from './generated/client/endpoints/analytics';
 
 // МОДЕЛІ КЛІЄНТА — тепер імпортуємо ВСІ однією строкою без конфліктів!
