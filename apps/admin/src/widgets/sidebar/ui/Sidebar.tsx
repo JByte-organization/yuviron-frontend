@@ -101,6 +101,8 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
                     {navLink('/users',     'Users')}
                     {navLink('/artists',   'Artists')}
                     {navLink('/verification', 'Verification')}
+                    {navLink('/payout', 'Finance')}
+                    {navLink('/ads', 'Ads')}
 
                     <li className="nav-group">
                         <div
@@ -125,7 +127,6 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
                                 {navLink('/genres',    'Genres')}
                                 {navLink('/moods',     'Moods')}
                                 {navLink('/playlists', 'Playlists')}
-                                {navLink('/payout', 'Finance')}
                             </ul>
                         )}
                     </li>
