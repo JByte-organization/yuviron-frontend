@@ -53,6 +53,7 @@ interface PlayerState {
     duration:       number;
     volume:         number;
     isMuted:        boolean;
+    areAdsEnabled:  boolean;
 
     // ─── Сеттери ──────────────────────────────────────────
     setQueue:         (tracks: PlayerTrack[], startIndex: number, sourceType: PlaybackSourceType, sourceId: string | null) => void;
@@ -70,6 +71,7 @@ interface PlayerState {
     nextTrack:   () => PlayerTrack | null;
     prevTrack:   () => PlayerTrack | null;
     clearPlayer: () => void;
+    setAdsEnabled:    (enabled: boolean) => void;
 }
 
 // ══════════════════════════════════════════════════════════
@@ -89,6 +91,7 @@ const INITIAL_STATE = {
     duration:      0,
     volume:        1,
     isMuted:       false,
+    areAdsEnabled: process.env.NEXT_PUBLIC_ENABLE_ADS !== 'false',
 };
 
 // ══════════════════════════════════════════════════════════
@@ -107,6 +110,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     setDuration:      dur    => set({ duration: dur }),
     setVolume:        vol    => set({ volume: vol }),
     toggleMute:              () => set(s => ({ isMuted: !s.isMuted })),
+
+    setAdsEnabled:    enabled => set({ areAdsEnabled: enabled }),
 
     // ─── Встановлення черги ───────────────────────────────
     setQueue: (tracks, startIndex, sourceType, sourceId) => set({
