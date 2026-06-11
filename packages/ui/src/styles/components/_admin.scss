@@ -1,0 +1,594 @@
+@use "sass:color";
+
+$hover-bg: rgba(255, 255, 255, 0.05);
+$active-blue: #40A2FF;
+
+
+@include media-breakpoint-up(lg) {
+  :root {
+    --sidebar-width: 260px;
+  }
+}
+
+@include media-breakpoint-down(lg) {
+  :root {
+    --sidebar-width: 0px;
+  }
+}
+
+
+.bg-admin-primary{ background-color: $admin-secondary}
+.bg-admin-secondary{ background-color: $admin-bg}
+.bg-admin-tr-1{ background-color: $admin-tr-bg-1}
+
+.table-admin {
+  .table.table-dark {
+    --bs-table-bg:             #2A323E;
+    --bs-table-border-color:   #4d5154;
+    --bs-table-striped-bg:     #3B4452;
+    --bs-table-striped-color:  #fff;
+    --bs-table-hover-bg:       #222731;
+    --bs-table-hover-color:    #fff;
+    --bs-table-active-bg:      #373b3e;
+    --bs-table-active-color:   #fff;
+    --bs-table-color:          #fff;
+  }
+
+  thead.bg-admin-secondary th {
+    background-color: var(--admin-secondary) !important;
+  }
+
+}
+
+.admin-text{ color: $admin-text!important;}
+
+.admin-sidebar {
+  background-color: $admin-secondary;
+  height: 100vh;
+  border-right: 1px solid rgba($admin-stroke, 0.2);
+
+
+  .btn-new-item {
+    background-color: $admin-btn-primary;
+    border: none;
+    transition: all 0.2s ease;
+    font-size: $h5-font-size;
+
+    &:hover {
+      background-color: color.adjust($admin-btn-primary, $lightness: -10%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba($admin-btn-primary, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  // Навигация
+  .sidebar-nav {
+    .nav-link {
+      color: rgba($white, 0.6);
+      padding: 10px 20px;
+      font-size: 16px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: block;
+      cursor: pointer;
+
+      &:hover {
+        color: $white;
+        background-color: $hover-bg;
+      }
+
+      &.active {
+        color: $active-blue;
+        background-color: rgba($active-blue, 0.1);
+        font-weight: 500;
+        position: relative;
+
+        &::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+          background-color: $active-blue;
+        }
+      }
+    }
+
+    // Подменю
+    .submenu {
+      .nav-link {
+        padding-left: 20px;
+        font-size: 16px;
+        border-bottom: none;
+
+        &.active {
+          background-color: transparent;
+          color: $admin-btn-primary;
+          &::before { display: none; }
+        }
+      }
+    }
+  }
+
+  // Иконка стрелочки
+  .chevron {
+    font-size: 0.7rem;
+    transition: transform 0.3s ease;
+    display: inline-block;
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
+
+  // Футер
+  .sidebar-footer {
+    .btn-outline-danger {
+      border-color: rgba($admin-stroke, 0.3);
+      color: rgba($white, 0.7);
+      font-size: 0.9rem;
+
+      &:hover {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+      }
+    }
+  }
+}
+
+// Контентная область
+//main {
+//  background-color: $admin-bg;
+//  color: $white;
+//}
+
+.admin-layout main {
+  background-color: $admin-bg;
+  color: $white;
+}
+
+.admin-header {
+  height: 64px;
+  background-color: $admin-header;
+  border-bottom: 1px solid rgba($admin-stroke, 0.1);
+}
+
+.admin-table-wrapper {
+  background-color: $admin-secondary;
+  border: 1px solid rgba($admin-stroke, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: $white;
+    table-layout: fixed; // Критично для корректного ресайза
+
+    thead th {
+      background-color: rgba($white, 0.03);
+      white-space: nowrap;
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba($admin-stroke, 0.3);
+      position: relative; // Для ресайзера
+
+      .resizer {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: $cyan;
+        cursor: col-resize;
+        user-select: none;
+        touch-action: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+
+        &.isResizing {
+          opacity: 1;
+          background: color.adjust($cyan, $lightness: -10%);
+        }
+      }
+
+      &:hover .resizer {
+        opacity: 0.5;
+      }
+    }
+
+    tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba($admin-stroke, 0.1);
+      font-size: 0.9rem;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+    }
+
+    tr:hover td {
+      background-color: rgba($white, 0.02);
+    }
+  }
+}
+
+// Кастомный стиль для выпадающего фильтра
+.filter-dropdown-menu {
+  background-color: #1e1e1e;
+  border: 1px solid rgba($admin-stroke, 0.5);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  min-width: 200px;
+}
+
+.admin-secondary{
+  background-color: $admin-secondary;
+}
+.btn-primary{
+  background-color: $admin-btn-primary!important;
+}
+
+.admin-table {
+  width: 100%;
+
+  .btn-sm {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: #2c3034;
+    border: 1px solid rgba($white, 0.1);
+    transition: all 0.2s;
+
+    &:hover {
+      background: #3d4246;
+      border-color: rgba($white, 0.3);
+    }
+  }
+
+  .text-cyan {
+    color: $cyan; // Твой #82E2FF
+    &:hover {
+      color: color.adjust($cyan, $lightness: -10%);
+    }
+  }
+}
+.table-toolbar {
+  .form-control {
+    background-color: #24282c !important; // Темный фон инпута
+    border-radius: 8px;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    font-size: 0.9rem;
+
+    &:focus {
+      border-color: $cyan !important;
+    }
+  }
+
+  .btn-dark {
+    background-color: $admin-bg;
+    border-radius: 8px;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: #2f3439;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  .btn-primary {
+    background-color: $cyan;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+
+    &:hover {
+      background-color: color.adjust($cyan, $lightness: -10%);
+    }
+  }
+}
+
+.img-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  background-color:  $admin-bg;
+  border-radius: 12px;
+  padding: 8px 16px;
+  width: 100%;
+
+  @include media-breakpoint-up(md) {
+    max-width: 280px;
+  }
+
+  .search-input {
+    background: transparent !important;
+    border: none !important;
+    color: #fff;
+    font-size: $h6-font-size;
+    width: fit-content;
+    outline: none;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 300;
+    }
+
+    &:focus {
+      box-shadow: none;
+    }
+  }
+}
+
+
+.btn-admin-dark{
+  background-color: $admin-bg;
+  color: $admin-text;
+  border-radius: 12px;
+
+  &:hover {
+    background-color: color.adjust($admin-bg, $lightness: -2%);
+  }
+
+}
+
+.admin-modal-content {
+  background-color: #343b43 !important;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  .admin-form {
+    label {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+
+    .form-control, .form-select {
+      background-color: #24282c;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: $white;
+      padding: 10px 14px;
+
+      &::placeholder { color: rgba(255, 255, 255, 0.3); }
+    }
+
+    .upload-input {
+      background-color: #24282c;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+    }
+
+    .save-btn {
+      background-color: $cyan; // #82E2FF
+      border: none;
+      border-radius: 8px;
+    }
+  }
+}
+
+.btn-close-custom {
+  background: none;
+  border: none;
+  padding: 0;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+// АДМИН ЛОГИН
+.admin-login {
+  background: color.mix($black, $admin-bg, 72%);
+  color: $white;
+
+  &__label {
+    color: rgba($white, 0.45);
+  }
+
+  &__panel {
+    background: color.scale($admin-bg, $lightness: -2%);
+    border: 1px solid rgba($admin-stroke, 0.45);
+  }
+
+  &__content {
+    max-width: 500px;
+  }
+
+  &__logo {
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+  }
+
+  &__form-label {
+    color: $white;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  &__input {
+    height: 60px;
+    padding-inline: 24px;
+    background-color: color.scale($admin-bg, $lightness: -6%);
+    border: 1px solid rgba($admin-stroke, 0.9);
+    border-radius: 14px;
+    color: $white;
+    font-size: 18px;
+    line-height: 1.2;
+    box-shadow: none;
+
+    &::placeholder {
+      color: rgba($white, 0.38);
+    }
+
+    &:focus {
+      background-color: color.scale($admin-bg, $lightness: -6%);
+      border-color: rgba($admin-stroke, 0.95);
+      color: $white;
+      box-shadow: none;
+    }
+  }
+
+  &__toggle {
+    border: 0;
+    background: transparent;
+    color: rgba($white, 0.7);
+    font-size: 16px;
+    padding-inline: 16px;
+    box-shadow: none;
+
+    &:hover,
+    &:focus,
+    &:active {
+      color: $white;
+      background: transparent;
+      box-shadow: none;
+    }
+  }
+
+  &__submit {
+    height: 58px;
+    border: 0;
+    border-radius: 8px;
+    background-color: $admin-primary;
+    color: $white;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.2;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background-color: $admin-primary;
+      color: $white;
+      opacity: 0.96;
+      box-shadow: none;
+    }
+  }
+
+  &__link {
+    color: rgba($white, 0.5);
+    font-size: 14px;
+    line-height: 1.2;
+
+    &:hover {
+      color: rgba($white, 0.75);
+    }
+  }
+
+}
+
+
+// ══════════════════════════════════════════════════════════
+// ADMIN PAGINATION
+// ══════════════════════════════════════════════════════════
+.admin-pagination {
+
+  &__btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: $admin-secondary;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    padding: 0;
+    line-height: 1;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    // Активна сторінка
+    &--active {
+      background: $admin-primary;
+      border-color: $admin-primary;
+      color: #fff;
+      font-weight: 600;
+
+      &:hover:not(:disabled) {
+        background: $admin-text;
+        border-color: $admin-text;
+        color: #fff;
+      }
+    }
+  }
+
+  &__ellipsis {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--admin-text-muted, rgba(255, 255, 255, 0.4));
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// ADMIN LAYOUT
+// ══════════════════════════════════════════════════════════
+.admin-layout {
+  min-height: 100vh;
+  background-color: #151921;
+
+  // ─── Overlay (мобайл) ─────────────────────────────────
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1040;
+  }
+
+  // ─── Основний контент ─────────────────────────────────
+  &__content {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.25s ease;
+  }
+}

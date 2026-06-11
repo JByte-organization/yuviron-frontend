@@ -1,0 +1,4042 @@
+@use "sass:color";
+.client-auth-shell {
+  min-height: 100vh;
+  background:
+          radial-gradient(circle at left center, rgba(0, 110, 105, 0.24) 0, transparent 22%),
+          radial-gradient(circle at center, rgba(0, 80, 180, 0.24) 0, transparent 22%),
+          radial-gradient(circle at right center, rgba(0, 110, 105, 0.22) 0, transparent 20%),
+          $client-auth-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.client-login-page {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__card {
+    width: 100%;
+    max-width: 404px;
+    background: $client-card-bg;
+    border: 1px solid $client-border-strong;
+    border-radius: 14px;
+    padding: 32px 24px 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  &__logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+
+  &__logo-image {
+    width: 66px;
+    height: auto;
+    display: block;
+  }
+
+  &__title {
+    color: $client-text-strong;
+    text-align: center;
+    font-size: 17px;
+    line-height: 1.3;
+    font-weight: 700;
+    margin: 0 0 20px;
+  }
+}
+
+.client-login-form {
+  &__socials {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  &__social-btn {
+    width: 100%;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid $client-outline-border;
+    background: transparent;
+    color: $client-outline-text;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.2s ease;
+
+    &:hover,
+    &:focus {
+      background: $client-outline-bg-hover;
+      color: $client-outline-text-hover;
+    }
+  }
+
+  &__social-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+
+    &--facebook {
+      background: #1877f2;
+      color: #fff;
+    }
+
+    // Белые бейджи Google/Apple сливаются с белой карточкой на светлой теме —
+    // тонкая граница очерчивает их (на тёмной теме незаметна).
+    &--google {
+      background: #fff;
+      color: #ea4335;
+      font-weight: 800;
+      border: 1px solid $client-border;
+    }
+
+    &--apple {
+      background: #fff;
+      color: #111;
+      font-size: 13px;
+      border: 1px solid $client-border;
+    }
+  }
+
+  &__divider,
+  &__bottom-divider {
+    height: 1px;
+    background: rgba(117, 137, 162, 0.28);
+  }
+
+  &__divider {
+    margin-bottom: 22px;
+  }
+
+  &__bottom-divider {
+    margin: 20px 0 16px;
+  }
+
+  &__label {
+    color: $client-label;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  &__input {
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
+    font-size: 12px;
+    box-shadow: none;
+    padding: 0 12px;
+
+    &::placeholder {
+      color: $client-text-muted;
+      opacity: 1;
+    }
+
+    &:focus {
+      background: $client-field-bg;
+      color: $client-text-strong;
+      border-color: $client-field-focus;
+      box-shadow: none;
+    }
+  }
+
+  &__password-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  &__forgot {
+    color: $client-link;
+    font-size: 10px;
+    line-height: 1.2;
+
+    &:hover {
+      color: $client-text-strong;
+    }
+  }
+
+  &__password-wrap {
+    position: relative;
+  }
+
+  &__input--password {
+    padding-right: 38px;
+  }
+
+  &__toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: $client-link;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover,
+    &:focus {
+      color: $client-text-strong;
+      outline: none;
+    }
+  }
+
+  &__submit {
+    height: 30px;
+    border: 0;
+    border-radius: 6px;
+    background: $client-btn-primary;
+    color: $client-on-primary;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+
+    &:hover,
+    &:focus {
+      background: $client-btn-primary-hover;
+      color: $client-on-primary;
+    }
+  }
+
+  &__alt-btn {
+    height: 30px;
+    margin-top: 10px;
+    border: 1px solid $client-outline-border;
+    border-radius: 6px;
+    background: transparent;
+    color: $client-outline-text;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+
+    &:hover,
+    &:focus {
+      background: $client-outline-bg-hover;
+      color: $client-outline-text-hover;
+    }
+  }
+
+  &__register {
+    color: $client-text-faint;
+    font-size: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  &__register-link {
+    color: $client-heading;
+    font-weight: 600;
+    border-bottom: 1px solid $client-border-strong;
+
+    &:hover {
+      color: $client-text-strong;
+      border-color: $client-text-strong;
+    }
+  }
+}
+
+
+.client-register-page {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__card {
+    width: 100%;
+    max-width: 404px;
+    background: $client-card-bg;
+    border: 1px solid $client-border-strong;
+    border-radius: 14px;
+    padding: 32px 24px 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  &__logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+
+  &__logo-image {
+    width: 66px;
+    height: auto;
+    display: block;
+  }
+
+  &__title {
+    color: $client-text-strong;
+    text-align: center;
+    font-size: 17px;
+    line-height: 1.3;
+    font-weight: 700;
+    margin: 0 0 18px;
+  }
+}
+
+.client-register-form {
+  &__label {
+    color: $client-label;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  &__input {
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
+    font-size: 12px;
+    box-shadow: none;
+    padding: 0 12px;
+
+    &::placeholder {
+      color: $client-text-muted;
+      opacity: 1;
+    }
+
+    &:focus {
+      background: $client-field-bg;
+      color: $client-text-strong;
+      border-color: $client-field-focus;
+      box-shadow: none;
+    }
+  }
+
+  &__submit {
+    height: 30px;
+    border: 0;
+    border-radius: 6px;
+    background: $client-btn-primary;
+    color: $client-on-primary;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 18px;
+
+    &:hover,
+    &:focus {
+      background: $client-btn-primary-hover;
+      color: $client-on-primary;
+    }
+  }
+
+  &__divider {
+    position: relative;
+    text-align: center;
+    margin: 0 0 18px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(117, 137, 162, 0.28);
+      transform: translateY(-50%);
+    }
+
+    span {
+      position: relative;
+      z-index: 1;
+      padding: 0 10px;
+      background: $client-card-bg;
+      color: $client-text-faint;
+      font-size: 10px;
+      text-transform: lowercase;
+    }
+  }
+
+  &__socials {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  &__social-btn {
+    width: 100%;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid $client-outline-border;
+    background: transparent;
+    color: $client-outline-text;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.2s ease;
+
+    &:hover,
+    &:focus {
+      background: $client-outline-bg-hover;
+      color: $client-outline-text-hover;
+    }
+  }
+
+  &__social-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+
+    &--facebook {
+      background: #1877f2;
+      color: #fff;
+    }
+
+    // Белые бейджи Google/Apple сливаются с белой карточкой на светлой теме —
+    // тонкая граница очерчивает их (на тёмной теме незаметна).
+    &--google {
+      background: #fff;
+      color: #ea4335;
+      font-weight: 800;
+      border: 1px solid $client-border;
+    }
+
+    &--apple {
+      background: #fff;
+      color: #111;
+      font-size: 13px;
+      border: 1px solid $client-border;
+    }
+  }
+
+  &__bottom-divider {
+    height: 1px;
+    background: rgba(117, 137, 162, 0.28);
+    margin: 14px 0 16px;
+  }
+
+  &__login {
+    color: $client-text-faint;
+    font-size: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  &__login-link {
+    color: $client-heading;
+    font-weight: 600;
+    border-bottom: 1px solid $client-border-strong;
+
+    &:hover {
+      color: $client-text-strong;
+      border-color: $client-text-strong;
+    }
+  }
+}
+
+
+/* =========================
+   REGISTER DETAILS PAGE
+========================= */
+
+.client-register-details-page {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__card {
+    width: 100%;
+    max-width: 370px;
+    background: $client-card-bg;
+    border: 1px solid $client-field-focus;
+    border-radius: 10px;
+    padding: 18px 22px 26px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+}
+
+.client-register-details-form {
+  &__top {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 8px;
+  }
+
+  &__back {
+    color: $client-heading;
+    font-size: 12px;
+    line-height: 1.2;
+    border-bottom: 1px solid $client-border-strong;
+
+    &:hover {
+      color: $client-text-strong;
+      border-color: $client-text-strong;
+    }
+  }
+
+  &__logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  &__logo-image {
+    width: 64px;
+    height: auto;
+    display: block;
+  }
+
+  &__title {
+    color: $client-text-strong;
+    text-align: center;
+    font-size: 16px;
+    line-height: 1.25;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+
+  &__step {
+    color: $client-text-soft;
+    text-align: center;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  &__progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(115, 139, 164, 0.35);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+
+  &__progress-fill {
+    display: block;
+    width: 50%;
+    height: 100%;
+    background: $client-btn-primary;
+    border-radius: 999px;
+  }
+
+  &__label {
+    color: $client-label;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  &__password-wrap {
+    position: relative;
+  }
+
+  &__input {
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
+    font-size: 12px;
+    box-shadow: none;
+    padding: 0 12px;
+
+    &::placeholder {
+      color: $client-text-muted;
+      opacity: 1;
+    }
+
+    &:focus {
+      background: $client-field-bg;
+      color: $client-text-strong;
+      border-color: $client-field-focus;
+      box-shadow: none;
+    }
+  }
+
+  &__input--password {
+    padding-right: 38px;
+  }
+
+  &__toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: $client-link;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover,
+    &:focus {
+      color: $client-text-strong;
+      outline: none;
+    }
+  }
+
+  &__rules {
+    margin-bottom: 18px;
+  }
+
+  &__rules-title {
+    color: $client-label;
+    font-size: 12px;
+    line-height: 1.35;
+    margin-bottom: 8px;
+  }
+
+  &__rules-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    li {
+      position: relative;
+      padding-left: 16px;
+      color: $client-text-soft;
+      font-size: 11px;
+      line-height: 1.35;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 4px;
+        width: 8px;
+        height: 8px;
+        border: 1px solid $client-text-soft;
+        border-radius: 50%;
+      }
+    }
+  }
+
+  &__submit {
+    height: 30px;
+    border: 0;
+    border-radius: 6px;
+    background: $client-btn-primary;
+    color: $client-on-primary;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+
+    &:hover,
+    &:focus {
+      background: $client-btn-primary-hover;
+      color: $client-on-primary;
+    }
+  }
+}
+
+/* =========================
+   REGISTER PROFILE PAGE
+========================= */
+
+.client-register-profile-page {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__card {
+    width: 100%;
+    max-width: 370px;
+    background: $client-card-bg;
+    border: 1px solid $client-border-strong;
+    border-radius: 10px;
+    padding: 18px 22px 26px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+}
+
+.client-register-profile-form {
+  &__top {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 8px;
+  }
+
+  &__back {
+    color: $client-heading;
+    font-size: 12px;
+    line-height: 1.2;
+    border-bottom: 1px solid $client-border-strong;
+
+    &:hover {
+      color: $client-text-strong;
+      border-color: $client-text-strong;
+    }
+  }
+
+  &__logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  &__logo-image {
+    width: 64px;
+    height: auto;
+    display: block;
+  }
+
+  &__title {
+    color: $client-text-strong;
+    text-align: center;
+    font-size: 16px;
+    line-height: 1.25;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+
+  &__step {
+    color: $client-text-soft;
+    text-align: center;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  &__progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(115, 139, 164, 0.35);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+
+  &__progress-fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: $client-btn-primary;
+    border-radius: 999px;
+  }
+
+  &__label,
+  &__sub-label {
+    color: $client-label;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  &__hint,
+  &__hint-link {
+    color: $client-text-muted;
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  &__hint-link {
+    margin-bottom: 8px;
+  }
+
+  &__input,
+  &__select {
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
+    font-size: 12px;
+    box-shadow: none;
+    padding: 0 12px;
+
+    &::placeholder {
+      color: $client-text-muted;
+      opacity: 1;
+    }
+
+    &:focus {
+      background: $client-field-bg;
+      color: $client-text-strong;
+      border-color: $client-field-focus;
+      box-shadow: none;
+    }
+  }
+
+  &__date-row {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: 10px;
+  }
+
+  &__region-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  &__select-wrap {
+    position: relative;
+  }
+
+  &__select {
+    appearance: none;
+    padding-right: 34px;
+  }
+
+  &__select-arrow {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    color: $client-link;
+    width: 14px;
+    height: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  &__radio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__radio {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: $client-text-soft;
+    font-size: 11px;
+    line-height: 1.35;
+
+    input {
+      margin: 0;
+      accent-color: $client-btn-primary;
+    }
+  }
+
+  &__submit {
+    height: 30px;
+    border: 0;
+    border-radius: 6px;
+    background: $client-btn-primary;
+    color: $client-on-primary;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+
+    &:hover,
+    &:focus {
+      background: $client-btn-primary-hover;
+      color: $client-on-primary;
+    }
+  }
+}
+
+/* =========================
+   FORM ERROR STATES
+========================= */
+
+.client-forgot-page {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__panel {
+    width: 100%;
+    max-width: 404px;
+    background: $client-card-bg;
+    border: 1px solid $client-border-strong;
+    border-radius: 14px;
+    padding: 18px 24px 22px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  &__content {
+    width: 100%;
+  }
+
+  &__logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  &__logo-image {
+    width: 64px;
+    height: auto;
+    display: block;
+  }
+}
+
+.client-forgot-form {
+  &__top {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 8px;
+  }
+
+  &__back {
+    color: $client-heading;
+    font-size: 12px;
+    line-height: 1.2;
+    border-bottom: 1px solid $client-border-strong;
+
+    &:hover {
+      color: $client-text-strong;
+      border-color: $client-text-strong;
+    }
+  }
+
+  &__logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  &__logo-image {
+    width: 64px;
+    height: auto;
+    display: block;
+  }
+
+  &__title {
+    color: $client-text-strong;
+    text-align: center;
+    font-size: 18px;
+    line-height: 1.25;
+    font-weight: 700;
+    margin: 0 0 10px;
+  }
+
+  &__subtitle {
+    color: $client-text-soft;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.4;
+    margin: 0 0 18px;
+  }
+
+  &__label {
+    color: $client-label;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  &__input {
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
+    font-size: 12px;
+    box-shadow: none;
+    padding: 0 12px;
+
+    &::placeholder {
+      color: $client-text-muted;
+      opacity: 1;
+    }
+
+    &:focus {
+      background: $client-field-bg;
+      color: $client-text-strong;
+      border-color: $client-field-focus;
+      box-shadow: none;
+    }
+  }
+
+  &__submit {
+    height: 30px;
+    border: 0;
+    border-radius: 6px;
+    background: $client-btn-primary;
+    color: $client-on-primary;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+
+    &:hover,
+    &:focus {
+      background: $client-btn-primary-hover;
+      color: $client-on-primary;
+    }
+  }
+
+  &__resend {
+    height: 30px;
+    border: 1px solid $client-field-border;
+    border-radius: 6px;
+    background: transparent;
+    color: $client-heading;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 14px;
+
+    &:hover,
+    &:focus {
+      background: $client-outline-bg-hover;
+      color: $client-text-strong;
+      border-color: rgba(131, 152, 177, 0.7);
+    }
+  }
+
+  &__bottom-divider {
+    height: 1px;
+    background: rgba(117, 137, 162, 0.28);
+    margin: 18px 0 14px;
+  }
+
+  &__login {
+    color: $client-text-faint;
+    font-size: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  &__login-link {
+    color: $client-heading;
+    font-weight: 600;
+    border-bottom: 1px solid $client-border-strong;
+
+    &:hover {
+      color: $client-text-strong;
+      border-color: $client-text-strong;
+    }
+  }
+}
+
+/* =========================
+   RESET PASSWORD PAGE
+========================= */
+
+.client-reset-page {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__panel {
+    width: 100%;
+    max-width: 404px;
+    background: $client-card-bg;
+    border: 1px solid $client-border-strong;
+    border-radius: 14px;
+    padding: 18px 24px 22px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  &__content {
+    width: 100%;
+  }
+
+  &__logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  &__logo-image {
+    width: 64px;
+    height: auto;
+    display: block;
+  }
+}
+
+// Страница «Дані акаунту» внутри клиентской оболочки (header + сайдбары).
+// Карточка по центру контентной области; форма внутри переиспользует
+// .client-reset-form стили инпутов/кнопок. Сообщения error/success скоупим
+// сюда, т.к. в самом .client-reset-form они не определены.
+.client-account-page {
+  padding: 32px 24px;
+  display: flex;
+  justify-content: center;
+
+  &__card {
+    width: 100%;
+    max-width: 460px;
+    background: $client-card-bg;
+    border: 1px solid $client-border-strong;
+    border-radius: 14px;
+    padding: 28px 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  .client-reset-form__error {
+    color: $client-danger-soft;
+    font-size: 11px;
+    margin-top: 4px;
+  }
+
+  .client-reset-form__success {
+    color: $client-success;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+}
+
+.client-reset-form {
+  &__top {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 8px;
+  }
+
+  &__back {
+    color: $client-heading;
+    font-size: 12px;
+    line-height: 1.2;
+    border-bottom: 1px solid $client-border-strong;
+
+    &:hover {
+      color: $client-text-strong;
+      border-color: $client-text-strong;
+    }
+  }
+
+  &__logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  &__logo-image {
+    width: 64px;
+    height: auto;
+    display: block;
+  }
+
+  &__title {
+    color: $client-text-strong;
+    text-align: center;
+    font-size: 18px;
+    line-height: 1.25;
+    font-weight: 700;
+    margin: 0 0 18px;
+  }
+
+  &__label {
+    color: $client-label;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  &__password-wrap {
+    position: relative;
+  }
+
+  &__input {
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
+    font-size: 12px;
+    box-shadow: none;
+    padding: 0 12px;
+
+    &::placeholder {
+      color: $client-text-muted;
+      opacity: 1;
+    }
+
+    &:focus {
+      background: $client-field-bg;
+      color: $client-text-strong;
+      border-color: $client-field-focus;
+      box-shadow: none;
+    }
+  }
+
+  &__input--password {
+    padding-right: 38px;
+  }
+
+  &__toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: $client-link;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover,
+    &:focus {
+      color: $client-text-strong;
+      outline: none;
+    }
+  }
+
+  &__submit {
+    height: 30px;
+    border: 0;
+    border-radius: 6px;
+    background: $client-btn-primary;
+    color: $client-on-primary;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+
+    &:hover,
+    &:focus {
+      background: $client-btn-primary-hover;
+      color: $client-on-primary;
+    }
+  }
+
+  &__bottom-divider {
+    height: 1px;
+    background: rgba(117, 137, 162, 0.28);
+    margin: 18px 0 14px;
+  }
+
+  &__login {
+    color: $client-text-faint;
+    font-size: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  &__login-link {
+    color: $client-heading;
+    font-weight: 600;
+    border-bottom: 1px solid $client-border-strong;
+
+    &:hover {
+      color: $client-text-strong;
+      border-color: $client-text-strong;
+    }
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// TRACK PAGE
+// ══════════════════════════════════════════════════════════
+.track-page {
+  padding: 0 1.5rem 2rem;
+
+  &__subtitle {
+    font-size: 13px;
+    color: $client-text-muted;
+    margin: 0 0 12px;
+  }
+
+  &__show-more {
+    background: transparent;
+    border: none;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 12px 0;
+    transition: color 0.2s ease;
+
+    &:hover { color: $client-text; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// TRACK PAGE HEADER
+// ══════════════════════════════════════════════════════════
+.track-page-header {
+  padding: 24px 0 32px;
+
+  // ─── Обкладинка ───────────────────────────────────────
+  &__cover {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+    @media (min-width: 768px) {
+      width: 160px;
+      height: 160px;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // ─── Тип ──────────────────────────────────────────────
+  &__type {
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 8px;
+  }
+
+  // ─── Назва ────────────────────────────────────────────
+  &__title {
+    font-size: 36px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 12px;
+    line-height: 1.1;
+
+    @media (min-width: 768px) { font-size: 52px; }
+  }
+
+  // ─── Мета інфо ────────────────────────────────────────
+  &__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 14px;
+    color: $client-text-muted;
+  }
+
+  &__artist {
+    color: $client-text;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  &__dot {
+    opacity: 0.5;
+  }
+
+  // ─── Кнопки дій ───────────────────────────────────────
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  &__btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+
+    // Play — велика кругла кнопка
+    &--play {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: $client-accent;
+      color: $white;
+      font-size: 22px;
+
+      &:hover {
+        background: $client-accent-hover;
+        transform: scale(1.05);
+      }
+    }
+
+    // Іконки — прозорі
+    &--icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: $client-text-muted;
+      font-size: 22px;
+
+      &:hover { color: $client-text; }
+    }
+
+    // Активний лайк
+    &--liked {
+      color: $client-accent !important;
+    }
+  }
+}
+
+
+
+// ══════════════════════════════════════════════════════════
+// ARTIST PAGE
+// ══════════════════════════════════════════════════════════
+.artist-page {
+  padding: 0 1.5rem 2rem;
+}
+
+// ══════════════════════════════════════════════════════════
+// ARTIST PAGE HEADER
+// ══════════════════════════════════════════════════════════
+.artist-page-header {
+  padding: 24px 0 32px;
+
+  &__breadcrumb {
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 8px;
+  }
+
+  // ─── Аватар ───────────────────────────────────────────
+  &__avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+    @media (min-width: 768px) {
+      width: 130px;
+      height: 130px;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // ─── Верифікація ──────────────────────────────────────
+  &__verified {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-accent;
+    margin-bottom: 8px;
+
+    i { font-size: 14px; }
+  }
+
+  // ─── Назва ────────────────────────────────────────────
+  &__name {
+    font-size: 40px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 8px;
+    line-height: 1.1;
+
+    @media (min-width: 768px) { font-size: 56px; }
+  }
+
+  // ─── Слухачі ──────────────────────────────────────────
+  &__listeners {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  // ─── Кнопки дій ───────────────────────────────────────
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  &__btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+
+    &--play {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: $client-accent;
+      color: $white;
+      font-size: 22px;
+
+      &:hover {
+        background: $client-accent-hover;
+        transform: scale(1.05);
+      }
+    }
+
+    &--follow {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid $client-border;
+      color: $client-text-muted;
+      font-size: 18px;
+      transition: 0.2s ease;
+
+      &:hover {
+        border-color: $client-text;
+        color: $client-text;
+      }
+    }
+
+    &--following {
+      border-color: $client-accent;
+      color: $client-accent;
+
+      &:hover {
+        border-color: $client-accent-hover;
+        color: $client-accent-hover;
+      }
+    }
+
+    &--icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: $client-text-muted;
+      font-size: 22px;
+
+      &:hover { color: $client-text; }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// ARTIST MUSIC TABS
+// ══════════════════════════════════════════════════════════
+.artist-music-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  &__btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      border-color: $client-text;
+      color: $client-text;
+    }
+
+    &--active {
+      background: $client-solid-bg;
+      border-color: $client-solid-bg;
+      color: $client-solid-text;
+
+      &:hover {
+        background: $client-solid-bg-hover;
+        border-color: $client-solid-bg-hover;
+        color: $client-solid-text;
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// ARTIST ABOUT SECTION
+// ══════════════════════════════════════════════════════════
+.artist-about {
+  &__card {
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  &__banner {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 7;
+
+    @media (min-width: 768px) {
+      aspect-ratio: 16 / 6;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // Градієнт знизу
+  &__overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 32px 28px 28px;
+    background: linear-gradient(
+                    to top,
+                    rgba(0, 0, 0, 0.85) 0%,
+                    rgba(0, 0, 0, 0.4)  60%,
+                    transparent         100%
+    );
+  }
+
+  &__listeners {
+    font-size: 16px;
+    font-weight: 700;
+    color: $white;
+    margin: 0 0 12px;
+  }
+
+  &__bio {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    line-height: 1.6;
+    max-width: 600px;
+
+    // Обрізаємо довгий текст
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// Спільний клас слайдера для сторінки артиста
+.artist-slider {
+  scrollbar-width: none;
+  padding-bottom: 8px;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .col-6 { min-width: 160px; }
+}
+
+
+
+// ══════════════════════════════════════════════════════════
+// NOTIFICATIONS PAGE
+// ══════════════════════════════════════════════════════════
+.notifications-page {
+  padding: 1.5rem 2rem 2rem;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    font-size: 32px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 8px;
+  }
+
+  &__description {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+    max-width: 560px;
+    line-height: 1.6;
+  }
+
+  &__read-all-btn {
+    background: transparent;
+    border: 1px solid $client-border;
+    border-radius: 20px;
+    color: $client-text-muted;
+    font-size: 13px;
+    padding: 8px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      border-color: $client-accent;
+      color: $client-accent;
+    }
+  }
+
+  // ─── Фільтр-таби ──────────────────────────────────────
+  &__filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  &__filter-btn {
+    padding: 6px 20px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    &:hover {
+      border-color: $client-text;
+      color: $client-text;
+    }
+
+    &--active {
+      background: $client-solid-bg;
+      border-color: $client-solid-bg;
+      color: $client-solid-text;
+
+      &:hover {
+        background: $client-solid-bg-hover;
+        color: $client-solid-text;
+      }
+    }
+  }
+
+  &__divider {
+    border-color: $client-border;
+    opacity: 1;
+    margin-bottom: 24px;
+  }
+
+  // ─── Групи ────────────────────────────────────────────
+  &__group {
+    margin-bottom: 32px;
+  }
+
+  &__group-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: $client-text;
+    margin-bottom: 16px;
+  }
+
+  // ─── Порожній стан ────────────────────────────────────
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0;
+    gap: 16px;
+    color: $client-text-muted;
+
+    i { font-size: 48px; }
+    p { font-size: 16px; margin: 0; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// NOTIFICATION CARD — трек/альбом
+// ══════════════════════════════════════════════════════════
+.notification-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: $client-surface;
+  border: 1px solid $client-border;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  position: relative;
+  height: 100%;
+
+  &:hover { background: $client-surface-2; }
+
+  // ─── Непрочитане ──────────────────────────────────────
+  &--unread {
+    border-color: rgba(0, 166, 255, 0.25);
+    background: rgba(0, 166, 255, 0.04);
+  }
+
+  &__unread-dot {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $client-accent;
+    flex-shrink: 0;
+  }
+
+  // ─── Обкладинка ───────────────────────────────────────
+  &__cover {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // ─── Інфо ─────────────────────────────────────────────
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $client-text;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  &__artist {
+    font-size: 12px;
+    color: $client-text-muted;
+    text-decoration: none;
+    display: block;
+
+    &:hover { color: $client-text; text-decoration: underline; }
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  &__type {
+    font-size: 11px;
+    color: $client-text-muted;
+    background: $client-surface-2;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  &__time {
+    font-size: 11px;
+    color: $client-text-muted;
+  }
+
+  &__release-date {
+    font-size: 12px;
+    color: $client-accent;
+    margin: 4px 0 0;
+  }
+
+  // ─── Кнопки дій ───────────────────────────────────────
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  &__action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    &:hover { color: $client-text; }
+
+    &--play {
+      font-size: 20px;
+      color: $client-accent;
+
+      &:hover { color: $client-accent-hover; }
+    }
+  }
+
+  &__remind-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: 0.2s ease;
+
+    &:hover {
+      border-color: $client-accent;
+      color: $client-accent;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// FRIEND REQUEST CARD
+// ══════════════════════════════════════════════════════════
+.friend-request-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: $client-surface;
+  border: 1px solid $client-border;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  position: relative;
+
+  &:hover { background: $client-surface-2; }
+
+  &--unread {
+    border-color: rgba(0, 166, 255, 0.25);
+    background: rgba(0, 166, 255, 0.04);
+  }
+
+  &__unread-dot {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $client-accent;
+  }
+
+  &__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__text {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0 0 4px;
+  }
+
+  &__name {
+    font-weight: 600;
+    color: $client-text;
+  }
+
+  &__time {
+    font-size: 12px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: $client-accent;
+      color: $client-accent;
+    }
+
+    &--added {
+      border-color: rgba(0, 166, 255, 0.3);
+      color: $client-accent;
+      cursor: default;
+    }
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// SEARCH PAGE
+// ══════════════════════════════════════════════════════════
+.search-page {
+  padding: 1.5rem 2rem 2rem;
+
+  &__header {
+    margin-bottom: 24px;
+  }
+
+  &__title {
+    font-size: 28px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 4px;
+  }
+
+  &__count {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  // ─── Фільтр таби ──────────────────────────────────────
+  &__filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  &__filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 18px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      border-color: $client-text;
+      color: $client-text;
+    }
+
+    &--active {
+      background: $client-solid-bg;
+      border-color: $client-solid-bg;
+      color: $client-solid-text;
+
+      &:hover {
+        background: $client-solid-bg-hover;
+        color: $client-solid-text;
+      }
+
+      .search-page__filter-count {
+        background: $client-solid-badge;
+        color: $client-solid-text;
+      }
+    }
+  }
+
+  &__filter-count {
+    background: $client-surface-2;
+    color: $client-text-muted;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  // ─── Секції результатів ───────────────────────────────
+  &__results {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  &__section {
+    // нічого — відступи через gap на results
+  }
+
+  &__section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: $client-text;
+    margin-bottom: 16px;
+  }
+
+  &__tracks {
+    // TrackRow вже має свої стилі
+  }
+
+  // ─── Порожній стан ────────────────────────────────────
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0;
+    gap: 12px;
+    text-align: center;
+
+    i {
+      font-size: 48px;
+      color: $client-text-muted;
+    }
+
+    p {
+      font-size: 18px;
+      font-weight: 600;
+      color: $client-text;
+      margin: 0;
+    }
+
+    span {
+      font-size: 14px;
+      color: $client-text-muted;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// GENRE CARD
+// ══════════════════════════════════════════════════════════
+.genre-card {
+  display: block;
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  position: relative;
+  aspect-ratio: 1 / 1;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.02);
+    text-decoration: none;
+  }
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+
+  &__cover {
+    width: 60%;
+    height: 60%;
+    object-fit: cover;
+    border-radius: 6px;
+    transform: rotate(20deg) translate(10%, 10%);
+    box-shadow: -4px 4px 16px rgba(0, 0, 0, 0.4);
+    display: block;
+  }
+
+  &__name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: $white;
+    background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 100%);
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// CLIENT MODAL
+// ══════════════════════════════════════════════════════════
+.client-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.client-modal {
+  background: $client-surface;
+  border: 1px solid $client-border;
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: $client-border transparent;
+
+  &.modal-dialog-sm { max-width: 400px; }
+  &.modal-dialog-md { max-width: 520px; }
+  &.modal-dialog-lg { max-width: 680px; }
+
+  // ─── Заголовок ────────────────────────────────────────
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 0;
+    margin-bottom: 20px;
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0;
+  }
+
+  &__close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      background: $client-hover;
+      color: $client-text;
+    }
+  }
+
+  // ─── Тіло ─────────────────────────────────────────────
+  &__body {
+    padding: 0 20px 20px;
+  }
+
+  // ─── Повідомлення + дії (напр. «пошта вже зареєстрована») ──
+  &__message {
+    font-size: 14px;
+    line-height: 1.5;
+    color: $client-text;
+    margin: 0;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  &__btn {
+    height: 44px;
+    border-radius: 8px;
+    border: 0;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: 0.2s ease;
+
+    &--primary {
+      background: $client-btn-primary;
+      color: $client-on-primary;
+
+      &:hover,
+      &:focus {
+        background: $client-btn-primary-hover;
+        color: $client-on-primary;
+      }
+    }
+
+    &--ghost {
+      background: transparent;
+      border: 1px solid $client-outline-border;
+      color: $client-outline-text;
+
+      &:hover,
+      &:focus {
+        background: $client-outline-bg-hover;
+        color: $client-outline-text-hover;
+      }
+    }
+  }
+
+  // ─── Інпут ────────────────────────────────────────────
+  &__input {
+    width: 100%;
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid $client-border;
+    background: $client-surface-2;
+    color: $client-text;
+    font-size: 14px;
+    padding: 0 14px;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &::placeholder { color: $client-text-muted; }
+
+    &:focus { border-color: $client-accent; }
+
+    &--error { border-color: $client-danger; }
+  }
+
+  // ─── Textarea ─────────────────────────────────────────
+  &__textarea {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid $client-border;
+    background: $client-surface-2;
+    color: $client-text;
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.2s;
+    font-family: inherit;
+
+    &::placeholder { color: $client-text-muted; }
+    &:focus { border-color: $client-accent; }
+  }
+
+  // ─── Помилка поля ─────────────────────────────────────
+  &__field-error {
+    font-size: 12px;
+    color: $client-danger;
+    margin: 4px 0 0;
+  }
+
+  // ─── Toggle ───────────────────────────────────────────────
+  &__toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__toggle {
+    width: 44px;
+    height: 24px;
+    border-radius: 12px;
+    border: none;
+    background: $client-border;
+    padding: 2px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+    position: relative;
+
+    &--active {
+      background: $client-accent;
+    }
+  }
+
+  &__toggle-thumb {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: $white;
+    transition: transform 0.2s ease;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+
+    .client-modal__toggle--active & {
+      transform: translateX(20px);
+    }
+  }
+
+  &__toggle-label {
+    font-size: 14px;
+    color: $client-text-muted;
+  }
+
+  // ─── Підказка знизу ───────────────────────────────────
+  &__hint {
+    font-size: 12px;
+    color: $client-text-muted;
+    line-height: 1.5;
+    margin: 16px 0 0;
+  }
+
+  // ─── Підтвердження видалення ──────────────────────────
+  &__confirm-text {
+    font-size: 15px;
+    color: $client-text-muted;
+    margin: 0 0 8px;
+    line-height: 1.6;
+  }
+
+  &__confirm-hint {
+    font-size: 13px;
+    color: rgba(255, 80, 80, 0.8);
+    margin: 0 0 8px;
+  }
+
+  // ─── Футер з кнопками ─────────────────────────────────
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  // ─── Кнопки ───────────────────────────────────────────
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s ease;
+    white-space: nowrap;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    &--ghost {
+      background: transparent;
+      border: 1px solid $client-border;
+      color: $client-text-muted;
+
+      &:hover:not(:disabled) {
+        border-color: $client-text;
+        color: $client-text;
+      }
+    }
+
+    &--primary {
+      background: $client-accent;
+      color: $white;
+
+      &:hover:not(:disabled) {
+        background: $client-accent-hover;
+      }
+    }
+
+    &--danger {
+      background: rgba(255, 80, 80, 0.15);
+      border: 1px solid rgba(255, 80, 80, 0.4);
+      color: $client-danger;
+
+      &:hover:not(:disabled) {
+        background: rgba(255, 80, 80, 0.25);
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// COVER UPLOAD
+// ══════════════════════════════════════════════════════════
+.cover-upload {
+  &__zone {
+    width: 148px;
+    height: 148px;
+    border-radius: 8px;
+    border: 2px dashed $client-border;
+    background: $client-surface-2;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    transition: border-color 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      border-color: $client-accent;
+
+      .cover-upload__overlay { opacity: 1; }
+    }
+
+    &--error { border-color: $client-danger; }
+
+    &--disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+
+  // Прев'ю завантаженого фото
+  &__preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  // Overlay поверх прев'ю
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  &__edit-btn,
+  &__remove-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+  &__edit-btn {
+    background: $client-accent;
+    color: $white;
+
+    &:hover { background: $client-accent-hover; }
+  }
+
+  &__remove-btn {
+    background: rgba(255, 80, 80, 0.2);
+    color: $client-danger;
+
+    &:hover { background: rgba(255, 80, 80, 0.35); }
+  }
+
+  // Плейсхолдер (без фото)
+  &__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  &__placeholder-icon {
+    font-size: 28px;
+    color: $client-text-muted;
+  }
+
+  &__placeholder-text {
+    font-size: 13px;
+    color: $client-text-muted;
+    text-align: center;
+  }
+
+  &__error {
+    font-size: 12px;
+    color: $client-danger;
+    margin: 6px 0 0;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// PLAYLIST PAGE
+// ══════════════════════════════════════════════════════════
+.playlist-page {
+  padding: 0 1.5rem 2rem;
+
+  // ─── Колонки таблиці ──────────────────────────────────
+  &__columns {
+    display: grid;
+    grid-template-columns: 32px 1fr 1fr 140px 80px;
+    gap: 16px;
+    padding: 0 16px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-text-muted;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+
+    @media (max-width: 767px) {
+      grid-template-columns: 32px 1fr 80px;
+    }
+
+    @media (min-width: 768px) and (max-width: 991px) {
+      grid-template-columns: 32px 1fr 1fr 80px;
+    }
+  }
+
+  &__col-index    { text-align: center; }
+  &__col-duration { text-align: right; }
+
+  &__divider {
+    border-color: $client-border;
+    opacity: 1;
+    margin-bottom: 8px;
+  }
+
+  &__tracks { margin-bottom: 40px; }
+}
+
+// ══════════════════════════════════════════════════════════
+// PLAYLIST PAGE HEADER
+// ══════════════════════════════════════════════════════════
+.playlist-page-header {
+  padding: 24px 0 32px;
+
+  &__breadcrumb {
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 8px;
+  }
+
+  &__cover {
+    width: 160px;
+    height: 160px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  &__title {
+    font-size: 36px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 8px;
+    line-height: 1.1;
+
+    @media (min-width: 768px) { font-size: 48px; }
+  }
+
+  &__description {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0 0 8px;
+    line-height: 1.5;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  &__owner {
+    font-weight: 600;
+    color: $client-text;
+  }
+
+  &__dot { opacity: 0.5; }
+
+  // ─── Кнопки дій ───────────────────────────────────────
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  &__btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+
+    &--play {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: $client-accent;
+      color: $white;
+      font-size: 22px;
+
+      &:hover {
+        background: $client-accent-hover;
+        transform: scale(1.05);
+      }
+    }
+
+    &--icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: $client-text-muted;
+      font-size: 20px;
+
+      &:hover { color: $client-text; }
+    }
+  }
+
+  &__subscribe-btn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    &:hover {
+      border-color: $client-text;
+      color: $client-text;
+    }
+
+    &--active {
+      border-color: $client-accent;
+      color: $client-accent;
+
+      &:hover {
+        border-color: rgba(255, 80, 80, 0.6);
+        color: $client-danger;
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// PLAYLIST RECOMMENDATIONS
+// ══════════════════════════════════════════════════════════
+.playlist-recommendations {
+  margin-top: 8px;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  &__subtitle {
+    font-size: 13px;
+    color: $client-text-muted;
+    margin: 4px 0 0;
+  }
+
+  &__refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: $client-accent;
+      color: $client-accent;
+    }
+
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  &__spin {
+    animation: spin 0.8s linear infinite;
+  }
+
+  &__list { /* TrackRow має свої стилі */ }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+// ══════════════════════════════════════════════════════════
+// ADD TO PLAYLIST MODAL
+// ══════════════════════════════════════════════════════════
+.add-playlist-modal {
+  &__search-wrap {
+    position: relative;
+  }
+
+  &__search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $client-text-muted;
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  &__search {
+    padding-left: 36px !important;
+  }
+
+  &__create-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    color: $client-text;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.15s;
+    margin-bottom: 4px;
+
+    &:hover { background: $client-hover; }
+  }
+
+  &__create-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    border: 1px solid $client-border;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: $client-text-muted;
+    flex-shrink: 0;
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 320px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: $client-border transparent;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.15s;
+    text-align: left;
+
+    &:hover { background: $client-hover; }
+  }
+
+  &__cover {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  &__name {
+    flex: 1;
+    font-size: 14px;
+    color: $client-text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+  }
+
+  &__icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  &__pin-icon {
+    font-size: 14px;
+    color: $client-accent;
+  }
+
+  &__check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid $client-border;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: 0.2s ease;
+    color: transparent;
+
+    &--active {
+      border-color: $client-accent;
+      background: $client-accent;
+      color: $white;
+    }
+  }
+
+  &__empty {
+    padding: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: $client-text-muted;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// PLAYLIST TOAST
+// ══════════════════════════════════════════════════════════
+.playlist-toast {
+  position: fixed;
+  bottom: 80px; // над плеєром
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 400;
+  background: $client-surface-2;
+  border: 1px solid $client-border;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  min-width: 280px;
+  max-width: 420px;
+
+  &--visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: all;
+  }
+
+  &__icon {
+    font-size: 20px;
+    color: $client-accent;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    flex: 1;
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+
+    strong { color: $client-text; }
+  }
+
+  &__change-btn {
+    background: transparent;
+    border: none;
+    color: $client-accent;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: color 0.2s;
+
+    &:hover { color: $client-accent-hover; }
+  }
+}
+
+.track-row {
+  &__add-btn {
+    background: transparent;
+    border: none;
+    color: $client-text-muted;
+    font-size: 18px;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+    opacity: 0;
+
+    .track-row--hovered & { opacity: 1; }
+    &:hover { color: $client-accent; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// USER PAGE
+// ══════════════════════════════════════════════════════════
+.user-page {
+  padding-bottom: 2rem;
+
+  &__section {
+    padding: 0 1.5rem;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// USER PAGE HEADER
+// ══════════════════════════════════════════════════════════
+.user-page-header {
+  position: relative;
+  padding: 48px 1.5rem 32px;
+  margin-bottom: 32px;
+  overflow: hidden;
+
+  // ─── Градієнт з аватарки ──────────────────────────────
+  &__gradient {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    // background задається інлайн через dominantColor
+  }
+
+  // Контент поверх градієнту
+  &__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+    margin-bottom: 24px;
+
+    @media (max-width: 576px) {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  }
+
+  // ─── Аватарка ─────────────────────────────────────────
+  &__avatar {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+
+    @media (min-width: 768px) {
+      width: 200px;
+      height: 200px;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  // ─── Інфо ─────────────────────────────────────────────
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__type {
+    font-size: 12px;
+    font-weight: 600;
+    color: $client-text;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 8px;
+  }
+
+  &__name {
+    font-size: 48px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 12px;
+    line-height: 1.1;
+    word-break: break-word;
+
+    @media (min-width: 768px) { font-size: 72px; }
+  }
+
+  // ─── Статистика ───────────────────────────────────────
+  &__stats {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 14px;
+    color: $client-text-muted;
+
+    @media (max-width: 576px) {
+      justify-content: center;
+    }
+  }
+
+  &__stat {
+    color: $client-text-muted;
+  }
+
+  &__stat-link {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: $client-text;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+
+    &:hover { color: $client-accent; }
+  }
+
+  &__dot { opacity: 0.5; }
+
+  // ─── Кнопки дій ───────────────────────────────────────
+  &__actions {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 1.5rem;
+
+    @media (max-width: 576px) {
+      justify-content: center;
+    }
+  }
+
+  &__action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s;
+
+    &:hover { color: $client-text; }
+  }
+
+  &__follow-btn {
+    padding: 8px 24px;
+    border-radius: 20px;
+    border: 1px solid $client-border;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    &:hover {
+      border-color: $client-text;
+      color: $client-text;
+    }
+
+    &--active {
+      border-color: $client-accent;
+      color: $client-accent;
+
+      &:hover {
+        border-color: rgba(255, 80, 80, 0.6);
+        color: $client-danger;
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// USER CARD — підписник / підписка
+// ══════════════════════════════════════════════════════════
+.user-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  text-decoration: none;
+  padding: 16px 8px;
+  border-radius: 12px;
+  background: $client-surface;
+  border: 1px solid transparent;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    background: $client-surface-2;
+    border-color: $client-border;
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+
+  &__avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  &__name {
+    font-size: 14px;
+    font-weight: 600;
+    color: $client-text;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+  }
+
+  &__type {
+    font-size: 12px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+}
+
+// Слайдер на сторінці користувача
+.user-slider {
+  scrollbar-width: none;
+  padding-bottom: 8px;
+
+  &::-webkit-scrollbar { display: none; }
+
+  .col-6 { min-width: 160px; }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// AUTH REQUIRED MODAL
+// ══════════════════════════════════════════════════════════
+.auth-required-modal {
+  &-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.15s ease;
+  }
+
+  position: relative;
+  background: $client-surface-2;
+  border: 1px solid $client-border;
+  border-radius: 20px;
+  padding: 40px 32px 32px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  animation: slideUp 0.2s ease;
+
+  &__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: $client-text-muted;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+
+    &:hover {
+      background: $client-hover;
+      color: $client-text;
+    }
+  }
+
+  &__icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(0, 166, 255, 0.12);
+    border: 1px solid rgba(0, 166, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 32px;
+    color: $client-accent;
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 10px;
+  }
+
+  &__text {
+    font-size: 14px;
+    color: $client-text-muted;
+    line-height: 1.6;
+    margin: 0 0 28px;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    border-radius: 22px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s;
+
+    &--primary {
+      background: $client-accent;
+      color: $white;
+
+      &:hover {
+        background: $client-accent-hover;
+        color: $white;
+        text-decoration: none;
+      }
+    }
+
+    &--ghost {
+      background: transparent;
+      border: 1px solid $client-border;
+      color: $client-text-muted;
+
+      &:hover {
+        border-color: $client-text;
+        color: $client-text;
+        text-decoration: none;
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// GUEST SIDEBAR CARDS
+// ══════════════════════════════════════════════════════════
+.guest-sidebar-card {
+  position: relative;
+  background: $client-surface-2;
+  border: 1px solid $client-border;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+
+  &__title {
+    font-size: 14px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 6px;
+  }
+
+  &__text {
+    font-size: 12px;
+    color: $client-text-muted;
+    line-height: 1.5;
+    margin: 0 0 14px;
+  }
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 16px;
+    border-radius: 16px;
+    border: none;
+    background: $client-solid-bg;
+    color: $client-solid-text;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+
+    &:hover   { background: $client-solid-bg-hover; transform: scale(1.02); }
+    &:active  { transform: scale(0.98); }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// AUTH POPOVER
+// ══════════════════════════════════════════════════════════
+.guest-auth-popover {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 0;
+  width: 260px;
+  background: $client-accent;
+  border-radius: 12px;
+  padding: 16px;
+  z-index: 200!important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: popoverIn 0.15s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 20px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid $client-accent;
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 700;
+    color: $white;
+    margin: 0 0 6px;
+  }
+
+  &__text {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.5;
+    margin: 0 0 16px;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  &__btn {
+    height: 36px;
+    padding: 0 18px;
+    border-radius: 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.15s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+
+    &--ghost {
+      background: transparent;
+      border: none;
+      color: $white;
+
+      &:hover { color: $white; text-decoration: underline; }
+    }
+
+    &--primary {
+      background: $client-solid-bg;
+      border: none;
+      color: $client-solid-text;
+
+      &:hover { background: $client-solid-bg-hover; color: $client-solid-text; text-decoration: none; }
+    }
+  }
+}
+
+@keyframes popoverIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+// ══════════════════════════════════════════════════════════
+// BECOME ARTIST — /become-artist (вибір, створення, заявка)
+// ══════════════════════════════════════════════════════════
+.client-become-artist {
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 0 20px;
+
+  &--narrow { max-width: 480px; }
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: $client-text-muted;
+    text-decoration: none;
+    font-size: 13px;
+    margin-bottom: 20px;
+    transition: color 0.2s ease;
+
+    &:hover { color: $client-text; }
+  }
+
+  &__head { margin-bottom: 28px; }
+
+  &__title {
+    font-size: 26px;
+    font-weight: 700;
+    color: $client-text;
+    margin: 0 0 8px;
+  }
+
+  &__subtitle {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  // ─── Вибір шляху ──────────────────────────────────────
+  &__choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+
+    @media (max-width: 640px) { grid-template-columns: 1fr; }
+  }
+
+  &__choice {
+    display: block;
+    text-decoration: none;
+    background: $client-surface;
+    border: 1px solid $client-border;
+    border-radius: 14px;
+    padding: 24px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      border-color: $client-accent;
+      transform: translateY(-2px);
+    }
+  }
+
+  &__choice-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: $client-surface-2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: $client-accent;
+    margin-bottom: 16px;
+  }
+
+  &__choice-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: $client-text;
+    margin: 0 0 8px;
+  }
+
+  &__choice-text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: $client-text-muted;
+    margin: 0;
+  }
+
+  // ─── Форма ────────────────────────────────────────────
+  &__form { display: flex; flex-direction: column; gap: 18px; }
+
+  &__avatar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__avatar-hint { font-size: 12px; color: $client-text-muted; }
+
+  &__field { display: flex; flex-direction: column; }
+
+  &__label {
+    font-size: 12px;
+    font-weight: 500;
+    color: $client-label;
+    margin-bottom: 6px;
+  }
+
+  &__input,
+  &__textarea {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid $client-field-border;
+    background: $client-field-bg;
+    color: $client-text-strong;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &::placeholder { color: $client-text-muted; }
+    &:focus { border-color: $client-field-focus; }
+    &.is-invalid { border-color: $client-danger; }
+  }
+
+  &__textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+
+  &__error { font-size: 12px; color: $client-danger; margin-top: 6px; }
+
+  &__btn {
+    height: 44px;
+    border-radius: 8px;
+    border: 0;
+    font-size: 14px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    &--primary {
+      background: $client-btn-primary;
+      color: $client-on-primary;
+
+      &:hover,
+      &:focus { background: $client-btn-primary-hover; color: $client-on-primary; }
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
+    }
+  }
+
+  // ─── Пошук артиста ────────────────────────────────────
+  &__search { display: flex; flex-direction: column; gap: 12px; }
+
+  &__results {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid $client-border;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  &__results-empty {
+    padding: 16px;
+    font-size: 13px;
+    color: $client-text-muted;
+    text-align: center;
+  }
+
+  &__result-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid $client-border;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease;
+
+    &:last-child { border-bottom: 0; }
+    &:hover { background: $client-hover; }
+  }
+
+  &__result-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+
+    &--placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: $client-surface-2;
+      color: $client-text-muted;
+    }
+  }
+
+  &__result-name { flex: 1; font-size: 14px; color: $client-text; }
+  &__result-arrow { color: $client-text-muted; font-size: 14px; }
+
+  // ─── Обраний артист ───────────────────────────────────
+  &__selected {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: $client-surface;
+    border: 1px solid $client-border;
+    border-radius: 10px;
+  }
+
+  &__selected-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+
+    &--placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: $client-surface-2;
+      color: $client-text-muted;
+    }
+  }
+
+  &__selected-info { display: flex; flex-direction: column; gap: 2px; }
+  &__selected-name { font-size: 15px; font-weight: 600; color: $client-text; }
+
+  &__selected-change {
+    align-self: flex-start;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    font-size: 12px;
+    color: $client-accent;
+    cursor: pointer;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  // ─── Екрани результату (успіх / ліміт / очікування) ───
+  &__result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+    padding: 24px 0;
+  }
+
+  &__result-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    background: $client-surface-2;
+    color: $client-accent;
+
+    &--wait { color: $client-text-muted; }
+  }
+
+  &__result-title { font-size: 20px; font-weight: 700; color: $client-text; margin: 0; }
+
+  &__result-text {
+    font-size: 14px;
+    color: $client-text-muted;
+    margin: 0;
+    max-width: 380px;
+    line-height: 1.5;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// NOTIFICATIONS — список + універсальна картка (реальний контракт)
+// ══════════════════════════════════════════════════════════
+.notifications-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// Картка як <button> у вертикальному списку: іконка + title/body + час.
+.notifications-page__list .notification-card {
+  width: 100%;
+  text-align: left;
+  align-items: center;
+  height: auto;
+  font: inherit;
+
+  &__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $client-surface-2;
+    color: $client-accent;
+    font-size: 20px;
+  }
+
+  &__body {
+    font-size: 13px;
+    color: $client-text-muted;
+    line-height: 1.45;
+    white-space: normal;
+  }
+
+  &__arrow {
+    margin-left: auto;
+    color: $client-text-muted;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// APP NOTIFICATION TOAST — real-time пуш (SignalR)
+// ══════════════════════════════════════════════════════════
+.app-notif-toast {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  transform: translateY(-12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 500;
+  background: $client-surface-2;
+  border: 1px solid $client-border;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  min-width: 300px;
+  max-width: 380px;
+  cursor: pointer;
+
+  &--visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+
+  &__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $client-surface;
+    color: $client-accent;
+    font-size: 18px;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $client-text;
+  }
+
+  &__text {
+    font-size: 13px;
+    color: $client-text-muted;
+    line-height: 1.4;
+  }
+
+  &__close {
+    background: transparent;
+    border: none;
+    color: $client-text-muted;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.2s;
+
+    &:hover { color: $client-text; }
+  }
+}
+
+
+.playlist-page {
+
+  &__draggable-row-holder {
+    transition: background-color 0.15s ease, transform 0.15s ease;
+    border-radius: 8px;
+    touch-action: none; // Захищає від випадкових скролів екрану пальцем на мобільних
+
+    &--dragging {
+      background: rgba(255, 255, 255, 0.07) !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+
+      // Підсвічуємо внутрішній компонент під час левітації
+      .track-row {
+        background: rgba(255, 255, 255, 0.05) !important;
+      }
+    }
+  }
+}

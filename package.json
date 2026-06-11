@@ -1,26 +1,25 @@
 {
-    "name": "my-app",
-    "version": "0.1.0",
-    "private": true,
-    "scripts": {
-        "dev": "next dev",
-        "build": "next build",
-        "start": "node server.js",
-        "lint": "eslint"
-    },
-    "dependencies": {
-        "next": "16.1.4",
-        "react": "19.2.3",
-        "react-dom": "19.2.3"
-    },
-    "devDependencies": {
-        "@tailwindcss/postcss": "^4",
-        "@types/node": "^20",
-        "@types/react": "^19",
-        "@types/react-dom": "^19",
-        "eslint": "^9",
-        "eslint-config-next": "16.1.4",
-        "tailwindcss": "^4",
-        "typescript": "^5"
-    }
+  "name": "yuviron-frontend",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "api:gen": "orval --config orval.config.ts"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "orval": "^8.5.3",
+    "prettier": "^3.7.4",
+    "turbo": "^2.8.13",
+    "typescript": "5.9.2"
+  }
 }
