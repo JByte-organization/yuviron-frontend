@@ -5,7 +5,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
     AppPermission,
     usePostApiStudioArtistProfileArtistIdVerify,
-    usePutApiStudioArtistProfileArtistIdSocialLinks,
+    usePostApiStudioArtistProfileArtistIdSocialLinks,
+    useDeleteApiStudioArtistProfileArtistIdSocialLinksType,
+    type SocialLinkType,
     type StudioSocialLinkDto,
 } from '@repo/api/artist.ts';
 import { usePostApiFilesUpload } from '@repo/api/client.ts';
@@ -15,18 +17,20 @@ import { extractFileId } from '@/shared/lib/unwrapApi';
 // СОЦМЕРЕЖІ
 // ══════════════════════════════════════════════════════════
 
-const LINK_TYPES = [
-    { value: 'instagram', label: 'Instagram',  icon: 'bi-instagram' },
-    { value: 'youtube',   label: 'YouTube',    icon: 'bi-youtube' },
-    { value: 'tiktok',    label: 'TikTok',     icon: 'bi-tiktok' },
-    { value: 'facebook',  label: 'Facebook',   icon: 'bi-facebook' },
-    { value: 'twitter',   label: 'X (Twitter)',icon: 'bi-twitter-x' },
-    { value: 'spotify',   label: 'Spotify',    icon: 'bi-spotify' },
-    { value: 'website',   label: 'Сайт',       icon: 'bi-globe' },
+// value — це значення enum SocialLinkType з бекенду (PascalCase). Бек прийма
+// тільки ці типи; нижній регістр валиться 500-кою на рівні БД-enum.
+const LINK_TYPES: { value: SocialLinkType; label: string; icon: string }[] = [
+    { value: 'Instagram', label: 'Instagram',   icon: 'bi-instagram' },
+    { value: 'YouTube',   label: 'YouTube',     icon: 'bi-youtube' },
+    { value: 'TikTok',    label: 'TikTok',      icon: 'bi-tiktok' },
+    { value: 'Facebook',  label: 'Facebook',    icon: 'bi-facebook' },
+    { value: 'Twitter',   label: 'X (Twitter)', icon: 'bi-twitter-x' },
+    { value: 'Spotify',   label: 'Spotify',     icon: 'bi-spotify' },
+    { value: 'Website',   label: 'Сайт',        icon: 'bi-globe' },
 ];
 
 interface LinkRow {
-    type: string;
+    type: SocialLinkType;
     url: string;
 }
 
@@ -48,10 +52,14 @@ export const ArtistSocialLinksBlock = ({ artistId, initialLinks }: SocialLinksPr
     const [syncedLinks, setSyncedLinks] = useState<typeof initialLinks>(undefined);
     if (!dirty && initialLinks !== syncedLinks) {
         setSyncedLinks(initialLinks);
-        setRows((initialLinks ?? []).map(l => ({ type: l.type ?? 'website', url: l.url ?? '' })));
+        setRows((initialLinks ?? []).map(l => ({ type: l.type ?? 'Website', url: l.url ?? '' })));
     }
 
-    const { mutateAsync: saveLinks, isPending } = usePutApiStudioArtistProfileArtistIdSocialLinks();
+    const { mutateAsync: addLink, isPending: isAdding } =
+        usePostApiStudioArtistProfileArtistIdSocialLinks();
+    const { mutateAsync: removeLink, isPending: isRemoving } =
+        useDeleteApiStudioArtistProfileArtistIdSocialLinksType();
+    const isPending = isAdding || isRemoving;
 
     const update = (index: number, patch: Partial<LinkRow>) => {
         setDirty(true);
@@ -62,7 +70,7 @@ export const ArtistSocialLinksBlock = ({ artistId, initialLinks }: SocialLinksPr
     const addRow = () => {
         setDirty(true);
         setSaved(false);
-        setRows(prev => [...prev, { type: 'instagram', url: '' }]);
+        setRows(prev => [...prev, { type: 'Instagram', url: '' }]);
     };
 
     const removeRow = (index: number) => {
@@ -76,10 +84,20 @@ export const ArtistSocialLinksBlock = ({ artistId, initialLinks }: SocialLinksPr
     const submit = async () => {
         setError(null);
         try {
-            await saveLinks({
-                artistId,
-                data: rows.map(r => ({ type: r.type, url: r.url.trim() })),
-            });
+            // Новий контракт: одна площадка = окремий ресурс. Замість bulk-PUT
+            // робимо DELETE по типах, які прибрали, і POST (upsert) по поточних.
+            const currentTypes = new Set(rows.map(r => r.type));
+            const removed = (initialLinks ?? [])
+                .map(l => l.type)
+                .filter((t): t is SocialLinkType => !!t && !currentTypes.has(t));
+
+            for (const type of removed) {
+                await removeLink({ artistId, type });
+            }
+            for (const row of rows) {
+                await addLink({ artistId, data: { type: row.type, url: row.url.trim() } });
+            }
+
             setDirty(false);
             setSaved(true);
             await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/profile'] });
@@ -105,7 +123,7 @@ export const ArtistSocialLinksBlock = ({ artistId, initialLinks }: SocialLinksPr
                             className="client-modal__input"
                             style={{ width: 'auto', minWidth: 150 }}
                             value={row.type}
-                            onChange={e => update(i, { type: e.target.value })}
+                            onChange={e => update(i, { type: e.target.value as SocialLinkType })}
                         >
                             {LINK_TYPES.map(t => (
                                 <option key={t.value} value={t.value}>{t.label}</option>

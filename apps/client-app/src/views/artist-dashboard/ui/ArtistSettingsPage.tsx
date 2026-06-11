@@ -18,7 +18,7 @@ import {
     ArtistVerificationBlock,
 } from '@/features/artist/profile/ui/ArtistProfileExtras';
 
-import { unwrap, extractFileId } from '@/shared/lib/unwrapApi';
+import { unwrap, extractFileId, extractFileUrl } from '@/shared/lib/unwrapApi';
 
 type FormValues = {
     stageName: string;
@@ -90,11 +90,22 @@ export const ArtistSettingsPage = () => {
         if (!artistId) return;
         setError(null);
         try {
-            // Опційні файли вантажимо окремо (як у create-флоу), отримуємо fileId.
+            // Опційні файли вантажимо окремо (як у create-флоу), отримуємо fileId +
+            // тимчасовий url (його бек віддає одразу — показуємо картинку до персисту).
             let avatarFileId: string | null = null;
             let bannerFileId: string | null = null;
-            if (avatarFile) avatarFileId = extractFileId(await uploadFile({ data: { file: avatarFile } }));
-            if (bannerFile) bannerFileId = extractFileId(await uploadFile({ data: { file: bannerFile } }));
+            let avatarTempUrl: string | null = null;
+            let bannerTempUrl: string | null = null;
+            if (avatarFile) {
+                const res = await uploadFile({ data: { file: avatarFile } });
+                avatarFileId = extractFileId(res);
+                avatarTempUrl = extractFileUrl(res);
+            }
+            if (bannerFile) {
+                const res = await uploadFile({ data: { file: bannerFile } });
+                bannerFileId = extractFileId(res);
+                bannerTempUrl = extractFileUrl(res);
+            }
 
             await updateProfile({
                 id: artistId,
@@ -108,11 +119,13 @@ export const ArtistSettingsPage = () => {
                 },
             });
 
-            // Скидаємо вибрані файли (прев'ю візьметься зі свіжого профілю) та оновлюємо кеш.
+            // Скидаємо вибрані файли. Прев'ю лишаємо на тимчасовому url з upload
+            // (а не на медіа-хеші профілю, який ще 404-ить) — fallback на старий blob,
+            // якщо бек url не віддав; null → береться картинка з профілю (вже персиснута).
             setAvatarFile(null);
             setBannerFile(null);
-            setAvatarObjectUrl(null);
-            setBannerObjectUrl(null);
+            setAvatarObjectUrl(prev => avatarTempUrl ?? (avatarFileId ? prev : null));
+            setBannerObjectUrl(prev => bannerTempUrl ?? (bannerFileId ? prev : null));
             await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/profile'] });
             reset(values);
             setSaved(true);
