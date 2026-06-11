@@ -30,3 +30,13 @@ export const extractFileId = (res: unknown): string | null => {
     const r = res as { fileId?: string; data?: { fileId?: string } } | null;
     return r?.data?.fileId ?? r?.fileId ?? null;
 };
+
+/**
+ * Витягує тимчасовий `url` з відповіді upload (`{ url }` або `{ data: { url } }`).
+ * Бек віддає його одразу після завантаження — показуємо картинку до того, як файл
+ * доїде на медіа-сервер (інакше getImageUrl по хешу повертає 404 / биту картинку).
+ */
+export const extractFileUrl = (res: unknown): string | null => {
+    const r = res as { url?: string | null; data?: { url?: string | null } } | null;
+    return r?.data?.url ?? r?.url ?? null;
+};
