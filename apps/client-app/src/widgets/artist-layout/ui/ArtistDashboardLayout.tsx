@@ -5,6 +5,7 @@ import { Header } from '@/widgets/header/ui/Header';
 import { Footer } from '@/widgets/footer/ui/Footer';
 import { PlaylistToastProvider } from '@/shared/ui/PlaylistToast';
 import { ArtistDashboardSidebar } from '@/widgets/artist-sidebar/ui/ArtistDashboardSidebar';
+import { ArtistMobileNav } from '@/widgets/artist-sidebar/ui/ArtistMobileNav';
 
 import { SidebarContext, RightSidebarContext } from '@/widgets/layout/model/contexts';
 import { useState } from 'react';
@@ -38,6 +39,8 @@ export const ArtistDashboardLayout = ({ children }: ArtistDashboardLayoutProps) 
                                 collapsed ? 'client-layout__main--left-collapsed' : '',
                             ].filter(Boolean).join(' ')}>
                                 <PlaylistToastProvider>
+                                    {/* Мобільна навігація (сайдбар прихований <lg) */}
+                                    <ArtistMobileNav />
                                     {children}
                                 </PlaylistToastProvider>
                                 <Footer />

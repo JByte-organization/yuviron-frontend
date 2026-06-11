@@ -5,7 +5,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
     AppPermission,
     usePostApiStudioArtistProfileArtistIdVerify,
-    usePutApiStudioArtistProfileArtistIdSocialLinks,
+    usePostApiStudioArtistProfileArtistIdSocialLinks,
+    useDeleteApiStudioArtistProfileArtistIdSocialLinksType,
+    type SocialLinkType,
     type StudioSocialLinkDto,
 } from '@repo/api/artist.ts';
 import { usePostApiFilesUpload } from '@repo/api/client.ts';
@@ -19,18 +21,20 @@ const extractFileId = (res: unknown): string | null => {
 // СОЦМЕРЕЖІ
 // ══════════════════════════════════════════════════════════
 
-const LINK_TYPES = [
-    { value: 'instagram', label: 'Instagram',  icon: 'bi-instagram' },
-    { value: 'youtube',   label: 'YouTube',    icon: 'bi-youtube' },
-    { value: 'tiktok',    label: 'TikTok',     icon: 'bi-tiktok' },
-    { value: 'facebook',  label: 'Facebook',   icon: 'bi-facebook' },
-    { value: 'twitter',   label: 'X (Twitter)',icon: 'bi-twitter-x' },
-    { value: 'spotify',   label: 'Spotify',    icon: 'bi-spotify' },
-    { value: 'website',   label: 'Сайт',       icon: 'bi-globe' },
+// value — це значення enum SocialLinkType з бекенду (PascalCase). Бек прийма
+// тільки ці типи; нижній регістр валиться 500-кою на рівні БД-enum.
+const LINK_TYPES: { value: SocialLinkType; label: string; icon: string }[] = [
+    { value: 'Instagram', label: 'Instagram',   icon: 'bi-instagram' },
+    { value: 'YouTube',   label: 'YouTube',     icon: 'bi-youtube' },
+    { value: 'TikTok',    label: 'TikTok',      icon: 'bi-tiktok' },
+    { value: 'Facebook',  label: 'Facebook',    icon: 'bi-facebook' },
+    { value: 'Twitter',   label: 'X (Twitter)', icon: 'bi-twitter-x' },
+    { value: 'Spotify',   label: 'Spotify',     icon: 'bi-spotify' },
+    { value: 'Website',   label: 'Сайт',        icon: 'bi-globe' },
 ];
 
 interface LinkRow {
-    type: string;
+    type: SocialLinkType;
     url: string;
 }
 
@@ -52,10 +56,14 @@ export const ArtistSocialLinksBlock = ({ artistId, initialLinks }: SocialLinksPr
     const [syncedLinks, setSyncedLinks] = useState<typeof initialLinks>(undefined);
     if (!dirty && initialLinks !== syncedLinks) {
         setSyncedLinks(initialLinks);
-        setRows((initialLinks ?? []).map(l => ({ type: l.type ?? 'website', url: l.url ?? '' })));
+        setRows((initialLinks ?? []).map(l => ({ type: l.type ?? 'Website', url: l.url ?? '' })));
     }
 
-    const { mutateAsync: saveLinks, isPending } = usePutApiStudioArtistProfileArtistIdSocialLinks();
+    const { mutateAsync: addLink, isPending: isAdding } =
+        usePostApiStudioArtistProfileArtistIdSocialLinks();
+    const { mutateAsync: removeLink, isPending: isRemoving } =
+        useDeleteApiStudioArtistProfileArtistIdSocialLinksType();
+    const isPending = isAdding || isRemoving;
 
     const update = (index: number, patch: Partial<LinkRow>) => {
         setDirty(true);
@@ -66,7 +74,7 @@ export const ArtistSocialLinksBlock = ({ artistId, initialLinks }: SocialLinksPr
     const addRow = () => {
         setDirty(true);
         setSaved(false);
-        setRows(prev => [...prev, { type: 'instagram', url: '' }]);
+        setRows(prev => [...prev, { type: 'Instagram', url: '' }]);
     };
 
     const removeRow = (index: number) => {
@@ -80,10 +88,20 @@ export const ArtistSocialLinksBlock = ({ artistId, initialLinks }: SocialLinksPr
     const submit = async () => {
         setError(null);
         try {
-            await saveLinks({
-                artistId,
-                data: rows.map(r => ({ type: r.type, url: r.url.trim() })),
-            });
+            // Новий контракт: одна площадка = окремий ресурс. DELETE по типах, які
+            // прибрали, і POST (upsert) по поточних — замість старого bulk-PUT.
+            const currentTypes = new Set(rows.map(r => r.type));
+            const removed = (initialLinks ?? [])
+                .map(l => l.type)
+                .filter((t): t is SocialLinkType => !!t && !currentTypes.has(t));
+
+            for (const type of removed) {
+                await removeLink({ artistId, type });
+            }
+            for (const row of rows) {
+                await addLink({ artistId, data: { type: row.type, url: row.url.trim() } });
+            }
+
             setDirty(false);
             setSaved(true);
             await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/profile'] });
@@ -104,37 +122,42 @@ export const ArtistSocialLinksBlock = ({ artistId, initialLinks }: SocialLinksPr
 
             <div className="d-flex flex-column gap-2">
                 {rows.map((row, i) => (
-                    <div key={i} className="d-flex gap-2 align-items-center">
+                    // На xs стек: селект площадки на всю ширину, нижче — url + кошик
+                    // в один ряд. З sm — усе в рядок. Без фіксованих ширин, що ламали
+                    // вёрстку на телефоні (input стискався / виходив за екран).
+                    <div key={i} className="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center">
                         <select
-                            className="client-modal__input"
-                            style={{ width: 'auto', minWidth: 150 }}
+                            className="client-modal__input flex-sm-shrink-0"
+                            style={{ minWidth: 150 }}
                             value={row.type}
-                            onChange={e => update(i, { type: e.target.value })}
+                            onChange={e => update(i, { type: e.target.value as SocialLinkType })}
                         >
                             {LINK_TYPES.map(t => (
                                 <option key={t.value} value={t.value}>{t.label}</option>
                             ))}
                         </select>
-                        <input
-                            type="url"
-                            className={`client-modal__input${row.url && !/^https?:\/\/\S+/.test(row.url.trim()) ? ' client-modal__input--error' : ''}`}
-                            placeholder="https://…"
-                            value={row.url}
-                            onChange={e => update(i, { url: e.target.value })}
-                        />
-                        <button
-                            type="button"
-                            className="artist-tracks-page__row-btn artist-tracks-page__row-btn--danger flex-shrink-0"
-                            title="Прибрати"
-                            onClick={() => removeRow(i)}
-                        >
-                            <i className="bi bi-trash" />
-                        </button>
+                        <div className="d-flex gap-2 align-items-center flex-grow-1">
+                            <input
+                                type="url"
+                                className={`client-modal__input flex-grow-1${row.url && !/^https?:\/\/\S+/.test(row.url.trim()) ? ' client-modal__input--error' : ''}`}
+                                placeholder="https://…"
+                                value={row.url}
+                                onChange={e => update(i, { url: e.target.value })}
+                            />
+                            <button
+                                type="button"
+                                className="artist-tracks-page__row-btn artist-tracks-page__row-btn--danger flex-shrink-0"
+                                title="Прибрати"
+                                onClick={() => removeRow(i)}
+                            >
+                                <i className="bi bi-trash" />
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
 
-            <div className="d-flex align-items-center gap-3 mt-3">
+            <div className="d-flex align-items-center gap-3 mt-3 flex-wrap">
                 <button
                     type="button"
                     className="client-modal__btn client-modal__btn--ghost"

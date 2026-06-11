@@ -57,7 +57,8 @@
     color: $client-text;
     font-size: 14px;
     outline: none;
-    width: 240px;
+    width: 100%;
+    max-width: 240px;
     transition: border-color 0.2s;
 
     &::placeholder { color: $client-text-muted; }
@@ -99,10 +100,14 @@
     &:hover { background: $client-accent-hover; }
   }
 
-  // Колонки
+  // Колонки. Mobile-first: на xs лише #/Назва/Тривалість (Альбом і Дата сховані
+  // через d-none d-md/lg-block у розмітці). Фіксовані треки 140px/80px на мобілці
+  // давали порожні колонки й горизонтальний overflow — додаємо їх лише з md/lg.
   &__columns {
     display: grid;
-    grid-template-columns: 32px 1fr 1fr 140px 80px;
+    grid-template-columns: 32px 1fr 80px;
+    @media (min-width: 768px) { grid-template-columns: 32px 1fr 1fr 80px; }
+    @media (min-width: 992px) { grid-template-columns: 32px 1fr 1fr 140px 80px; }
     gap: 16px;
     padding: 0 16px 8px;
     font-size: 12px;
@@ -856,4 +861,58 @@
   &::-webkit-scrollbar { display: none; }
 
   .col-6, .col-auto { min-width: 160px; }
+}
+// ══════════════════════════════════════════════════════════
+// МОБІЛЬНА НАВІГАЦІЯ КАБІНЕТУ (ArtistMobileNav)
+// Сайдбар .client-sidebar має display:none нижче lg — цей горизонтальний
+// скрол-таббар замінює його на телефоні/планшеті. Сам компонент має d-lg-none,
+// тож на десктопі не рендериться. Sticky під фіксованим хедером.
+// ══════════════════════════════════════════════════════════
+.artist-mobile-nav {
+  position: sticky;
+  top: $header-height;
+  z-index: 90;
+  margin: 0 0 20px;
+  padding: 10px 0;
+  // Фон, щоб контент не просвічував під час scroll-stick.
+  background: $client-bg;
+  border-bottom: 1px solid $client-border;
+
+  &__scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 2px;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  &__item {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none;
+    color: $client-text-muted;
+    background: $client-surface;
+    border: 1px solid $client-border;
+    transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+
+    i { font-size: 16px; line-height: 1; }
+
+    &:hover { color: $client-text; }
+
+    &--active {
+      color: #fff;
+      background: $client-accent;
+      border-color: transparent;
+    }
+  }
 }

@@ -117,11 +117,14 @@ export const ArtistSettingsPage = () => {
                 },
             });
 
-            // Скидаємо вибрані файли (прев'ю візьметься зі свіжого профілю) та оновлюємо кеш.
+            // Скидаємо вибрані файли, але прев'ю ЛИШАЄМО на локальному blob щойно
+            // завантаженого файлу. НЕ беремо медіа-хеш профілю одразу — він 404-ить,
+            // поки файл не доїде на медіа-сервер (звідси биті картинки після сейву).
+            // На повне перезавантаження візьметься персиснутий avatarUrl/bannerUrl.
             setAvatarFile(null);
             setBannerFile(null);
-            setAvatarObjectUrl(null);
-            setBannerObjectUrl(null);
+            setAvatarObjectUrl(prev => (avatarFileId ? prev : null));
+            setBannerObjectUrl(prev => (bannerFileId ? prev : null));
             await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/profile'] });
             reset(values);
             setSaved(true);
