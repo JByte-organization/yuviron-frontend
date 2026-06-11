@@ -6,7 +6,6 @@ import { usePlayerStore } from '@/entities/player/model/playerStore';
 import { usePlayer } from '@/entities/player/lib/usePlayer';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 
-// 🚨 ІМПОРТУЄМО СЕРЦЕ ТА МОДАЛКУ ПЛЕЙЛІСТІВ
 import { useFavoriteTrack } from '@/features/track/lib/useFavoriteTrack';
 import { AddToPlaylistModal } from '@/features/playlist/add/ui/AddToPlaylistModal';
 
@@ -28,7 +27,6 @@ interface TrackInfoProps {
     isLoading:  boolean;
     isAdMode:   boolean;
     onAdClick?: () => void;
-    // 🚨 Нові пропси для керування фічами
     isLiked:    boolean;
     isLikePending: boolean;
     onLikeClick: (e: React.MouseEvent) => void;
@@ -223,7 +221,6 @@ export const PlayerBar = () => {
     const hasPrev   = queueIndex > 0;
     const hasNext   = queueIndex < queue.length - 1;
 
-    // 🚨 ПІДКЛЮЧАЄМО ХУК ЛАЙКУ ДЛЯ ПОТОЧНОГО ТРЕКУ
     const { isLiked, isPending: isLikePending, toggle: toggleLike } = useFavoriteTrack({
         initialLiked: (currentTrack as any)?.isSaved ?? false,
     });
@@ -294,7 +291,6 @@ export const PlayerBar = () => {
                 onSetVolume={setVolume}
             />
 
-            {/* ─── 🚨 МОДАЛЬНЕ ВІКНО ДОДАВАННЯ В ПЛЕЙЛІСТ ПРЯМО З ПЛЕЄРА ────────── */}
             {isPlaylistModalOpen && currentTrack && (
                 <AddToPlaylistModal
                     isOpen={isPlaylistModalOpen}
