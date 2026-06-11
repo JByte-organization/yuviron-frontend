@@ -20,4 +20,4 @@ export * from './generated/client/endpoints/files';
 // МОДЕЛІ АДМІНКИ — аналогічно, однією строкою
 export * from './generated/admin/models';
 
-export { configureApiClient, initCsrfToken } from './mutator';
+export { configureApiClient, initCsrfToken, customInstance } from './mutator';

@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-// Імпортуємо пряму функцію запиту деталей згенеровану Orval
-import { getApiAdminTracksId, type TrackDetailsDto } from '@repo/api/admin.ts';
-import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { customInstance } from '@repo/api/admin.ts';
 
 export const useTrackPlayback = () => {
     const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
@@ -26,27 +24,22 @@ export const useTrackPlayback = () => {
         setLoadingTrackId(trackId);
 
         try {
-            // 🚨 ЛАЗІ-ЛОАДИНГ: Запитуємо повні деталі треку для отримання аудіо-ключа
-            const res = await getApiAdminTracksId(trackId);
-            const details = (res as { data?: TrackDetailsDto })?.data ?? (res as TrackDetailsDto);
+            const res = await customInstance<{ previewUrl: string }>(
+                `/api/admin/tracks/${trackId}/preview-url`,
+                { method: 'GET' }
+            );
+            const previewUrl = (res as { data?: { previewUrl: string } })?.data?.previewUrl
+                ?? (res as { previewUrl: string }).previewUrl;
 
-            // Пріоритетно беремо progressive mp3 ключ або hls плейлист
-            const audioKey = details.audioStorageKey || details.hlsPlaylistUrl;
-
-            if (!audioKey) {
-                alert('Audio asset source key is missing for this track entry.');
+            if (!previewUrl) {
+                alert('Failed to generate preview URL for this track.');
                 setLoadingTrackId(null);
                 return;
             }
 
-            const absoluteUrl = getImageUrl(audioKey);
-            if (!absoluteUrl) {
-                setLoadingTrackId(null);
-                return;
-            }
-
-            // Запускаємо аудіо-потік браузера
-            audioRef.current = new Audio(absoluteUrl);
+            // Signed URL carries the auth token in query params — no headers needed
+            const apiOrigin = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') ?? 'https://dev-api.yuviron.com';
+            audioRef.current = new Audio(`${apiOrigin}${previewUrl}`);
             await audioRef.current.play();
 
             setPlayingTrackId(trackId);
