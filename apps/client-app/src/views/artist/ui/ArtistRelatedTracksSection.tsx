@@ -1,25 +1,25 @@
 'use client';
 
-import React, { useRef, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { TrackCard, type TrackCardData } from '@/entities/track/ui/TrackCard';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { useHasOverflow } from '@/shared/lib/useHasOverflow';
 import type { RelatedTrackDto } from '@repo/api/client.ts';
 
 interface ArtistRelatedTracksSectionProps {
-    artistId: string;
     tracks?: RelatedTrackDto[];
     isLoading?: boolean;
     onTrackClick?: (mappedTracks: TrackCardData[], index: number) => void;
 }
 
 export const ArtistRelatedTracksSection = ({
-                                               artistId,
                                                tracks = [],
                                                isLoading = false,
                                                onTrackClick,
                                            }: ArtistRelatedTracksSectionProps) => {
-    const sliderRef = useRef<HTMLDivElement>(null);
+    // Стрілки — лише коли контент переповнює слайдер (є що гортати).
+    const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([tracks]);
 
     // ─── Маппинг DTO в данные для отображения карточки ────────────────────────
     const mappedTracks: TrackCardData[] = useMemo(() => {
@@ -49,8 +49,8 @@ export const ArtistRelatedTracksSection = ({
             <SectionHeader
                 title="Вас може зацікавити"
                 highlightedWord="зацікавити"
-                onPrev={() => scroll('prev')}
-                onNext={() => scroll('next')}
+                onPrev={hasOverflow ? () => scroll('prev') : undefined}
+                onNext={hasOverflow ? () => scroll('next') : undefined}
             />
 
             {isLoading ? (

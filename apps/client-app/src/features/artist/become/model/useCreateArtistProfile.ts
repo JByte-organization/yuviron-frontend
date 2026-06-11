@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import {
+    getGetApiAuthMeQueryKey,
     postApiAuthRefresh,
     usePostApiArtistProfiles,
     usePostApiFilesUpload,
@@ -30,6 +32,7 @@ export const useCreateArtistProfile = () => {
     const [artistId, setArtistId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const setAccessToken = useSessionStore((s) => s.setAccessToken);
+    const queryClient = useQueryClient();
 
     const { mutateAsync: uploadFile } = usePostApiFilesUpload();
     const { mutateAsync: createProfile } = usePostApiArtistProfiles();
@@ -66,6 +69,11 @@ export const useCreateArtistProfile = () => {
             } catch {
                 /* fallback на экран успеха */
             }
+
+            // Свіжий токен → /auth/me має повернути нового артиста в managedArtists
+            // (авторитетне джерело резолву). Інвалідуємо, щоб кабінет не залежав
+            // лише від localStorage-містка.
+            await queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
 
             if (refreshedOk) {
                 router.push(STUDIO_ROUTE);

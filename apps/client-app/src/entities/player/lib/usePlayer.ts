@@ -296,9 +296,13 @@ const playTrack = async (track: PlayerTrack): Promise<void> => {
             });
         };
 
-        if (pendingAd) {
+        if (pendingAd && store.areAdsEnabled) {
+            console.log('[Player:Ads] Инициализация рекламного блока...');
             startAdPlayback(pendingAd as PendingAd, startMusic);
         } else {
+            if (pendingAd && !store.areAdsEnabled) {
+                console.log('[Player:Ads] Рекламный блок обнаружен, но пропущен согласно флагам конфигурации.');
+            }
             await startMusic();
         }
 

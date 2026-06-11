@@ -15,7 +15,11 @@ export interface SessionUser {
 interface SessionState {
     accessToken: string | null;
     user: SessionUser | null;
+    // Чи завершилось початкове відновлення сесії (restoreSession у ApiClientProvider).
+    // Доти не знаємо, артист користувач чи ні — гейти показують лоадер, а не блокер.
+    authResolved: boolean;
     setAccessToken: (token: string | null) => void;
+    markAuthResolved: () => void;
     clearSession: () => void;
 }
 
@@ -72,7 +76,9 @@ const userFromToken = (token: string | null): SessionUser | null => {
 export const useSessionStore = create<SessionState>((set, get) => ({
     accessToken: null,
     user: null,
+    authResolved: false,
     setAccessToken: (token) => set({ accessToken: token, user: userFromToken(token) }),
+    markAuthResolved: () => set({ authResolved: true }),
     clearSession: () => {
         // Прибираємо scoped-artistId поточного юзера (+ легасі-ключ), щоб
         // наступний акаунт на цьому браузері не успадкував чужий кабінет.

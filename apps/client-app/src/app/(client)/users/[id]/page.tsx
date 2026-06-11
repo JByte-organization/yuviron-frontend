@@ -11,7 +11,7 @@ export default function UserDetailPage() {
     const { data: meRaw, isLoading } = useGetApiAuthMe();
 
     const me = meRaw as unknown as { id?: string } | undefined;
-    const isOwnProfile = !!me?.id && me.id === params.id;
+    const isOwnProfile = !!me?.id && me.id === params?.id;
 
     // Выполняем редирект как сайд-эффект ПОСЛЕ рендеринга
     useEffect(() => {
@@ -29,5 +29,5 @@ export default function UserDetailPage() {
         );
     }
 
-    return <UserProfilePage userId={params.id} />;
+    return <UserProfilePage userId={params?.id ?? ''} />;
 }

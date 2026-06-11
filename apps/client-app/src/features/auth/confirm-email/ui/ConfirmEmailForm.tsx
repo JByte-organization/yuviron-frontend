@@ -11,7 +11,7 @@ import { usePostApiAuthConfirmEmail } from '@repo/api/client.ts';
 // отдельный флоу входа без пароля (см. features/auth/login-with-code).
 export const ConfirmEmailForm = () => {
     const searchParams = useSearchParams();
-    const token = searchParams.get('token') ?? '';
+    const token = searchParams?.get('token') ?? '';
 
     const { mutate, isPending, isSuccess, isError, error } = usePostApiAuthConfirmEmail();
 

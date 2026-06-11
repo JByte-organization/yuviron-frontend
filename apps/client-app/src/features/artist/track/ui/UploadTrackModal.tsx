@@ -11,6 +11,7 @@ import {
 } from '@repo/api/artist.ts';
 import { usePostApiFilesUpload } from '@repo/api/client.ts';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import { extractFileId } from '@/shared/lib/unwrapApi';
 
 interface Props {
     isOpen: boolean;
@@ -24,10 +25,6 @@ type FormValues = {
     albumId: string;
 };
 
-const extractFileId = (res: unknown): string | null => {
-    const r = res as { fileId?: string; data?: { fileId?: string } } | null;
-    return r?.data?.fileId ?? r?.fileId ?? null;
-};
 
 const unwrapItems = <T,>(raw: unknown): T[] => {
     if (!raw) return [];
@@ -88,7 +85,7 @@ export const UploadTrackModal = ({ isOpen, onClose, onSuccess }: Props) => {
         setIsUploading(true);
         try {
             const audioFileId = extractFileId(await uploadFile({ data: { file: audioFile } }));
-            if (!audioFileId) throw new Error('upload failed');
+            if (!audioFileId) throw new Error('Аудіо не завантажилось (бек не повернув fileId)');
             const coverFileId = coverFile
                 ? extractFileId(await uploadFile({ data: { file: coverFile } }))
                 : null;
@@ -105,8 +102,24 @@ export const UploadTrackModal = ({ isOpen, onClose, onSuccess }: Props) => {
             });
             onSuccess();
             handleClose();
-        } catch {
-            setError('Не вдалося завантажити трек. Спробуйте ще раз.');
+        } catch (e) {
+            // Дістаємо реальну причину з axios-помилки, щоб не ховати 400/403/413/500
+            // за загальним текстом (інакше неможливо зрозуміти, що саме впало).
+            const err = e as {
+                response?: { status?: number; data?: { detail?: string; title?: string; message?: string } };
+                message?: string;
+            };
+            const status = err?.response?.status;
+            const detail =
+                err?.response?.data?.detail ??
+                err?.response?.data?.title ??
+                err?.response?.data?.message ??
+                err?.message;
+            console.error('[UploadTrackModal] track upload failed:', status, err?.response?.data ?? e);
+            setError(
+                `Не вдалося завантажити трек${status ? ` (${status})` : ''}.` +
+                    (detail ? ` ${detail}` : ' Спробуйте ще раз.'),
+            );
         } finally {
             setIsUploading(false);
         }

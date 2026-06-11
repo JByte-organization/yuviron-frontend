@@ -12,11 +12,13 @@ import {
 import { usePostApiFilesUpload } from '@repo/api/client.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
-import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import { useCurrentArtist } from '@/entities/artist/model/currentArtist';
 import {
     ArtistSocialLinksBlock,
     ArtistVerificationBlock,
 } from '@/features/artist/profile/ui/ArtistProfileExtras';
+
+import { unwrap, extractFileId, extractFileUrl } from '@/shared/lib/unwrapApi';
 
 type FormValues = {
     stageName: string;
@@ -24,19 +26,8 @@ type FormValues = {
     country: string;
 };
 
-const unwrap = <T,>(raw: unknown): T | undefined => {
-    if (!raw) return undefined;
-    const obj = raw as { data?: T };
-    return (obj.data ?? (raw as T)) as T;
-};
-
-const extractFileId = (res: unknown): string | null => {
-    const r = res as { fileId?: string; data?: { fileId?: string } } | null;
-    return r?.data?.fileId ?? r?.fileId ?? null;
-};
-
 export const ArtistSettingsPage = () => {
-    const artistId = useCurrentArtistId();
+    const { artistId, canManage } = useCurrentArtist();
     const queryClient = useQueryClient();
 
     const { data: profileRaw } = useGetApiStudioArtistProfileArtistId(artistId ?? '', {
@@ -99,11 +90,22 @@ export const ArtistSettingsPage = () => {
         if (!artistId) return;
         setError(null);
         try {
-            // Опційні файли вантажимо окремо (як у create-флоу), отримуємо fileId.
+            // Опційні файли вантажимо окремо (як у create-флоу), отримуємо fileId +
+            // тимчасовий url (його бек віддає одразу — показуємо картинку до персисту).
             let avatarFileId: string | null = null;
             let bannerFileId: string | null = null;
-            if (avatarFile) avatarFileId = extractFileId(await uploadFile({ data: { file: avatarFile } }));
-            if (bannerFile) bannerFileId = extractFileId(await uploadFile({ data: { file: bannerFile } }));
+            let avatarTempUrl: string | null = null;
+            let bannerTempUrl: string | null = null;
+            if (avatarFile) {
+                const res = await uploadFile({ data: { file: avatarFile } });
+                avatarFileId = extractFileId(res);
+                avatarTempUrl = extractFileUrl(res);
+            }
+            if (bannerFile) {
+                const res = await uploadFile({ data: { file: bannerFile } });
+                bannerFileId = extractFileId(res);
+                bannerTempUrl = extractFileUrl(res);
+            }
 
             await updateProfile({
                 id: artistId,
@@ -117,14 +119,13 @@ export const ArtistSettingsPage = () => {
                 },
             });
 
-            // Скидаємо вибрані файли, але прев'ю ЛИШАЄМО на локальному blob щойно
-            // завантаженого файлу. НЕ беремо медіа-хеш профілю одразу — він 404-ить,
-            // поки файл не доїде на медіа-сервер (звідси биті картинки після сейву).
-            // На повне перезавантаження візьметься персиснутий avatarUrl/bannerUrl.
+            // Скидаємо вибрані файли. Прев'ю лишаємо на тимчасовому url з upload
+            // (а не на медіа-хеші профілю, який ще 404-ить) — fallback на старий blob,
+            // якщо бек url не віддав; null → береться картинка з профілю (вже персиснута).
             setAvatarFile(null);
             setBannerFile(null);
-            setAvatarObjectUrl(prev => (avatarFileId ? prev : null));
-            setBannerObjectUrl(prev => (bannerFileId ? prev : null));
+            setAvatarObjectUrl(prev => avatarTempUrl ?? (avatarFileId ? prev : null));
+            setBannerObjectUrl(prev => bannerTempUrl ?? (bannerFileId ? prev : null));
             await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/profile'] });
             reset(values);
             setSaved(true);
@@ -278,7 +279,7 @@ export const ArtistSettingsPage = () => {
                     <button
                         type="submit"
                         className="client-modal__btn client-modal__btn--primary"
-                        disabled={isSubmitting || !hasChanges || !artistId}
+                        disabled={isSubmitting || !hasChanges || !artistId || !canManage}
                     >
                         {isSubmitting
                             ? <><span className="spinner-border spinner-border-sm me-2" />Збереження...</>
@@ -288,8 +289,8 @@ export const ArtistSettingsPage = () => {
                 </div>
             </form>
 
-            {/* ─── Соцмережі + верифікація ───────────── */}
-            {artistId && (
+            {/* ─── Соцмережі + верифікація (тільки для тих, хто може керувати) ─── */}
+            {artistId && canManage && (
                 <>
                     <ArtistSocialLinksBlock
                         artistId={artistId}

@@ -11,11 +11,7 @@ import {
     type StudioSocialLinkDto,
 } from '@repo/api/artist.ts';
 import { usePostApiFilesUpload } from '@repo/api/client.ts';
-
-const extractFileId = (res: unknown): string | null => {
-    const r = res as { fileId?: string; data?: { fileId?: string } } | null;
-    return r?.data?.fileId ?? r?.fileId ?? null;
-};
+import { extractFileId } from '@/shared/lib/unwrapApi';
 
 // ══════════════════════════════════════════════════════════
 // СОЦМЕРЕЖІ
@@ -88,8 +84,8 @@ export const ArtistSocialLinksBlock = ({ artistId, initialLinks }: SocialLinksPr
     const submit = async () => {
         setError(null);
         try {
-            // Новий контракт: одна площадка = окремий ресурс. DELETE по типах, які
-            // прибрали, і POST (upsert) по поточних — замість старого bulk-PUT.
+            // Новий контракт: одна площадка = окремий ресурс. Замість bulk-PUT
+            // робимо DELETE по типах, які прибрали, і POST (upsert) по поточних.
             const currentTypes = new Set(rows.map(r => r.type));
             const removed = (initialLinks ?? [])
                 .map(l => l.type)

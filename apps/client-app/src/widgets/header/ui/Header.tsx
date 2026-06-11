@@ -14,7 +14,6 @@ import {
 } from '@repo/api/client.ts';
 import { useSessionStore } from '@/entities/session/model/store';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
-import { useTheme } from '@/shared/lib/ThemeProvider';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { SearchDropdown } from './SearchDropdown';
 import { UserDropdown } from './UserDropdown';
@@ -24,12 +23,6 @@ export const Header = () => {
     const accessToken = useSessionStore(s => s.accessToken);
     const clearSession = useSessionStore(s => s.clearSession);
     const artistId = useCurrentArtistId();
-
-    // ─── Тема ─────────────────────────────────────────────
-    const { theme, toggleTheme } = useTheme();
-    const [themeMounted, setThemeMounted] = useState(false);
-    useEffect(() => setThemeMounted(true), []);
-    const isLight = themeMounted && theme === 'light';
 
     // ─── Дані поточного користувача ───────────────────────
     const { data: meRaw, refetch } = useGetApiAuthMe({
@@ -44,9 +37,9 @@ export const Header = () => {
         if (accessToken) {
             refetch();
         }
-    }, [accessToken]);
+    }, [accessToken, refetch]);
 
-    const me: CurrentUserDto | null = (meRaw as CurrentUserDto) ?? null;
+    const me = (meRaw as CurrentUserDto) ?? null;
     const avatarSrc = getImageUrl(me?.profile?.avatarUrl);
 
     // ─── Лічильник непрочитаних ───────────────────────────
@@ -94,7 +87,6 @@ export const Header = () => {
 
     return (
         <header className="client-header">
-
             {/* Лого */}
             <Link href="/home" className="client-header__logo">
                 <Image src="/images/logo.svg" alt="Lumitune" width={32} height={32} />
@@ -125,7 +117,6 @@ export const Header = () => {
                     </button>
                 )}
 
-                {/* 🚨 ФІКС: Прибрали застарілі результати й лоадери, лишили тільки те, що вимагає пропс */}
                 {showDropdown && (
                     <SearchDropdown
                         query={query}
@@ -136,17 +127,6 @@ export const Header = () => {
 
             {/* Праві дії */}
             <div className="client-header__actions">
-                {/* Перемикач теми */}
-                <button
-                    type="button"
-                    className="client-header__icon-btn client-header__theme-btn"
-                    onClick={toggleTheme}
-                    aria-label={isLight ? 'Увімкнути темну тему' : 'Увімкнути світлу тему'}
-                    title={isLight ? 'Темна тема' : 'Світла тема'}
-                >
-                    <i className={`bi ${isLight ? 'bi-moon-stars' : 'bi-sun'}`} />
-                </button>
-
                 {accessToken && me ? (
                     <div className="client-header__user">
                         {/* Premium кнопка */}

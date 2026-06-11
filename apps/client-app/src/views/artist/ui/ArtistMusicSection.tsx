@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { AlbumCard, type AlbumCardData } from '@/entities/album/ui/AlbumCard';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { useHasOverflow } from '@/shared/lib/useHasOverflow';
 import type { ArtistAlbumDto } from '@repo/api/client.ts';
 
 type MusicTab = 'popular' | 'albums' | 'singles';
 
 interface ArtistMusicSectionProps {
-    artistId: string;
     artistName: string;
     popularReleases?: ArtistAlbumDto[];
     albums?: ArtistAlbumDto[];
@@ -25,7 +25,6 @@ const TABS: { key: MusicTab; label: string }[] = [
 ];
 
 export const ArtistMusicSection = ({
-                                       artistId,
                                        artistName,
                                        popularReleases = [],
                                        albums = [],
@@ -34,22 +33,22 @@ export const ArtistMusicSection = ({
                                        onAlbumClick,
                                    }: ArtistMusicSectionProps) => {
     const [activeTab, setActiveTab] = useState<MusicTab>('popular');
-    const sliderRef = useRef<HTMLDivElement>(null);
-
-    // Хелпер для мапінгу ArtistAlbumDto у формат картки AlbumCardData
-    const mapToCardData = (list: ArtistAlbumDto[]): AlbumCardData[] => {
-        return list.map((a) => ({
-            id:          a.id ?? '',
-            title:       a.title ?? 'Без назви',
-            artistName:  artistName, // Підставляємо ім'я поточного артиста
-            coverUrl:    getImageUrl(a.coverUrl),
-            // Оскільки в ArtistAlbumDto немає tracksCount, AlbumCard виведе гарний підпис "by Artist"
-            tracksCount: undefined,
-        }));
-    };
 
     // ─── Мапінг даних через useMemo ──────────────────────────────────────────
+    // Хелпер тримаємо ВСЕРЕДИНІ useMemo: інакше React Compiler виводить його як
+    // окрему залежність, яка не збігається з ручним списком deps (preserve-manual-memoization).
     const dataMap = useMemo<Record<MusicTab, AlbumCardData[]>>(() => {
+        // Підставляємо ім'я поточного артиста; tracksCount немає в ArtistAlbumDto,
+        // тож AlbumCard виведе гарний підпис "by Artist".
+        const mapToCardData = (list: ArtistAlbumDto[]): AlbumCardData[] =>
+            list.map((a) => ({
+                id:          a.id ?? '',
+                title:       a.title ?? 'Без назви',
+                artistName:  artistName,
+                coverUrl:    getImageUrl(a.coverUrl),
+                tracksCount: undefined,
+            }));
+
         return {
             popular: mapToCardData(popularReleases),
             albums:  mapToCardData(albums),
@@ -61,6 +60,9 @@ export const ArtistMusicSection = ({
 
     const hasData = currentData.length > 0;
 
+    // Стрілки — лише коли контент переповнює слайдер (перевіряємо й при зміні таба).
+    const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([currentData]);
+
     const scroll = (dir: 'prev' | 'next') => {
         if (!sliderRef.current) return;
         const amount = sliderRef.current.offsetWidth * 0.8;
@@ -71,8 +73,8 @@ export const ArtistMusicSection = ({
         <section className="artist-music mb-5">
             <SectionHeader
                 title="Музика"
-                onPrev={hasData ? () => scroll('prev') : undefined}
-                onNext={hasData ? () => scroll('next') : undefined}
+                onPrev={hasOverflow ? () => scroll('prev') : undefined}
+                onNext={hasOverflow ? () => scroll('next') : undefined}
             />
 
             {/* ─── Таби ─────────────────────────────────── */}

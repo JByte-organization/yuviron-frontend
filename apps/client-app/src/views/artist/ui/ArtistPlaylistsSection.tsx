@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useRef, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { PlaylistCard } from '@/entities/playlist/ui/PlaylistCard';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { useHasOverflow } from '@/shared/lib/useHasOverflow';
 import type { ArtistPlaylistDto } from '@repo/api/client.ts';
 
 interface ArtistPlaylistsSectionProps {
-    artistId: string;
     artistName: string;
     playlists?: ArtistPlaylistDto[];
     isLoading?: boolean;
@@ -15,13 +15,13 @@ interface ArtistPlaylistsSectionProps {
 }
 
 export const ArtistPlaylistsSection = ({
-                                           artistId,
                                            artistName,
                                            playlists = [], // Избавились от MOCK_PLAYLISTS
                                            isLoading = false,
                                            onPlaylistClick,
                                        }: ArtistPlaylistsSectionProps) => {
-    const sliderRef = useRef<HTMLDivElement>(null);
+    // Стрілки — лише коли контент переповнює слайдер (є що гортати).
+    const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([playlists]);
 
     // ─── Маппинг данных из ArtistPlaylistDto в формат PlaylistCardData ────────
     const mappedPlaylists = useMemo(() => {
@@ -50,8 +50,8 @@ export const ArtistPlaylistsSection = ({
             <SectionHeader
                 title={`${artistName}: плейлісти виконавця`}
                 highlightedWord="плейлісти"
-                onPrev={() => scroll('prev')}
-                onNext={() => scroll('next')}
+                onPrev={hasOverflow ? () => scroll('prev') : undefined}
+                onNext={hasOverflow ? () => scroll('next') : undefined}
             />
 
             {isLoading ? (

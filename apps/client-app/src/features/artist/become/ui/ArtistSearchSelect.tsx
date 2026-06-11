@@ -25,7 +25,7 @@ export const ArtistSearchSelect = ({ onSelect }: ArtistSearchSelectProps) => {
 
     const enabled = debounced.length >= 2;
     const params = { query: debounced, page: 1, pageSize: 20 };
-    const { data, isFetching } = useGetApiSearchArtists(params, {
+    const { data, isFetching, isError } = useGetApiSearchArtists(params, {
         query: { enabled, queryKey: getGetApiSearchArtistsQueryKey(params) },
     });
     const items = (data as SearchArtistDtoPaginatedList | undefined)?.items ?? [];
@@ -43,10 +43,15 @@ export const ArtistSearchSelect = ({ onSelect }: ArtistSearchSelectProps) => {
 
             {enabled && (
                 <div className="client-become-artist__results">
-                    {isFetching && items.length === 0 && (
+                    {isError && (
+                        <div className="client-become-artist__results-empty">
+                            Не вдалося виконати пошук. Спробуйте ще раз.
+                        </div>
+                    )}
+                    {!isError && isFetching && items.length === 0 && (
                         <div className="client-become-artist__results-empty">Пошук…</div>
                     )}
-                    {!isFetching && items.length === 0 && (
+                    {!isError && !isFetching && items.length === 0 && (
                         <div className="client-become-artist__results-empty">Нічого не знайдено</div>
                     )}
                     {items.map((artist) => (
