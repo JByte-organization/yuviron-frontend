@@ -6,6 +6,7 @@ import {
     getApiTracksIdPlay,
     postApiAnalyticsPlayStart,
     postApiAnalyticsPlayCommit,
+    customInstance,
     type TrackStreamUrlResponse,
     type StartPlayResponse,
 } from '@repo/api/client';
@@ -234,20 +235,41 @@ const startAdPlayback = (ad: PendingAd, onFinished: () => void): void => {
         return;
     }
 
-    adAudio.src = `${CDN_BASE}/${ad.audioUrl}`;
-    adAudio.play().catch(err => console.error('[Player] Ad play() rejected:', err));
-
-    const handleAdEnded = async () => {
-        try {
-            await fetch(`/api/ads/${ad.adId}/impressions`, { method: 'POST' });
-        } catch {
-            // silent
-        }
+    let finished = false;
+    const finish = () => {
+        if (finished) return;
+        finished = true;
         usePlayerStore.getState().setPendingAd(null);
         onFinished();
     };
 
+    const handleAdEnded = async () => {
+        try {
+            await customInstance(`/api/ads/${ad.adId}/impressions`, {
+                method: 'POST',
+                body: JSON.stringify({ context: 'ClientPlayer' }),
+            });
+        } catch {
+            // silent — не блокуємо відтворення треку при збої запиту
+        }
+        finish();
+    };
+
+    const handleAdError = () => {
+        console.error('[Player] Ad media error, skipping ad');
+        finish();
+    };
+
     adAudio.addEventListener('ended', handleAdEnded, { once: true });
+    adAudio.addEventListener('error', handleAdError, { once: true });
+
+    adAudio.src = `${CDN_BASE}/${ad.audioUrl}`;
+    adAudio.play().catch(err => {
+        console.error('[Player] Ad play() rejected:', err);
+        adAudio.removeEventListener('ended', handleAdEnded);
+        adAudio.removeEventListener('error', handleAdError);
+        finish();
+    });
 };
 
 /** Відкриває аналітичну сесію */
