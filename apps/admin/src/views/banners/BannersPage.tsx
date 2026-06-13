@@ -16,25 +16,24 @@ import { Pagination } from '@/shared/ui/Pagination';
 
 const PAGE_SIZE = 20;
 
-const TABLE_COLUMNS = ['Preview', 'Title', 'Target URL', 'Sort Order', 'Active', 'Created At'];
+const TABLE_COLUMNS = ['Preview', 'Title', 'Period', 'Status'];
 
+// Банери перейшли з ручного sortOrder на вікно показу (startsAtUtc/endsAtUtc).
 const SORT_OPTIONS = [
-    { value: 'sortOrder', label: 'Sort Order'   },
-    { value: 'title',     label: 'Title (A-Z)'  },
-    { value: 'createdAt', label: 'Date Created'  },
-    { value: 'isActive',  label: 'Active first'  },
+    { value: 'startsAtUtc', label: 'Start date'  },
+    { value: 'endsAtUtc',   label: 'End date'    },
+    { value: 'title',       label: 'Title (A-Z)' },
+    { value: 'isActive',    label: 'Active first' },
 ];
 
+const DEFAULT_SORT = 'startsAtUtc';
+
 interface FilterState {
-    isActive:       boolean | undefined; // true | false | undefined (all)
-    sortOrderFrom:  number | undefined;
-    sortOrderTo:    number | undefined;
+    isActive: boolean | undefined; // true | false | undefined (all)
 }
 
 const EMPTY_FILTERS: FilterState = {
-    isActive:      undefined,
-    sortOrderFrom: undefined,
-    sortOrderTo:   undefined,
+    isActive: undefined,
 };
 
 export const BannersPage = () => {
@@ -52,8 +51,8 @@ export const BannersPage = () => {
     const [searchInput, setSearchInput] = useState('');
 
     // ─── Сортування ───────────────────────────────────────
-    const [sortBy,    setSortBy]    = useState<string>('sortOrder');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [sortBy,    setSortBy]    = useState<string>(DEFAULT_SORT);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
     // ─── Фільтри ──────────────────────────────────────────
     const [draftFilters,  setDraftFilters]  = useState<FilterState>(EMPTY_FILTERS);
@@ -61,8 +60,6 @@ export const BannersPage = () => {
 
     const activeFiltersCount = [
         activeFilters.isActive !== undefined,
-        activeFilters.sortOrderFrom !== undefined,
-        activeFilters.sortOrderTo   !== undefined,
     ].filter(Boolean).length;
 
     // ─── Запит ────────────────────────────────────────────
@@ -72,7 +69,6 @@ export const BannersPage = () => {
         SearchTerm: search || undefined,
         SortBy:    sortBy,
         SortOrder: sortOrder,
-        // TODO: після бекенду додати IsActive, SortOrderFrom, SortOrderTo
     };
 
     const { data, isLoading, isError, refetch } = useGetApiAdminBanners(queryParams);
@@ -82,15 +78,9 @@ export const BannersPage = () => {
     const totalPages = responseData?.totalPages ?? 1;
     const totalCount = responseData?.totalCount ?? 0;
 
-    // Фільтрація на фронтенді поки бекенд не підтримує ці параметри
+    // Фільтр isActive на фронтенді (бекенд у списку приймає лише пошук/сортування).
     const banners = allBanners.filter(b => {
         if (activeFilters.isActive !== undefined && b.isActive !== activeFilters.isActive) {
-            return false;
-        }
-        if (activeFilters.sortOrderFrom !== undefined && (b.sortOrder ?? 0) < activeFilters.sortOrderFrom) {
-            return false;
-        }
-        if (activeFilters.sortOrderTo !== undefined && (b.sortOrder ?? 0) > activeFilters.sortOrderTo) {
             return false;
         }
         return true;
@@ -116,8 +106,8 @@ export const BannersPage = () => {
 
     const handleSortChange = (newSortBy: string, newSortOrder: 'asc' | 'desc') => {
         if (sortBy === newSortBy && sortOrder === newSortOrder) {
-            setSortBy('sortOrder');
-            setSortOrder('asc');
+            setSortBy(DEFAULT_SORT);
+            setSortOrder('desc');
         } else {
             setSortBy(newSortBy);
             setSortOrder(newSortOrder);
@@ -173,38 +163,6 @@ export const BannersPage = () => {
                 </div>
             </div>
 
-            {/* Sort Order range */}
-            <div>
-                <p className="text-secondary small fw-semibold text-uppercase mb-2">Sort Order Range</p>
-                <div className="d-flex align-items-center gap-2">
-                    <input
-                        type="number"
-                        min={1}
-                        className="form-control admin-login__input"
-                        placeholder="From"
-                        value={draftFilters.sortOrderFrom ?? ''}
-                        onChange={(e) => setDraftFilters(prev => ({
-                            ...prev,
-                            sortOrderFrom: e.target.value ? Number(e.target.value) : undefined,
-                        }))}
-                        style={{ width: 80 }}
-                    />
-                    <span className="text-secondary">—</span>
-                    <input
-                        type="number"
-                        min={1}
-                        className="form-control admin-login__input"
-                        placeholder="To"
-                        value={draftFilters.sortOrderTo ?? ''}
-                        onChange={(e) => setDraftFilters(prev => ({
-                            ...prev,
-                            sortOrderTo: e.target.value ? Number(e.target.value) : undefined,
-                        }))}
-                        style={{ width: 80 }}
-                    />
-                </div>
-            </div>
-
         </div>
     );
 
@@ -212,7 +170,7 @@ export const BannersPage = () => {
         <>
             <BaseTable
                 title="Banners"
-                subtitle={`Manage homepage slider banners (Total: ${totalCount})`}
+                subtitle={`Manage promo banners (Total: ${totalCount})`}
                 columns={TABLE_COLUMNS}
                 onNewClick={() => setIsCreateOpen(true)}
                 searchPlaceholder="Search by title..."

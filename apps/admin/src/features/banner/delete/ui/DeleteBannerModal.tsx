@@ -41,7 +41,7 @@ export const DeleteBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props)
                             Are you sure you want to delete this banner?
                         </p>
                         <p className="text-white fw-semibold mb-0">
-                            {banner.title ? `"${banner.title}"` : `Banner #${banner.sortOrder}`}
+                            {banner.title ? `"${banner.title}"` : `Banner ${banner.id?.slice(0, 8) ?? ''}`}
                         </p>
                         <p className="text-danger small mt-3 mb-0">
                             This action cannot be undone.

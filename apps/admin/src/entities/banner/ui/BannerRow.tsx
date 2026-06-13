@@ -13,17 +13,36 @@ interface BannerRowProps {
     onDelete: (banner: BannerListItemDto) => void;
 }
 
-const formatDate = (dateString?: string): string => {
-    if (!dateString) return '—';
-    return new Date(dateString).toLocaleDateString('uk-UA', {
-        day:   '2-digit',
-        month: '2-digit',
-        year:  'numeric',
-    });
+const formatDate = (dateString?: string | null): string => {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' });
+};
+
+// Період показу банера (нова модель замість sortOrder): startsAtUtc → endsAtUtc.
+// null-межі: без початку = «з моменту активації», без кінця = «безстроково».
+const formatPeriod = (start?: string | null, end?: string | null): string => {
+    if (!start && !end) return 'Завжди';
+    return `${start ? formatDate(start) : '—'} – ${end ? formatDate(end) : '∞'}`;
+};
+
+// Статус показу: поєднання isActive і вікна дат (зараз/заплановано/завершено).
+const computeStatus = (
+    isActive: boolean | undefined,
+    start?: string | null,
+    end?: string | null,
+): { label: string; cls: string } => {
+    if (!isActive) return { label: 'Inactive', cls: 'bg-secondary' };
+    const now = Date.now();
+    if (start && new Date(start).getTime() > now) return { label: 'Scheduled', cls: 'bg-info' };
+    if (end && new Date(end).getTime() < now) return { label: 'Expired', cls: 'bg-warning text-dark' };
+    return { label: 'Active', cls: 'bg-success' };
 };
 
 export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: BannerRowProps) => {
     const previewUrl = getImageUrl(banner.bannerUrl);
+    const status = computeStatus(banner.isActive, banner.startsAtUtc, banner.endsAtUtc);
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>
@@ -60,41 +79,14 @@ export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: Ba
                 {banner.title ?? '—'}
             </td>
 
-            {/* Target URL */}
-            <td className="text-secondary small">
-                {banner.targetUrl ? (
-                    <a
-                        href={banner.targetUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-info text-decoration-none text-truncate d-block"
-                        style={{ maxWidth: 200 }}
-                        title={banner.targetUrl}
-                    >
-                        {banner.targetUrl}
-                    </a>
-                ) : '—'}
-            </td>
-
-            {/* Sort Order */}
-            <td className="text-center">
-                <span className="badge bg-secondary px-3 py-2">
-                    #{banner.sortOrder ?? 0}
-                </span>
-            </td>
-
-            {/* Active */}
-            <td className="text-center">
-                {banner.isActive ? (
-                    <span className="badge bg-success">Active</span>
-                ) : (
-                    <span className="badge bg-secondary">Inactive</span>
-                )}
-            </td>
-
-            {/* Created At */}
+            {/* Period (start → end) */}
             <td className="text-secondary small text-nowrap">
-                {formatDate(banner.createdAt)}
+                {formatPeriod(banner.startsAtUtc, banner.endsAtUtc)}
+            </td>
+
+            {/* Status */}
+            <td className="text-center">
+                <span className={`badge ${status.cls}`}>{status.label}</span>
             </td>
 
             {/* Actions */}

@@ -13,11 +13,16 @@ interface Props {
 type FormValues = {
     title: string;
     targetUrl: string;
-    sortOrder: number;
     isActive: boolean;
+    startsAtUtc: string;       // datetime-local або ''
+    endsAtUtc: string;
+    targetCountries: string;   // CSV, напр. "UA,PL"
+    targetGenres: string;      // CSV
 };
 
-const IMAGE_BASE = 'https://dev-i.yuviron.com';
+// datetime-local ('YYYY-MM-DDTHH:mm') → ISO-UTC або null.
+const toIsoOrNull = (local: string): string | null =>
+    local ? new Date(local).toISOString() : null;
 
 export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
     const {
@@ -25,10 +30,13 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
         formState: { errors, isSubmitting },
     } = useForm<FormValues>({
         defaultValues: {
-            title:     '',
-            targetUrl: '',
-            sortOrder: 1,
-            isActive:  true,
+            title:           '',
+            targetUrl:       '',
+            isActive:        true,
+            startsAtUtc:     '',
+            endsAtUtc:       '',
+            targetCountries: '',
+            targetGenres:    '',
         },
     });
 
@@ -77,11 +85,14 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
         }
 
         const body: CreateBannerCommand = {
-            title:        values.title     || null,
-            targetUrl:    values.targetUrl || null,
-            bannerFileId: bannerFileId,
-            sortOrder:    values.sortOrder,
-            isActive:     values.isActive,
+            title:           values.title     || null,
+            bannerFileId:    bannerFileId,
+            targetUrl:       values.targetUrl || null,
+            isActive:        values.isActive,
+            startsAtUtc:     toIsoOrNull(values.startsAtUtc),
+            endsAtUtc:       toIsoOrNull(values.endsAtUtc),
+            targetCountries: values.targetCountries || null,
+            targetGenres:    values.targetGenres || null,
         };
 
         try {
@@ -213,44 +224,65 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
                                 )}
                             </div>
 
-                            {/* Sort Order + Active */}
-                            <div className="row g-3">
+                            {/* Період показу */}
+                            <div className="row g-3 mb-4">
                                 <div className="col-md-6">
-                                    <label className="form-label admin-text small fw-bold">SORT ORDER *</label>
+                                    <label className="form-label admin-text small fw-bold">START (UTC)</label>
                                     <input
-                                        type="number"
-                                        min={1}
-                                        className={`form-control admin-login__input${errors.sortOrder ? ' is-invalid' : ''}`}
-                                        {...register('sortOrder', {
-                                            required: 'Sort order is required',
-                                            valueAsNumber: true,
-                                            min: {value: 1, message: 'Must be at least 1'},
-                                        })}
+                                        type="datetime-local"
+                                        className="form-control admin-login__input"
+                                        {...register('startsAtUtc')}
                                     />
                                     <div className="form-text text-secondary small">
-                                        Порядок відображення (унікальний)
+                                        Порожньо = показ з моменту активації
                                     </div>
-                                    {errors.sortOrder && (
-                                        <div className="invalid-feedback">{errors.sortOrder.message}</div>
-                                    )}
                                 </div>
+                                <div className="col-md-6">
+                                    <label className="form-label admin-text small fw-bold">END (UTC)</label>
+                                    <input
+                                        type="datetime-local"
+                                        className="form-control admin-login__input"
+                                        {...register('endsAtUtc')}
+                                    />
+                                    <div className="form-text text-secondary small">
+                                        Порожньо = безстроково
+                                    </div>
+                                </div>
+                            </div>
 
-                                <div className="col-md-6 d-flex align-items-center pt-3">
-                                    <div className="form-check form-switch">
-                                        <input
-                                            type="checkbox"
-                                            className="form-check-input"
-                                            id="create-isActive"
-                                            {...register('isActive')}
-                                        />
-                                        <label
-                                            className="form-check-label text-white fw-semibold"
-                                            htmlFor="create-isActive"
-                                        >
-                                            Active
-                                        </label>
-                                    </div>
+                            {/* Таргетинг */}
+                            <div className="row g-3 mb-4">
+                                <div className="col-md-6">
+                                    <label className="form-label admin-text small fw-bold">TARGET COUNTRIES</label>
+                                    <input
+                                        type="text"
+                                        className="form-control admin-login__input"
+                                        placeholder="UA, PL, DE (optional)"
+                                        {...register('targetCountries')}
+                                    />
                                 </div>
+                                <div className="col-md-6">
+                                    <label className="form-label admin-text small fw-bold">TARGET GENRES</label>
+                                    <input
+                                        type="text"
+                                        className="form-control admin-login__input"
+                                        placeholder="Pop, Rock (optional)"
+                                        {...register('targetGenres')}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Active */}
+                            <div className="form-check form-switch">
+                                <input
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    id="create-isActive"
+                                    {...register('isActive')}
+                                />
+                                <label className="form-check-label text-white fw-semibold" htmlFor="create-isActive">
+                                    Active
+                                </label>
                             </div>
 
                         </div>
