@@ -130,7 +130,7 @@ export const Header = () => {
                 {accessToken && me ? (
                     <div className="client-header__user">
                         {/* Premium кнопка */}
-                        {!me.isPremium && (
+                        {!me?.isPremium && (
                             <Link href="/premium" className="client-header__premium-btn">
                                 Дізнатися про Premium
                             </Link>
@@ -165,7 +165,7 @@ export const Header = () => {
                             {avatarSrc ? (
                                 <img
                                     src={avatarSrc}
-                                    alt={me.profile?.firstName ?? me.email ?? 'Avatar'}
+                                    alt={me?.profile?.firstName ?? me?.email ?? 'Avatar'}
                                     className="client-header__avatar"
                                 />
                             ) : (
@@ -173,7 +173,7 @@ export const Header = () => {
                                     <i className="bi bi-person-fill" />
                                 </div>
                             )}
-                            {me.isPremium && (
+                            {me?.isPremium && (
                                 <span className="client-header__premium-badge">Premium</span>
                             )}
                         </button>
