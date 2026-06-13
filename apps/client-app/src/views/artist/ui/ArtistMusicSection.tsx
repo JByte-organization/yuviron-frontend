@@ -1,34 +1,22 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
-import { ShowAllButton } from '@/shared/ui/ShowAllButton';
 import { AlbumCard, type AlbumCardData } from '@/entities/album/ui/AlbumCard';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { useHasOverflow } from '@/shared/lib/useHasOverflow';
+import type { ArtistAlbumDto } from '@repo/api/client.ts';
 
 type MusicTab = 'popular' | 'albums' | 'singles';
 
 interface ArtistMusicSectionProps {
-    artistId: string;
     artistName: string;
-    /** TODO: замінити на хук — useGetApiArtistsIdPopularReleases(artistId) */
-    popularReleases?: AlbumCardData[];
-    /** TODO: замінити на хук — useGetApiArtistsIdAlbums(artistId) */
-    albums?: AlbumCardData[];
-    /** TODO: замінити на хук — useGetApiArtistsIdSingles(artistId) */
-    singles?: AlbumCardData[];
+    popularReleases?: ArtistAlbumDto[];
+    albums?: ArtistAlbumDto[];
+    singles?: ArtistAlbumDto[];
     isLoading?: boolean;
     onAlbumClick?: (id: string) => void;
 }
-
-const MOCK_RELEASES: AlbumCardData[] = [
-    { id: '1', title: 'Pink Venom',      artistName: 'BLACKPINK', tracksCount: 1,  coverUrl: null },
-    { id: '2', title: 'Born Pink',       artistName: 'BLACKPINK', tracksCount: 8,  coverUrl: null },
-    { id: '3', title: 'Kill This Love',  artistName: 'BLACKPINK', tracksCount: 5,  coverUrl: null },
-    { id: '4', title: 'The Girls',       artistName: 'BLACKPINK', tracksCount: 3,  coverUrl: null },
-    { id: '5', title: 'Playing With Fire', artistName: 'BLACKPINK', tracksCount: 4, coverUrl: null },
-    { id: '6', title: 'See U Later',     artistName: 'BLACKPINK', tracksCount: 2,  coverUrl: null },
-    { id: '7', title: 'Kick It',         artistName: 'BLACKPINK', tracksCount: 1,  coverUrl: null },
-];
 
 const TABS: { key: MusicTab; label: string }[] = [
     { key: 'popular', label: 'Популярні релізи' },
@@ -36,25 +24,44 @@ const TABS: { key: MusicTab; label: string }[] = [
     { key: 'singles', label: 'Сингли та EP' },
 ];
 
-/**
- * Секція: Музика артиста з табами
- *
- * Підключення даних — залежить від активного табу:
- * popular: useGetApiArtistsIdPopularReleases(artistId)
- * albums:  useGetApiArtistsIdAlbums(artistId)
- * singles: useGetApiArtistsIdSingles(artistId)
- */
 export const ArtistMusicSection = ({
-                                       artistId,
                                        artistName,
-                                       popularReleases = MOCK_RELEASES,
-                                       albums = MOCK_RELEASES,
-                                       singles = MOCK_RELEASES.slice(0, 3),
+                                       popularReleases = [],
+                                       albums = [],
+                                       singles = [],
                                        isLoading = false,
                                        onAlbumClick,
                                    }: ArtistMusicSectionProps) => {
     const [activeTab, setActiveTab] = useState<MusicTab>('popular');
-    const sliderRef = useRef<HTMLDivElement>(null);
+
+    // ─── Мапінг даних через useMemo ──────────────────────────────────────────
+    // Хелпер тримаємо ВСЕРЕДИНІ useMemo: інакше React Compiler виводить його як
+    // окрему залежність, яка не збігається з ручним списком deps (preserve-manual-memoization).
+    const dataMap = useMemo<Record<MusicTab, AlbumCardData[]>>(() => {
+        // Підставляємо ім'я поточного артиста; tracksCount немає в ArtistAlbumDto,
+        // тож AlbumCard виведе гарний підпис "by Artist".
+        const mapToCardData = (list: ArtistAlbumDto[]): AlbumCardData[] =>
+            list.map((a) => ({
+                id:          a.id ?? '',
+                title:       a.title ?? 'Без назви',
+                artistName:  artistName,
+                coverUrl:    getImageUrl(a.coverUrl),
+                tracksCount: undefined,
+            }));
+
+        return {
+            popular: mapToCardData(popularReleases),
+            albums:  mapToCardData(albums),
+            singles: mapToCardData(singles),
+        };
+    }, [popularReleases, albums, singles, artistName]);
+
+    const currentData = dataMap[activeTab];
+
+    const hasData = currentData.length > 0;
+
+    // Стрілки — лише коли контент переповнює слайдер (перевіряємо й при зміні таба).
+    const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([currentData]);
 
     const scroll = (dir: 'prev' | 'next') => {
         if (!sliderRef.current) return;
@@ -62,25 +69,16 @@ export const ArtistMusicSection = ({
         sliderRef.current.scrollBy({ left: dir === 'next' ? amount : -amount, behavior: 'smooth' });
     };
 
-    const dataMap: Record<MusicTab, AlbumCardData[]> = {
-        popular: popularReleases,
-        albums,
-        singles,
-    };
-
-    const currentData = dataMap[activeTab];
-    const showAllHref = `/artists/${artistId}/${activeTab}`;
-
     return (
-        <section className="mb-5">
+        <section className="artist-music mb-5">
             <SectionHeader
                 title="Музика"
-                onPrev={() => scroll('prev')}
-                onNext={() => scroll('next')}
+                onPrev={hasOverflow ? () => scroll('prev') : undefined}
+                onNext={hasOverflow ? () => scroll('next') : undefined}
             />
 
             {/* ─── Таби ─────────────────────────────────── */}
-            <div className="artist-music-tabs mb-3">
+            <div className="artist-music-tabs mb-3 d-flex gap-2">
                 {TABS.map((tab) => (
                     <button
                         key={tab.key}
@@ -92,16 +90,21 @@ export const ArtistMusicSection = ({
                 ))}
             </div>
 
-            {/* ─── Слайдер ──────────────────────────────── */}
+            {/* ─── Слайдер / Скелетон ────────────────────── */}
             {isLoading ? (
-                <div className="row g-3">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className="col-6 col-md-4 col-lg-2">
-                            <div className="skeleton skeleton--rounded" style={{ aspectRatio: '1/1' }} />
-                            <div className="skeleton mt-2" style={{ height: 13, width: '75%' }} />
-                        </div>
-                    ))}
+                <div className="section-slider-wrap">
+                    <div className="row g-3 flex-nowrap overflow-hidden">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="col-6 col-md-4 col-lg-2" style={{ flex: '0 0 auto' }}>
+                                <div className="skeleton skeleton--rounded" style={{ aspectRatio: '1/1' }} />
+                                <div className="skeleton mt-2" style={{ height: 13, width: '75%' }} />
+                                <div className="skeleton mt-1" style={{ height: 11, width: '40%' }} />
+                            </div>
+                        ))}
+                    </div>
                 </div>
+            ) : !hasData ? (
+                <p className="text-secondary small py-3 m-0">У цього виконавця ще немає релізів у цій категорії</p>
             ) : (
                 <div className="section-slider-wrap">
                     <div
@@ -109,11 +112,11 @@ export const ArtistMusicSection = ({
                         className="row g-3 flex-nowrap overflow-x-auto artist-slider"
                     >
                         {currentData.map((album) => (
-                            <div key={album.id} className="col-6 col-md-4 col-lg-2">
+                            <div key={album.id} className="col-6 col-md-4 col-lg-2" style={{ flex: '0 0 auto' }}>
                                 <AlbumCard album={album} onClick={onAlbumClick} />
                             </div>
                         ))}
-                        <div className="col-auto" style={{ minWidth: 80 }} />
+                        <div className="col-auto" style={{ minWidth: 40 }} />
                     </div>
                 </div>
             )}

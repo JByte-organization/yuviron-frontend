@@ -1,10 +1,15 @@
 // src/entities/session/model/store.ts
 import { create } from 'zustand';
+import { clearStoredArtistId } from '@/entities/artist/model/artistIdStorage';
 
 export interface SessionUser {
     id?: string;
     email?: string;
     role?: string;
+    // ID артист-профілю, яким керує користувач (роль ManagementUser). Бек МОЖЕ
+    // класти його в claim — резолвимо за кількома ймовірними іменами. Якщо клейму
+    // немає, лишається undefined, і кабінет бере artistId з localStorage (після create).
+    artistId?: string;
 }
 
 // Статус відновлення сесії.
@@ -17,8 +22,11 @@ export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 interface SessionState {
     accessToken: string | null;
     user: SessionUser | null;
-    status: AuthStatus;
+    // Чи завершилось початкове відновлення сесії (restoreSession у ApiClientProvider).
+    // Доти не знаємо, артист користувач чи ні — гейти показують лоадер, а не блокер.
+    authResolved: boolean;
     setAccessToken: (token: string | null) => void;
+    markAuthResolved: () => void;
     clearSession: () => void;
     // Refresh завершився без токена (гість / протухла кука) — фіналізуємо стан.
     markUnauthenticated: () => void;
@@ -91,40 +99,28 @@ const userFromToken = (token: string | null): SessionUser | null => {
             'role',
             'http://schemas.microsoft.com/ws/2008/06/identity/claims/role',
         ]),
+        artistId: pickClaim(payload, [
+            'artistId',
+            'artist_id',
+            'ArtistId',
+            'artistProfileId',
+            'artist_profile_id',
+        ]),
     };
 };
 
-export const useSessionStore = create<SessionState>((set) => ({
+export const useSessionStore = create<SessionState>((set, get) => ({
     accessToken: null,
     user: null,
-    // Старт завжди детермінований ('loading') — однаково на сервері та при
-    // першому клієнтському рендері, інакше hydration mismatch. Підказку з
-    // localStorage читаємо вже після монтування (hydrateFromHint).
-    status: 'loading',
-    setAccessToken: (token) => {
-        writeSessionHint(!!token);
-        set({
-            accessToken: token,
-            user: userFromToken(token),
-            status: token ? 'authenticated' : 'unauthenticated',
-        });
-    },
+    authResolved: false,
+    setAccessToken: (token) => set({ accessToken: token, user: userFromToken(token) }),
+    markAuthResolved: () => set({ authResolved: true }),
     clearSession: () => {
-        writeSessionHint(false);
-        set({ accessToken: null, user: null, status: 'unauthenticated' });
+        // Прибираємо scoped-artistId поточного юзера (+ легасі-ключ), щоб
+        // наступний акаунт на цьому браузері не успадкував чужий кабінет.
+        clearStoredArtistId(get().user?.id);
+        set({ accessToken: null, user: null });
     },
-    markUnauthenticated: () => {
-        writeSessionHint(false);
-        set({ status: 'unauthenticated' });
-    },
-    hydrateFromHint: () =>
-        set((s) =>
-            // Якщо токен уже є — нічого не чіпаємо. Інакше, за наявності
-            // підказки, оптимістично показуємо авторизований каркас.
-            s.accessToken || !readSessionHint()
-                ? s
-                : { status: 'authenticated' },
-        ),
 }));
 
 // Зручний селектор для UI: чи показувати авторизований каркас.

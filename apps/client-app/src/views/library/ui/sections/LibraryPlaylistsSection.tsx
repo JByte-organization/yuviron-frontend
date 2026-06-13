@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { PlaylistCard, type PlaylistCardData } from '@/entities/playlist/ui/PlaylistCard';
 import { ShowAllButton } from '@/shared/ui/ShowAllButton';
+import { useHasOverflow } from '@/shared/lib/useHasOverflow';
 
 // ─── Типи ─────────────────────────────────────────────────────────────────────
 interface LibraryPlaylistsSectionProps {
@@ -22,7 +23,8 @@ export const LibraryPlaylistsSection = ({
                                             showAllHref = '/playlists',
                                             onPlaylistClick,
                                         }: LibraryPlaylistsSectionProps) => {
-    const sliderRef = useRef<HTMLDivElement>(null);
+    // Стрілки — лише коли контент переповнює слайдер (є що гортати).
+    const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([playlists]);
 
     const scroll = (dir: 'prev' | 'next') => {
         if (!sliderRef.current) return;
@@ -42,8 +44,8 @@ export const LibraryPlaylistsSection = ({
                 title="Плейлісти"
                 showAll
                 showAllHref={showAllHref}
-                onPrev={() => scroll('prev')}
-                onNext={() => scroll('next')}
+                onPrev={hasOverflow ? () => scroll('prev') : undefined}
+                onNext={hasOverflow ? () => scroll('next') : undefined}
             />
 
             {isLoading ? (

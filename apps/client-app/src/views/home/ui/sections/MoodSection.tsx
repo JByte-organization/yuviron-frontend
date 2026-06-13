@@ -85,7 +85,7 @@ export const MoodSection = ({
     );
 
     return (
-        <section className="mood-section mb-4">
+        <section className="mood-section mb-4 mb-md-5">
             <SectionHeader
                 title={sectionTitle}
                 highlightedWord={highlightedWord}
@@ -111,7 +111,7 @@ export const MoodSection = ({
                         576: { slidesPerView: 3 },
                         768: { slidesPerView: 5 },
                         992: { slidesPerView: 5 },
-                        1200: { slidesPerView: 9 },
+                        1200: { slidesPerView: 8 },
                     }}
                     className="mood-section__swiper"
                 >

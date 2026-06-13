@@ -1,79 +1,95 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { FreeMode } from 'swiper/modules';
+import type { Swiper as SwiperClass } from 'swiper';
+
 import { SectionHeader } from '@/shared/ui/SectionHeader';
-import { ShowAllButton } from '@/shared/ui/ShowAllButton';
-import { PlaylistCard, type PlaylistCardData } from '@/entities/playlist/ui/PlaylistCard';
+import { PlaylistCard } from '@/entities/playlist/ui/PlaylistCard';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
+import type { ArtistPlaylistDto } from '@repo/api/client.ts';
 
 interface ArtistPlaylistsSectionProps {
-    artistId: string;
     artistName: string;
-    /** TODO: замінити на хук — useGetApiArtistsIdPlaylists(artistId) */
-    playlists?: PlaylistCardData[];
+    playlists?: ArtistPlaylistDto[];
     isLoading?: boolean;
     onPlaylistClick?: (id: string) => void;
 }
 
-const MOCK_PLAYLISTS: PlaylistCardData[] = [
-    { id: '1', name: "Lisa's Playlist",   authorName: 'YG Entertainment', tracksCount: 15, coverUrl: null },
-    { id: '2', name: "Jisoo's Playlist",  authorName: 'YG Entertainment', tracksCount: 12, coverUrl: null },
-    { id: '3', name: "Rose's Playlist",   authorName: 'YG Entertainment', tracksCount: 10, coverUrl: null },
-    { id: '4', name: "Jennie's Playlist", authorName: 'YG Entertainment', tracksCount: 18, coverUrl: null },
-];
-
-/**
- * Секція: Плейлісти виконавця
- *
- * Підключення даних:
- * 1. const { data, isLoading } = useGetApiArtistsIdPlaylists(artistId);
- * 2. <ArtistPlaylistsSection playlists={data?.items} isLoading={isLoading} />
- */
 export const ArtistPlaylistsSection = ({
-                                           artistId,
                                            artistName,
-                                           playlists = MOCK_PLAYLISTS,
+                                           playlists = [],
                                            isLoading = false,
                                            onPlaylistClick,
                                        }: ArtistPlaylistsSectionProps) => {
-    const sliderRef = useRef<HTMLDivElement>(null);
+    // Екземпляр Swiper для керування зовнішніми стрілками
+    const [swiperInstance, setSwiperInstance] = useState<SwiperClass | null>(null);
 
-    const scroll = (dir: 'prev' | 'next') => {
-        if (!sliderRef.current) return;
-        const amount = sliderRef.current.offsetWidth * 0.8;
-        sliderRef.current.scrollBy({ left: dir === 'next' ? amount : -amount, behavior: 'smooth' });
-    };
+    // ─── Маппинг даних з DTO у формат картки ────────────────
+    const mappedPlaylists = useMemo(() => {
+        if (!playlists || playlists.length === 0) return [];
+
+        return playlists.map((p) => ({
+            id:          p.id ?? '',
+            name:        p.title ?? 'Без назви',
+            authorName:  p.creatorName ?? 'Невідомий автор',
+            tracksCount: p.tracksCount ?? 0,
+            coverUrl:    getImageUrl(p.coverUrl),
+        }));
+    }, [playlists]);
+
+    if (!isLoading && mappedPlaylists.length === 0) return null;
 
     return (
-        <section className="mb-5">
+        <section className="artist-playlists mb-5">
             <SectionHeader
                 title={`${artistName}: плейлісти виконавця`}
                 highlightedWord="плейлісти"
-                onPrev={() => scroll('prev')}
-                onNext={() => scroll('next')}
+                onPrev={swiperInstance ? () => swiperInstance.slidePrev() : undefined}
+                onNext={swiperInstance ? () => swiperInstance.slideNext() : undefined}
             />
 
             {isLoading ? (
-                <div className="row g-3">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="col-6 col-md-3">
-                            <div className="skeleton skeleton--rounded" style={{ aspectRatio: '1/1' }} />
-                            <div className="skeleton mt-2" style={{ height: 13, width: '75%' }} />
-                        </div>
-                    ))}
+                // Скелетони: чітко підігнані під сітку з 7 елементів
+                <div className="section-slider-wrap">
+                    <div className="d-flex gap-4 overflow-hidden">
+                        {Array.from({ length: 7 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="d-flex flex-column align-items-stretch gap-2"
+                                style={{ flex: '0 0 calc((100% - 6 * 24px) / 7)', minWidth: '140px' }}
+                            >
+                                <div className="skeleton skeleton--rounded" style={{ aspectRatio: '1/1' }} />
+                                <div className="skeleton mt-2" style={{ height: 13, width: '75%' }} />
+                                <div className="skeleton mt-1" style={{ height: 11, width: '40%' }} />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             ) : (
                 <div className="section-slider-wrap">
-                    <div
-                        ref={sliderRef}
-                        className="row g-3 flex-nowrap overflow-x-auto artist-slider"
+                    {/* Сучасна карусель на Swiper з брейкпоїнтом на 7 слайдів */}
+                    <Swiper
+                        modules={[FreeMode]}
+                        freeMode
+                        slidesPerView={2}
+                        spaceBetween={24}
+                        breakpoints={{
+                            480:  { slidesPerView: 3 },
+                            768:  { slidesPerView: 4 },
+                            992:  { slidesPerView: 5 },
+                            1200: { slidesPerView: 7 }, // Ідеальні 7 штук в ряд на десктопі
+                        }}
+                        onSwiper={setSwiperInstance}
+                        className="artist-playlists__swiper"
                     >
-                        {playlists.map((playlist) => (
-                            <div key={playlist.id} className="col-6 col-md-4 col-lg-2">
+                        {mappedPlaylists.map((playlist) => (
+                            <SwiperSlide key={playlist.id} style={{ width: 'auto' }}>
                                 <PlaylistCard playlist={playlist} onClick={onPlaylistClick} />
-                            </div>
+                            </SwiperSlide>
                         ))}
-                        <div className="col-auto" style={{ minWidth: 80 }} />
-                    </div>
+                    </Swiper>
                 </div>
             )}
         </section>

@@ -11,10 +11,13 @@ export * from './generated/admin/endpoints/admin-dashboard';
 export * from './generated/admin/endpoints/admin-playlists';
 export * from './generated/admin/endpoints/admin-auth';
 export * from './generated/admin/endpoints/admin-ads';
+export * from './generated/admin/endpoints/admin-jamendo';
+export * from './generated/admin/endpoints/admin-finance';
+export * from './generated/admin/endpoints/admin-verification-requests';
 
 export * from './generated/client/endpoints/files';
 
 // МОДЕЛІ АДМІНКИ — аналогічно, однією строкою
 export * from './generated/admin/models';
 
-export { configureApiClient, initCsrfToken } from './mutator';
+export { configureApiClient, initCsrfToken, customInstance } from './mutator';

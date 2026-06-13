@@ -1,12 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuthGuard } from '@/shared/lib/useAuthGuard';
 import { usePlayer } from '@/entities/player/lib/usePlayer';
 import { usePlayerStore } from '@/entities/player/model/playerStore';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { useFavoriteTrack } from '@/features/track/lib/useFavoriteTrack';
+import { useQueryClient } from '@tanstack/react-query';
+
+import {
+    useGetApiMePlaylists,
+    usePostApiMePlaylistsIdTracks,
+    type UserPlaylistDto
+} from '@repo/api/client.ts';
+import { TrackContextMenu } from '@/features/track/ui/TrackContextMenu';
+import { AddToPlaylistModal } from '@/features/playlist/add/ui/AddToPlaylistModal';
+import { usePlaylistToast } from '@/shared/ui/PlaylistToast';
 
 export type TrackRowVariant = 'default' | 'artist';
 
@@ -22,17 +32,14 @@ export interface TrackRowData {
     durationMs?: number | null;
     coverUrl?: string | null;
     playsCount?: number;
-    isLiked?: boolean; // TODO: передавати з API коли зʼявиться поле
+    isSaved?: boolean;
 }
 
 interface TrackRowProps {
     track: TrackRowData;
     allTracks?: TrackRowData[];
-    isPlaying?: boolean;
     variant?: TrackRowVariant;
     onClick?: (id: string) => void;
-    onAddToPlaylist?: (id: string) => void;
-    showAddToPlaylist?: boolean;
     sourceType?: 'Playlist' | 'Album' | 'Search' | 'ArtistProfile';
     sourceId?: string | null;
 }
@@ -63,38 +70,72 @@ const formatPlays = (count?: number): string => {
 export const TrackRow = ({
                              track,
                              allTracks,
-                             isPlaying = false,
                              variant = 'default',
                              onClick,
-                             onAddToPlaylist,
-                             showAddToPlaylist = false,
                              sourceType = 'Search',
                              sourceId = null,
                          }: TrackRowProps) => {
     const [isHovered, setIsHovered] = useState(false);
+    const [menuCoords, setMenuCoords] = useState<{ x: number; y: number } | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     const { requireAuth } = useAuthGuard();
     const { playQueue } = usePlayer();
+    const { showToast } = usePlaylistToast();
+    const queryClient = useQueryClient();
+
     const currentTrackId = usePlayerStore(s => s.currentTrack?.id);
     const playerStatus   = usePlayerStore(s => s.status);
 
-    // Хук лайків — оптимістичний UI + реальний API запит
-    const { isLiked, isPending: isLikePending, toggle: toggleLike } = useFavoriteTrack({
-        initialLiked: track.isLiked ?? false,
+    // 🚨 ОНОВЛЕНО: Підключаємо ініціалізацію лайку рядка до реального поля isSaved
+    const { isLiked, toggle: toggleLike } = useFavoriteTrack({
+        initialLiked: track.isSaved ?? false,
     });
 
     const isCurrentlyPlaying = currentTrackId === track.id && playerStatus === 'playing';
+    const coverSrc = getImageUrl(track.coverUrl) ?? `https://picsum.photos/seed/track-${track.id}/40/40`;
 
-    const coverSrc = getImageUrl(track.coverUrl)
-        ?? `https://picsum.photos/seed/track-${track.id}/40/40`;
+    const { data: playlistsRaw } = useGetApiMePlaylists({ PageSize: 7 });
+    const { mutateAsync: addTrackToPlaylist } = usePostApiMePlaylistsIdTracks();
+
+    const quickPlaylists = useMemo(() => {
+        if (!playlistsRaw) return [];
+        const obj = playlistsRaw as Record<string, unknown>;
+        const list = (Array.isArray(obj.data) ? obj.data : Array.isArray(obj.items) ? obj.items : Array.isArray(playlistsRaw) ? playlistsRaw : []) as UserPlaylistDto[];
+
+        return list.map(p => ({
+            id: p.id ?? '',
+            title: p.title ?? 'Без назви',
+            isSaved:     track.isSaved ?? false
+        }));
+    }, [playlistsRaw]);
+
+    const handleQuickAddToPlaylist = async (playlistId: string) => {
+        const targetPlaylist = quickPlaylists.find(p => p.id === playlistId);
+        try {
+            await addTrackToPlaylist({
+                id: playlistId,
+                data: { trackId: track.id } as Parameters<typeof addTrackToPlaylist>[0]['data']
+            });
+
+            showToast({
+                trackId: track.id,
+                trackTitle: track.title,
+                playlistId,
+                playlistName: targetPlaylist?.title ?? 'Плейліст',
+            });
+            void queryClient.invalidateQueries({ queryKey: ['getApiMePlaylists'] });
+        } catch (error) {
+            console.error('[TrackRow] Не вдалося швидко додати трек:', error);
+        }
+    };
 
     const handleClick = () => {
         requireAuth(() => {
-            if (onClick) {
-                onClick(track.id);
-                return;
-            }
-            const queue = allTracks ?? [track];
+            onClick?.(track.id);
+            const queue = allTracks && allTracks.length > 0 ? allTracks : [track];
             const index = queue.findIndex(t => t.id === track.id);
+
             playQueue(
                 queue.map(t => ({
                     id:          t.id,
@@ -115,105 +156,94 @@ export const TrackRow = ({
 
     const handleLike = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // requireAuth — якщо не авторизований, покаже модалку логіну
         requireAuth(() => toggleLike(track.id));
+    };
+
+    const handleContextMenu = (e: React.MouseEvent) => {
+        e.preventDefault();
+        const xPos = e.clientX > window.innerWidth - 240 ? window.innerWidth - 250 : e.clientX;
+        setMenuCoords({ x: xPos, y: e.clientY });
+    };
+
+    const handleThreeDotsClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const rect = e.currentTarget.getBoundingClientRect();
+        setMenuCoords({ x: rect.left - 200, y: rect.bottom + 6 });
     };
 
     return (
         <div
-            className={`track-row track-row--${variant}${isCurrentlyPlaying ? ' track-row--playing' : ''}${isHovered ? ' track-row--hovered' : ''}`}
+            className={`track-row${isCurrentlyPlaying ? ' track-row--playing' : ''}${isHovered ? ' track-row--hovered' : ''}`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={handleClick}
+            onContextMenu={handleContextMenu}
         >
-            {/* Номер / play іконка */}
             <div className="track-row__index">
-                {isCurrentlyPlaying ? (
-                    <i className="bi bi-volume-up-fill track-row__playing-icon" />
-                ) : isHovered ? (
-                    <i className="bi bi-play-fill" />
-                ) : (
-                    <span>{track.index}</span>
-                )}
+                {isCurrentlyPlaying ? <i className="bi bi-volume-up-fill track-row__playing-icon" /> : isHovered ? <i className="bi bi-play-fill" /> : <span>{track.index}</span>}
             </div>
 
-            {/* Обкладинка + назва + артист */}
             <div className="track-row__info">
-                <div className="track-row__cover">
-                    <img src={coverSrc} alt={track.title} />
-                </div>
+                <div className="track-row__cover"><img src={coverSrc} alt={track.title} /></div>
                 <div className="track-row__meta">
-                    <Link
-                        href={`/tracks/${track.id}`}
-                        className={`track-row__title${isCurrentlyPlaying ? ' track-row__title--playing' : ''}`}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        {track.title}
-                    </Link>
+                    <Link href={`/tracks/${track.id}`} className={`track-row__title${isCurrentlyPlaying ? ' track-row__title--playing' : ''}`} onClick={e => e.stopPropagation()}>{track.title}</Link>
                     {track.artistId ? (
-                        <Link
-                            href={`/artists/${track.artistId}`}
-                            className="track-row__artist"
-                            onClick={e => e.stopPropagation()}
-                        >
-                            {track.artistNames.join(', ')}
-                        </Link>
+                        <Link href={`/artists/${track.artistId}`} className="track-row__artist" onClick={e => e.stopPropagation()}>{track.artistNames.join(', ')}</Link>
                     ) : (
                         <span className="track-row__artist">{track.artistNames.join(', ')}</span>
                     )}
                 </div>
             </div>
 
-            {/* Альбом */}
             <div className="track-row__album d-none d-md-block">
-                {track.albumId ? (
-                    <Link
-                        href={`/albums/${track.albumId}`}
-                        className="track-row__album-link"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        {track.albumTitle ?? '—'}
-                    </Link>
-                ) : (
-                    <span>{track.albumTitle ?? '—'}</span>
-                )}
+                {track.albumId ? <Link href={`/albums/${track.albumId}`} className="track-row__album-link" onClick={e => e.stopPropagation()}>{track.albumTitle ?? '—'}</Link> : <span>{track.albumTitle ?? '—'}</span>}
             </div>
 
-            {/* Дата або прослуховування */}
             <div className="track-row__context d-none d-lg-block">
-                {variant === 'artist'
-                    ? <span>{formatPlays(track.playsCount)}</span>
-                    : <span>{formatDate(track.addedAt)}</span>
-                }
+                {variant === 'artist' ? <span>{formatPlays(track.playsCount)}</span> : <span>{formatDate(track.addedAt)}</span>}
             </div>
 
-            {/* Дії + тривалість */}
             <div className="track-row__actions">
-
-                {/* Кнопка лайку — серце заповнене якщо isLiked */}
-                <button
-                    className={`track-row__like-btn${isLiked ? ' track-row__like-btn--active' : ''}`}
-                    onClick={handleLike}
-                    disabled={isLikePending}
-                    aria-label={isLiked ? 'Прибрати з улюблених' : 'Додати до улюблених'}
-                >
+                <button className={`track-row__like-btn${isLiked ? ' track-row__like-btn--active' : ''}`} onClick={handleLike}>
                     <i className={isLiked ? 'bi bi-heart-fill' : 'bi bi-heart'} />
                 </button>
 
-                <span className="track-row__duration">
-                    {formatDuration(track.durationMs)}
-                </span>
+                <span className="track-row__duration">{formatDuration(track.durationMs)}</span>
 
-                {showAddToPlaylist && (
-                    <button
-                        className="track-row__add-btn"
-                        onClick={e => { e.stopPropagation(); onAddToPlaylist?.(track.id); }}
-                        aria-label="Додати до плейліста"
-                    >
-                        <i className="bi bi-plus-circle" />
+                {isHovered && (
+                    <button className="track-row__more-btn btn btn-link p-0 text-secondary ms-2" onClick={handleThreeDotsClick}>
+                        <i className="bi bi-three-dots" style={{ fontSize: '1.2rem' }} />
                     </button>
                 )}
             </div>
+
+            {menuCoords && (
+                <TrackContextMenu
+                    x={menuCoords.x}
+                    y={menuCoords.y}
+                    trackId={track.id}
+                    trackTitle={track.title}
+                    artistId={track.artistId}
+                    artistNames={track.artistNames}
+                    isLiked={isLiked}
+                    onClose={() => setMenuCoords(null)}
+                    onToggleLike={() => toggleLike(track.id)}
+                    myPlaylists={quickPlaylists}
+                    onAddToPlaylist={handleQuickAddToPlaylist}
+                    onCreatePlaylist={() => { setMenuCoords(null); setIsModalOpen(true); }}
+                    onOpenModal={() => { setMenuCoords(null); setIsModalOpen(true); }}
+                />
+            )}
+
+            {isModalOpen && (
+                <AddToPlaylistModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    trackId={track.id}
+                    trackTitle={track.title}
+                    onCreatePlaylist={() => console.log('Виклик модалки створення плейліста')}
+                />
+            )}
         </div>
     );
 };

@@ -19,6 +19,7 @@ import {
 import { useSidebarResize } from '../lib/useSidebarResize';
 import { useRightSidebarState } from '../lib/useRightSidebarState';
 import { useIsDesktop } from '../lib/useIsDesktop';
+import {PlayerInitializer} from "@/entities/player/lib/PlayerInitializer.tsx";
 
 interface ClientLayoutProps {
     children: React.ReactNode;
@@ -72,6 +73,7 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
                                 }}
                             >
                                 <PlaylistToastProvider>
+                                    <PlayerInitializer />
                                     {children}
                                 </PlaylistToastProvider>
                                 <Footer />

@@ -26,7 +26,20 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
 // ══════════════════════════════════════════════════════════
 .client-layout {
   min-height: 100vh;
-  background: $client-bg;
+  background-image:
+          radial-gradient(circle at 50% 40%, rgba(33, 58, 128, 0.38) 0%, transparent 55%),
+
+            // Верхнее правое темно-изумрудное/бирюзовое свечение
+          radial-gradient(circle at 85% 20%, rgba(15, 76, 71, 0.35) 0%, transparent 45%),
+
+            // Верхнее левое приглушенное сине-зеленое свечение
+          radial-gradient(circle at 15% 15%, rgba(14, 52, 70, 0.35) 0%, transparent 45%),
+
+            // Нижнее правое очень мягкое синее пятно для объема
+          radial-gradient(circle at 85% 85%, rgba(20, 45, 80, 0.25) 0%, transparent 50%);
+
+  background-attachment: fixed;
+  background-size: cover;
   color: $client-text;
   display: flex;
   flex-direction: column;
@@ -301,10 +314,34 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
   }
 
   &__premium-badge {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
-    color: $client-premium;
-    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 4px 11px;
+    border-radius: 100px;
+
+    background: linear-gradient(135deg, #7AE0FF 0%, #3B82F6 50%, #1D4ED8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-color: rgba(122, 224, 255, 0.03);
+
+    border: 1px solid rgba(122, 224, 255, 0.12);
+    filter: drop-shadow(0 2px 6px rgba(122, 224, 255, 0.15));
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+
+    &:hover {
+      background-color: rgba(122, 224, 255, 0.06);
+      border-color: rgba(122, 224, 255, 0.25);
+      filter: drop-shadow(0 4px 12px rgba(122, 224, 255, 0.35));
+    }
   }
 
   // Auth кнопки (незареєстрований)
@@ -346,15 +383,15 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
   background: $client-surface-2;
   border: 1px solid $client-border;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6); // Робимо тінь глибшою для відриву від бекграунду
   z-index: 300;
   overflow: hidden;
 
   &__loading,
   &__empty {
-    padding: 16px;
+    padding: 18px;
     font-size: 13px;
-    color: $client-text-muted;
+    color: rgba(255, 255, 255, 0.5) !important; // Безпечний дефолт, якщо токен занадто темний
     text-align: center;
   }
 
@@ -368,14 +405,20 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 10px;
+    padding: 8px 12px;
     border-radius: 8px;
-    text-decoration: none;
-    transition: background 0.15s ease;
+    text-decoration: none !important;
+    transition: background 0.2s ease;
+    color: inherit; // Захист від перевизначення кольору лінка браузером
 
     &:hover {
       background: $client-hover;
-      text-decoration: none;
+      text-decoration: none !important;
+
+      // При наведенні на рядок робимо заголовок треку кришталево білим
+      .search-dropdown__title {
+        color: #ffffff !important;
+      }
     }
   }
 
@@ -385,10 +428,18 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     border-radius: 6px;
     overflow: hidden;
     flex-shrink: 0;
+    background-color: rgba(255, 255, 255, 0.05); // Слот-підкладка, якщо картинка довго вантажиться
 
-    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
-    &--round { border-radius: 50%; }
+    &--round {
+      border-radius: 50%;
+    }
   }
 
   &__info {
@@ -402,20 +453,26 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
   &__title {
     font-size: 14px;
     font-weight: 500;
-    color: $client-text;
+    // 🚨 ГЛАВНИЙ ФІКС КОНТРАСТУ №1: Яскравий білий колір для назви треку/артиста
+    color: #ffffff !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.15s ease;
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    // 🚨 ГЛАВНИЙ ФІКС КОНТРАСТУ №2: Світло-сірий Spotify-style колір, що чітко читається
+    color: #b3b3b3 !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  &__subtitle {
-    font-size: 12px;
-    color: $client-text-muted;
-  }
-
   &__type-icon {
     font-size: 14px;
-    color: $client-text-muted;
+    color: rgba(255, 255, 255, 0.4) !important; // Помірна яскравість для службової іконки типу
     flex-shrink: 0;
   }
 
@@ -423,17 +480,18 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 16px;
+    padding: 12px 16px;
     font-size: 13px;
     font-weight: 500;
-    color: $client-accent;
-    text-decoration: none;
+    color: $client-accent !important; // Яскравий акцентний колір (наприклад, зелений або бренд-блакитний)
+    text-decoration: none !important;
     border-top: 1px solid $client-border;
-    transition: background 0.15s ease;
+    transition: background 0.2s ease, color 0.2s ease;
 
     &:hover {
-      background: rgba(0, 166, 255, 0.06);
-      text-decoration: none;
+      background: rgba(255, 255, 255, 0.03); // Універсальний світлий блік замість жорсткого хардкоду кольору
+      color: #ffffff !important; // Робимо кнопку "Показати всі результати" ще яскравішою при ховері
+      text-decoration: none !important;
     }
   }
 }
@@ -443,72 +501,186 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
 // ══════════════════════════════════════════════════════════
 .user-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 12px); // Чуть больше воздуха, чтобы панель "парила" в невесомости
   right: 0;
-  min-width: 220px;
-  background: $client-surface-2;
-  border: 1px solid $client-border;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  min-width: 240px; // Немного просторнее для премиальной читаемости
+
+  // 🌌 ГЛУБОКИЙ СТЕЛЛЯРНЫЙ ГЛАССМОРФИЗМ
+  background: rgba(17, 17, 22, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  // Тончайшая sub-pixel грань и мягкое внутреннее свечение по контуру
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  box-shadow:
+          0 16px 48px rgba(0, 0, 0, 0.65),
+          inset 0 1px 1px rgba(255, 255, 255, 0.02);
+
+  border-radius: 16px; // Современный увеличенный радиус
   z-index: 300;
   overflow: hidden;
+
+  // Изящное появление при монтировании
+  animation: dropdownFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   &__overlay {
     position: fixed;
     inset: 0;
     z-index: 299;
+    background: transparent; // Оставляем клик-аут невидимым
   }
 
   &__list {
     list-style: none;
     margin: 0;
-    padding: 6px;
+    padding: 6px; // Паддинг-буфер для скругленных элементов
   }
 
   &__item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 14px;
-    color: $client-text-muted;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px; // Скругление пунктов под стать рамке
+
+    font-size: 13.5px;
+    font-weight: 500;
+    letter-spacing: -0.1px; // Дорогая финтех-типографика
+    color: #8C8C9E; // Мягкий приглушенный цвет по умолчанию
     text-decoration: none;
-    transition: background 0.15s, color 0.15s;
+
     border: none;
     background: transparent;
     width: 100%;
     text-align: left;
     cursor: pointer;
+    outline: none;
+
+
+    &-icon {
+      font-size: 15px;
+      flex-shrink: 0;
+      color: #5F5F6E;
+
+      // Надважливий параметр для свічення фільтрів без мікро-смикань верстки
+      will-change: color, filter;
+      transition:
+              color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    // СТРОГАЯ ОПТИМИЗАЦИЯ: Никаких атак на "all" — только дискретные свойства без прыжков
+    transition:
+            background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+            color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+            box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
 
     &:hover {
-      background: $client-hover;
-      color: $client-text;
-      text-decoration: none;
+      background: rgba(255, 255, 255, 0.03);
+      color: #FFFFFF;
+
+      .user-dropdown__item-icon {
+        color: #FFFFFF;
+        filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+      }
     }
 
-    &--accent {
-      color: $client-premium;
 
-      &:hover { color: $client-premium; background: $client-hover; }
+    &:focus-visible {
+      background: rgba(255, 255, 255, 0.05);
+      color: #FFFFFF;
+    }
+
+    // 👑 АКЦЕНТНЫЙ ПУНКТ (PREMIUM СТУДИЯ)
+    &--accent {
+      color: #7AE0FF;
+
+      .user-dropdown__item-icon {
+        color: rgba(122, 224, 255, 0.6); // Напівсвічення в спокої
+        filter: drop-shadow(0 0 4px rgba(122, 224, 255, 0.15));
+      }
+
+      &:hover {
+        color: #9CE7FF;
+        background: rgba(122, 224, 255, 0.04);
+        box-shadow: inset 0 0 0 1px rgba(122, 224, 255, 0.08);
+
+        .user-dropdown__item-icon {
+          color: #7AE0FF;
+          // Ефект насиченого магічного свічення корони
+          filter: drop-shadow(0 0 8px rgba(122, 224, 255, 0.65));
+        }
+      }
     }
 
     &--logout {
-      color: rgba(255, 80, 80, 0.8);
+      color: rgba(248, 113, 113, 0.7);
 
-      &:hover { color: $client-danger; background: rgba(255, 80, 80, 0.08); }
+      .user-dropdown__item-icon {
+        color: rgba(248, 113, 113, 0.4);
+      }
+
+      &:hover {
+        color: #f87171;
+        background: rgba(248, 113, 113, 0.06);
+
+        .user-dropdown__item-icon {
+          color: #f87171;
+          // М'який аварійний спалах
+          filter: drop-shadow(0 0 8px rgba(248, 113, 113, 0.45));
+        }
+      }
     }
   }
 
   &__item-icon {
-    font-size: 16px;
+    font-size: 15px;
     flex-shrink: 0;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+
+    // Иконка загорается вместе с текстом
+    .user-dropdown__item:hover & {
+      opacity: 1;
+    }
   }
 
+  // НЕВЕСОМАЯ НИТЬ-РАЗДЕЛИТЕЛЬ
   &__divider {
     height: 1px;
-    background: $client-border;
-    margin: 4px 0;
+    background: rgba(255, 255, 255, 0.03);
+    margin: 6px 0;
+  }
+}
+
+// ПЛАВНЫЙ КИНЕМАТОГРАФИЧНЫЙ СЛИК
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+// Банер «режим перегляду» — показуємо учаснику з роллю Viewer (read-only кабінет).
+.artist-readonly-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid $client-border;
+  background: $client-surface-2;
+  color: $client-text-muted;
+  font-size: 13px;
+
+  i {
+    color: $client-accent;
   }
 }
 
@@ -684,6 +856,91 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
       border-color: $client-border;
       opacity: 0.2;
     }
+  }
+
+  // ─── Перемикач артистів ───────────────────────────────
+  &__switcher {
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  &__switcher-toggle,
+  &__switcher-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: $client-text;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+
+    &:hover {
+      background: $client-surface-2;
+    }
+  }
+
+  &__switcher-toggle {
+    border-color: $client-border;
+  }
+
+  &__switcher-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $client-surface-2;
+    color: $client-text-muted;
+    font-size: 14px;
+  }
+
+  &__switcher-name {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__switcher-caret {
+    font-size: 12px;
+    color: $client-text-muted;
+  }
+
+  &__switcher-role {
+    color: $client-text-muted;
+    font-size: 11px;
+    text-transform: capitalize;
+  }
+
+  &__switcher-check {
+    color: $client-accent;
+    font-size: 14px;
+  }
+
+  &__switcher-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid $client-border;
+    background: $client-surface;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   }
 
   &__sub-header {

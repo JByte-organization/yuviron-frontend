@@ -1,7 +1,9 @@
 'use client';
 
+
 import { type FormEvent, useState } from 'react';
-import { usePostApiAuthChangePassword } from '@repo/api/client.ts';
+import { usePostApiMeSecurityChangePassword } from '@repo/api/client.ts';
+
 
 const checkUppercase = (value: string) => /[A-Z]/.test(value);
 const checkLowercase = (value: string) => /[a-z]/.test(value);
@@ -56,7 +58,9 @@ export const ChangePasswordForm = () => {
     const [serverError, setServerError] = useState<string | null>(null);
     const [done, setDone] = useState(false);
 
-    const { mutate, isPending } = usePostApiAuthChangePassword({
+
+    const { mutate, isPending } = usePostApiMeSecurityChangePassword({
+
         mutation: {
             onSuccess: () => {
                 setDone(true);
@@ -68,7 +72,7 @@ export const ChangePasswordForm = () => {
             },
             onError: (err: any) => {
                 const status = err?.response?.status;
-                if (status === 401) {
+                if (status === 401 || status === 400 && err?.response?.data?.message?.includes('password')) {
                     setServerError('Поточний пароль невірний.');
                     return;
                 }
@@ -78,10 +82,10 @@ export const ChangePasswordForm = () => {
                     : null;
                 setServerError(
                     fieldErrors ||
-                        data?.detail ||
-                        data?.title ||
-                        data?.message ||
-                        'Не вдалося змінити пароль. Спробуйте ще раз.',
+                    data?.detail ||
+                    data?.title ||
+                    data?.message ||
+                    'Не вдалося змінити пароль. Спробуйте ще раз.',
                 );
             },
         },
@@ -95,7 +99,15 @@ export const ChangePasswordForm = () => {
         const next = validate(oldPassword, password, confirm);
         setErrors(next);
         if (Object.keys(next).length > 0) return;
-        mutate({ data: { oldPassword, newPassword: password } });
+
+        const requestPayload = {
+            oldPassword,
+            newPassword: password
+        };
+
+        mutate({
+            data: requestPayload as Parameters<typeof mutate>[0]['data']
+        });
     };
 
     const revalidate = (patch: { oldPassword?: string; password?: string; confirm?: string }) => {

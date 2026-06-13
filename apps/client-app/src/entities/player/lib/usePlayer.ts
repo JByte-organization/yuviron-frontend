@@ -6,9 +6,10 @@ import {
     getApiTracksIdPlay,
     postApiAnalyticsPlayStart,
     postApiAnalyticsPlayCommit,
+    customInstance,
     type TrackStreamUrlResponse,
     type StartPlayResponse,
-} from '@repo/api/client.ts';
+} from '@repo/api/client';
 import {
     usePlayerStore,
     type PlayerTrack,
@@ -16,18 +17,21 @@ import {
     type PendingAd,
 } from '@/entities/player/model/playerStore';
 import { playerAudioRef, playerAdAudioRef } from '@/entities/player/lib/playerRefs';
+import { useSessionStore } from '@/entities/session/model/store.ts';
 
 // ══════════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════════
-const CDN_BASE = 'https://dev-i.yuviron.com';
+const CDN_BASE   = 'https://dev-i.yuviron.com';
 const DEVICE_TYPE = 'WebPlayer' as const;
 
 // ══════════════════════════════════════════════════════════
-// MODULE-LEVEL HLS INSTANCE
-// Один інстанс на весь застосунок — знищуємо при зміні треку
+// MODULE-LEVEL STATE
 // ══════════════════════════════════════════════════════════
 let hlsInstance: Hls | null = null;
+
+// Silent Retry: захист від подвійного ретрая при одночасних помилках
+let isRetryingToken = false;
 
 const destroyHls = () => {
     if (hlsInstance) {
@@ -40,16 +44,55 @@ const destroyHls = () => {
 // HELPERS
 // ══════════════════════════════════════════════════════════
 
-/** Формує абсолютний URL для HLS потоку */
+/**
+ * Формує абсолютний URL для HLS потоку.
+ */
 const buildAudioUrl = (rawUrl: string): string => {
-    if (!rawUrl.startsWith('/')) return rawUrl;
-    // NEXT_PUBLIC_API_URL = "https://domain/api" → беремо тільки origin
-    const base = (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/api$/, '');
-    return `${base}${rawUrl}`;
+    // 1. Проверяем входящие данные
+    if (!rawUrl) {
+        console.error('[Player:buildAudioUrl] КРИТИЧЕСКАЯ ОШИБКА: rawUrl пустой или undefined!');
+        return '';
+    }
+
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+        return rawUrl;
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dev-api.yuviron.com/api';
+
+    try {
+        // Использование класса URL автоматически подсветит ошибку, если apiUrl кривой
+        const { origin } = new URL(apiUrl);
+        const finalUrl = `${origin}${rawUrl}`;
+
+        // 2. Логируем успешный результат (удалить перед деплоем в прод, чтобы не спамить)
+        console.log(`[Player:buildAudioUrl] Успешно склеено:\nВход: ${rawUrl}\nВыход: ${finalUrl}`);
+
+        return finalUrl;
+    } catch (error) {
+        // 3. Перехватываем ошибки парсинга домена
+        console.error('[Player:buildAudioUrl] Ошибка при парсинге доменов:', {
+            apiConfigValue: process.env.NEXT_PUBLIC_API_URL,
+            fallbackUsed: 'https://dev-api.yuviron.com/api',
+            rawUrl,
+            error
+        });
+
+        // На всякий случай откатываемся к старому регулярному выражению, если URL был странным
+        const originFallback = apiUrl.replace(/\/api.*$/, '');
+        return `${originFallback}${rawUrl}`;
+    }
 };
 
-/** Запускає HLS відтворення через hls.js або нативний Safari HLS */
-const startHlsPlayback = (audioUrl: string, onPlaying: () => void): void => {
+/**
+ * Запускає HLS відтворення.
+ * Підтримує Silent Retry при 401/403 та прокидує підписи через xhrSetup.
+ */
+const startHlsPlayback = (
+    audioUrl:  string,
+    trackId:   string,
+    onPlaying: () => void,
+): void => {
     const audio = playerAudioRef.current;
     if (!audio) {
         console.error('[Player] Audio element not mounted');
@@ -59,7 +102,28 @@ const startHlsPlayback = (audioUrl: string, onPlaying: () => void): void => {
     destroyHls();
 
     if (Hls.isSupported()) {
-        const hls = new Hls();
+        // Вытягиваем параметры подписи из основного URL
+        let searchParams = '';
+        try {
+            searchParams = new URL(audioUrl).search;
+        } catch (e) {
+            console.error('[Player] Failed to parse audio URL params', e);
+        }
+
+        const hls = new Hls({
+            fragLoadingMaxRetry: 0,
+            manifestLoadingMaxRetry: 0,
+
+            // Дописываем сигнатуру к каждому .ts чанку
+            xhrSetup: (xhr, url) => {
+                if (!url.includes('sig=') && searchParams) {
+                    const separator = url.includes('?') ? '&' : '?';
+                    const signedUrl = `${url}${separator}${searchParams.slice(1)}`;
+                    xhr.open('GET', signedUrl, true);
+                }
+            }
+        });
+
         hlsInstance = hls;
         hls.loadSource(audioUrl);
         hls.attachMedia(audio);
@@ -70,20 +134,44 @@ const startHlsPlayback = (audioUrl: string, onPlaying: () => void): void => {
                 .catch(err => console.error('[Player] play() rejected:', err));
         });
 
-        hls.on(Hls.Events.ERROR, (_, data) => {
-            if (!data.fatal) {
-                // Нефатальна — hls.js сам відновиться
-                console.warn('[Player] HLS non-fatal error:', data.details);
+        hls.on(Hls.Events.ERROR, async (_, data) => {
+            const isAuthError =
+                data.response?.code === 401 ||
+                data.response?.code === 403 ||
+                data.details === Hls.ErrorDetails.FRAG_LOAD_ERROR ||
+                data.details === Hls.ErrorDetails.MANIFEST_LOAD_ERROR;
+
+            if (isAuthError && !isRetryingToken) {
+                isRetryingToken = true;
+                console.warn('[Player] Signed URL expired or IP changed, refreshing token...');
+
+                try {
+                    const currentTime = audio.currentTime;
+                    const newUrl      = await refreshStreamUrl(trackId);
+
+                    if (newUrl) {
+                        startHlsPlayback(newUrl, trackId, () => {
+                            if (audio && currentTime > 0) {
+                                audio.currentTime = currentTime;
+                            }
+                            usePlayerStore.getState().setAudioUrl(newUrl);
+                        });
+                    }
+                } catch {
+                    console.error('[Player] Token refresh failed, stopping playback');
+                    destroyHls();
+                    usePlayerStore.getState().setStatus('idle');
+                } {
+                    isRetryingToken = false;
+                }
                 return;
             }
 
-            // Фатальна — намагаємось відновити
-            console.error('[Player] HLS fatal error:', data.type, data.details);
+            if (!data.fatal) return;
 
             if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
                 hls.recoverMediaError();
             } else {
-                // Мережева або інша — зупиняємо
                 destroyHls();
                 usePlayerStore.getState().setStatus('idle');
             }
@@ -92,19 +180,29 @@ const startHlsPlayback = (audioUrl: string, onPlaying: () => void): void => {
         return;
     }
 
-    // Safari має вбудовану підтримку HLS
+    // Safari native fallback
     if (audio.canPlayType('application/vnd.apple.mpegurl')) {
         audio.src = audioUrl;
-        audio.play()
-            .then(onPlaying)
-            .catch(err => console.error('[Player] Safari play() rejected:', err));
+        audio.play().then(onPlaying).catch(err => console.error('[Player] Safari play() rejected:', err));
         return;
     }
 
     console.error('[Player] HLS is not supported in this browser');
 };
 
-/** Відправляє commit сесії відтворення на бекенд */
+/** Отримує свіжий Signed URL для поточного треку. */
+const refreshStreamUrl = async (trackId: string): Promise<string | null> => {
+    const res = await getApiTracksIdPlay(trackId);
+    const data = res as unknown as { data?: TrackStreamUrlResponse } | TrackStreamUrlResponse;
+    const payload: TrackStreamUrlResponse = 'data' in data && data.data ? data.data : (data as TrackStreamUrlResponse);
+
+    const rawUrl = payload.audioUrl ?? null;
+    if (!rawUrl) return null;
+
+    return buildAudioUrl(rawUrl);
+};
+
+/** Відправляє commit аналітичної сесії */
 const commitPlaySession = async (): Promise<void> => {
     const { playSessionId, currentTrack, sourceType, sourceId } = usePlayerStore.getState();
     if (!playSessionId || !currentTrack) return;
@@ -118,74 +216,89 @@ const commitPlaySession = async (): Promise<void> => {
             sourceId:   sourceId ?? null,
         });
     } catch {
-        // Помилка не критична — аналітика може пропустити один commit
+        // Не критично
     }
 
     usePlayerStore.getState().setPlaySessionId(null);
 };
 
-/** Починає рекламний блок, після завершення викликає onFinished */
+/** Запускає рекламний блок */
 const startAdPlayback = (ad: PendingAd, onFinished: () => void): void => {
     const adAudio = playerAdAudioRef.current;
-    usePlayerStore.getState().setStatus('ad');
-    usePlayerStore.getState().setPendingAd(ad);
+    const store = usePlayerStore.getState();
+
+    store.setStatus('ad');
+    store.setPendingAd(ad);
 
     if (!adAudio) {
         onFinished();
         return;
     }
 
-    adAudio.src = `${CDN_BASE}/${ad.audioUrl}`;
-    adAudio.play().catch(err => console.error('[Player] Ad play() rejected:', err));
-
-    adAudio.onended = async () => {
-        // Повідомляємо бекенд що реклама показана — без цього наступного разу
-        // знову прийде реклама (anti-adblock механізм)
-        try {
-            await fetch(`/api/ads/${ad.adId}/impressions`, { method: 'POST' });
-        } catch {
-            // silent — не блокуємо відтворення музики
-        }
-
+    let finished = false;
+    const finish = () => {
+        if (finished) return;
+        finished = true;
         usePlayerStore.getState().setPendingAd(null);
         onFinished();
     };
+
+    const handleAdEnded = async () => {
+        try {
+            await customInstance(`/api/ads/${ad.adId}/impressions`, {
+                method: 'POST',
+                body: JSON.stringify({ context: 'ClientPlayer' }),
+            });
+        } catch {
+            // silent — не блокуємо відтворення треку при збої запиту
+        }
+        finish();
+    };
+
+    const handleAdError = () => {
+        console.error('[Player] Ad media error, skipping ad');
+        finish();
+    };
+
+    adAudio.addEventListener('ended', handleAdEnded, { once: true });
+    adAudio.addEventListener('error', handleAdError, { once: true });
+
+    adAudio.src = `${CDN_BASE}/${ad.audioUrl}`;
+    adAudio.play().catch(err => {
+        console.error('[Player] Ad play() rejected:', err);
+        adAudio.removeEventListener('ended', handleAdEnded);
+        adAudio.removeEventListener('error', handleAdError);
+        finish();
+    });
 };
 
-/** Відкриває аналітичну сесію і зберігає playSessionId */
+/** Відкриває аналітичну сесію */
 const startAnalyticsSession = async (trackId: string): Promise<void> => {
     try {
         const res = await postApiAnalyticsPlayStart({ trackId });
         const data = res as unknown as { data?: StartPlayResponse } | StartPlayResponse;
-        const sessionId = ('data' in data ? data.data?.playSessionId : (data as StartPlayResponse).playSessionId);
+        const sessionId = 'data' in data ? data.data?.playSessionId : (data as StartPlayResponse).playSessionId;
         if (sessionId) {
             usePlayerStore.getState().setPlaySessionId(sessionId);
         }
     } catch {
-        // Не критично — трек грає навіть без аналітики
+        // Не критично
     }
 };
 
-// ══════════════════════════════════════════════════════════
-// PLAY TRACK
-// Основна функція — послідовність: commit → /play → [ad] → /start → HLS
-// ══════════════════════════════════════════════════════════
+/** Основна логіка запуску треку */
 const playTrack = async (track: PlayerTrack): Promise<void> => {
     const store = usePlayerStore.getState();
 
-    // Крок 1: завершуємо поточну сесію якщо є
     await commitPlaySession();
 
     store.setStatus('loading');
     store.setCurrentTrack(track);
 
     try {
-        // Крок 2: отримуємо URL потоку і можливу рекламу
         const res = await getApiTracksIdPlay(track.id);
         const data = res as unknown as { data?: TrackStreamUrlResponse } | TrackStreamUrlResponse;
-        const payload: TrackStreamUrlResponse = 'data' in data && data.data
-            ? data.data
-            : (data as TrackStreamUrlResponse);
+        const payload: TrackStreamUrlResponse = 'data' in data && data.data ? data.data : (data as TrackStreamUrlResponse);
 
         const rawUrl    = payload.audioUrl ?? null;
         const pendingAd = payload.pendingAd ?? null;
@@ -198,18 +311,20 @@ const playTrack = async (track: PlayerTrack): Promise<void> => {
         const audioUrl = buildAudioUrl(rawUrl);
         store.setAudioUrl(audioUrl);
 
-        // Крок 3: функція яка запускає музику після реклами (або одразу)
         const startMusic = async (): Promise<void> => {
             await startAnalyticsSession(track.id);
-            startHlsPlayback(audioUrl, () => {
+            startHlsPlayback(audioUrl, track.id, () => {
                 usePlayerStore.getState().setStatus('playing');
             });
         };
 
-        // Крок 4: якщо є реклама — показуємо спочатку її
-        if (pendingAd) {
+        if (pendingAd && store.areAdsEnabled) {
+            console.log('[Player:Ads] Инициализация рекламного блока...');
             startAdPlayback(pendingAd as PendingAd, startMusic);
         } else {
+            if (pendingAd && !store.areAdsEnabled) {
+                console.log('[Player:Ads] Рекламный блок обнаружен, но пропущен согласно флагам конфигурации.');
+            }
             await startMusic();
         }
 
@@ -221,14 +336,12 @@ const playTrack = async (track: PlayerTrack): Promise<void> => {
 
 // ══════════════════════════════════════════════════════════
 // usePlayer HOOK
-// Публічний API для компонентів
 // ══════════════════════════════════════════════════════════
 export const usePlayer = () => {
     const status    = usePlayerStore(s => s.status);
     const nextTrack = usePlayerStore(s => s.nextTrack);
     const prevTrack = usePlayerStore(s => s.prevTrack);
 
-    // ─── Запуск черги ─────────────────────────────────────
     const playQueue = (
         tracks:     PlayerTrack[],
         startIndex: number,
@@ -240,13 +353,11 @@ export const usePlayer = () => {
         if (track) void playTrack(track);
     };
 
-    // ─── Наступний трек ───────────────────────────────────
     const next = async (): Promise<void> => {
         const track = nextTrack();
         if (track) {
             await playTrack(track);
         } else {
-            // Черга закінчилась
             await commitPlaySession();
             destroyHls();
             usePlayerStore.getState().setStatus('idle');
@@ -254,25 +365,19 @@ export const usePlayer = () => {
         }
     };
 
-    // ─── Попередній трек або перемотка ────────────────────
     const prev = async (): Promise<void> => {
         const audio = playerAudioRef.current;
-
-        // Якщо трек грає більше 3 секунд — перемотуємо на початок
         if (audio && audio.currentTime > 3) {
             audio.currentTime = 0;
             return;
         }
-
         const track = prevTrack();
         if (track) await playTrack(track);
     };
 
-    // ─── Play / Pause ─────────────────────────────────────
     const togglePlay = (): void => {
         const audio = playerAudioRef.current;
         if (!audio) return;
-
         if (status === 'playing') {
             audio.pause();
             usePlayerStore.getState().setStatus('paused');
@@ -282,50 +387,49 @@ export const usePlayer = () => {
         }
     };
 
-    // ─── Seek ─────────────────────────────────────────────
     const seek = (time: number): void => {
         if (playerAudioRef.current) playerAudioRef.current.currentTime = time;
         usePlayerStore.getState().setCurrentTime(time);
     };
 
-    // ─── Гучність ─────────────────────────────────────────
     const setVolume = (vol: number): void => {
         if (playerAudioRef.current) playerAudioRef.current.volume = vol;
         usePlayerStore.getState().setVolume(vol);
     };
 
-    // ─── beforeunload: commit при закритті вкладки ────────
+    // commit при закритті вкладки
     useEffect(() => {
         const handleUnload = (): void => {
             const { playSessionId, currentTrack, sourceType, sourceId } = usePlayerStore.getState();
             if (!playSessionId || !currentTrack) return;
 
-            // sendBeacon надійніше ніж fetch при закритті сторінки
-            navigator.sendBeacon(
-                '/api/analytics/play/commit',
-                JSON.stringify({
-                    playSessionId,
-                    trackId:    currentTrack.id,
-                    deviceType: DEVICE_TYPE,
-                    sourceType: sourceType ?? 'Search',
-                    sourceId:   sourceId ?? null,
-                }),
-            );
+            // ФІКС: Беремо токен прямо під час виклику івенту, а не на старті модуля
+            const currentToken = useSessionStore.getState().accessToken;
+            if (!currentToken) return;
+
+            // Збираємо повне тіло запиту з реальними даними
+            const payload = {
+                playSessionId,
+                trackId:    currentTrack.id,
+                deviceType: DEVICE_TYPE,
+                sourceType: sourceType ?? 'Search',
+                sourceId:   sourceId ?? null,
+            };
+
+            fetch('/api/analytics/play/commit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentToken}`
+                },
+                body: JSON.stringify(payload),
+                keepalive: true,
+            });
         };
 
         window.addEventListener('beforeunload', handleUnload);
         return () => window.removeEventListener('beforeunload', handleUnload);
     }, []);
-
-    // ─── onended: автоматично наступний трек ──────────────
-    useEffect(() => {
-        const audio = playerAudioRef.current;
-        if (!audio) return;
-
-        const handleEnded = (): void => { void next(); };
-        audio.addEventListener('ended', handleEnded);
-        return () => audio.removeEventListener('ended', handleEnded);
-    });
 
     return { playQueue, playTrack, togglePlay, next, prev, seek, setVolume };
 };

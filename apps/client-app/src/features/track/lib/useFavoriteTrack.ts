@@ -1,12 +1,14 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query'; // 🚨 ДОДАНО для керування кешем
 import {
     usePostApiMeFavoritesTracks,
     useDeleteApiMeFavoritesTracksTrackId,
+    getGetApiMeFavoritesTracksQueryKey, // 🚨 ДОДАНО хелпер ключів списку улюблених
 } from '@repo/api/client.ts';
 
 interface UseFavoriteTrackOptions {
-    // Початковий стан — чи трек вже в улюблених
-    // Передаємо з батьківського компонента якщо знаємо
     initialLiked?: boolean;
 }
 
@@ -16,23 +18,16 @@ interface UseFavoriteTrackReturn {
     toggle: (trackId: string) => void;
 }
 
-/**
- * Хук для додавання/видалення треку з улюблених.
- *
- * Використання:
- * const { isLiked, isPending, toggle } = useFavoriteTrack({ initialLiked: track.isLiked });
- *
- * Оптимістичний UI:
- * Стан змінюється одразу при кліку (не чекаємо відповідь сервера).
- * Якщо запит падає — стан повертається назад.
- *
- * TODO: коли зʼявиться поле isLiked в DTO треку — передавати initialLiked з даних API.
- */
 export const useFavoriteTrack = ({
                                      initialLiked = false,
                                  }: UseFavoriteTrackOptions = {}): UseFavoriteTrackReturn => {
-    // Локальний стан — оптимістичний UI
+    const queryClient = useQueryClient();
     const [isLiked, setIsLiked] = useState(initialLiked);
+
+    // Синхронізуємо локальний стан, якщо проп initialLiked змінився ззовні
+    useEffect(() => {
+        setIsLiked(initialLiked);
+    }, [initialLiked]);
 
     const { mutate: addToFavorites, isPending: isAdding } =
         usePostApiMeFavoritesTracks();
@@ -42,25 +37,39 @@ export const useFavoriteTrack = ({
 
     const toggle = (trackId: string) => {
         if (isLiked) {
-            // Оптимістично знімаємо лайк
+            // Оптимістично знімаємо лайк в UI (серце стає сірим миттєво)
             setIsLiked(false);
+
             removeFromFavorites(
                 { trackId },
                 {
+                    // 🚨 ГЛАВНИЙ ФІКС: При успішному видаленні здуваємо кеш списку улюблених треків
+                    onSuccess: () => {
+                        void queryClient.invalidateQueries({
+                            queryKey: getGetApiMeFavoritesTracksQueryKey(),
+                        });
+                    },
                     onError: () => {
-                        // Запит впав — повертаємо назад
+                        // Запит впав — повертаємо червоне серце назад
                         setIsLiked(true);
                     },
                 },
             );
         } else {
-            // Оптимістично ставимо лайк
+            // Оптимістично ставимо лайк в UI
             setIsLiked(true);
+
             addToFavorites(
-                { data: { trackId } },
+                { data: { trackId } as any }, // Фікс типізації Orval payload
                 {
+                    onSuccess: () => {
+                        // Також інвалідуємо кеш при додаванні, щоб трек з'явився у Favorites, якщо додали з пошуку
+                        void queryClient.invalidateQueries({
+                            queryKey: getGetApiMeFavoritesTracksQueryKey(),
+                        });
+                    },
                     onError: () => {
-                        // Запит впав — повертаємо назад
+                        // Запит впав — повертаємо сіре серце назад
                         setIsLiked(false);
                     },
                 },

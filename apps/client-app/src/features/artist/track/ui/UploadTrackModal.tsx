@@ -2,6 +2,16 @@
 
 import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import {
+    AppPermission,
+    getGetApiStudioArtistAlbumsQueryKey,
+    useGetApiStudioArtistAlbums,
+    usePostApiStudioArtistTracks,
+    type StudioAlbumListItemDto,
+} from '@repo/api/artist.ts';
+import { usePostApiFilesUpload } from '@repo/api/client.ts';
+import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import { extractFileId } from '@/shared/lib/unwrapApi';
 
 interface Props {
     isOpen: boolean;
@@ -12,20 +22,40 @@ interface Props {
 type FormValues = {
     title: string;
     explicit: boolean;
+    albumId: string;
+};
+
+
+const unwrapItems = <T,>(raw: unknown): T[] => {
+    if (!raw) return [];
+    const obj = raw as { items?: T[]; data?: { items?: T[] } };
+    return obj.items ?? obj.data?.items ?? [];
 };
 
 export const UploadTrackModal = ({ isOpen, onClose, onSuccess }: Props) => {
+    const artistId = useCurrentArtistId();
     const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormValues>({
-        defaultValues: { title: '', explicit: false },
+        defaultValues: { title: '', explicit: false, albumId: '' },
     });
 
     const [audioFile,     setAudioFile]     = useState<File | null>(null);
     const [coverFile,     setCoverFile]     = useState<File | null>(null);
     const [coverPreview,  setCoverPreview]  = useState<string | null>(null);
     const [isUploading,   setIsUploading]   = useState(false);
+    const [error,         setError]         = useState<string | null>(null);
 
     const audioRef = useRef<HTMLInputElement>(null);
     const coverRef = useRef<HTMLInputElement>(null);
+
+    // Альбоми артиста для випадашки (трек обовʼязково належить альбому).
+    const albumsParams = { ArtistId: artistId ?? undefined, Page: 1, PageSize: 100 };
+    const { data: albumsRaw } = useGetApiStudioArtistAlbums(albumsParams, {
+        query: { enabled: !!artistId && isOpen, queryKey: getGetApiStudioArtistAlbumsQueryKey(albumsParams) },
+    });
+    const albums = unwrapItems<StudioAlbumListItemDto>(albumsRaw);
+
+    const { mutateAsync: uploadFile } = usePostApiFilesUpload();
+    const { mutateAsync: createTrack } = usePostApiStudioArtistTracks();
 
     const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -45,21 +75,51 @@ export const UploadTrackModal = ({ isOpen, onClose, onSuccess }: Props) => {
         setAudioFile(null);
         setCoverFile(null);
         setCoverPreview(null);
+        setError(null);
         onClose();
     };
 
     const onSubmit = async (values: FormValues) => {
-        if (!audioFile) return;
+        if (!audioFile || !values.albumId) return;
+        setError(null);
         setIsUploading(true);
         try {
-            console.log('upload track', values, audioFile, coverFile);
-            // TODO:
-            // 1. POST /api/files/upload (audioFile) → audioPath
-            // 2. POST /api/files/upload (coverFile) → coverPath
-            // 3. POST /api/artist-dashboard/tracks { title, audioPath, coverPath, explicit }
-            await new Promise(r => setTimeout(r, 1000)); // mock
+            const audioFileId = extractFileId(await uploadFile({ data: { file: audioFile } }));
+            if (!audioFileId) throw new Error('Аудіо не завантажилось (бек не повернув fileId)');
+            const coverFileId = coverFile
+                ? extractFileId(await uploadFile({ data: { file: coverFile } }))
+                : null;
+
+            await createTrack({
+                data: {
+                    albumId: values.albumId,
+                    title: values.title.trim(),
+                    audioFileId,
+                    coverFileId,
+                    explicit: values.explicit,
+                    requiredPermission: AppPermission.StudioArtistManage,
+                },
+            });
             onSuccess();
             handleClose();
+        } catch (e) {
+            // Дістаємо реальну причину з axios-помилки, щоб не ховати 400/403/413/500
+            // за загальним текстом (інакше неможливо зрозуміти, що саме впало).
+            const err = e as {
+                response?: { status?: number; data?: { detail?: string; title?: string; message?: string } };
+                message?: string;
+            };
+            const status = err?.response?.status;
+            const detail =
+                err?.response?.data?.detail ??
+                err?.response?.data?.title ??
+                err?.response?.data?.message ??
+                err?.message;
+            console.error('[UploadTrackModal] track upload failed:', status, err?.response?.data ?? e);
+            setError(
+                `Не вдалося завантажити трек${status ? ` (${status})` : ''}.` +
+                    (detail ? ` ${detail}` : ' Спробуйте ще раз.'),
+            );
         } finally {
             setIsUploading(false);
         }
@@ -68,8 +128,8 @@ export const UploadTrackModal = ({ isOpen, onClose, onSuccess }: Props) => {
     if (!isOpen) return null;
 
     return (
-        <div className="client-modal-overlay">
-            <div className="client-modal client-modal--md">
+        <div className="client-modal-backdrop">
+            <div className="client-modal modal-dialog-md">
                 <div className="client-modal__header">
                     <h2 className="client-modal__title">Завантажити трек</h2>
                     <button className="client-modal__close" onClick={handleClose}>
@@ -124,6 +184,28 @@ export const UploadTrackModal = ({ isOpen, onClose, onSuccess }: Props) => {
                             </div>
                         </div>
 
+                        {/* Альбом (трек належить альбому) */}
+                        <div className="mb-3">
+                            <label className="client-modal__field-label">Альбом *</label>
+                            {albums.length === 0 ? (
+                                <p className="client-modal__hint mb-0">
+                                    Спочатку створіть альбом — трек завантажується в нього.
+                                </p>
+                            ) : (
+                                <select
+                                    className={`client-modal__input${errors.albumId ? ' client-modal__input--error' : ''}`}
+                                    defaultValue=""
+                                    {...register('albumId', { required: 'Оберіть альбом' })}
+                                >
+                                    <option value="" disabled>Оберіть альбом…</option>
+                                    {albums.map((a) => (
+                                        <option key={a.id} value={a.id}>{a.title}</option>
+                                    ))}
+                                </select>
+                            )}
+                            {errors.albumId && <p className="client-modal__field-error">{errors.albumId.message}</p>}
+                        </div>
+
                         {/* Аудіо файл */}
                         <div className="mb-3">
                             <label className="client-modal__field-label">Аудіо файл *</label>
@@ -153,13 +235,14 @@ export const UploadTrackModal = ({ isOpen, onClose, onSuccess }: Props) => {
                     </div>
 
                     <div className="client-modal__footer">
+                        {error && <span className="client-modal__field-error me-auto">{error}</span>}
                         <button type="button" className="client-modal__btn client-modal__btn--ghost" onClick={handleClose}>
                             Скасувати
                         </button>
                         <button
                             type="submit"
                             className="client-modal__btn client-modal__btn--primary"
-                            disabled={!audioFile || isSubmitting || isUploading}
+                            disabled={!audioFile || albums.length === 0 || isSubmitting || isUploading}
                         >
                             {isUploading ? <><span className="spinner-border spinner-border-sm me-2" />Завантаження...</> : 'Завантажити'}
                         </button>

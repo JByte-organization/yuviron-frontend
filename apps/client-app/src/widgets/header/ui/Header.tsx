@@ -4,9 +4,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import {usePostApiAuthLogout, useGetApiAuthMe, type CurrentUserDto, getGetApiAuthMeQueryKey} from '@repo/api/client.ts';
-import { useSessionStore, selectIsAuthenticated } from '@/entities/session/model/store';
-import { useTheme } from '@/shared/lib/ThemeProvider';
+import {
+    usePostApiAuthLogout,
+    useGetApiAuthMe,
+    useGetApiNotificationsUnreadCount,
+    type CurrentUserDto,
+    getGetApiAuthMeQueryKey,
+    getGetApiNotificationsUnreadCountQueryKey,
+} from '@repo/api/client.ts';
+import { useSessionStore } from '@/entities/session/model/store';
+import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { SearchDropdown } from './SearchDropdown';
 import { UserDropdown } from './UserDropdown';
@@ -15,18 +22,7 @@ export const Header = () => {
     const router = useRouter();
     const accessToken = useSessionStore(s => s.accessToken);
     const clearSession = useSessionStore(s => s.clearSession);
-    // Каркас за статусом, а не за токеном: під час refresh токена ще нема,
-    // але показувати кнопки «Увійти/Реєстрація» не можна (саме це блимання).
-    const status = useSessionStore(s => s.status);
-    const isAuthenticated = useSessionStore(selectIsAuthenticated);
-
-    // ─── Тема ─────────────────────────────────────────────
-    const { theme, toggleTheme } = useTheme();
-    // Іконка залежить від теми, яка читається з localStorage лише на клієнті —
-    // чекаємо монтування, щоб не словити hydration mismatch (сервер = 'dark').
-    const [themeMounted, setThemeMounted] = useState(false);
-    useEffect(() => setThemeMounted(true), []);
-    const isLight = themeMounted && theme === 'light';
+    const artistId = useCurrentArtistId();
 
     // ─── Дані поточного користувача ───────────────────────
     const { data: meRaw, refetch } = useGetApiAuthMe({
@@ -41,12 +37,19 @@ export const Header = () => {
         if (accessToken) {
             refetch();
         }
-    }, [accessToken]);
+    }, [accessToken, refetch]);
 
-
-    const me: CurrentUserDto | null = (meRaw as CurrentUserDto) ?? null;
-
+    const me = (meRaw as CurrentUserDto) ?? null;
     const avatarSrc = getImageUrl(me?.profile?.avatarUrl);
+
+    // ─── Лічильник непрочитаних ───────────────────────────
+    const { data: unreadRaw } = useGetApiNotificationsUnreadCount({
+        query: {
+            enabled: !!accessToken,
+            queryKey: getGetApiNotificationsUnreadCountQueryKey(),
+        },
+    });
+    const unreadCount = (unreadRaw as unknown as number) ?? 0;
 
     // ─── Пошук ────────────────────────────────────────────
     const [query,        setQuery]        = useState('');
@@ -84,19 +87,18 @@ export const Header = () => {
 
     return (
         <header className="client-header">
-
-            {/* ─── Лого ─────────────────────────────── */}
+            {/* Лого */}
             <Link href="/home" className="client-header__logo">
                 <Image src="/images/logo.svg" alt="Lumitune" width={32} height={32} />
             </Link>
 
-            {/* ─── Пошук ────────────────────────────── */}
+            {/* Пошук */}
             <div className="client-header__search-wrap" ref={searchRef}>
                 <i className="bi bi-search client-header__search-icon" />
                 <input
                     type="text"
                     className="client-header__search"
-                    placeholder="Виконавці, треки, подкасти..."
+                    placeholder="Виконавці, треки, плейлісти..."
                     value={query}
                     onChange={e => {
                         setQuery(e.target.value);
@@ -114,41 +116,19 @@ export const Header = () => {
                         <i className="bi bi-x" />
                     </button>
                 )}
-                <button className="client-header__mic-btn" aria-label="Voice search">
-                    <i className="bi bi-mic" />
-                </button>
 
                 {showDropdown && (
                     <SearchDropdown
                         query={query}
-                        results={[]}
-                        isLoading={false}
                         onClose={() => setShowDropdown(false)}
                     />
                 )}
             </div>
 
-            {/* ─── Праві дії ────────────────────────── */}
+            {/* Праві дії */}
             <div className="client-header__actions">
-
-                {/* Перемикач теми */}
-                <button
-                    type="button"
-                    className="client-header__icon-btn client-header__theme-btn"
-                    onClick={toggleTheme}
-                    aria-label={isLight ? 'Увімкнути темну тему' : 'Увімкнути світлу тему'}
-                    title={isLight ? 'Темна тема' : 'Світла тема'}
-                >
-                    <i className={`bi ${isLight ? 'bi-moon-stars' : 'bi-sun'}`} />
-                </button>
-
-                {status === 'loading' ? (
-                    // Поки відновлюється сесія — не показуємо ні кнопки входу,
-                    // ні аватар, щоб уникнути блимання. Стан короткочасний.
-                    null
-                ) : isAuthenticated ? (
+                {accessToken && me ? (
                     <div className="client-header__user">
-
                         {/* Premium кнопка */}
                         {!me?.isPremium && (
                             <Link href="/premium" className="client-header__premium-btn">
@@ -169,6 +149,11 @@ export const Header = () => {
                                 height={20}
                                 className="client-header__notif-icon"
                             />
+                            {unreadCount > 0 && (
+                                <span className="client-header__notif-badge">
+                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                </span>
+                            )}
                         </Link>
 
                         {/* Аватар */}
@@ -195,8 +180,9 @@ export const Header = () => {
 
                         {showUserMenu && (
                             <UserDropdown
-                                userId={me?.id ?? ''}
-                                isPremium={me?.isPremium ?? false}
+                                userId={me.id ?? ''}
+                                isPremium={me.isPremium}
+                                isArtist={!!artistId}
                                 onClose={() => setShowUserMenu(false)}
                                 onLogout={() => logout()}
                             />
@@ -204,7 +190,7 @@ export const Header = () => {
                     </div>
                 ) : (
                     <div className="d-flex gap-2">
-                        <Link href="/login"    className="client-header__auth-btn client-header__auth-btn--ghost">
+                        <Link href="/login" className="client-header__auth-btn client-header__auth-btn--ghost">
                             Увійти
                         </Link>
                         <Link href="/register" className="client-header__auth-btn client-header__auth-btn--primary">

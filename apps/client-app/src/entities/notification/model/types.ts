@@ -1,55 +1,41 @@
-export type NotificationType =
-    | 'new_track'
-    | 'new_release'
-    | 'upcoming_release'
-    | 'friend_request';
+import { NotificationCategory, type NotificationDto } from '@repo/api/client.ts';
 
-export type NotificationGroup =
-    | 'today'
-    | 'this_week'
-    | 'this_month'
-    | 'earlier';
+// Реальный контракт уведомления = сгенерированный NotificationDto:
+// { id, category, type, title, body, entityType, entityId, isRead, createdAt }.
+export type { NotificationDto };
 
-export type NotificationFilter = 'all' | 'tracks' | 'other';
+// ─── Вкладки UI → массив категорий для GetApiNotificationsParams.Categories ───
+// «Все» = без фильтра; «Музика» = [Music]; «Інше» = [System, Social, Billing].
+export type NotificationTab = 'all' | 'music' | 'other';
 
-export interface NotificationTrack {
-    id: string;
-    title: string;
-    artistName: string;
-    artistId?: string;
-    coverUrl?: string | null;
-}
+export const NOTIFICATION_TABS: {
+    key: NotificationTab;
+    label: string;
+    categories?: NotificationCategory[];
+}[] = [
+    { key: 'all', label: 'Всі' },
+    { key: 'music', label: 'Музика', categories: [NotificationCategory.Music] },
+    {
+        key: 'other',
+        label: 'Інше',
+        categories: [
+            NotificationCategory.System,
+            NotificationCategory.Social,
+            NotificationCategory.Billing,
+        ],
+    },
+];
 
-export interface NotificationAlbum {
-    id: string;
-    title: string;
-    artistName: string;
-    artistId?: string;
-    coverUrl?: string | null;
-    releaseDate?: string | null;
-}
-
-export interface NotificationUser {
-    id: string;
-    name: string;
-    avatarUrl?: string | null;
-    isFriend: boolean;
-}
-
-export interface NotificationItem {
-    id: string;
-    type: NotificationType;
-    isRead: boolean;
-    createdAt: string;
-    group: NotificationGroup;
-    track?: NotificationTrack | null;
-    album?: NotificationAlbum | null;
-    user?: NotificationUser | null;
-}
+// ─── Группировка по времени ───────────────────────────────────────────────
+// Бэк отдаёт плоский массив в UTC — группируем на клиенте (см. groupNotifications),
+// чтобы браузер корректно перевёл время в часовой пояс пользователя.
+export type NotificationGroup = 'today' | 'thisWeek' | 'thisMonth' | 'earlier';
 
 export const GROUP_LABELS: Record<NotificationGroup, string> = {
-    today:      'Сьогодні',
-    this_week:  'Цього тижня',
-    this_month: 'Цього місяця',
-    earlier:    'Раніше',
+    today: 'Сьогодні',
+    thisWeek: 'Цього тижня',
+    thisMonth: 'Цього місяця',
+    earlier: 'Раніше',
 };
+
+export const GROUP_ORDER: NotificationGroup[] = ['today', 'thisWeek', 'thisMonth', 'earlier'];

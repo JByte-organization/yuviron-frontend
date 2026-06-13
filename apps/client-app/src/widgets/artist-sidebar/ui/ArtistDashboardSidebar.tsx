@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/widgets/layout/model/contexts';
+import { ArtistSwitcher } from './ArtistSwitcher';
 
 interface NavItemProps {
     label: string;
@@ -27,12 +28,15 @@ export const ArtistDashboardSidebar = () => {
     const { collapsed, setCollapsed } = useSidebar();
 
     const isActive = (href: string) =>
-        pathname === href || pathname.startsWith(href + '/');
+        pathname === href || (pathname?.startsWith(href + '/') ?? false);
 
     return (
         <>
             <aside className={`client-sidebar${collapsed ? ' client-sidebar--collapsed' : ''}`}>
                 <div className="client-sidebar__inner">
+
+                    {/* Перемикач артистів (лише якщо керованих > 1) */}
+                    <ArtistSwitcher />
 
                     {/* Кабінет */}
                     <div className="client-sidebar__section">
@@ -56,11 +60,17 @@ export const ArtistDashboardSidebar = () => {
                                 isActive={isActive('/artist-dashboard/albums')}
                                 icon={<i className="bi bi-collection" />}
                             />
+                            <NavItem
+                                href="/artist-dashboard/team"
+                                label="Команда"
+                                isActive={isActive('/artist-dashboard/team')}
+                                icon={<i className="bi bi-people" />}
+                            />
                         </nav>
                         <hr className="client-sidebar__divider" />
                     </div>
 
-                    {/* Аналітика */}
+                    {/* Аналітика та фінанси */}
                     <div className="client-sidebar__section">
                         <p className="client-sidebar__section-title">Аналітика</p>
                         <nav className="client-sidebar__nav">
@@ -69,6 +79,12 @@ export const ArtistDashboardSidebar = () => {
                                 label="Статистика"
                                 isActive={isActive('/artist-dashboard/analytics')}
                                 icon={<i className="bi bi-graph-up" />}
+                            />
+                            <NavItem
+                                href="/artist-dashboard/finance"
+                                label="Фінанси"
+                                isActive={isActive('/artist-dashboard/finance')}
+                                icon={<i className="bi bi-wallet2" />}
                             />
                         </nav>
                         <hr className="client-sidebar__divider" />

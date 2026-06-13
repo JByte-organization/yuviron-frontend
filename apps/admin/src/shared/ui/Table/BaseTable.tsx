@@ -4,7 +4,7 @@ import Image from 'next/image'
 interface BaseTableProps {
     title: string;
     subtitle?: string;
-    onNewClick: () => void;
+    onNewClick?: () => void;
     searchPlaceholder?: string;
     searchValue?: string;
     onSearchChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -152,12 +152,14 @@ export const BaseTable = ({
                     </button>
 
                     {/* New button */}
-                    <button
-                        className="btn btn-admin-dark h5 px-4 py-2 text-nowrap mb-0"
-                        onClick={onNewClick}
-                    >
-                        + New {title}
-                    </button>
+                    {onNewClick && (
+                        <button
+                            className="btn btn-admin-dark h5 px-4 py-2 text-nowrap mb-0"
+                            onClick={onNewClick}
+                        >
+                            + New {title}
+                        </button>
+                    )}
                 </div>
             </div>
 

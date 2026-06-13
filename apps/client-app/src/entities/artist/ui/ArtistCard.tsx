@@ -1,4 +1,8 @@
+'use client';
+
 import React from 'react';
+import { useRouter } from 'next/navigation';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 export interface ArtistCardData {
     id: string;
@@ -12,25 +16,46 @@ interface ArtistCardProps {
     onClick?: (id: string) => void;
 }
 
-const formatListeners = (count?: number): string => {
-    if (!count) return '';
-    return count.toLocaleString('uk-UA');
-};
-
 export const ArtistCard = ({ artist, onClick }: ArtistCardProps) => {
-    const avatarSrc = artist.avatarUrl
-        ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${artist.avatarUrl}`
-        : 'https://picsum.photos/seed/artist-' + artist.id + '/200/200';
+    const router = useRouter();
+
+    // Використовуємо твій єдиний хелпер для зображень
+    const avatarSrc = (artist.avatarUrl && getImageUrl(artist.avatarUrl)) ?? '/images/artist/placeholder.png';
+
+    const handleClick = () => {
+        if (onClick) {
+            onClick(artist.id);
+        } else {
+            router.push(`/artists/${artist.id}`);
+        }
+    };
 
     return (
-        <div className="artist-card" onClick={() => onClick?.(artist.id)}>
-            <div className="artist-card__avatar">
-                <img src={avatarSrc} alt={artist.name} />
+        <div className="artist-card" onClick={handleClick}>
+            {/* Контейнер аватарки та абсолютної кнопки Play */}
+            <div className="artist-card__avatar-wrapper">
+                <div className="artist-card__avatar">
+                    <img src={avatarSrc} alt={artist.name} draggable={false} />
+                </div>
+
+                {/* Зелена кнопка програвання як на референсі */}
+                <button
+                    className="artist-card__play-btn"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        // Тут у майбутньому буде запуск топ-треків артиста
+                    }}
+                    aria-label={`Грати мікс ${artist.name}`}
+                >
+                    <i className="bi bi-play-fill" />
+                </button>
             </div>
-            <p className="artist-card__name">{artist.name}</p>
-            {artist.monthlyListeners !== undefined && (
-                <p className="artist-card__listeners">{formatListeners(artist.monthlyListeners)}</p>
-            )}
+
+            {/* Метадані під аватаркою */}
+            <div className="artist-card__meta">
+                <p className="artist-card__name text-truncate">{artist.name}</p>
+                <p className="artist-card__role">Виконавець</p>
+            </div>
         </div>
     );
 };
