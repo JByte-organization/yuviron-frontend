@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Sidebar } from '@/widgets/sidebar';
 import { AdminHeader } from '@/widgets/header';
 import { SIDEBAR_WIDTH } from '@/shared/config/constants';
@@ -18,9 +18,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     useEffect(() => {
         const check = () => {
             const desktop = window.innerWidth >= 992;
-            setIsDesktop(desktop);
-            // При первом рендере открываем на десктопе
-            if (desktop) setSidebarOpen(true);
+            setIsDesktop(prev => (prev === desktop ? prev : desktop));
+            setSidebarOpen(prev => (desktop ? true : prev));
         };
         check();
         window.addEventListener('resize', check);
@@ -28,22 +27,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }, []);
 
 
+    const handleClose = useCallback(() => setSidebarOpen(false), []);
+    const handleToggle = useCallback(() => setSidebarOpen(o => !o), []);
 
-    const showOverlay = sidebarOpen && !isDesktop;
-    const contentShift = sidebarOpen && isDesktop ? SIDEBAR_WIDTH : 0;
+    const showOverlay = useMemo(() => sidebarOpen && !isDesktop, [sidebarOpen, isDesktop]);
+    const contentShift = useMemo(() => (sidebarOpen && isDesktop ? SIDEBAR_WIDTH : 0), [sidebarOpen, isDesktop]);
+
+    const handleOverlayKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+            setSidebarOpen(false);
+        }
+    }, []);
 
     return (
-        <div className="admin-layout" style={{ minHeight: '100vh', backgroundColor: '#151921' }}>
+        <div className="admin-layout">
 
             <Sidebar
                 isOpen={sidebarOpen}
-                onClose={() => setSidebarOpen(false)}
+                onClose={handleClose}
             />
 
-            {/* Overlay — только моб */}
             {showOverlay && (
                 <div
-                    onClick={() => setSidebarOpen(false)}
+                    role="button"
+                    aria-label="Закрыть боковую панель"
+                    tabIndex={0}
+                    onClick={handleClose}
+                    onKeyDown={handleOverlayKeyDown}
                     style={{
                         position: 'fixed',
                         inset: 0,
@@ -53,17 +63,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 />
             )}
 
-            {/* Контент */}
             <div
                 style={{
                     marginLeft: contentShift,
                     transition: 'margin-left 0.25s ease',
-                    minHeight: '100vh',
                     display: 'flex',
                     flexDirection: 'column',
                 }}
             >
-                <AdminHeader onMenuToggle={() => setSidebarOpen(o => !o)} />
+                <AdminHeader onMenuToggle={handleToggle} />
 
                 <main className="flex-grow-1">
                     <div className="container-fluid p-3 p-md-4">
