@@ -3,136 +3,95 @@
 import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
+    useGetApiAuthMe,
     useGetApiMeSettingsPreferences,
     usePutApiMeSettingsTheme,
-    getGetApiMeSettingsPreferencesQueryKey,
-    type UserSettingsDto,
-    type ThemeMode
-} from '@repo/api/client';
-
-import {
-    useGetApiMeAppearanceThemes,
-    usePutApiMeAppearanceThemesIdActivate,
-    useGetApiMeAppearanceCustomTheme,
     usePutApiMeAppearanceCustomTheme,
-    getGetApiMeAppearanceCustomThemeQueryKey,
-    type ThemeDto,
-    type CustomThemeDto
+    getGetApiMeSettingsPreferencesQueryKey,
+    type ThemeMode,
+    type CurrentUserDto,
+    type UserSettingsDto
 } from '@repo/api/client';
-
-// Набір стильних базових пресетів для генерації градієнта преміум-користувача
-const ACCENT_PRESETS = [
-    { name: 'Classic Blue', hex: '#213a80', rgb: '33, 58, 128' },
-    { name: 'Neon Purple', hex: '#631e82', rgb: '99, 30, 130' },
-    { name: 'Crimson Wine', hex: '#821e3a', rgb: '130, 30, 58' },
-    { name: 'Deep Amber', hex: '#82581e', rgb: '130, 88, 30' },
-    { name: 'Cyberpunk Teal', hex: '#1e8270', rgb: '30, 130, 112' }
-];
+import { useTheme } from '@/shared/lib/ThemeProvider';
 
 export const AppearanceSettingsSection = () => {
     const queryClient = useQueryClient();
+    const { theme: localTheme, toggleTheme } = useTheme();
 
-    // Тимчасовий стейт-перемикач для зручності тестування (Зміни на false, щоб побачити як красиво блокується інтерфейс)
-    const [isPremiumUser, setIsPremiumUser] = useState<boolean>(false);
+    // ─── Запити даних ─────────────────────────────────
+    const { data: meRaw } = useGetApiAuthMe();
+    const me = (meRaw as CurrentUserDto) ?? null;
+    const isPremium = me?.isPremium ?? false;
 
-    // ─── Запити даних з сервера ───────────────────────────
     const { data: prefsRaw } = useGetApiMeSettingsPreferences();
     const prefs = (prefsRaw as { data?: UserSettingsDto })?.data ?? (prefsRaw as UserSettingsDto);
 
-    const { data: themesRaw } = useGetApiMeAppearanceThemes();
-    const themes = themesRaw && Array.isArray(themesRaw.data) ? themesRaw.data : [];
-
-    const { data: customThemeRaw } = useGetApiMeAppearanceCustomTheme({
-        query: {
-            queryKey: getGetApiMeAppearanceCustomThemeQueryKey(),
-            enabled: isPremiumUser
-        }
-    });
-    const customTheme = (customThemeRaw as { data?: CustomThemeDto })?.data ?? (customThemeRaw as CustomThemeDto);
-
     // ─── Мутації ──────────────────────────────────────────
     const { mutateAsync: updateBaseTheme } = usePutApiMeSettingsTheme();
-    const { mutateAsync: activateThemePreset } = usePutApiMeAppearanceThemesIdActivate();
     const { mutateAsync: updateCustomTheme } = usePutApiMeAppearanceCustomTheme();
 
-    // ─── Обробка подій ────────────────────────────────────
+    // ─── Локальні кольори конструктора ────────────────────
+    const [primaryColor, setPrimaryColor] = useState('#7AE0FF');
+    const [secondaryColor, setSecondaryColor] = useState('#1D4ED8');
+    const [backgroundColor, setBackgroundColor] = useState('#0B0C12');
+    const [isSaving, setIsSaving] = useState(false);
+
     const handleModeChange = async (mode: ThemeMode) => {
+        if (mode === 'White' && localTheme !== 'light') toggleTheme();
+        else if (mode === 'Dark' && localTheme !== 'dark') toggleTheme();
+
         try {
             await updateBaseTheme({ data: { themeMode: mode } });
-            queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
+            await queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
         } catch (err) {
-            console.error(err);
+            console.error('[ThemeMode] Failed to save mode:', err);
         }
     };
 
-    const handleThemeActivate = async (themeId: string, isPremiumOnly?: boolean) => {
-        if (isPremiumOnly && !isPremiumUser) return;
-        try {
-            await activateThemePreset({ id: themeId });
-            queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    const handleSaveGradient = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!isPremium) return;
+        setIsSaving(true);
 
-    const handleCustomAccentSelect = async (rgbValue: string) => {
         try {
-            // Зберігаємо обраний колір у конфіг персональної палітри користувача
             await updateCustomTheme({
                 data: {
-                    primaryColor: rgbValue, // Зберігаємо як RGB-рядок для динамічного підставлення у градієнт
-                    secondaryColor: '15, 76, 71',
-                    backgroundColor: '11, 11, 14'
+                    primaryColor: primaryColor.toUpperCase(),
+                    secondaryColor: secondaryColor.toUpperCase(),
+                    backgroundColor: backgroundColor.toUpperCase()
                 }
             });
-            queryClient.invalidateQueries({ queryKey: getGetApiMeAppearanceCustomThemeQueryKey() });
+
+            await queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
+            alert('Custom layout mapping successfully deployed.');
         } catch (err) {
-            console.error(err);
+            console.error('[CustomTheme] 400 Validation Crash:', err);
+        } finally {
+            setIsSaving(false);
         }
-    };
-
-    // Визначаємо поточний активний колір для прев'ю градієнта
-    const activeAccentRgb = customTheme?.primaryColor || '33, 58, 128';
-
-    // Формуємо динамічний стиль фону на основі твоїх radial-gradient формул
-    const gradientBackgroundStyle = {
-        backgroundImage: `
-            radial-gradient(circle at 50% 40%, rgba(${activeAccentRgb}, 0.38) 0%, transparent 55%),
-            radial-gradient(circle at 85% 20%, rgba(15, 76, 71, 0.35) 0%, transparent 45%),
-            radial-gradient(circle at 15% 15%, rgba(14, 52, 70, 0.35) 0%, transparent 45%),
-            radial-gradient(circle at 85% 85%, rgba(20, 45, 80, 0.25) 0%, transparent 50%)
-        `
     };
 
     return (
-        <div className="yuviron-settings-appearance">
+        <div className="yuviron-settings-appearance d-flex flex-column gap-4">
 
-            {/* ТЕСТ-ПАНЕЛЬ ДЛЯ РОЗРОБНИКА (ВИДАЛИТИ ПЕРЕД ПРОДОМ) */}
-            <div className="dev-premium-toggle mb-4 d-flex align-items-center justify-content-between p-3 rounded-3" style={{ background: '#141419', border: '1px dashed #333' }}>
-                <span className="small text-secondary font-monospace">DEBUG: Toggle current premium subscription state</span>
-                <button
-                    className={`btn btn-xs fw-bold ${isPremiumUser ? 'btn-warning text-dark' : 'btn-outline-secondary text-white'}`}
-                    onClick={() => setIsPremiumUser(!isPremiumUser)}
-                >
-                    {isPremiumUser ? '👑 PREMIUM MODE' : '❌ FREE MODE'}
-                </button>
-            </div>
-
-            {/* БЛОК 1: ТИП ТЕМИ */}
-            <div className="appearance-card">
-                <div className="card-info-layout">
+            {/* 🌗 БЛОК 1: ПЕРЕМИКАЧ РЕЖИМІВ ИНТЕРФЕЙСУ */}
+            <div className="appearance-card-v2 p-4 rounded-4">
+                <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
                     <div>
-                        <span className="card-label">Interface Theme</span>
-                        <p className="card-description">Synchronize layout configurations globally across systems.</p>
+                        {/* 🌟 ФІКС: Прибрано text-white, колір йде з .card-label */}
+                        <span className="card-label d-block fw-bold mb-1">Interface Base Shell</span>
+                        {/* 🌟 ФІКС: Прибрано text-muted, колір йде з .card-description */}
+                        <p className="card-description small mb-0">Select your preferred client layout canvas scheme.</p>
                     </div>
-                    <div className="aesthetic-segmented">
+
+                    <div className="aesthetic-segmented-v2">
                         {(['System', 'Dark', 'White'] as ThemeMode[]).map((mode) => {
-                            const isSelected = prefs?.themeMode === mode;
+                            const isActive = prefs?.themeMode === mode;
                             return (
                                 <button
                                     key={mode}
                                     type="button"
-                                    className={`segmented-btn ${isSelected ? 'active-mode-bold' : ''}`}
+                                    className={`segmented-btn-v2 ${isActive ? 'active-mode-bold' : ''}`}
                                     onClick={() => handleModeChange(mode)}
                                 >
                                     {mode}
@@ -143,78 +102,77 @@ export const AppearanceSettingsSection = () => {
                 </div>
             </div>
 
-            {/* БЛОК 2: ГОТОВІ КАТАЛОЖНІ ПРЕСЕТИ */}
-            <div className="appearance-card mt-4">
-                <span className="card-label mb-3 d-block">Color Presets</span>
-                <div className="catalog-theme-grid">
-                    {themes.map((t: ThemeDto) => {
-                        if (!t.id) return null;
-                        const isSelected = prefs?.themeId === t.id;
-
-                        return (
-                            <div
-                                className={`preset-circle-card ${isSelected ? 'selected-preset' : ''}`}
-                                key={t.id}
-                                onClick={() => handleThemeActivate(t.id!, t.isPremiumOnly)}
-                            >
-                                <div className="triple-dot-preview" style={{ backgroundColor: t.backgroundColor || '#141419' }}>
-                                    <span className="dot-node" style={{ backgroundColor: t.primaryColor || '#FFF' }} />
-                                    <span className="dot-node" style={{ backgroundColor: t.secondaryColor || '#888' }} />
-                                </div>
-                                <span className="preset-name text-truncate">{t.name}</span>
-                                {t.isPremiumOnly && <span className="premium-lock-badge">Premium</span>}
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* БЛОК 3: ПРЕМІУМ ГРАДІЄНТИ */}
-            <div className="appearance-card mt-4 position-relative overflow-hidden">
-                <span className="card-label mb-1 d-block">Ambient Universe Customization</span>
-                <p className="card-description mb-4">Pick an accent color node to re-generate the dynamic layout background glow mapping.</p>
-
-                <div className="premium-generator-layout">
-                    {/* Контейнер інтерактивного прев'ю з твоїми формулами градієнтів */}
-                    <div className="gradient-preview-viewport" style={gradientBackgroundStyle}>
-                        <div className="viewport-inner-content">
-                            <span className="app-mock-title">Glow Map</span>
-                            <span className="app-mock-subtitle">rgba({activeAccentRgb}, 0.38)</span>
-                        </div>
-                    </div>
-
-                    {/* Вибір кольорових нод */}
-                    <div className="accent-nodes-list">
-                        {ACCENT_PRESETS.map((preset) => {
-                            const isCurrentNodeActive = activeAccentRgb === preset.rgb;
-                            return (
-                                <button
-                                    key={preset.hex}
-                                    className={`accent-node-circle ${isCurrentNodeActive ? 'node-active' : ''}`}
-                                    style={{ backgroundColor: preset.hex }}
-                                    onClick={() => handleCustomAccentSelect(preset.rgb)}
-                                    title={preset.name}
-                                />
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* ЕСТЕТИЧНИЙ ЗАХИСНИЙ СКЛЯНИЙ БАНЕР ДЛЯ FREE КОРИСТУВАЧІВ */}
-                {!isPremiumUser && (
-                    <div className="premium-blur-overlay">
-                        <div className="overlay-glass-card">
-                            <span className="crown-icon">👑</span>
-                            <h5 className="overlay-title">Create your own universe</h5>
-                            <p className="overlay-text">Custom radial gradients and infinite layout personalization options are exclusive to Yuviron Premium.</p>
-                            <button className="overlay-action-btn" onClick={() => alert('Redirecting to subscription gate...')}>
-                                Upgrade to Premium
-                            </button>
+            {/* 🔮 БЛОК 2: АМБІЄНТНЕ НАЛАШТУВАННЯ ДЛЯ PREMIUM */}
+            <div className="appearance-card-v2 p-4 rounded-4 position-relative overflow-hidden">
+                {!isPremium && (
+                    <div className="premium-blur-overlay-v2 rounded-4 text-center p-4">
+                        <div className="overlay-glass-card-v2 p-4 rounded-4">
+                            <i className="bi bi-crown-fill crown-icon-v2 mb-2" />
+                            {/* 🌟 ФІКС: Прибрано text-white, стилі беруться з контейнера */}
+                            <h5 className="fw-bold mb-1 overlay-title">Theme Laboratory Gated</h5>
+                            {/* 🌟 ФІКС: Прибрано text-muted */}
+                            <p className="small mb-0 overlay-desc">Custom radial gradients and layout personalization fields require active Premium status.</p>
                         </div>
                     </div>
                 )}
+
+                <div className="mb-2">
+                    {/* 🌟 ФІКС: Прибрано text-white */}
+                    <span className="card-label d-block fw-bold mb-1">Ambient Universe Customization</span>
+                    {/* 🌟 ФІКС: Прибрано text-muted */}
+                    <p className="card-description small mb-4">Pick an accent color node to re-generate the dynamic layout background glow mapping.</p>
+                </div>
+
+                <form onSubmit={handleSaveGradient} className="d-flex flex-column gap-4">
+                    <div className="d-flex align-items-center gap-4 flex-wrap flex-md-nowrap">
+                        <div
+                            className="gradient-preview-viewport-v2 flex-grow-1 rounded-3 p-3 d-flex align-items-end"
+                            style={{ background: `linear-gradient(135deg, ${backgroundColor} 0%, ${secondaryColor} 50%, ${primaryColor} 100%)` }}
+                        >
+                            <div className="viewport-content-v2">
+                                <span className="v-title">Active Universe Node</span>
+                                <span className="v-sub font-monospace">HEX mapping system</span>
+                            </div>
+                        </div>
+
+                        <div className="color-node-pickers-stack d-flex flex-column gap-2 flex-shrink-0">
+                            <div className="premium-color-slot-row">
+                                <div className="color-input-circle-wrapper">
+                                    <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
+                                </div>
+                                <span className="node-title-text">Primary Accent ({primaryColor.toUpperCase()})</span>
+                            </div>
+                            <div className="premium-color-slot-row">
+                                <div className="color-input-circle-wrapper">
+                                    <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} />
+                                </div>
+                                <span className="node-title-text">Dynamic Fog ({secondaryColor.toUpperCase()})</span>
+                            </div>
+                            <div className="premium-color-slot-row">
+                                <div className="color-input-circle-wrapper">
+                                    <input type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} />
+                                </div>
+                                <span className="node-title-text">Deep Ground ({backgroundColor.toUpperCase()})</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="d-flex justify-content-end mt-2">
+                        <button type="submit" className="yuviron-btn-minimal py-2 px-4" disabled={isSaving || !isPremium}>
+                            {isSaving ? 'Deploying Nodes...' : 'Apply Cosmic Layout'}
+                        </button>
+                    </div>
+                </form>
             </div>
 
+            {/* 🛠️ ДЕВЕЛОПЕРСЬКИЙ КАНАЛ */}
+            {/*{process.env.NODE_ENV !== 'production' && (*/}
+            {/*    <div className="dev-debug-pill-container p-2 rounded-3 mt-4 text-center">*/}
+            {/*        <span className="font-monospace text-warning" style={{ fontSize: '10px', fontWeight: 700 }}>*/}
+            {/*            ⚙️ LOCAL DEV ENVIRONMENT • VERIFIED RE-FETCH CLIENT ENGINES ACTIVE*/}
+            {/*        </span>*/}
+            {/*    </div>*/}
+            {/*)}*/}
         </div>
     );
 };

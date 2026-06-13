@@ -22,31 +22,50 @@ export const ArtistAboutSection = ({
                                        bannerUrl,
                                    }: ArtistAboutSectionProps) => {
 
-    // 🚨 ФИКС: Переводим на единый хелпер обработки изображений
-    const bannerSrc = getImageUrl(bannerUrl)
-        ?? `https://picsum.photos/seed/banner-${artistId}/1200/500`; // Немного увеличили разрешение для баннера
+    // ─── Отримуємо тільки реальне зображення без фейкових холдерів ─────────
+    const bannerSrc = getImageUrl(bannerUrl);
 
-    // Если нет ни описания, ни слушателей, ни баннера — скрываем пустую секцию
+    // Якщо немає взагалі ніякої інформації — повністю ховаємо секцію
     if (!monthlyListeners && !bio && !bannerUrl) return null;
 
     return (
-        <section className="artist-about mb-5">
-            <h2 className="section-header__title mb-3">Про виконавця</h2>
+        <section className="artist-about mb-5 animate-fade-in">
+            <h2 className="section-header__title mb-3" style={{ color: 'var(--client-text-strong)' }}>
+                Про виконавця
+            </h2>
 
-            <div className="artist-about__card">
-                {/* Банер */}
-                <div className="artist-about__banner">
-                    <img src={bannerSrc} alt="About artist banner" />
+            <div className="artist-about__card overflow-hidden rounded-4">
+                {/* 🚨 ФІКС ХОЛДЕРА: Якщо картинки немає, блок заллється фірмовим
+                  космічним градієнтом, адаптованим під світлу або темну тему
+                */}
+                <div
+                    className="artist-about__banner"
+                    style={
+                        !bannerSrc
+                            ? { background: 'linear-gradient(180deg, var(--client-surface-2) 0%, var(--client-bg) 100%)' }
+                            : undefined
+                    }
+                >
+                    {/* Рендеримо тег img ТІЛЬКИ якщо є справжнє посилання */}
+                    {bannerSrc && (
+                        <img
+                            src={bannerSrc}
+                            alt="About artist banner"
+                            className="w-100 h-100 object-cover"
+                        />
+                    )}
 
-                    {/* Overlay з інфо */}
-                    <div className="artist-about__overlay">
+                    {/* Матовий текстовий оверлей */}
+                    <div className="artist-about__overlay d-flex flex-column justify-content-end p-4 p-md-5">
                         {monthlyListeners && (
-                            <p className="artist-about__listeners">
+                            <p className="artist-about__listeners font-monospace text-uppercase mb-2">
                                 {formatListeners(monthlyListeners)}
                             </p>
                         )}
                         {bio && (
-                            <p className="artist-about__bio">{bio}</p>
+                            <p className="artist-about__bio mb-0">
+                                {bio}
+                            </p>
                         )}
                     </div>
                 </div>

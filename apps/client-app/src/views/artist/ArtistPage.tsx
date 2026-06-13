@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation'; // 🚨 ФИКС: Импортируем роутер для переходов
+import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import {
     useGetApiArtistsId,
@@ -78,9 +78,6 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
     const artist = (artistData?.data || artistData) as ArtistDetailsDto | undefined;
 
     // ─── Підписка на виконавця ───────────────────────────────────────────────
-    // Початковий стан беремо прямо з профілю (ArtistDetailsDto.isFollowed).
-    // Тримаємо локально для оптимістичного апдейту; коли з API приходить нове
-    // значення — синхронізуємо під час рендера (патерн React «adjust state on prop change»).
     const apiFollowed = artist?.isFollowed ?? false;
     const [isFollowing, setIsFollowing] = useState(apiFollowed);
     const [prevApiFollowed, setPrevApiFollowed] = useState(apiFollowed);
@@ -209,12 +206,12 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
                 />
 
                 {/* Плейлісти виконавця */}
-                <ArtistPlaylistsSection
-                    artistName={artist.name ?? ''}
-                    playlists={playlists}
-                    isLoading={isPlaylistsLoading}
-                    onPlaylistClick={(id) => router.push(`/playlists/${id}`)}
-                />
+                {/*<ArtistPlaylistsSection*/}
+                {/*    artistName={artist.name ?? ''}*/}
+                {/*    playlists={playlists}*/}
+                {/*    isLoading={isPlaylistsLoading}*/}
+                {/*    onPlaylistClick={(id) => router.push(`/playlists/${id}`)}*/}
+                {/*/>*/}
 
                 {/* Про виконавця */}
                 <ArtistAboutSection
