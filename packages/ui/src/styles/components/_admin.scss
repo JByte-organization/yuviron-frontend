@@ -592,3 +592,360 @@ $active-blue: #40A2FF;
     transition: margin-left 0.25s ease;
   }
 }
+
+
+.recharts-default-tooltip {
+  background-color: $admin-secondary !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px);
+}
+
+.text-cyan {
+  color: $admin-btn-primary !important;
+}
+
+.transition-all {
+  transition: all 0.2s ease-in-out;
+  &:hover {
+    transform: translateY(-2px);
+    border-color: $admin-btn-primary !important;
+  }
+}
+
+
+.trending-albums {
+  background-color: #1e2330;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid $admin-secondary;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+
+  &__icon {
+    color: $admin-btn-primary;
+    filter: drop-shadow(0 0 8px rgba($admin-btn-primary, 0.3));
+  }
+
+  &__item {
+    width: 100px;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      .trending-albums__cover {
+        border-color: $admin-btn-primary;
+      }
+    }
+  }
+
+  &__cover {
+    width: 100px;
+    height: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.4);
+    transition: border-color 0.25s ease;
+    margin-bottom: 10px;
+
+    &--empty {
+      background: linear-gradient(135deg, #325B76, #212631);
+
+      span {
+        font-size: 1.6rem;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+      }
+    }
+  }
+
+  &__image {
+    transition: transform 0.3s ease-in-out;
+  }
+
+  &__item-title {
+    font-size: 0.8rem;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+
+  &__item-plays {
+    font-size: 0.7rem;
+    color: $admin-text;
+  }
+
+  &__item-count {
+    color: $admin-btn-primary;
+    font-weight: 500;
+  }
+}
+
+.summary-cards {
+  &__card {
+    background-color: #1a2025;
+    border: 1px solid $admin-secondary;
+    padding: 1rem;
+    height: 100%;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    cursor: default;
+
+    &:hover {
+      border-color: $admin-btn-primary;
+    }
+  }
+
+  &__icon-box {
+    width: 40px;
+    height: 40px;
+    background-color: #1e2330;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.2rem;
+
+    color: var(--card-icon-color, #fff);
+    filter: drop-shadow(0 0 2px var(--card-icon-color, transparent));
+  }
+
+  &__content {
+    overflow: hidden;
+  }
+
+
+  &__label {
+    color: $admin-text;
+    font-weight: 500;
+    font-size: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  &__value {
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+}
+
+
+.top-entity-table {
+  background-color: #1e2330;
+  border: 1px solid $admin-secondary;
+  border-radius: 0.5rem; // rounded-3
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+
+  &__title-icon {
+    color: $admin-btn-primary;
+    filter: drop-shadow(0 0 8px rgba($admin-btn-primary, 0.3));
+  }
+
+  &__th {
+    background-color: #1a1f2e;
+    border-bottom: 1px solid $admin-secondary;
+    color: $admin-text;
+  }
+
+  &__col-idx {
+    width: 32px;
+  }
+
+  &__col-plays {
+    width: 90px;
+  }
+
+  &__row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    cursor: default;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+
+    &:nth-child(even) {
+      background-color: #1e2330;
+    }
+    &:nth-child(odd) {
+      background-color: #212631;
+    }
+
+    &:hover {
+      background-color: #262c3a !important;
+    }
+  }
+
+  &__rank {
+    width: 32px;
+    color: $admin-text;
+
+    &--first {
+      color: $admin-btn-primary !important;
+    }
+
+    // Модифікатор для 2-го місця
+    &--second {
+      color: $admin-primary !important;
+    }
+  }
+
+  &__cover {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    &--empty {
+      background: linear-gradient(135deg, #325B76, #212631);
+
+      i {
+        font-size: 0.8rem;
+        color: $admin-btn-primary;
+      }
+    }
+  }
+
+  &__plays-count {
+    width: 90px;
+    color: #e2e8f0;
+  }
+
+  &__plays-label {
+    color: $admin-text;
+    font-size: 0.75rem;
+  }
+}
+
+.recent-users {
+  background-color: #1e2330;
+  border: 1px solid $admin-secondary;
+  border-radius: 0.5rem; // rounded-3
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+
+  &__title-icon {
+    color: $admin-btn-primary;
+    filter: drop-shadow(0 0 8px rgba($admin-btn-primary, 0.3));
+  }
+
+  &__th {
+    background-color: #1a1f2e;
+    border-bottom: 1px solid $admin-secondary;
+    color: $admin-text;
+  }
+
+  &__col-idx {
+    width: 32px;
+  }
+
+  &__col-email {
+    width: 210px;
+  }
+
+  &__col-date {
+    width: 100px;
+  }
+
+  &__index {
+    color: $admin-text;
+  }
+
+  &__row {
+    cursor: default;
+    transition: background-color 0.2s ease;
+
+    // Мапимо кольори рядків через селектори
+    &:nth-child(even) {
+      background-color: #1e2330;
+    }
+    &:nth-child(odd) {
+      background-color: #212631;
+    }
+
+    &:hover {
+      background-color: #262c3a !important;
+    }
+  }
+
+  &__avatar {
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    &--empty {
+      background: linear-gradient(135deg, #4B7490, #325B76);
+      color: rgba(255, 255, 255, 0.5);
+
+      span {
+        font-size: 0.85rem;
+      }
+    }
+  }
+
+  &__email {
+    color: #a0aec0;
+  }
+
+  &__date {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+  }
+}
+
+.admin-ads-row {
+  background-color: #212631;
+  border-bottom: 1px solid $admin-secondary;
+  transition: background-color 0.2s ease;
+
+  &__cover-container {
+    &:hover .admin-ads-row__player-overlay {
+      opacity: 1;
+    }
+  }
+
+  &:hover {
+    background-color: #262c3a !important;
+  }
+
+  &__player-overlay {
+    background-color: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    backdrop-filter: blur(1px);
+
+    &--active {
+      opacity: 1 !important;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  &__switch {
+    width: 2.2em !important;
+    height: 1.1em !important;
+    background-color: #1a1f2e !important;
+    border-color: $admin-secondary !important;
+    cursor: pointer;
+
+    &:checked {
+      background-color: $admin-btn-primary !important;
+    }
+
+    &:focus {
+      box-shadow: none !important;
+    }
+  }
+}
+
+.admin-audio-native {
+  filter: invert(0.9) hue-rotate(180deg);
+}
+
+.btn-outline-info {
+  color: #7AE0FF !important;
+  border-color: rgba(122, 224, 255, 0.3) !important;
+  background-color: rgba(122, 224, 255, 0.02);
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: rgba(122, 224, 255, 0.08) !important;
+    border-color: #7AE0FF !important;
+    box-shadow: 0 0 12px rgba(122, 224, 255, 0.15);
+  }
+}

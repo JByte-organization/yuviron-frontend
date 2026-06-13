@@ -1,90 +1,63 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { usePostApiNotificationsReadAll } from '@repo/api/client.ts';
 import { NotificationCard } from '@/entities/notification/ui/NotificationCard';
-import { FriendRequestCard } from '@/entities/notification/ui/FriendRequestCard';
-import { MOCK_NOTIFICATIONS } from '@/entities/notification/model/mockData';
 import {
-    type NotificationFilter,
-    type NotificationGroup,
-    type NotificationItem,
     GROUP_LABELS,
+    GROUP_ORDER,
+    NOTIFICATION_TABS,
+    type NotificationTab,
 } from '@/entities/notification/model/types';
+import { fetchNotifications } from '@/entities/notification/lib/fetchNotifications';
+import { groupNotifications } from '@/entities/notification/lib/groupNotifications';
+import { invalidateNotifications } from '@/entities/notification/lib/invalidateNotifications';
+import { useNotificationClick } from '@/entities/notification/lib/useNotificationClick';
 
 /**
- * Сторінка: Повідомлення
- *
- * Підключення даних:
- * 1. const { data, isLoading } = useGetApiNotifications({ filter, page, pageSize });
- * 2. Замінити MOCK_NOTIFICATIONS на data?.items
- * 3. Для "позначити всі" — usePostApiNotificationsReadAll()
- * 4. Для одного — usePostApiNotificationsIdRead(id)
+ * Сторінка: Повідомлення.
+ * REST-історія (GET /notifications з фільтром по category), групування по датах
+ * на клієнті (date-fns), позначення прочитаним та роутинг — у useNotificationClick.
  */
 export const NotificationsPage = () => {
-    const [filter, setFilter] = useState<NotificationFilter>('all');
+    const [tab, setTab] = useState<NotificationTab>('all');
+    const qc = useQueryClient();
+    const handleClick = useNotificationClick();
 
-    // TODO: замінити на хук — useGetApiNotifications({ filter })
-    const [notifications, setNotifications] = useState<NotificationItem[]>(MOCK_NOTIFICATIONS);
+    const tabCfg = NOTIFICATION_TABS.find((t) => t.key === tab) ?? NOTIFICATION_TABS[0];
 
-    const isLoading = false;
+    const { data, isLoading } = useQuery({
+        // key[0] начинается с /api/notifications → попадает под invalidateNotifications.
+        queryKey: ['/api/notifications', tab],
+        queryFn: () => fetchNotifications({ categories: tabCfg.categories }),
+    });
+    const items = data?.items ?? [];
 
-    // ─── Фільтрація ───────────────────────────────────────
-    const filtered = notifications.filter((n) => {
-        if (filter === 'tracks') return n.type === 'new_track';
-        if (filter === 'other')  return n.type !== 'new_track';
-        return true;
+    const { mutate: readAll, isPending: isReadingAll } = usePostApiNotificationsReadAll({
+        mutation: { onSuccess: () => invalidateNotifications(qc) },
     });
 
-    // ─── Групування ───────────────────────────────────────
-    const grouped = filtered.reduce<Record<NotificationGroup, NotificationItem[]>>(
-        (acc, n) => {
-            if (!acc[n.group]) acc[n.group] = [];
-            acc[n.group].push(n);
-            return acc;
-        },
-        {} as Record<NotificationGroup, NotificationItem[]>
-    );
-
-    const groupOrder: NotificationGroup[] = ['today', 'this_week', 'this_month', 'earlier'];
-    const unreadCount = notifications.filter((n) => !n.isRead).length;
-
-    // ─── Handlers ─────────────────────────────────────────
-    const handleRead = (id: string) => {
-        setNotifications((prev) =>
-            prev.map((n) => n.id === id ? { ...n, isRead: true } : n)
-        );
-        // TODO: usePostApiNotificationsIdRead(id)
-    };
-
-    const handleReadAll = () => {
-        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-        // TODO: usePostApiNotificationsReadAll()
-    };
-
-    const FILTERS: { key: NotificationFilter; label: string }[] = [
-        { key: 'all',    label: 'Всі' },
-        { key: 'tracks', label: 'Треки' },
-        { key: 'other',  label: 'Інше' },
-    ];
+    const unreadCount = items.filter((n) => !n.isRead).length;
+    const grouped = groupNotifications(items);
 
     return (
         <div className="notifications-page">
-
             {/* ─── Заголовок ────────────────────────────── */}
             <div className="notifications-page__header">
                 <div>
                     <h1 className="notifications-page__title">Повідомлення</h1>
                     <p className="notifications-page__description">
-                        Функція повідомлень робить взаємодію з музикою ще зручнішою та цікавішою.
-                        Нові релізи улюблених артистів, подкастів, оновлення плейлістів.
+                        Нові релізи улюблених артистів, оновлення статусу профілю та системні
+                        сповіщення — усе в одному місці.
                     </p>
                 </div>
 
-                {/* Позначити всі як прочитані */}
                 {unreadCount > 0 && (
                     <button
                         className="notifications-page__read-all-btn"
-                        onClick={handleReadAll}
+                        onClick={() => readAll()}
+                        disabled={isReadingAll}
                     >
                         Позначити всі як прочитані ({unreadCount})
                     </button>
@@ -93,11 +66,13 @@ export const NotificationsPage = () => {
 
             {/* ─── Фільтр-таби ──────────────────────────── */}
             <div className="notifications-page__filters">
-                {FILTERS.map((f) => (
+                {NOTIFICATION_TABS.map((f) => (
                     <button
                         key={f.key}
-                        className={`notifications-page__filter-btn${filter === f.key ? ' notifications-page__filter-btn--active' : ''}`}
-                        onClick={() => setFilter(f.key)}
+                        className={`notifications-page__filter-btn${
+                            tab === f.key ? ' notifications-page__filter-btn--active' : ''
+                        }`}
+                        onClick={() => setTab(f.key)}
                     >
                         {f.label}
                     </button>
@@ -109,54 +84,30 @@ export const NotificationsPage = () => {
             {/* ─── Контент ──────────────────────────────── */}
             {isLoading ? (
                 <NotificationsSkeleton />
-            ) : filtered.length === 0 ? (
+            ) : items.length === 0 ? (
                 <div className="notifications-page__empty">
                     <i className="bi bi-bell-slash" />
                     <p>Повідомлень немає</p>
                 </div>
             ) : (
-                groupOrder.map((group) => {
-                    const items = grouped[group];
-                    if (!items?.length) return null;
-
-                    // Розділяємо на друзів та медіа
-                    const friendItems = items.filter((n) => n.type === 'friend_request');
-                    const mediaItems  = items.filter((n) => n.type !== 'friend_request');
+                GROUP_ORDER.map((group) => {
+                    const groupItems = grouped[group];
+                    if (!groupItems.length) return null;
 
                     return (
                         <div key={group} className="notifications-page__group">
                             <h2 className="notifications-page__group-title">
                                 {GROUP_LABELS[group]}
                             </h2>
-
-                            {/* Медіа картки — 2 колонки */}
-                            {mediaItems.length > 0 && (
-                                <div className="row g-3 mb-3">
-                                    {mediaItems.map((n) => (
-                                        <div key={n.id} className="col-12 col-md-6">
-                                            <NotificationCard
-                                                notification={n}
-                                                onRead={handleRead}
-                                                onPlay={(id) => console.log('play', id)}       // TODO: плеєр
-                                                onLike={(id) => console.log('like', id)}       // TODO: хук
-                                                onAddToPlaylist={(id) => console.log('playlist', id)} // TODO: модалка
-                                                onRemind={(id) => console.log('remind', id)}   // TODO: хук
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Запити в друзі — повна ширина */}
-                            {friendItems.map((n) => (
-                                <div key={n.id} className="mb-2">
-                                    <FriendRequestCard
+                            <div className="notifications-page__list">
+                                {groupItems.map((n) => (
+                                    <NotificationCard
+                                        key={n.id}
                                         notification={n}
-                                        onRead={handleRead}
-                                        onAddFriend={(id) => console.log('add friend', id)} // TODO: хук
+                                        onClick={handleClick}
                                     />
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     );
                 })
@@ -166,16 +117,16 @@ export const NotificationsPage = () => {
 };
 
 const NotificationsSkeleton = () => (
-    <div className="row g-3">
+    <div className="notifications-page__list">
         {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="col-12 col-md-6">
-                <div className="notification-card">
-                    <div className="skeleton skeleton--rounded" style={{ width: 80, height: 80, flexShrink: 0 }} />
-                    <div className="flex-grow-1">
-                        <div className="skeleton mb-2" style={{ height: 14, width: '70%' }} />
-                        <div className="skeleton mb-2" style={{ height: 12, width: '50%' }} />
-                        <div className="skeleton" style={{ height: 11, width: '40%' }} />
-                    </div>
+            <div key={i} className="notification-card">
+                <div
+                    className="skeleton skeleton--rounded"
+                    style={{ width: 44, height: 44, flexShrink: 0 }}
+                />
+                <div className="flex-grow-1">
+                    <div className="skeleton mb-2" style={{ height: 14, width: '60%' }} />
+                    <div className="skeleton" style={{ height: 12, width: '40%' }} />
                 </div>
             </div>
         ))}

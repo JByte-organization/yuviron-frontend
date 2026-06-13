@@ -35,7 +35,7 @@ const maskEmail = (email: string): string => {
 export const LoginWithCodeForm = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const email = searchParams.get('email') ?? '';
+    const email = searchParams?.get('email') ?? '';
     const setAccessToken = useSessionStore((s) => s.setAccessToken);
 
     const [code, setCode] = useState('');

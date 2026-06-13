@@ -42,7 +42,7 @@ const validate = (password: string, confirm: string): ResetErrors => {
 export const ResetPasswordForm = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const token = searchParams.get('token');
+    const token = searchParams?.get('token') ?? null;
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
     const [showPassword, setShowPassword] = useState(false);

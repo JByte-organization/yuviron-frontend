@@ -7,7 +7,6 @@ interface UserDropdownProps {
     userId?: string;
     isPremium?: boolean;
     isArtist?: boolean;
-    artistId?: string;
     onClose: () => void;
     onLogout: () => void;
 }
@@ -16,22 +15,22 @@ export const UserDropdown = ({
                                  userId,
                                  isPremium = false,
                                  isArtist = false,
-                                 artistId,
                                  onClose,
                                  onLogout,
                              }: UserDropdownProps) => {
+
     const items = [
         {
-            icon: 'bi-person',
+            icon: 'bi-person-circle',
             label: 'Профіль',
             href: `/users/${userId}`,
             show: true,
         },
         {
-            icon: 'bi-star',
-            label: 'Перейти на Premium',
-            href: '/premium',
-            show: !isPremium,
+            icon: 'bi-stars',
+            label: isPremium ? 'Управління Premium' : 'Перейти на Premium',
+            href: isPremium ? '/premium/manage' : '/premium',
+            show: true,
             accent: true,
         },
         {
@@ -41,7 +40,7 @@ export const UserDropdown = ({
             show: true,
         },
         {
-            icon: 'bi-gear',
+            icon: 'bi-sliders', // Більш технологічна іконка замість шестерні
             label: 'Налаштування',
             href: '/settings',
             show: true,
@@ -49,20 +48,21 @@ export const UserDropdown = ({
         {
             icon: 'bi-shield-lock',
             label: 'Дані акаунту',
-            href: '/account',
+            href: '/account-settings',
+            target: '_blank',
             show: true,
         },
         {
-            icon: isArtist ? 'bi-music-note-list' : 'bi-mic',
+            icon: isArtist ? 'bi-music-note-beamed' : 'bi-mic',
             label: isArtist ? 'Кабінет артиста' : 'Стати артистом',
-            href: isArtist ? `/artists/${artistId}/dashboard` : '/become-artist',
+            href: isArtist ? '/artist-dashboard' : '/become-artist',
             show: true,
         },
     ].filter((item) => item.show);
 
     return (
         <>
-            {/* Overlay */}
+            {/* Напівпрозорий закриваючий оверлей */}
             <div className="user-dropdown__overlay" onClick={onClose} />
 
             <div className="user-dropdown">
@@ -71,11 +71,12 @@ export const UserDropdown = ({
                         <li key={item.href}>
                             <Link
                                 href={item.href}
+                                target={item.target}
                                 className={`user-dropdown__item${item.accent ? ' user-dropdown__item--accent' : ''}`}
                                 onClick={onClose}
                             >
                                 <i className={`bi ${item.icon} user-dropdown__item-icon`} />
-                                {item.label}
+                                <span className="item-label-text">{item.label}</span>
                             </Link>
                         </li>
                     ))}
@@ -84,11 +85,12 @@ export const UserDropdown = ({
 
                     <li>
                         <button
+                            type="button"
                             className="user-dropdown__item user-dropdown__item--logout"
                             onClick={() => { onLogout(); onClose(); }}
                         >
                             <i className="bi bi-box-arrow-right user-dropdown__item-icon" />
-                            Вийти
+                            <span className="item-label-text">Вийти</span>
                         </button>
                     </li>
                 </ul>

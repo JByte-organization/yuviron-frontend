@@ -5,7 +5,6 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode } from 'swiper/modules';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { AlbumCard, type AlbumCardData } from '@/entities/album/ui/AlbumCard';
-import { ShowAllButton } from "@/shared/ui/ShowAllButton";
 
 import 'swiper/css';
 import 'swiper/css/free-mode';
@@ -29,7 +28,7 @@ export const NewReleasesSection = ({
     if (!isLoading && (!albums || albums.length === 0)) return null;
 
     return (
-        <section className="new-releases-section mb-4">
+        <section className="new-releases-section mb-4 mb-md-5">
             <SectionHeader
                 title={sectionTitle}
                 highlightedWord="музичні"
@@ -55,7 +54,7 @@ export const NewReleasesSection = ({
                         480:  { slidesPerView: 3 },
                         768:  { slidesPerView: 3 },
                         992:  { slidesPerView: 3 },
-                        1200: { slidesPerView: 5 },
+                        1200: { slidesPerView: 7 },
                     }}
                     className="new-releases-section__swiper"
                 >
@@ -68,12 +67,6 @@ export const NewReleasesSection = ({
                             />
                         </SwiperSlide>
                     ))}
-
-                    <SwiperSlide className="new-releases-section__show-all-slide">
-                        <div className="col-auto d-flex align-items-center h-100">
-                            <ShowAllButton href={showAllHref}/>
-                        </div>
-                    </SwiperSlide>
                 </Swiper>
             )}
         </section>

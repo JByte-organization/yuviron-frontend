@@ -1,5 +1,7 @@
 // src/shared/api/mutator.ts
 
+import { getDeviceFingerprint } from './fingerprint';
+
 let getAccessToken: () => string | null = () => null;
 let onUnauthorized: () => void = () => {};
 let onTokenRefresh: (token: string) => void = () => {};
@@ -51,6 +53,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
  * configuredBaseUrl выставляется только в браузере (configureApiClient зовётся
  * в useEffect клиентского провайдера), поэтому SSR-запросы остаются абсолютными.
  */
+// touch: ретригер деплою client-app/admin після фіксу swagger-fallback у deploy.yml
 const getBaseUrl = (): string => {
     return (
         configuredBaseUrl ??
@@ -81,10 +84,20 @@ export const initCsrfToken = async (): Promise<void> => {
         await fetch(`${getBaseUrl()}/auth/csrf-token`, {
             method: 'GET',
             credentials: 'include',
+            headers: await fingerprintHeaders(),
         });
     } catch {
         // Молча: отсутствие куки проявится на первом мутирующем запросе.
     }
+};
+
+/**
+ * Заголовок X-Device-Fingerprint для UserDeviceTracker на беку. null (SSR /
+ * генерация не удалась) → пустой объект, заголовок не добавляется.
+ */
+const fingerprintHeaders = async (): Promise<Record<string, string>> => {
+    const fingerprint = await getDeviceFingerprint();
+    return fingerprint ? { 'X-Device-Fingerprint': fingerprint } : {};
 };
 
 /**
@@ -97,6 +110,7 @@ const refreshAccessToken = async (): Promise<string> => {
         credentials: 'include',
         headers: {
             'X-CSRF-TOKEN': getCsrfToken(),
+            ...(await fingerprintHeaders()),
         },
     });
 
@@ -134,6 +148,10 @@ export const customInstance = async <T>(
 ): Promise<T> => {
     const authRoute = isAuthRoute(url);
 
+    // Слепок устройства — на КАЖДЫЙ запрос (требование UserDeviceTracker).
+    // Ждём один раз: первая генерация ~100-300мс, дальше — мгновенно из кэша.
+    const deviceFingerprint = await getDeviceFingerprint();
+
     const makeRequest = async (token: string | null): Promise<Response> => {
         const headers = new Headers(options.headers);
 
@@ -145,6 +163,11 @@ export const customInstance = async <T>(
         // Bearer токен для всех не-публичных роутов
         if (token && !authRoute) {
             headers.set('Authorization', `Bearer ${token}`);
+        }
+
+        // Слепок устройства для бекендового UserDeviceTracker
+        if (deviceFingerprint) {
+            headers.set('X-Device-Fingerprint', deviceFingerprint);
         }
 
         // Anti-CSRF (Double Submit Cookie): на все мутирующие запросы добавляем

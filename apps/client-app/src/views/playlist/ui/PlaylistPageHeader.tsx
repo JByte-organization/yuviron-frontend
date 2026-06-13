@@ -1,7 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import {getImageUrl} from "@/shared/lib/getImageUrl";
+import React, { useState, useMemo } from 'react';
+import { getImageUrl } from "@/shared/lib/getImageUrl";
+
+// 🚨 ІМПОРТУЄМО КЕРУВАННЯ ПЛЕЄРОМ ТА СТОРОМ
+import { usePlayer } from '@/entities/player/lib/usePlayer';
+import { usePlayerStore } from '@/entities/player/model/playerStore';
+import type { TrackRowData } from '@/entities/track/ui/TrackRow';
 
 interface PlaylistInfo {
     id: string;
@@ -16,8 +21,7 @@ interface PlaylistInfo {
 interface PlaylistPageHeaderProps {
     playlist: PlaylistInfo;
     isOwner: boolean;
-    tracksCount: number;
-    onPlay?: () => void;
+    tracks: TrackRowData[]; // 🚨 ЗАМІНИЛИ tracksCount на повноцінний масив треків
     onEdit?: () => void;
     onDelete?: () => void;
     onShare?: () => void;
@@ -27,24 +31,51 @@ interface PlaylistPageHeaderProps {
 export const PlaylistPageHeader = ({
                                        playlist,
                                        isOwner,
-                                       tracksCount,
-                                       onPlay,
+                                       tracks = [],
                                        onEdit,
                                        onDelete,
                                        onShare,
                                        onSubscribe,
                                    }: PlaylistPageHeaderProps) => {
     const [isSubscribed, setIsSubscribed] = useState(playlist.isSubscribed);
-    const [menuOpen, setMenuOpen] = useState(false);
 
+    // ─── ЗВ'ЯЗОК З ПЛЕЄРОМ ──────────────────────────────────────────────────
+    const { playQueue, togglePlay } = usePlayer();
+    const currentTrackId = usePlayerStore((s) => s.currentTrack?.id);
+    const playerStatus   = usePlayerStore((s) => s.status);
+
+    // Перевіряємо, чи зараз грає хоча б один трек із цього плейліста
+    const isCollectionPlaying = useMemo(() => {
+        if (playerStatus !== 'playing' || tracks.length === 0) return false;
+        return tracks.some((t) => t.id === currentTrackId);
+    }, [tracks, currentTrackId, playerStatus]);
+
+    // Обробник кліку по великій кнопці Play/Pause
+    const handlePlayAll = () => {
+        if (tracks.length === 0) return;
+
+        if (isCollectionPlaying) {
+            togglePlay(); // Якщо вже грає — ставимо на паузу
+        } else {
+            // Мапимо треки у формат черги плеєра
+            const queue = tracks.map((t) => ({
+                id:          t.id,
+                title:       t.title,
+                artistNames: t.artistNames,
+                coverUrl:    t.coverUrl,
+                durationMs:  t.durationMs ?? undefined,
+            }));
+            // Запускаємо потік з першого (0-го) треку, тип джерела — Playlist
+            playQueue(queue, 0, 'Playlist', playlist.id);
+        }
+    };
 
     const coverSrc = getImageUrl(playlist.coverUrl)
-        ?? `https://picsum.photos/seed/track-${playlist.id}/40/40`;
+        ?? `https://picsum.photos/seed/track-${playlist.id}/200/200`;
 
     const handleSubscribe = () => {
         setIsSubscribed((v) => !v);
         onSubscribe?.();
-        // TODO: usePostApiPlaylistsIdSubscribe()
     };
 
     return (
@@ -52,7 +83,7 @@ export const PlaylistPageHeader = ({
             {/* Breadcrumb */}
             <p className="playlist-page-header__breadcrumb">Плейліст</p>
 
-            {/* Основний блок */}
+            {/* Основний блок метаданих */}
             <div className="row align-items-end g-4 mb-4">
                 <div className="col-auto">
                     <div className="playlist-page-header__cover">
@@ -68,20 +99,20 @@ export const PlaylistPageHeader = ({
                     <p className="playlist-page-header__meta">
                         <span className="playlist-page-header__owner">{playlist.ownerName}</span>
                         <span className="playlist-page-header__dot">•</span>
-                        <span>{tracksCount} треків</span>
+                        <span>{playlist.tracksCount ?? tracks.length} треків</span>
                     </p>
                 </div>
             </div>
 
-            {/* Кнопки дій */}
+            {/* Панель дій */}
             <div className="playlist-page-header__actions">
-                {/* Play */}
+                {/* Динамічна кнопка Play/Pause */}
                 <button
-                    className="playlist-page-header__btn playlist-page-header__btn--play"
-                    onClick={onPlay}
-                    aria-label="Відтворити"
+                    className={`playlist-page-header__btn playlist-page-header__btn--play${isCollectionPlaying ? ' playlist-page-header__btn--active' : ''}`}
+                    onClick={handlePlayAll}
+                    aria-label={isCollectionPlaying ? 'Пауза' : 'Відтворити'}
                 >
-                    <i className="bi bi-play-fill" />
+                    <i className={`bi ${isCollectionPlaying ? 'bi-pause-fill' : 'bi bi-play-fill'}`} />
                 </button>
 
                 {isOwner ? (
@@ -116,14 +147,7 @@ export const PlaylistPageHeader = ({
                             <i className="bi bi-share" />
                         </button>
 
-                        {/* Додати соавтора */}
-                        <button
-                            className="playlist-page-header__btn playlist-page-header__btn--icon"
-                            aria-label="Додати соавтора"
-                            title="Додати соавтора"
-                        >
-                            <i className="bi bi-person-plus" />
-                        </button>
+                        {/* 🚨 КНОПКУ СОАВТОРСТВА ВИДАЛЕНО ЗВІДСИ */}
                     </>
                 ) : (
                     <>

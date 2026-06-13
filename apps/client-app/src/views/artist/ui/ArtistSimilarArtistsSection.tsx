@@ -1,78 +1,97 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { FreeMode } from 'swiper/modules';
+import type { Swiper as SwiperClass } from 'swiper';
+
 import { SectionHeader } from '@/shared/ui/SectionHeader';
-import { ShowAllButton } from '@/shared/ui/ShowAllButton';
 import { ArtistCard, type ArtistCardData } from '@/entities/artist/ui/ArtistCard';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
+import type { SimilarArtistDto } from '@repo/api/client';
+
+// Переконайся, що стилі Swiper імпортовані у твоєму додатку (наприклад, в layout.tsx абоapp.scss):
+// import 'swiper/css';
+// import 'swiper/css/free-mode';
 
 interface ArtistSimilarArtistsSectionProps {
-    artistId: string;
-    /** TODO: замінити на хук — useGetApiArtistsIdSimilarArtists(artistId) */
-    artists?: ArtistCardData[];
+    artists?: SimilarArtistDto[];
     isLoading?: boolean;
     onArtistClick?: (id: string) => void;
 }
 
-const MOCK_ARTISTS: ArtistCardData[] = [
-    { id: '1', name: 'LE SSERAFIM', monthlyListeners: 234326, avatarUrl: null },
-    { id: '2', name: 'aespa',       monthlyListeners: 440243, avatarUrl: null },
-    { id: '3', name: 'Hwa Sa',      monthlyListeners: 294526, avatarUrl: null },
-    { id: '4', name: 'JENNIE',      monthlyListeners: 448563, avatarUrl: null },
-    { id: '5', name: 'ROSÉ',        monthlyListeners: 388206, avatarUrl: null },
-];
-
-/**
- * Секція: "Шанувальникам також подобаються"
- * Артисти схожого жанру
- *
- * Підключення даних:
- * 1. const { data, isLoading } = useGetApiArtistsIdSimilarArtists(artistId);
- * 2. <ArtistSimilarArtistsSection artists={data?.items} isLoading={isLoading} />
- */
 export const ArtistSimilarArtistsSection = ({
-                                                artistId,
-                                                artists = MOCK_ARTISTS,
+                                                artists = [],
                                                 isLoading = false,
                                                 onArtistClick,
                                             }: ArtistSimilarArtistsSectionProps) => {
-    const sliderRef = useRef<HTMLDivElement>(null);
+    // Екземпляр Swiper для керування стрілками з SectionHeader
+    const [swiperInstance, setSwiperInstance] = useState<SwiperClass | null>(null);
 
-    const scroll = (dir: 'prev' | 'next') => {
-        if (!sliderRef.current) return;
-        const amount = sliderRef.current.offsetWidth * 0.8;
-        sliderRef.current.scrollBy({ left: dir === 'next' ? amount : -amount, behavior: 'smooth' });
-    };
+    // Мапінг даних у внутрішній формат картки
+    const mappedArtists = useMemo<ArtistCardData[]>(() => {
+        if (!artists || artists.length === 0) return [];
+
+        return artists.map((a) => ({
+            id:               a.id ?? '',
+            name:             a.name ?? 'Невідомий виконавець',
+            monthlyListeners: a.followersCount ?? 0,
+            avatarUrl:        getImageUrl(a.avatarUrl),
+        }));
+    }, [artists]);
+
+    if (!isLoading && mappedArtists.length === 0) return null;
 
     return (
-        <section className="mb-5">
+        <section className="artist-similar mb-5">
+            {/* Зовнішні стрілки навігації через методи Swiper */}
             <SectionHeader
                 title="Шанувальникам також подобаються"
                 highlightedWord="подобаються"
-                onPrev={() => scroll('prev')}
-                onNext={() => scroll('next')}
+                onPrev={swiperInstance ? () => swiperInstance.slidePrev() : undefined}
+                onNext={swiperInstance ? () => swiperInstance.slideNext() : undefined}
             />
 
             {isLoading ? (
-                <div className="d-flex gap-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className="d-flex flex-column align-items-center gap-2">
-                            <div className="skeleton skeleton--circle" style={{ width: 120, height: 120 }} />
-                            <div className="skeleton" style={{ height: 12, width: 80 }} />
-                        </div>
-                    ))}
-                </div>
-            ) : (
+                // Скелетони під час завантаження (рендеримо 7 штук у ряд для ідеального UI)
                 <div className="section-slider-wrap">
-                    <div
-                        ref={sliderRef}
-                        className="row g-4 flex-nowrap overflow-x-auto artist-slider"
-                    >
-                        {artists.map((artist) => (
-                            <div key={artist.id} className="col-auto">
-                                <ArtistCard artist={artist} onClick={onArtistClick} />
+                    <div className="d-flex gap-4 overflow-hidden">
+                        {Array.from({ length: 7 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="d-flex flex-column align-items-center gap-2"
+                                style={{ flex: '0 0 calc((100% - 6 * 24px) / 7)', minWidth: '140px' }}
+                            >
+                                <div className="skeleton skeleton--circle" style={{ width: 120, height: 120 }} />
+                                <div className="skeleton mt-1" style={{ height: 13, width: '80%' }} />
+                                <div className="skeleton" style={{ height: 11, width: '50%' }} />
                             </div>
                         ))}
                     </div>
+                </div>
+            ) : (
+                <div className="section-slider-wrap">
+                    {/* Твій кастомний Swiper з точними брейкпоїнтами */}
+                    <Swiper
+                        modules={[FreeMode]}
+                        freeMode
+                        slidesPerView={2}
+                        spaceBetween={24}
+                        breakpoints={{
+                            480:  { slidesPerView: 3 },
+                            768:  { slidesPerView: 3 },
+                            992:  { slidesPerView: 3 },
+                            1200: { slidesPerView: 7 },
+                        }}
+                        onSwiper={setSwiperInstance}
+                        className="artist-similar__swiper"
+                    >
+                        {mappedArtists.map((artist) => (
+                            <SwiperSlide key={artist.id} style={{ width: 'auto' }}>
+                                <ArtistCard artist={artist} onClick={onArtistClick} />
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
                 </div>
             )}
         </section>

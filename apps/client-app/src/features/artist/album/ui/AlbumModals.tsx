@@ -1,9 +1,22 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
+import {
+    AppPermission,
+    getGetApiStudioArtistAlbumsIdTracksQueryKey,
+    ReleaseType,
+    useDeleteApiStudioArtistAlbumsId,
+    useGetApiStudioArtistAlbumsIdTracks,
+    usePostApiStudioArtistAlbums,
+    type StudioAlbumTrackDto,
+} from '@repo/api/artist.ts';
+import { usePostApiFilesUpload } from '@repo/api/client.ts';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 import type { AlbumCardData } from '@/entities/album/ui/AlbumCard';
+import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import { extractFileId } from '@/shared/lib/unwrapApi';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 // ══════════════════════════════════════════════════════════
 // CREATE ALBUM MODAL
@@ -17,13 +30,21 @@ interface CreateProps {
 type CreateFormValues = {
     title: string;
     releaseDate: string;
+    releaseType: ReleaseType;
 };
 
 export const CreateAlbumModal = ({ isOpen, onClose, onSuccess }: CreateProps) => {
-    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<CreateFormValues>();
+    const artistId = useCurrentArtistId();
+    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<CreateFormValues>({
+        defaultValues: { title: '', releaseDate: '', releaseType: ReleaseType.Album },
+    });
     const [coverPreview, setCoverPreview] = useState<string | null>(null);
     const [coverFile,    setCoverFile]    = useState<File | null>(null);
+    const [error,        setError]        = useState<string | null>(null);
     const coverRef = useRef<HTMLInputElement>(null);
+
+    const { mutateAsync: uploadFile } = usePostApiFilesUpload();
+    const { mutateAsync: createAlbum } = usePostApiStudioArtistAlbums();
 
     const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -36,24 +57,39 @@ export const CreateAlbumModal = ({ isOpen, onClose, onSuccess }: CreateProps) =>
         reset();
         setCoverFile(null);
         setCoverPreview(null);
+        setError(null);
         onClose();
     };
 
     const onSubmit = async (values: CreateFormValues) => {
-        console.log('create album', values, coverFile);
-        // TODO:
-        // 1. POST /api/files/upload (coverFile) → coverPath
-        // 2. POST /api/artist-dashboard/albums { title, releaseDate, coverPath }
-        await new Promise(r => setTimeout(r, 500));
-        onSuccess();
-        handleClose();
+        if (!artistId) return;
+        setError(null);
+        try {
+            const coverFileId = coverFile
+                ? extractFileId(await uploadFile({ data: { file: coverFile } }))
+                : null;
+            await createAlbum({
+                data: {
+                    artistId,
+                    title: values.title.trim(),
+                    coverFileId,
+                    releaseType: values.releaseType,
+                    releaseDate: values.releaseDate ? new Date(values.releaseDate).toISOString() : null,
+                    requiredPermission: AppPermission.StudioArtistManage,
+                },
+            });
+            onSuccess();
+            handleClose();
+        } catch {
+            setError('Не вдалося створити альбом. Спробуйте ще раз.');
+        }
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="client-modal-overlay">
-            <div className="client-modal client-modal--sm">
+        <div className="client-modal-backdrop">
+            <div className="client-modal modal-dialog-sm">
                 <div className="client-modal__header">
                     <h2 className="client-modal__title">Створити альбом</h2>
                     <button className="client-modal__close" onClick={handleClose}>
@@ -92,6 +128,13 @@ export const CreateAlbumModal = ({ isOpen, onClose, onSuccess }: CreateProps) =>
                                 />
                                 {errors.title && <p className="client-modal__field-error">{errors.title.message}</p>}
 
+                                <label className="client-modal__field-label mt-3">Тип релізу</label>
+                                <select className="client-modal__input" {...register('releaseType')}>
+                                    <option value={ReleaseType.Single}>Сингл</option>
+                                    <option value={ReleaseType.EP}>EP</option>
+                                    <option value={ReleaseType.Album}>Альбом</option>
+                                </select>
+
                                 <label className="client-modal__field-label mt-3">Дата релізу</label>
                                 <input
                                     type="date"
@@ -108,10 +151,11 @@ export const CreateAlbumModal = ({ isOpen, onClose, onSuccess }: CreateProps) =>
                     </div>
 
                     <div className="client-modal__footer">
+                        {error && <span className="client-modal__field-error me-auto">{error}</span>}
                         <button type="button" className="client-modal__btn client-modal__btn--ghost" onClick={handleClose}>
                             Скасувати
                         </button>
-                        <button type="submit" className="client-modal__btn client-modal__btn--primary" disabled={isSubmitting}>
+                        <button type="submit" className="client-modal__btn client-modal__btn--primary" disabled={isSubmitting || !artistId}>
                             {isSubmitting ? <span className="spinner-border spinner-border-sm me-2" /> : null}
                             Створити
                         </button>
@@ -125,11 +169,11 @@ export const CreateAlbumModal = ({ isOpen, onClose, onSuccess }: CreateProps) =>
 // ══════════════════════════════════════════════════════════
 // ALBUM DETAIL MODAL
 // ══════════════════════════════════════════════════════════
-const MOCK_ALBUM_TRACKS: TrackRowData[] = [
-    { id: 't1', index: 1, title: 'THE CONTORTIONIST', artistNames: ['МузикаВітч'], artistId: 'a1', albumId: 'al1', albumTitle: null, addedAt: null, durationMs: 210000, coverUrl: null },
-    { id: 't2', index: 2, title: 'Глубоко',           artistNames: ['МузикаВітч'], artistId: 'a1', albumId: 'al1', albumTitle: null, addedAt: null, durationMs: 195000, coverUrl: null },
-    { id: 't3', index: 3, title: 'Superman',          artistNames: ['МузикаВітч'], artistId: 'a1', albumId: 'al1', albumTitle: null, addedAt: null, durationMs: 224000, coverUrl: null },
-];
+const unwrapArray = <T,>(raw: unknown): T[] => {
+    if (Array.isArray(raw)) return raw as T[];
+    const obj = raw as { data?: T[] } | null;
+    return Array.isArray(obj?.data) ? (obj!.data as T[]) : [];
+};
 
 interface DetailProps {
     isOpen: boolean;
@@ -138,15 +182,34 @@ interface DetailProps {
 }
 
 export const AlbumDetailModal = ({ isOpen, album, onClose }: DetailProps) => {
-    const [currentTrack, setCurrentTrack] = useState<string | null>(null);
+    const { data: tracksRaw, isLoading } = useGetApiStudioArtistAlbumsIdTracks(album.id, {
+        query: { enabled: isOpen && !!album.id, queryKey: getGetApiStudioArtistAlbumsIdTracksQueryKey(album.id) },
+    });
+
+    // Формуємо чистий масив треків для таблиці
+    const tracks: TrackRowData[] = useMemo(() => {
+        return unwrapArray<StudioAlbumTrackDto>(tracksRaw).map((t, i) => ({
+            id:          t.id ?? '',
+            index:       t.position ?? i + 1,
+            title:       t.title ?? 'Без назви',
+            artistNames: [album.artistName].filter(Boolean),
+            artistId:    '',
+            albumId:     album.id,
+            albumTitle:  album.title,
+            addedAt:     null,
+            durationMs:  t.durationMs ?? 0,
+            coverUrl:    t.coverUrl,
+            isSaved:     (t as any).isSaved ?? false,
+        }));
+    }, [tracksRaw, album]);
 
     if (!isOpen) return null;
 
-    const coverSrc = album.coverUrl ?? `https://picsum.photos/seed/album-${album.id}/200/200`;
+    const coverSrc = getImageUrl(album.coverUrl) ?? `https://picsum.photos/seed/album-${album.id}/200/200`;
 
     return (
-        <div className="client-modal-overlay">
-            <div className="client-modal client-modal--lg">
+        <div className="client-modal-backdrop">
+            <div className="client-modal modal-dialog-lg">
                 <div className="client-modal__header">
                     <div className="d-flex align-items-center gap-3">
                         <div className="album-detail-modal__cover">
@@ -164,14 +227,24 @@ export const AlbumDetailModal = ({ isOpen, album, onClose }: DetailProps) => {
                 </div>
 
                 <div className="client-modal__body" style={{ overflowY: 'auto', maxHeight: '60vh' }}>
-                    {MOCK_ALBUM_TRACKS.map(track => (
-                        <TrackRow
-                            key={track.id}
-                            track={track}
-                            isPlaying={currentTrack === track.id}
-                            onClick={id => setCurrentTrack(id === currentTrack ? null : id)}
-                        />
-                    ))}
+                    {tracks.length === 0 ? (
+                        <p className="text-muted text-center py-4 mb-0">
+                            {isLoading ? 'Завантаження…' : 'У цьому альбомі ще немає треків.'}
+                        </p>
+                    ) : (
+                        <div className="d-flex flex-column gap-1">
+                            {tracks.map(track => (
+                                /* 🚨 ФІКС: Передаємо сумісну сигнатуру пропсів автономного TrackRow */
+                                <TrackRow
+                                    key={`${track.id}-${track.isSaved}`}
+                                    track={track}
+                                    allTracks={tracks}
+                                    sourceType="Album"
+                                    sourceId={album.id}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="client-modal__footer">
@@ -196,15 +269,18 @@ interface DeleteAlbumProps {
 
 export const DeleteAlbumModal = ({ isOpen, album, onClose, onSuccess }: DeleteAlbumProps) => {
     const [isDeleting, setIsDeleting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const { mutateAsync: deleteAlbum } = useDeleteApiStudioArtistAlbumsId();
 
     const handleDelete = async () => {
+        setError(null);
         setIsDeleting(true);
         try {
-            console.log('delete album', album.id);
-            // TODO: DELETE /api/artist-dashboard/albums/{albumId}
-            await new Promise(r => setTimeout(r, 500));
+            await deleteAlbum({ id: album.id });
             onSuccess();
             onClose();
+        } catch {
+            setError('Не вдалося видалити альбом.');
         } finally {
             setIsDeleting(false);
         }
@@ -213,8 +289,8 @@ export const DeleteAlbumModal = ({ isOpen, album, onClose, onSuccess }: DeleteAl
     if (!isOpen) return null;
 
     return (
-        <div className="client-modal-overlay">
-            <div className="client-modal client-modal--xs">
+        <div className="client-modal-backdrop">
+            <div className="client-modal modal-dialog-sm">
                 <div className="client-modal__header">
                     <h2 className="client-modal__title">Видалити альбом</h2>
                     <button className="client-modal__close" onClick={onClose}>
@@ -226,6 +302,7 @@ export const DeleteAlbumModal = ({ isOpen, album, onClose, onSuccess }: DeleteAl
                     <p className="text-muted mb-1">Ви впевнені що хочете видалити альбом?</p>
                     <p className="text-theme fw-semibold mb-0">«{album.title}»</p>
                     <p className="text-danger small mt-3 mb-0">Треки альбому не будуть видалені.</p>
+                    {error && <p className="client-modal__field-error mt-2 mb-0">{error}</p>}
                 </div>
 
                 <div className="client-modal__footer">

@@ -2,6 +2,6 @@
 
 import { ArtistSettingsPage } from '@/views/artist-dashboard/ui/ArtistSettingsPage';
 
-export default function Login() {
+export default function SettingsPage() {
     return <ArtistSettingsPage />;
 }

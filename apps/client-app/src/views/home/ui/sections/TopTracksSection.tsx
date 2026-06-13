@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode } from 'swiper/modules';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
@@ -16,16 +16,13 @@ interface TopTracksSectionProps {
     tracks?: TrackCardData[];
     isLoading?: boolean;
     showAllHref?: string;
-    onTrackClick?: (id: string) => void;
+    onTrackClick?: (track: TrackCardData, index: number) => void;
 }
 
 // ─── Компонент ────────────────────────────────────────────────────────────────
-// Секція відповідає тільки за відображення.
-// Дані (tracks, isLoading) приходять з батьківського компонента (HomePage або LibraryPage).
-// Це дозволяє перевикористовувати секцію з різними хуками.
 export const TopTracksSection = ({
                                      sectionTitle = 'Топ популярна музика',
-                                     tracks,
+                                     tracks = [],
                                      isLoading = false,
                                      showAllHref = '/tracks',
                                      onTrackClick,
@@ -33,10 +30,12 @@ export const TopTracksSection = ({
 
     if (!isLoading && (!tracks || tracks.length === 0)) return null;
 
-    const lastWord = sectionTitle.trim().split(' ').at(-1) ?? 'музика';
+    const lastWord = useMemo(() => {
+        return sectionTitle.trim().split(' ').at(-1) ?? 'музика';
+    }, [sectionTitle]);
 
     return (
-        <section className="top-tracks-section mb-4">
+        <section className="top-tracks-section mb-4 mb-md-5">
             <SectionHeader
                 title={sectionTitle}
                 highlightedWord={lastWord}
@@ -45,9 +44,9 @@ export const TopTracksSection = ({
             />
 
             {isLoading ? (
-                <div className="d-flex gap-3">
+                <div className="d-flex gap-3 overflow-hidden">
                     {Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} style={{ minWidth: 150 }}>
+                        <div key={i} style={{ minWidth: 150, flex: '0 0 auto' }}>
                             <TrackCardSkeleton />
                         </div>
                     ))}
@@ -61,18 +60,25 @@ export const TopTracksSection = ({
                     breakpoints={{
                         480:  { slidesPerView: 3 },
                         768:  { slidesPerView: 3 },
-                        992:  { slidesPerView: 5 },
-                        1200: { slidesPerView: 5 },
+                        992:  { slidesPerView: 3 },
+                        1200: { slidesPerView: 7 },
                     }}
                     className="top-tracks-section__swiper"
                 >
-                    {tracks!.map(track => (
-                        <SwiperSlide key={track.id}>
-                            <TrackCard track={track} onClick={onTrackClick} />
+                    {tracks.map((track, index) => (
+                        <SwiperSlide
+                            key={`${track.id}-${track.isSaved}`}
+                            className="top-tracks-section__track-slide"
+                        >
+                            <TrackCard
+                                track={track}
+                                onClick={() => onTrackClick?.(track, index)}
+                            />
                         </SwiperSlide>
                     ))}
 
-                    <SwiperSlide className="top-tracks-section__show-all-slide">
+                    {/* Слайд із кнопкою «Показати все» */}
+                    <SwiperSlide className="top-tracks-section__show-all-slide align-items-center my-auto mx-0">
                         <ShowAllButton href={showAllHref} />
                     </SwiperSlide>
                 </Swiper>

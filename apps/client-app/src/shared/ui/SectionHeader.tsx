@@ -43,7 +43,7 @@ export const SectionHeader = ({
 
     return (
         <div className={`d-flex align-items-center justify-content-between mb-3 ${className}`}>
-            <h2 className="section-header__title mb-0">{renderTitle()}</h2>
+            <p className="h4 section-header__title mb-2">{renderTitle()}</p>
 
             <div className="d-flex align-items-center gap-2">
                 {rightSlot}

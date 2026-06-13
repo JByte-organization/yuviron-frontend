@@ -1,0 +1,65 @@
+.track-context-menu {
+  position: fixed !important;
+  z-index: 9999 !important;
+  background: $client-card-bg;
+  border: 1px solid $client-border;
+  border-radius: var(--bs-border-radius-2, 8px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  min-width: 230px;
+  backdrop-filter: blur(12px);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow: hidden;
+
+  &__link {
+    color: $client-text-soft;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: $client-hover;
+      color: $client-text-strong;
+    }
+
+    &--create {
+      color: $client-accent;
+      &:hover {
+        color: $client-accent-hover;
+      }
+    }
+  }
+
+  &__divider {
+    border-bottom: 1px solid $client-border;
+  }
+
+  &__submenu {
+    position: absolute;
+    top: -4px;
+    right: 100%;
+    background: $client-card-bg;
+    border: 1px solid $client-border;
+    border-radius: 8px;
+    box-shadow: -8px 12px 32px rgba(0, 0, 0, 0.3);
+    min-width: 200px;
+    margin-right: 6px;
+    backdrop-filter: blur(12px);
+  }
+
+  &__submenu-list {
+    max-height: calc(8 * 36px);
+    overflow-y: auto;
+    padding: 4px;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: $client-border-strong;
+      border-radius: 2px;
+    }
+  }
+}

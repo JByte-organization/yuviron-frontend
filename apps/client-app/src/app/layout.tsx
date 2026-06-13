@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ApiClientProvider } from "./providers/ApiClientProvider";
 import { QueryProvider } from "./providers/QueryProvider";
+import { AppNotificationsProvider } from "./providers/AppNotificationsProvider";
 import { ThemeProvider } from "@/shared/lib/ThemeProvider";
 
 import "@repo/ui/styles";
@@ -40,7 +41,9 @@ export default function RootLayout({
         <QueryProvider>
             <ApiClientProvider>
                 <ThemeProvider>
-                    {children}
+                    <AppNotificationsProvider>
+                        {children}
+                    </AppNotificationsProvider>
                 </ThemeProvider>
             </ApiClientProvider>
         </QueryProvider>

@@ -31,7 +31,7 @@ const MONTHS = [
     'Грудень',
 ];
 
-// Бэк хранит код страны в короткой колонке (VARCHAR(2-3)) и ждёт ISO 3166-1 alpha-2.
+
 const COUNTRIES: ReadonlyArray<{ code: string; label: string }> = [
     { code: 'UA', label: 'Україна' },
     { code: 'PL', label: 'Польща' },
@@ -95,10 +95,6 @@ export const Step2Profile = () => {
     const router = useRouter();
     const [state, setState] = useState<ProfileState>(() => {
         const draft = getRegisterDraft();
-        // Защита от старых черновиков, где country хранился как полное название
-        // ("Україна") до того, как мы перешли на ISO-коды ("UA"). Если значение
-        // не входит в текущий список — сбрасываем, иначе селект выглядит
-        // заполненным, а на бэк уезжает мусор.
         const draftCountry = draft.country ?? '';
         const country = COUNTRIES.some((c) => c.code === draftCountry) ? draftCountry : '';
         const draftCity = draft.city ?? '';
@@ -115,9 +111,6 @@ export const Step2Profile = () => {
     const [errors, setErrors] = useState<ProfileErrors>({});
     const [submitted, setSubmitted] = useState(false);
 
-    // Отправку register держит общий хук: он же ловит 409 (почта занята) и ведёт
-    // на экран подтверждения по ссылке. Введённые данные при 409 не сбрасываются —
-    // компонент остаётся смонтированным, стейт формы живёт.
     const { submit, isPending, emailTaken, closeEmailTaken, serverError } = useRegisterSubmit();
 
     const update = <K extends keyof ProfileState>(key: K, value: ProfileState[K]) => {
@@ -268,10 +261,6 @@ export const Step2Profile = () => {
                     <label className="form-label client-register-profile-form__label">
                         Регіон проживання
                     </label>
-                    <div className="client-register-profile-form__hint">
-                        Для чого нам потрібне ваше місце проживання?
-                    </div>
-                    <div className="client-register-profile-form__hint-link">Докладніше</div>
 
                     <div className="client-register-profile-form__region-grid">
                         <div>
@@ -311,8 +300,11 @@ export const Step2Profile = () => {
                                     className={`form-select client-register-profile-form__select${errors.city ? ' is-invalid' : ''}`}
                                     value={state.city}
                                     onChange={(event) => update('city', event.target.value)}
+                                    disabled={!state.country}
                                 >
-                                    <option value="">Місто</option>
+                                    <option value="">
+                                        {state.country ? 'Місто' : 'Спочатку оберіть країну'}
+                                    </option>
                                     {CITIES.map((city) => (
                                         <option key={city} value={city}>
                                             {city}
@@ -345,8 +337,6 @@ export const Step2Profile = () => {
                 </button>
             </form>
 
-            {/* «Змінити пошту» уводит на email-шаг: пароль и анкета уже в черновике,
-                сменив только почту, юзер по «Далі» сразу попадёт на финальный register. */}
             <EmailTakenModal
                 isOpen={emailTaken}
                 onClose={closeEmailTaken}

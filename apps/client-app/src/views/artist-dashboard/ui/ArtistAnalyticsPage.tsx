@@ -1,100 +1,111 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import {
-    LineChart, Line, BarChart, Bar,
-    XAxis, YAxis, CartesianGrid, Tooltip,
-    ResponsiveContainer, Legend, PieChart, Pie, Cell,
+    LineChart, Line,
+    XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+    ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
-import { useTheme } from '@/shared/lib/ThemeProvider';
+import { format, parseISO } from 'date-fns';
+import { uk } from 'date-fns/locale';
+import {
+    getGetApiStudioArtistStatsQueryKey,
+    useGetApiStudioArtistStats,
+    type ArtistAnalyticsDto,
+} from '@repo/api/artist.ts';
+import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
+import {
+    useArtistAudience,
+    useArtistPlaysOverTime,
+} from '@/entities/artist/api/analytics';
+import {
+    CHART_COLORS as COLORS,
+    ChartError,
+    ChartSkeleton,
+    chartTooltipStyle,
+    useChartAxisColors,
+} from '@/entities/artist/ui/AnalyticsChartParts';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { unwrap } from '@/shared/lib/unwrapApi';
 
-// ─── Mock ──────────────────────────────────────────────────
-const PLAYS_WEEKLY = [
-    { day: 'Пн', plays: 120 }, { day: 'Вт', plays: 240 },
-    { day: 'Ср', plays: 180 }, { day: 'Чт', plays: 310 },
-    { day: 'Пт', plays: 290 }, { day: 'Сб', plays: 450 },
-    { day: 'Нд', plays: 380 },
-];
+const DEVICE_COLORS = ['#00A6FF', '#7B61FF', '#FF6B6B', '#FFB347', '#2ECC71', '#9AA7B8'];
 
-const PLAYS_MONTHLY = Array.from({ length: 30 }, (_, i) => ({
-    day: `${i + 1}`,
-    plays: Math.floor(Math.random() * 400 + 100),
-}));
+const PERIODS = [7, 30, 90] as const;
+type PeriodDays = (typeof PERIODS)[number];
 
-const PLAYS_YEARLY = [
-    { month: 'Січ', plays: 3200 }, { month: 'Лют', plays: 4100 },
-    { month: 'Бер', plays: 3800 }, { month: 'Квіт', plays: 5200 },
-    { month: 'Трав', plays: 4700 }, { month: 'Черв', plays: 6100 },
-    { month: 'Лип', plays: 5800 }, { month: 'Серп', plays: 7200 },
-    { month: 'Вер', plays: 6600 }, { month: 'Жовт', plays: 7800 },
-    { month: 'Лист', plays: 8200 }, { month: 'Груд', plays: 9100 },
-];
+/** 'UA' → 'Україна' (локалізовано). Невідомий код повертаємо як є. */
+const countryName = (() => {
+    const names = typeof Intl !== 'undefined'
+        ? new Intl.DisplayNames(['uk'], { type: 'region' })
+        : null;
+    return (code: string): string => {
+        try {
+            return names?.of(code.toUpperCase()) ?? code;
+        } catch {
+            return code;
+        }
+    };
+})();
 
-const TOP_TRACKS = [
-    { title: 'THE CONTORTIONIST', plays: 1025, percent: 35 },
-    { title: 'Глубоко',           plays: 656,  percent: 22 },
-    { title: 'Superman',          plays: 520,  percent: 18 },
-    { title: 'Sweater Weather',   plays: 480,  percent: 16 },
-    { title: 'Cry Me A River',    plays: 235,  percent: 9  },
-];
-
-const FOLLOWERS_DATA = [
-    { month: 'Бер', followers: 12 }, { month: 'Квіт', followers: 19 },
-    { month: 'Трав', followers: 28 }, { month: 'Черв', followers: 35 },
-    { month: 'Лип',  followers: 42 }, { month: 'Серп', followers: 56 },
-];
-
-const SOURCES_DATA = [
-    { name: 'Пошук',          value: 40, color: '#00A6FF' },
-    { name: 'Плейлісти',      value: 25, color: '#7B61FF' },
-    { name: 'Профіль артиста',value: 20, color: '#FF6B6B' },
-    { name: 'Інше',           value: 15, color: '#FFB347' },
-];
-
-type Period = 'week' | 'month' | 'year';
-
-// Акцентные цвета серий графиков (data-viz, не зависят от темы).
-const COLORS = {
-    accent:  '#00A6FF',
-    accent2: '#7B61FF',
+const DEVICE_LABELS: Record<string, string> = {
+    WebPlayer:    'Веб-плеєр',
+    IosApp:       'iOS',
+    AndroidApp:   'Android',
+    DesktopApp:   'Десктоп',
+    SmartSpeaker: 'Смарт-колонка',
+    Mobile:       'Мобільний',
+    Desktop:      'Десктоп',
+    Unknown:      'Інше',
 };
 
 export const ArtistAnalyticsPage = () => {
-    const [period, setPeriod] = useState<Period>('week');
+    const [days, setDays] = useState<PeriodDays>(30);
 
-    // Цвета осей/сетки графиков рисуются как SVG-атрибуты, где var() не резолвится,
-    // поэтому подбираем их под активную тему вручную.
-    const { theme } = useTheme();
-    const chart = theme === 'light'
-        ? { grid: 'rgba(15,23,36,0.12)',     text: 'rgba(13,21,32,0.6)' }
-        : { grid: 'rgba(119,145,178,0.15)',  text: 'rgba(206,216,227,0.55)' };
+    const artistId = useCurrentArtistId();
+    const statsParams = { artistId: artistId ?? undefined };
+    const { data: statsRaw } = useGetApiStudioArtistStats(statsParams, {
+        query: { enabled: !!artistId, queryKey: getGetApiStudioArtistStatsQueryKey(statsParams) },
+    });
+    const stats = unwrap<ArtistAnalyticsDto>(statsRaw);
+    const topTrack = stats?.topTrack;
+    const topTrackCover = getImageUrl(topTrack?.coverUrl);
 
-    const playsData = period === 'week'
-        ? PLAYS_WEEKLY.map(d => ({ label: d.day,   value: d.plays }))
-        : period === 'month'
-            ? PLAYS_MONTHLY.map(d => ({ label: d.day,  value: d.plays }))
-            : PLAYS_YEARLY.map(d =>  ({ label: d.month, value: d.plays }));
+    const playsQuery = useArtistPlaysOverTime(artistId, days);
+    const audienceQuery = useArtistAudience(artistId, days);
 
-    const totalPlays     = playsData.reduce((s, d) => s + d.value, 0).toLocaleString('uk-UA');
-    const totalFollowers = 56;
-    const totalTracks    = 5;
+    const chart = useChartAxisColors();
+    const tooltipStyle = chartTooltipStyle;
+
+    const playsData = (playsQuery.data ?? []).map(point => ({
+        ...point,
+        label: format(parseISO(point.date), 'dd MMM', { locale: uk }),
+    }));
+
+    const countries = audienceQuery.data?.topCountries ?? [];
+    const maxListeners = Math.max(...countries.map(c => c.listeners), 1);
+    const devices = (audienceQuery.data?.devices ?? []).map((d, i) => ({
+        name: DEVICE_LABELS[d.deviceType] ?? d.deviceType,
+        value: d.plays,
+        color: DEVICE_COLORS[i % DEVICE_COLORS.length]!,
+    }));
+    const totalDevicePlays = devices.reduce((sum, d) => sum + d.value, 0);
 
     return (
         <div className="artist-analytics-page">
 
-            {/* ─── Заголовок ────────────────────────── */}
+            {/* ─── Заголовок + період ───────────────── */}
             <div className="artist-analytics-page__header">
                 <h1 className="artist-analytics-page__title">Статистика</h1>
 
-                {/* Перемикач periodу */}
                 <div className="artist-analytics-page__period-tabs">
-                    {(['week', 'month', 'year'] as Period[]).map(p => (
+                    {PERIODS.map(p => (
                         <button
                             key={p}
-                            className={`artist-analytics-page__period-btn${period === p ? ' artist-analytics-page__period-btn--active' : ''}`}
-                            onClick={() => setPeriod(p)}
+                            className={`artist-analytics-page__period-btn${days === p ? ' artist-analytics-page__period-btn--active' : ''}`}
+                            onClick={() => setDays(p)}
                         >
-                            {{ week: 'Тиждень', month: 'Місяць', year: 'Рік' }[p]}
+                            {p} днів
                         </button>
                     ))}
                 </div>
@@ -103,10 +114,10 @@ export const ArtistAnalyticsPage = () => {
             {/* ─── Summary cards ─────────────────────── */}
             <div className="row g-3 mb-5">
                 {[
-                    { label: 'Прослуховувань',  value: totalPlays,                 icon: 'bi-headphones',    color: '#00A6FF' },
-                    { label: 'Підписників',     value: totalFollowers,             icon: 'bi-people',        color: '#7B61FF' },
-                    { label: 'Треків',          value: totalTracks,                icon: 'bi-music-note',    color: '#FF6B6B' },
-                    { label: 'Зростання',       value: '+12%',                     icon: 'bi-graph-up-arrow',color: '#2ECC71' },
+                    { label: 'Прослуховувань',  value: Number(stats?.totalPlays ?? 0).toLocaleString('uk-UA'), icon: 'bi-headphones',    color: '#00A6FF' },
+                    { label: 'Слухачів/міс',    value: (stats?.monthlyListeners ?? 0).toLocaleString('uk-UA'), icon: 'bi-people',        color: '#7B61FF' },
+                    { label: 'Треків',          value: stats?.totalTracks ?? 0,                                icon: 'bi-music-note',    color: '#FF6B6B' },
+                    { label: 'Альбомів',        value: stats?.totalAlbums ?? 0,                                icon: 'bi-collection',    color: '#2ECC71' },
                 ].map(card => (
                     <div key={card.label} className="col-6 col-lg-3">
                         <div className="artist-analytics-page__card">
@@ -120,112 +131,177 @@ export const ArtistAnalyticsPage = () => {
                 ))}
             </div>
 
-            {/* ─── Графік прослуховувань ─────────────── */}
+            {/* ─── Динаміка прослуховувань ───────────── */}
             <div className="artist-analytics-page__chart-block mb-5">
                 <h2 className="artist-analytics-page__chart-title">Прослуховування</h2>
-                <ResponsiveContainer width="100%" height={260}>
-                    <LineChart data={playsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
-                        <XAxis dataKey="label" tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <Tooltip
-                            contentStyle={{ background: 'var(--client-surface)', border: '1px solid var(--client-border)', borderRadius: 8 }}
-                            labelStyle={{ color: 'var(--client-text)' }}
-                            itemStyle={{ color: COLORS.accent }}
-                        />
-                        <Line
-                            type="monotone"
-                            dataKey="value"
-                            name="Прослуховувань"
-                            stroke={COLORS.accent}
-                            strokeWidth={2.5}
-                            dot={false}
-                            activeDot={{ r: 5, fill: COLORS.accent }}
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
+                {playsQuery.isLoading ? (
+                    <ChartSkeleton />
+                ) : playsQuery.isError ? (
+                    <ChartError error={playsQuery.error} />
+                ) : playsData.length === 0 ? (
+                    <div className="text-secondary py-4 text-center">
+                        Поки немає прослуховувань за обраний період.
+                    </div>
+                ) : (
+                    <ResponsiveContainer width="100%" height={260}>
+                        <LineChart data={playsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
+                            <XAxis dataKey="label" tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
+                            <Tooltip {...tooltipStyle} />
+                            <Legend wrapperStyle={{ fontSize: 13 }} />
+                            {/* Чим ближче лінії Total і Unique — тим більше повторних
+                                прослуховувань від тих самих людей. */}
+                            <Line
+                                type="monotone"
+                                dataKey="totalPlays"
+                                name="Усього"
+                                stroke={COLORS.accent}
+                                strokeWidth={2.5}
+                                dot={false}
+                                activeDot={{ r: 5, fill: COLORS.accent }}
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="uniqueListeners"
+                                name="Унікальних слухачів"
+                                stroke={COLORS.accent2}
+                                strokeWidth={2.5}
+                                dot={false}
+                                activeDot={{ r: 5, fill: COLORS.accent2 }}
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                )}
             </div>
 
             <div className="row g-4 mb-5">
-                {/* ─── Топ треки ──────────────────────── */}
+                {/* ─── Географія ──────────────────────── */}
                 <div className="col-12 col-lg-7">
                     <div className="artist-analytics-page__chart-block h-100">
-                        <h2 className="artist-analytics-page__chart-title">Топ треки</h2>
-                        <div className="d-flex flex-column gap-3 mt-3">
-                            {TOP_TRACKS.map((track, i) => (
-                                <div key={track.title} className="artist-analytics-page__top-track">
-                                    <span className="artist-analytics-page__top-track-num">{i + 1}</span>
-                                    <span className="artist-analytics-page__top-track-title">{track.title}</span>
-                                    <div className="artist-analytics-page__top-track-bar-wrap">
-                                        <div
-                                            className="artist-analytics-page__top-track-bar"
-                                            style={{ width: `${track.percent}%` }}
-                                        />
+                        <h2 className="artist-analytics-page__chart-title">Топ країни</h2>
+                        {audienceQuery.isLoading ? (
+                            <ChartSkeleton height={200} />
+                        ) : audienceQuery.isError ? (
+                            <ChartError error={audienceQuery.error} />
+                        ) : countries.length === 0 ? (
+                            <div className="text-secondary py-4 text-center">
+                                Ще немає даних про географію слухачів.
+                            </div>
+                        ) : (
+                            <div className="d-flex flex-column gap-3 mt-3">
+                                {countries.map((country, i) => (
+                                    <div key={country.countryCode} className="artist-analytics-page__top-track">
+                                        <span className="artist-analytics-page__top-track-num">{i + 1}</span>
+                                        <span className="artist-analytics-page__top-track-title">
+                                            {countryName(country.countryCode)}
+                                        </span>
+                                        <div className="artist-analytics-page__top-track-bar-wrap">
+                                            <div
+                                                className="artist-analytics-page__top-track-bar"
+                                                style={{ width: `${(country.listeners / maxListeners) * 100}%` }}
+                                            />
+                                        </div>
+                                        <span className="artist-analytics-page__top-track-plays">
+                                            {country.listeners.toLocaleString('uk-UA')}
+                                        </span>
                                     </div>
-                                    <span className="artist-analytics-page__top-track-plays">
-                                        {track.plays.toLocaleString('uk-UA')}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* ─── Джерела прослуховувань ─────────── */}
+                {/* ─── Пристрої ───────────────────────── */}
                 <div className="col-12 col-lg-5">
                     <div className="artist-analytics-page__chart-block h-100">
-                        <h2 className="artist-analytics-page__chart-title">Джерела</h2>
-                        <ResponsiveContainer width="100%" height={200}>
-                            <PieChart>
-                                <Pie
-                                    data={SOURCES_DATA}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={55}
-                                    outerRadius={80}
-                                    paddingAngle={3}
-                                    dataKey="value"
-                                >
-                                    {SOURCES_DATA.map((entry, index) => (
-                                        <Cell key={index} fill={entry.color} />
+                        <h2 className="artist-analytics-page__chart-title">Пристрої</h2>
+                        {audienceQuery.isLoading ? (
+                            <ChartSkeleton height={200} />
+                        ) : audienceQuery.isError ? (
+                            <ChartError error={audienceQuery.error} />
+                        ) : devices.length === 0 ? (
+                            <div className="text-secondary py-4 text-center">
+                                Ще немає даних про пристрої.
+                            </div>
+                        ) : (
+                            <>
+                                <ResponsiveContainer width="100%" height={200}>
+                                    <PieChart>
+                                        <Pie
+                                            data={devices}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={55}
+                                            outerRadius={80}
+                                            paddingAngle={3}
+                                            dataKey="value"
+                                        >
+                                            {devices.map((entry, index) => (
+                                                <Cell key={index} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            {...tooltipStyle}
+                                            formatter={(value) => [
+                                                Number(value).toLocaleString('uk-UA'),
+                                                'Прослуховувань',
+                                            ]}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                <div className="artist-analytics-page__legend">
+                                    {devices.map(device => (
+                                        <div key={device.name} className="artist-analytics-page__legend-item">
+                                            <span className="artist-analytics-page__legend-dot" style={{ background: device.color }} />
+                                            <span>{device.name}</span>
+                                            <span className="ms-auto">
+                                                {totalDevicePlays
+                                                    ? `${Math.round((device.value / totalDevicePlays) * 100)}%`
+                                                    : '0%'}
+                                            </span>
+                                        </div>
                                     ))}
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={{ background: 'var(--client-surface)', border: '1px solid var(--client-border)', borderRadius: 8 }}
-                                    formatter={(value) => [`${value}%`, '']}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
-                        <div className="artist-analytics-page__legend">
-                            {SOURCES_DATA.map(s => (
-                                <div key={s.name} className="artist-analytics-page__legend-item">
-                                    <span className="artist-analytics-page__legend-dot" style={{ background: s.color }} />
-                                    <span>{s.name}</span>
-                                    <span className="ms-auto">{s.value}%</span>
                                 </div>
-                            ))}
-                        </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* ─── Зростання підписників ─────────────── */}
-            <div className="artist-analytics-page__chart-block">
-                <h2 className="artist-analytics-page__chart-title">Зростання підписників</h2>
-                <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={FOLLOWERS_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
-                        <XAxis dataKey="month" tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <Tooltip
-                            contentStyle={{ background: 'var(--client-surface)', border: '1px solid var(--client-border)', borderRadius: 8 }}
-                            labelStyle={{ color: 'var(--client-text)' }}
-                            itemStyle={{ color: COLORS.accent2 }}
-                        />
-                        <Bar dataKey="followers" name="Підписників" fill={COLORS.accent2} radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
+            {/* ─── Топ трек ──────────────────────────── */}
+            {topTrack && (
+                <div className="artist-analytics-page__chart-block">
+                    <h2 className="artist-analytics-page__chart-title">Топ трек</h2>
+                    <div className="d-flex flex-column gap-3 mt-3">
+                        <div className="artist-analytics-page__top-track">
+                            <span className="artist-analytics-page__top-track-num">1</span>
+                            {topTrackCover && (
+                                <Image
+                                    src={topTrackCover}
+                                    alt={topTrack.title ?? 'Топ трек'}
+                                    width={40}
+                                    height={40}
+                                    style={{ borderRadius: 6, objectFit: 'cover' }}
+                                    unoptimized
+                                />
+                            )}
+                            <span className="artist-analytics-page__top-track-title">
+                                {topTrack.title ?? 'Без назви'}
+                            </span>
+                            <div className="artist-analytics-page__top-track-bar-wrap">
+                                <div
+                                    className="artist-analytics-page__top-track-bar"
+                                    style={{ width: '100%' }}
+                                />
+                            </div>
+                            <span className="artist-analytics-page__top-track-plays">
+                                {(topTrack.playCount ?? 0).toLocaleString('uk-UA')}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
