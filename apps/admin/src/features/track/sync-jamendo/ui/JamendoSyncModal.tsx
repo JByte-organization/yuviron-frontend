@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { usePostApiAdminJamendoSync, type SyncJamendoResponse } from '@repo/api/admin.ts';
+import { usePostApiAdminJamendoSync } from '@repo/api/admin.ts';
 
 interface Props {
     isOpen: boolean;
@@ -11,14 +11,14 @@ interface Props {
 export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
     const [limit, setLimit] = useState<number>(20);
     const [offset, setOffset] = useState<number>(0);
-    const [syncResult, setSyncResult] = useState<SyncJamendoResponse | null>(null);
+    const [isSuccess, setIsSuccess] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Ініціалізуємо мутацію з контракту Orval
+    // Инициализируем мутацию из обновленного контракта Orval
     const { mutateAsync: syncTracks, isPending } = usePostApiAdminJamendoSync();
 
     const handleClose = () => {
-        setSyncResult(null);
+        setIsSuccess(false);
         setError(null);
         onClose();
     };
@@ -26,10 +26,10 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
     const handleSync = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
-        setSyncResult(null);
+        setIsSuccess(false);
 
         try {
-            // Виклик API згідно з наданою структурою params
+            // Вызываем мутацию согласно новому контракту
             const res = await syncTracks({
                 params: {
                     limit,
@@ -37,9 +37,12 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
                 }
             });
 
-            // Безпечно дістаємо дані відповіді
-            const data = (res as { data?: SyncJamendoResponse } | undefined)?.data ?? (res as SyncJamendoResponse | undefined);
-            setSyncResult(data ?? null);
+            // Проверяем статус ответа (202 Accepted означает успешный запуск фоновой задачи)
+            if (res.status === 202) {
+                setIsSuccess(true);
+            } else {
+                setError('Jamendo node responded with an unexpected status layer.');
+            }
         } catch {
             setError('Failed to establish connection with Jamendo synchronizer pipeline.');
         }
@@ -63,18 +66,18 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
                         <div className="modal-body p-4 d-flex flex-column gap-3">
                             {error && <div className="alert alert-danger py-2 small">{error}</div>}
 
-                            {/* Успішний звіт про операцію */}
-                            {syncResult && (
+                            {/* Новое сообщение об успешном фоновом запуске */}
+                            {isSuccess && (
                                 <div className="p-3 rounded bg-dark border border-success border-opacity-25 text-center mb-1">
                                     <i className="bi bi-check-circle-fill text-success fs-3 d-block mb-2" />
-                                    <h6 className="fw-bold text-white mb-1">Sync Completed Successfully!</h6>
-                                    <span className="small text-secondary">
-                                        Imported <strong className="text-cyan">{syncResult.syncedTracksCount ?? 0}</strong> new music tracks into database.
+                                    <h6 className="fw-bold text-white mb-1">Sync Ingest Task Created</h6>
+                                    <span className="small text-secondary d-block lh-sm mt-1">
+                                        The core server accepted the operation (<strong className="text-cyan">HTTP 202</strong>). Tracks compilation is now deploying in a background queue context.
                                     </span>
                                 </div>
                             )}
 
-                            {/* Поля вводу параметрів */}
+                            {/* Поля ввода параметров */}
                             <div>
                                 <label className="form-label text-secondary small fw-bold" style={{ fontSize: '11px' }}>
                                     TRACKS IMPORT LIMIT (MAX)
@@ -85,7 +88,7 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
                                     min={1}
                                     max={100}
                                     value={limit}
-                                    disabled={isPending}
+                                    disabled={isPending || isSuccess}
                                     onChange={(e) => setLimit(Number(e.target.value))}
                                     required
                                 />
@@ -103,7 +106,7 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
                                     className="form-control admin-login__input font-monospace"
                                     min={0}
                                     value={offset}
-                                    disabled={isPending}
+                                    disabled={isPending || isSuccess}
                                     onChange={(e) => setOffset(Number(e.target.value))}
                                     required
                                 />
@@ -112,9 +115,9 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
 
                         <div className="modal-footer border-0 p-4 pt-2">
                             <button type="button" className="btn btn-admin-dark px-4" onClick={handleClose} disabled={isPending}>
-                                {syncResult ? 'Close' : 'Cancel'}
+                                {isSuccess ? 'Close' : 'Cancel'}
                             </button>
-                            {!syncResult && (
+                            {!isSuccess && (
                                 <button type="submit" className="btn btn-primary px-4 fw-bold" disabled={isPending}>
                                     {isPending ? (
                                         <>
