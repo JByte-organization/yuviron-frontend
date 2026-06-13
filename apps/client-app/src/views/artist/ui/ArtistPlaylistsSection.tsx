@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { FreeMode } from 'swiper/modules';
+import type { Swiper as SwiperClass } from 'swiper';
+
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { PlaylistCard } from '@/entities/playlist/ui/PlaylistCard';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
-import { useHasOverflow } from '@/shared/lib/useHasOverflow';
 import type { ArtistPlaylistDto } from '@repo/api/client.ts';
 
 interface ArtistPlaylistsSectionProps {
@@ -16,14 +19,14 @@ interface ArtistPlaylistsSectionProps {
 
 export const ArtistPlaylistsSection = ({
                                            artistName,
-                                           playlists = [], // Избавились от MOCK_PLAYLISTS
+                                           playlists = [],
                                            isLoading = false,
                                            onPlaylistClick,
                                        }: ArtistPlaylistsSectionProps) => {
-    // Стрілки — лише коли контент переповнює слайдер (є що гортати).
-    const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([playlists]);
+    // Екземпляр Swiper для керування зовнішніми стрілками
+    const [swiperInstance, setSwiperInstance] = useState<SwiperClass | null>(null);
 
-    // ─── Маппинг данных из ArtistPlaylistDto в формат PlaylistCardData ────────
+    // ─── Маппинг даних з DTO у формат картки ────────────────
     const mappedPlaylists = useMemo(() => {
         if (!playlists || playlists.length === 0) return [];
 
@@ -36,30 +39,27 @@ export const ArtistPlaylistsSection = ({
         }));
     }, [playlists]);
 
-    // Если загрузка завершена и плейлистов нет — скрываем всю секцию
     if (!isLoading && mappedPlaylists.length === 0) return null;
-
-    const scroll = (dir: 'prev' | 'next') => {
-        if (!sliderRef.current) return;
-        const amount = sliderRef.current.offsetWidth * 0.8;
-        sliderRef.current.scrollBy({ left: dir === 'next' ? amount : -amount, behavior: 'smooth' });
-    };
 
     return (
         <section className="artist-playlists mb-5">
             <SectionHeader
                 title={`${artistName}: плейлісти виконавця`}
                 highlightedWord="плейлісти"
-                onPrev={hasOverflow ? () => scroll('prev') : undefined}
-                onNext={hasOverflow ? () => scroll('next') : undefined}
+                onPrev={swiperInstance ? () => swiperInstance.slidePrev() : undefined}
+                onNext={swiperInstance ? () => swiperInstance.slideNext() : undefined}
             />
 
             {isLoading ? (
-                // Скелетоны теперь тоже красиво выстроены в горизонтальную ленту
+                // Скелетони: чітко підігнані під сітку з 7 елементів
                 <div className="section-slider-wrap">
-                    <div className="row g-3 flex-nowrap overflow-hidden">
-                        {Array.from({ length: 4 }).map((_, i) => (
-                            <div key={i} className="col-6 col-md-4 col-lg-2" style={{ flex: '0 0 auto' }}>
+                    <div className="d-flex gap-4 overflow-hidden">
+                        {Array.from({ length: 7 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="d-flex flex-column align-items-stretch gap-2"
+                                style={{ flex: '0 0 calc((100% - 6 * 24px) / 7)', minWidth: '140px' }}
+                            >
                                 <div className="skeleton skeleton--rounded" style={{ aspectRatio: '1/1' }} />
                                 <div className="skeleton mt-2" style={{ height: 13, width: '75%' }} />
                                 <div className="skeleton mt-1" style={{ height: 11, width: '40%' }} />
@@ -69,17 +69,27 @@ export const ArtistPlaylistsSection = ({
                 </div>
             ) : (
                 <div className="section-slider-wrap">
-                    <div
-                        ref={sliderRef}
-                        className="row g-3 flex-nowrap overflow-x-auto artist-slider"
+                    {/* Сучасна карусель на Swiper з брейкпоїнтом на 7 слайдів */}
+                    <Swiper
+                        modules={[FreeMode]}
+                        freeMode
+                        slidesPerView={2}
+                        spaceBetween={24}
+                        breakpoints={{
+                            480:  { slidesPerView: 3 },
+                            768:  { slidesPerView: 4 },
+                            992:  { slidesPerView: 5 },
+                            1200: { slidesPerView: 7 }, // Ідеальні 7 штук в ряд на десктопі
+                        }}
+                        onSwiper={setSwiperInstance}
+                        className="artist-playlists__swiper"
                     >
                         {mappedPlaylists.map((playlist) => (
-                            <div key={playlist.id} className="col-6 col-md-4 col-lg-2" style={{ flex: '0 0 auto' }}>
+                            <SwiperSlide key={playlist.id} style={{ width: 'auto' }}>
                                 <PlaylistCard playlist={playlist} onClick={onPlaylistClick} />
-                            </div>
+                            </SwiperSlide>
                         ))}
-                        <div className="col-auto" style={{ minWidth: 40 }} />
-                    </div>
+                    </Swiper>
                 </div>
             )}
         </section>

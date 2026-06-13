@@ -33,13 +33,14 @@ interface TrackCardProps {
     onClick?: () => void;
 }
 
+const DEFAULT_COVER = '/images/track/default-track-cover.svg';
+
 export const TrackCard = ({ track, onClick }: TrackCardProps) => {
     const [isHovered, setIsHovered] = useState(false);
     const [menuCoords, setMenuCoords] = useState<{ x: number; y: number } | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const coverSrc = getImageUrl(track.coverUrl)
-        ?? `https://picsum.photos/seed/track-${track.id}/300/300`;
+    const coverSrc = getImageUrl(track?.coverUrl) || DEFAULT_COVER;
 
     const { playQueue } = usePlayer();
     const { requireAuth } = useAuthGuard();
@@ -126,7 +127,17 @@ export const TrackCard = ({ track, onClick }: TrackCardProps) => {
             onContextMenu={handleContextMenu}
         >
             <div className="track-card__cover">
-                <img src={coverSrc} alt={track.title}/>
+                <img
+                    src={coverSrc}
+                    alt={track?.title || 'Track Cover'}
+                    className="track-cover-img"
+                    onError={(e) => {
+                        const target = e.currentTarget;
+                        if (target.src !== window.location.origin + DEFAULT_COVER) {
+                            target.src = DEFAULT_COVER;
+                        }
+                    }}
+                />
 
                 {(isHovered || isCurrentlyPlaying) && (
                     <button

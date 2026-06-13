@@ -8,6 +8,6 @@ interface PageProps {
 }
 
 export default function Page({ params }: PageProps) {
-    const { id } = use(params); // ← розгортаємо Promise через React.use()
+    const { id } = use(params);
     return <ArtistPage artistId={id} />;
 }
