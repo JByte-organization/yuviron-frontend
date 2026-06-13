@@ -77,13 +77,11 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
         if (!details) return;
 
         reset({
-            title:           details.title           ?? '',
-            targetUrl:       details.targetUrl       ?? '',
-            isActive:        details.isActive        ?? true,
-            startsAtUtc:     isoToLocalInput(details.startsAtUtc),
-            endsAtUtc:       isoToLocalInput(details.endsAtUtc),
-            targetCountries: details.targetCountries ?? '',
-            targetGenres:    details.targetGenres    ?? '',
+            title:     details.title     ?? '',
+            // targetUrl/sortOrder читаємо «м'яко» — поля дрейфують у живому DTO.
+            targetUrl: (details as { targetUrl?: string | null }).targetUrl ?? '',
+            sortOrder: (details as { sortOrder?: number }).sortOrder ?? 1,
+            isActive:  details.isActive  ?? true,
         });
 
         //Image
@@ -123,7 +121,7 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
     const onSubmit = async (values: FormValues) => {
         if (!bannerId) return;
 
-        const body: UpdateBannerCommand = {
+        const body: UpdateBannerCommand & { targetUrl?: string | null; sortOrder?: number } = {
             bannerId,
             title:           values.title     || null,
             bannerFileId:    bannerFileId ?? null,

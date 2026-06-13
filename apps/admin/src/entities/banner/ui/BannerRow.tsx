@@ -42,7 +42,14 @@ const computeStatus = (
 
 export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: BannerRowProps) => {
     const previewUrl = getImageUrl(banner.bannerUrl);
-    const status = computeStatus(banner.isActive, banner.startsAtUtc, banner.endsAtUtc);
+    // Поля баннера дрейфують у живому swagger (бек прибрав targetUrl/sortOrder/
+    // createdAt зі списку, додав start/endsAtUtc). Читаємо «м'яко» через розширений
+    // каст, щоб build не падав незалежно від поточної форми BannerListItemDto.
+    const { targetUrl, sortOrder, createdAt } = banner as {
+        targetUrl?: string | null;
+        sortOrder?: number;
+        createdAt?: string;
+    };
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>
@@ -79,14 +86,41 @@ export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: Ba
                 {banner.title ?? '—'}
             </td>
 
-            {/* Period (start → end) */}
-            <td className="text-secondary small text-nowrap">
-                {formatPeriod(banner.startsAtUtc, banner.endsAtUtc)}
+            {/* Target URL */}
+            <td className="text-secondary small">
+                {targetUrl ? (
+                    <a
+                        href={targetUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-info text-decoration-none text-truncate d-block"
+                        style={{ maxWidth: 200 }}
+                        title={targetUrl}
+                    >
+                        {targetUrl}
+                    </a>
+                ) : '—'}
+            </td>
+
+            {/* Sort Order */}
+            <td className="text-center">
+                <span className="badge bg-secondary px-3 py-2">
+                    #{sortOrder ?? 0}
+                </span>
             </td>
 
             {/* Status */}
             <td className="text-center">
-                <span className={`badge ${status.cls}`}>{status.label}</span>
+                {banner.isActive ? (
+                    <span className="badge bg-success">Active</span>
+                ) : (
+                    <span className="badge bg-secondary">Inactive</span>
+                )}
+            </td>
+
+            {/* Created At */}
+            <td className="text-secondary small text-nowrap">
+                {formatDate(createdAt)}
             </td>
 
             {/* Actions */}
