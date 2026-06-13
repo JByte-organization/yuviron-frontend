@@ -13,13 +13,31 @@ interface BannerRowProps {
     onDelete: (banner: BannerListItemDto) => void;
 }
 
-const formatDate = (dateString?: string): string => {
-    if (!dateString) return '—';
-    return new Date(dateString).toLocaleDateString('uk-UA', {
-        day:   '2-digit',
-        month: '2-digit',
-        year:  'numeric',
-    });
+const formatDate = (dateString?: string | null): string => {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' });
+};
+
+// Період показу банера (нова модель замість sortOrder): startsAtUtc → endsAtUtc.
+// null-межі: без початку = «з моменту активації», без кінця = «безстроково».
+const formatPeriod = (start?: string | null, end?: string | null): string => {
+    if (!start && !end) return 'Завжди';
+    return `${start ? formatDate(start) : '—'} – ${end ? formatDate(end) : '∞'}`;
+};
+
+// Статус показу: поєднання isActive і вікна дат (зараз/заплановано/завершено).
+const computeStatus = (
+    isActive: boolean | undefined,
+    start?: string | null,
+    end?: string | null,
+): { label: string; cls: string } => {
+    if (!isActive) return { label: 'Inactive', cls: 'bg-secondary' };
+    const now = Date.now();
+    if (start && new Date(start).getTime() > now) return { label: 'Scheduled', cls: 'bg-info' };
+    if (end && new Date(end).getTime() < now) return { label: 'Expired', cls: 'bg-warning text-dark' };
+    return { label: 'Active', cls: 'bg-success' };
 };
 
 export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: BannerRowProps) => {
@@ -91,7 +109,7 @@ export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: Ba
                 </span>
             </td>
 
-            {/* Active */}
+            {/* Status */}
             <td className="text-center">
                 {banner.isActive ? (
                     <span className="badge bg-success">Active</span>

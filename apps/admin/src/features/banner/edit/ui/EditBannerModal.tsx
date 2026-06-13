@@ -23,8 +23,24 @@ interface Props {
 type FormValues = {
     title: string;
     targetUrl: string;
-    sortOrder: number;
     isActive: boolean;
+    startsAtUtc: string;
+    endsAtUtc: string;
+    targetCountries: string;
+    targetGenres: string;
+};
+
+// datetime-local ('YYYY-MM-DDTHH:mm') → ISO-UTC або null.
+const toIsoOrNull = (local: string): string | null =>
+    local ? new Date(local).toISOString() : null;
+
+// ISO → значення для <input type="datetime-local"> (локальний час, без секунд).
+const isoToLocalInput = (iso?: string | null): string => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
 export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) => {
@@ -107,11 +123,14 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
 
         const body: UpdateBannerCommand & { targetUrl?: string | null; sortOrder?: number } = {
             bannerId,
-            title:        values.title     || null,
-            targetUrl:    values.targetUrl || null,
-            bannerFileId: bannerFileId ?? null,
-            sortOrder:    values.sortOrder,
-            isActive:     values.isActive,
+            title:           values.title     || null,
+            bannerFileId:    bannerFileId ?? null,
+            targetUrl:       values.targetUrl || null,
+            isActive:        values.isActive,
+            startsAtUtc:     toIsoOrNull(values.startsAtUtc),
+            endsAtUtc:       toIsoOrNull(values.endsAtUtc),
+            targetCountries: values.targetCountries || null,
+            targetGenres:    values.targetGenres || null,
         };
 
         try {
@@ -126,12 +145,7 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
             const serverErrors = err.response?.data?.errors;
             const detail       = err.response?.data?.detail;
 
-            if (status === 409) {
-                setError('sortOrder', {
-                    type:    'server',
-                    message: 'This sort order is already taken. Please choose a different number.',
-                });
-            } else if (status === 400 && serverErrors) {
+            if (status === 400 && serverErrors) {
                 Object.keys(serverErrors).forEach((field) => {
                     const key = (field.charAt(0).toLowerCase() + field.slice(1)) as keyof FormValues;
                     setError(key, { type: 'server', message: serverErrors[field]?.[0] });
@@ -251,44 +265,65 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
                                     </div>
                                 </div>
 
-                                {/* Sort Order + Active */}
-                                <div className="row g-3">
+                                {/* Період показу */}
+                                <div className="row g-3 mb-4">
                                     <div className="col-md-6">
-                                        <label className="form-label admin-text small fw-bold">SORT ORDER *</label>
+                                        <label className="form-label admin-text small fw-bold">START (UTC)</label>
                                         <input
-                                            type="number"
-                                            min={1}
-                                            className={`form-control admin-login__input${errors.sortOrder ? ' is-invalid' : ''}`}
-                                            {...register('sortOrder', {
-                                                required:      'Sort order is required',
-                                                valueAsNumber: true,
-                                                min: { value: 1, message: 'Must be at least 1' },
-                                            })}
+                                            type="datetime-local"
+                                            className="form-control admin-login__input"
+                                            {...register('startsAtUtc')}
                                         />
                                         <div className="form-text text-secondary small">
-                                            Порядок відображення (унікальний)
+                                            Порожньо = показ з моменту активації
                                         </div>
-                                        {errors.sortOrder && (
-                                            <div className="invalid-feedback">{errors.sortOrder.message}</div>
-                                        )}
                                     </div>
+                                    <div className="col-md-6">
+                                        <label className="form-label admin-text small fw-bold">END (UTC)</label>
+                                        <input
+                                            type="datetime-local"
+                                            className="form-control admin-login__input"
+                                            {...register('endsAtUtc')}
+                                        />
+                                        <div className="form-text text-secondary small">
+                                            Порожньо = безстроково
+                                        </div>
+                                    </div>
+                                </div>
 
-                                    <div className="col-md-6 d-flex align-items-center pt-3">
-                                        <div className="form-check form-switch">
-                                            <input
-                                                type="checkbox"
-                                                className="form-check-input"
-                                                id="edit-isActive"
-                                                {...register('isActive')}
-                                            />
-                                            <label
-                                                className="form-check-label text-white fw-semibold"
-                                                htmlFor="edit-isActive"
-                                            >
-                                                Active
-                                            </label>
-                                        </div>
+                                {/* Таргетинг */}
+                                <div className="row g-3 mb-4">
+                                    <div className="col-md-6">
+                                        <label className="form-label admin-text small fw-bold">TARGET COUNTRIES</label>
+                                        <input
+                                            type="text"
+                                            className="form-control admin-login__input"
+                                            placeholder="UA, PL, DE (optional)"
+                                            {...register('targetCountries')}
+                                        />
                                     </div>
+                                    <div className="col-md-6">
+                                        <label className="form-label admin-text small fw-bold">TARGET GENRES</label>
+                                        <input
+                                            type="text"
+                                            className="form-control admin-login__input"
+                                            placeholder="Pop, Rock (optional)"
+                                            {...register('targetGenres')}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Active */}
+                                <div className="form-check form-switch">
+                                    <input
+                                        type="checkbox"
+                                        className="form-check-input"
+                                        id="edit-isActive"
+                                        {...register('isActive')}
+                                    />
+                                    <label className="form-check-label text-white fw-semibold" htmlFor="edit-isActive">
+                                        Active
+                                    </label>
                                 </div>
 
                             </div>
