@@ -271,7 +271,7 @@ export const LoginForm = () => {
                 disabled={isPending || cooldown > 0}
             >
                 {cooldown > 0
-                    ? `Зачекайте ${cooldown} с`
+                    ? `Зачекайте ${cooldown} с`
                     : isPending
                         ? 'Вхід…'
                         : 'Увійти'}
