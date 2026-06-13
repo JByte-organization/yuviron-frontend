@@ -62,7 +62,8 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
 
         reset({
             title:     details.title     ?? '',
-            targetUrl: details.targetUrl ?? '',
+            // targetUrl читаємо «м'яко» — поле то є, то нема у згенерованому DTO.
+            targetUrl: (details as { targetUrl?: string | null }).targetUrl ?? '',
             sortOrder: details.sortOrder ?? 1,
             isActive:  details.isActive  ?? true,
         });
@@ -104,7 +105,7 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
     const onSubmit = async (values: FormValues) => {
         if (!bannerId) return;
 
-        const body: UpdateBannerCommand = {
+        const body: UpdateBannerCommand & { targetUrl?: string | null } = {
             bannerId,
             title:        values.title     || null,
             targetUrl:    values.targetUrl || null,

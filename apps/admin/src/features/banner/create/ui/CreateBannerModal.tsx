@@ -76,7 +76,9 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
             return;
         }
 
-        const body: CreateBannerCommand = {
+        // targetUrl розширюємо в тип окремо — бек то додає, то прибирає його зі
+        // swagger, тож не привʼязуємось жорстко до згенерованого CreateBannerCommand.
+        const body: CreateBannerCommand & { targetUrl?: string | null } = {
             title:        values.title     || null,
             targetUrl:    values.targetUrl || null,
             bannerFileId: bannerFileId,

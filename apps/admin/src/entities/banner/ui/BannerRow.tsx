@@ -24,6 +24,9 @@ const formatDate = (dateString?: string): string => {
 
 export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: BannerRowProps) => {
     const previewUrl = getImageUrl(banner.bannerUrl);
+    // targetUrl читаємо «м'яко»: бек то додає, то прибирає його у BannerListItemDto,
+    // а пайплайн регенерить swagger з живого беку → не привʼязуємось до поля жорстко.
+    const targetUrl = (banner as { targetUrl?: string | null }).targetUrl;
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>
@@ -62,16 +65,16 @@ export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: Ba
 
             {/* Target URL */}
             <td className="text-secondary small">
-                {banner.targetUrl ? (
+                {targetUrl ? (
                     <a
-                        href={banner.targetUrl}
+                        href={targetUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-info text-decoration-none text-truncate d-block"
                         style={{ maxWidth: 200 }}
-                        title={banner.targetUrl}
+                        title={targetUrl}
                     >
-                        {banner.targetUrl}
+                        {targetUrl}
                     </a>
                 ) : '—'}
             </td>
