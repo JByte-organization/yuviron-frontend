@@ -12,6 +12,7 @@ import { UploadTrackModal } from '@/features/artist/track/ui/UploadTrackModal';
 import { EditTrackModal, DeleteTrackModal } from '@/features/artist/track/ui/EditDeleteArtistTrackModals';
 import { TrackAnalyticsModal } from '@/features/artist/track/ui/TrackAnalyticsModal';
 import { useCurrentArtist } from '@/entities/artist/model/currentArtist';
+import { useArtistPermissions } from '@/entities/artist/model/useArtistPermissions';
 import { unwrapItems } from '@/shared/lib/unwrapApi';
 
 interface TrackToEdit {
@@ -21,7 +22,9 @@ interface TrackToEdit {
 }
 
 export const ArtistTracksPage = () => {
-    const { artistId, canManage } = useCurrentArtist();
+    const { artistId } = useCurrentArtist();
+    const { can, lockTitle } = useArtistPermissions();
+    const canTracks = can('tracks');
     const queryClient = useQueryClient();
 
     const [search,       setSearch]       = useState('');
@@ -93,15 +96,15 @@ export const ArtistTracksPage = () => {
                         )}
                     </div>
 
-                    {canManage && (
-                        <button
-                            className="artist-tracks-page__upload-btn"
-                            onClick={() => setShowUpload(true)}
-                        >
-                            <i className="bi bi-cloud-upload" />
-                            Завантажити трек
-                        </button>
-                    )}
+                    <button
+                        className="artist-tracks-page__upload-btn"
+                        onClick={() => setShowUpload(true)}
+                        disabled={!canTracks}
+                        title={!canTracks ? lockTitle : undefined}
+                    >
+                        <i className={`bi ${canTracks ? 'bi-cloud-upload' : 'bi-lock-fill'}`} />
+                        Завантажити трек
+                    </button>
                 </div>
             </div>
 
@@ -144,24 +147,22 @@ export const ArtistTracksPage = () => {
                                 >
                                     <i className="bi bi-graph-up" />
                                 </button>
-                                {canManage && (
-                                    <>
-                                        <button
-                                            className="artist-tracks-page__row-btn"
-                                            onClick={() => setEditingTrack({ id: track.id, title: track.title, albumTitle: track.albumTitle })}
-                                            title="Редагувати"
-                                        >
-                                            <i className="bi bi-pencil" />
-                                        </button>
-                                        <button
-                                            className="artist-tracks-page__row-btn artist-tracks-page__row-btn--danger"
-                                            onClick={() => setDeletingTrack({ id: track.id, title: track.title, albumTitle: track.albumTitle })}
-                                            title="Видалити"
-                                        >
-                                            <i className="bi bi-trash" />
-                                        </button>
-                                    </>
-                                )}
+                                <button
+                                    className="artist-tracks-page__row-btn"
+                                    onClick={() => setEditingTrack({ id: track.id, title: track.title, albumTitle: track.albumTitle })}
+                                    disabled={!canTracks}
+                                    title={!canTracks ? lockTitle : 'Редагувати'}
+                                >
+                                    <i className={`bi ${canTracks ? 'bi-pencil' : 'bi-lock-fill'}`} />
+                                </button>
+                                <button
+                                    className="artist-tracks-page__row-btn artist-tracks-page__row-btn--danger"
+                                    onClick={() => setDeletingTrack({ id: track.id, title: track.title, albumTitle: track.albumTitle })}
+                                    disabled={!canTracks}
+                                    title={!canTracks ? lockTitle : 'Видалити'}
+                                >
+                                    <i className={`bi ${canTracks ? 'bi-trash' : 'bi-lock-fill'}`} />
+                                </button>
                             </div>
                         </div>
                     ))}
