@@ -24,9 +24,14 @@ const formatDate = (dateString?: string): string => {
 
 export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: BannerRowProps) => {
     const previewUrl = getImageUrl(banner.bannerUrl);
-    // targetUrl читаємо «м'яко»: бек то додає, то прибирає його у BannerListItemDto,
-    // а пайплайн регенерить swagger з живого беку → не привʼязуємось до поля жорстко.
-    const targetUrl = (banner as { targetUrl?: string | null }).targetUrl;
+    // Поля баннера дрейфують у живому swagger (бек прибрав targetUrl/sortOrder/
+    // createdAt зі списку, додав start/endsAtUtc). Читаємо «м'яко» через розширений
+    // каст, щоб build не падав незалежно від поточної форми BannerListItemDto.
+    const { targetUrl, sortOrder, createdAt } = banner as {
+        targetUrl?: string | null;
+        sortOrder?: number;
+        createdAt?: string;
+    };
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>
@@ -82,7 +87,7 @@ export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: Ba
             {/* Sort Order */}
             <td className="text-center">
                 <span className="badge bg-secondary px-3 py-2">
-                    #{banner.sortOrder ?? 0}
+                    #{sortOrder ?? 0}
                 </span>
             </td>
 
@@ -97,7 +102,7 @@ export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: Ba
 
             {/* Created At */}
             <td className="text-secondary small text-nowrap">
-                {formatDate(banner.createdAt)}
+                {formatDate(createdAt)}
             </td>
 
             {/* Actions */}

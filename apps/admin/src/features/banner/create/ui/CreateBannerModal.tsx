@@ -76,9 +76,10 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
             return;
         }
 
-        // targetUrl розширюємо в тип окремо — бек то додає, то прибирає його зі
-        // swagger, тож не привʼязуємось жорстко до згенерованого CreateBannerCommand.
-        const body: CreateBannerCommand & { targetUrl?: string | null } = {
+        // targetUrl/sortOrder розширюємо в тип окремо — бек то додає, то прибирає їх
+        // зі swagger, тож не привʼязуємось жорстко до згенерованого CreateBannerCommand.
+        // Зайві поля бек ігнорує при біндингу.
+        const body: CreateBannerCommand & { targetUrl?: string | null; sortOrder?: number } = {
             title:        values.title     || null,
             targetUrl:    values.targetUrl || null,
             bannerFileId: bannerFileId,
