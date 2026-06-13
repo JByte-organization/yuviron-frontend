@@ -87,10 +87,11 @@ export const BannersPage = () => {
         if (activeFilters.isActive !== undefined && b.isActive !== activeFilters.isActive) {
             return false;
         }
-        if (activeFilters.sortOrderFrom !== undefined && (b.sortOrder ?? 0) < activeFilters.sortOrderFrom) {
+        const sortOrder = (b as { sortOrder?: number }).sortOrder ?? 0;
+        if (activeFilters.sortOrderFrom !== undefined && sortOrder < activeFilters.sortOrderFrom) {
             return false;
         }
-        if (activeFilters.sortOrderTo !== undefined && (b.sortOrder ?? 0) > activeFilters.sortOrderTo) {
+        if (activeFilters.sortOrderTo !== undefined && sortOrder > activeFilters.sortOrderTo) {
             return false;
         }
         return true;
