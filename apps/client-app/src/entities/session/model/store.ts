@@ -22,8 +22,12 @@ export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 interface SessionState {
     accessToken: string | null;
     user: SessionUser | null;
+    // Каркас-статус для гостьового/авторизованого UI (Header/Sidebar/Home).
+    // Може бути 'authenticated' оптимістично (за підказкою) ще до приходу токена.
+    status: AuthStatus;
     // Чи завершилось початкове відновлення сесії (restoreSession у ApiClientProvider).
     // Доти не знаємо, артист користувач чи ні — гейти показують лоадер, а не блокер.
+    // Окремо від status: status дозволяє оптимізм, authResolved — лише факт.
     authResolved: boolean;
     setAccessToken: (token: string | null) => void;
     markAuthResolved: () => void;
@@ -112,15 +116,40 @@ const userFromToken = (token: string | null): SessionUser | null => {
 export const useSessionStore = create<SessionState>((set, get) => ({
     accessToken: null,
     user: null,
+    // Старт завжди детермінований ('loading') — однаково на сервері та при
+    // першому клієнтському рендері, інакше hydration mismatch. Підказку з
+    // localStorage читаємо вже після монтування (hydrateFromHint).
+    status: 'loading',
     authResolved: false,
-    setAccessToken: (token) => set({ accessToken: token, user: userFromToken(token) }),
+    setAccessToken: (token) => {
+        writeSessionHint(!!token);
+        set({
+            accessToken: token,
+            user: userFromToken(token),
+            status: token ? 'authenticated' : 'unauthenticated',
+        });
+    },
     markAuthResolved: () => set({ authResolved: true }),
     clearSession: () => {
         // Прибираємо scoped-artistId поточного юзера (+ легасі-ключ), щоб
         // наступний акаунт на цьому браузері не успадкував чужий кабінет.
         clearStoredArtistId(get().user?.id);
-        set({ accessToken: null, user: null });
+        writeSessionHint(false);
+        set({ accessToken: null, user: null, status: 'unauthenticated' });
     },
+    markUnauthenticated: () => {
+        writeSessionHint(false);
+        set({ status: 'unauthenticated' });
+    },
+    hydrateFromHint: () =>
+        set((s) =>
+            // Якщо токен уже є — нічого не чіпаємо. Інакше, за наявності
+            // підказки, оптимістично показуємо авторизований каркас. authResolved
+            // НЕ чіпаємо: гейти кабінету мають чекати реального restore.
+            s.accessToken || !readSessionHint()
+                ? s
+                : { status: 'authenticated' },
+        ),
 }));
 
 // Зручний селектор для UI: чи показувати авторизований каркас.
