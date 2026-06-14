@@ -3,10 +3,10 @@ import { AcceptTeamInviteCard } from '@/features/artist/team/ui/AcceptTeamInvite
 
 /**
  * Прийняття запрошення до команди артиста. Бек шле лист із посиланням
- * /studio/invite?token=…&artistId=… — саме цей шлях, тому роут має бути тут
- * (раніше був лише /team-invite → лист падав у 404). Той самий компонент.
+ * /studio/invites?code=… — саме цей шлях і параметр `code`, тому роут має бути
+ * тут (раніше був лише /team-invite → лист падав у 404). Той самий компонент.
  */
-export default function StudioInvite() {
+export default function StudioInvites() {
     return (
         <section className="client-forgot-page">
             <div className="client-forgot-page__panel">

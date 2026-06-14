@@ -14,13 +14,15 @@ import { useSessionStore } from '@/entities/session/model/store';
 
 /**
  * Прийняття запрошення до команди артиста. Бек шле лист із посиланням
- * /team-invite?token=… (+ опційно artistId). Прийняття — свідома дія,
- * тому кнопка, а не авто-сабміт (на відміну від confirm-email).
+ * /studio/invites?code=… (раніше очікували token/artistId — фактичний параметр
+ * `code`, тримаємо token як фолбек). Прийняття — свідома дія, тому кнопка,
+ * а не авто-сабміт (на відміну від confirm-email).
  */
 export const AcceptTeamInviteCard = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const token = searchParams?.get('token') ?? '';
+    // Бек шле ?code=… ; лишаємо ?token= як фолбек на випадок старих листів.
+    const token = searchParams?.get('code') ?? searchParams?.get('token') ?? '';
     // Якщо лист містить artistId — збережемо, щоб кабінет одразу відкрився
     // на потрібному артисті (accept-invite повертає 204 без тіла).
     const artistIdFromLink = searchParams?.get('artistId') ?? null;
