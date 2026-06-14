@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
     useGetApiAdminAds,
     usePatchApiAdminAdsIdStatus,
@@ -19,7 +19,6 @@ import { useAdPlayback } from '@/features/ad/playback/model/useAdPlayback';
 const PAGE_SIZE = 15;
 const COLUMNS = ['Brand / Campaign', 'Impressions', 'Clicks', 'CTR', 'Status', 'Created At'];
 
-// Массив опций сортировки для выпадающего списка BaseTable
 const SORT_OPTIONS = [
     { value: 'CreatedAt', label: 'Date Created' },
     { value: 'ImpressionsCount', label: 'Total Impressions' },
@@ -30,11 +29,9 @@ export const AdsPage = () => {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
 
-    // Стейты сортировки (привязаны к BaseTable)
     const [sortBy, setSortBy] = useState<string>('CreatedAt');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-    // Стейты фильтрации: основной и временный (для бокового меню)
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [tempStatus, setTempStatus] = useState<string>('all');
 
@@ -44,16 +41,16 @@ export const AdsPage = () => {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const { mutateAsync: toggleAdStatus } = usePatchApiAdminAdsIdStatus();
-    const { playingAdId, handlePlayToggle } = useAdPlayback();
+    const { playingAdId, loadingAdId, handlePlayToggle } = useAdPlayback();
 
-    // Параметры запроса к бэкенду
-    const queryParams: GetApiAdminAdsParams = {
+    // ─── МЕМОИЗАЦИЯ КЛИЕНТСКОГО ЗАПРОСА ───────────────────
+    const queryParams: GetApiAdminAdsParams = useMemo(() => ({
         Page: page,
         PageSize: PAGE_SIZE,
         SearchTerm: search.trim() || undefined,
         SortBy: sortBy || undefined,
         SortOrder: sortOrder || undefined
-    };
+    }), [page, search, sortBy, sortOrder]);
 
     const { data, isLoading, isError, refetch } = useGetApiAdminAds(queryParams);
 
@@ -64,61 +61,50 @@ export const AdsPage = () => {
     const totalPages = responseData?.totalPages ?? 1;
     const totalCount = responseData?.totalCount ?? 0;
 
-    // Клиентская фильтрация списка по статусу активности
-    const adsList = rawAdsList.filter(ad => {
-        if (statusFilter === 'active') return ad.isActive === true;
-        if (statusFilter === 'inactive') return ad.isActive === false;
-        return true;
-    });
+    const adsList = useMemo(() => {
+        return rawAdsList.filter(ad => {
+            if (statusFilter === 'active') return ad.isActive === true;
+            if (statusFilter === 'inactive') return ad.isActive === false;
+            return true;
+        });
+    }, [rawAdsList, statusFilter]);
 
-    // Хендлеры для массового выбора чекбоксов
-    const handleSelectAll = () => {
+    // ─── СИНХРОННЫЕ МЕМОИЗИРОВАННЫЕ ХЕНДЛЕРЫ ──────────────
+    const handleSelectAll = useCallback(() => {
         if (selectedIds.size === adsList.length) {
             setSelectedIds(new Set());
         } else {
             setSelectedIds(new Set(adsList.map(ad => ad.id).filter(Boolean) as string[]));
         }
-    };
+    }, [adsList, selectedIds]);
 
-    const handleToggleSelect = (id: string) => {
+    const handleToggleSelect = useCallback((id: string) => {
         setSelectedIds(prev => {
             const next = new Set(prev);
             if (next.has(id)) next.delete(id);
             else next.add(id);
             return next;
         });
-    };
+    }, []);
 
-    const handleSwitchActive = async (ad: AdSummaryDto) => {
+    const handleSwitchActive = useCallback(async (ad: AdSummaryDto) => {
         if (!ad.id) return;
         try {
             await toggleAdStatus({
                 id: ad.id,
-                data: {
-                    adId: ad.id,
-                    isActive: !ad.isActive
-                } as Parameters<typeof toggleAdStatus>[0]['data']
+                data: { adId: ad.id, isActive: !ad.isActive } as Parameters<typeof toggleAdStatus>[0]['data']
             });
             refetch();
         } catch (err) {
             console.error(err);
         }
-    };
+    }, [toggleAdStatus, refetch]);
 
-    // Логика кнопок бокового меню фильтров (Offcanvas)
-    const handleApplyFilters = () => {
-        setStatusFilter(tempStatus);
-        setPage(1);
-    };
+    const handleApplyFilters = useCallback(() => { setStatusFilter(tempStatus); setPage(1); }, [tempStatus]);
+    const handleResetFilters = useCallback(() => { setTempStatus('all'); setStatusFilter('all'); setPage(1); }, []);
+    const handleSortChange = useCallback((field: string, order: 'asc' | 'desc') => { setSortBy(field); setSortOrder(order); setPage(1); }, []);
 
-    const handleResetFilters = () => {
-        setTempStatus('all');
-        setStatusFilter('all');
-        setPage(1);
-    };
-
-    // Контент фильтров, который BaseTable вставит внутрь Offcanvas-body
-    const filterContent = (
+    const filterContent = useMemo(() => (
         <div className="d-flex flex-column gap-3 p-1">
             <div>
                 <label className="form-label text-secondary small fw-bold mb-2" style={{ fontSize: '11px' }}>
@@ -135,40 +121,30 @@ export const AdsPage = () => {
                 </select>
             </div>
         </div>
-    );
+    ), [tempStatus]);
 
     return (
         <>
             <BaseTable
-                title="Audio Ads & Commercials"
+                title="Audio Ads"
                 subtitle={`Targeted promotional audio payloads inside free playback loops (Total items: ${totalCount})`}
                 columns={COLUMNS}
                 onNewClick={() => setIsCreateOpen(true)}
-
-                // 🚨 ФИКС ПОИСКА: Передаем значение стейта, чтобы текст отображался при вводе
                 searchValue={search}
                 searchPlaceholder="Search campaigns or brands..."
                 onSearchChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 onSearchClear={() => { setSearch(''); setPage(1); }}
-
-                // 🚨 ИНТЕГРАЦИЯ СОРТИРОВКИ
                 sortOptions={SORT_OPTIONS}
                 sortBy={sortBy}
                 sortOrder={sortOrder}
-                onSortChange={(field, order) => { setSortBy(field); setSortOrder(order); setPage(1); }}
-
-                // 🚨 ИНТЕГРАЦИЯ БОКОВЫХ ФИЛЬТРОВ (OFFCANVAS)
+                onSortChange={handleSortChange}
                 filterContent={filterContent}
                 onApplyFilters={handleApplyFilters}
                 onResetFilters={handleResetFilters}
                 activeFiltersCount={statusFilter !== 'all' ? 1 : 0}
-
-                // Чекбоксы (управление строками)
                 selectedCount={selectedIds.size}
                 isAllSelected={adsList.length > 0 && selectedIds.size === adsList.length}
                 onSelectAll={handleSelectAll}
-                onDeleteSelected={() => { /* Логика удаления нескольких элементов, если потребуется */ }}
-
                 pagination={<Pagination page={page} totalPages={totalPages} onPageChange={setPage} />}
             >
                 {isLoading ? (
@@ -184,6 +160,7 @@ export const AdsPage = () => {
                             ad={ad}
                             isSelected={selectedIds.has(ad.id)}
                             isPlaying={playingAdId === ad.id}
+                            isLoading={loadingAdId === ad.id}
                             onSelect={() => handleToggleSelect(ad.id!)}
                             onEdit={setEditingAd}
                             onDelete={setDeletingAd}
@@ -195,8 +172,8 @@ export const AdsPage = () => {
             </BaseTable>
 
             <CreateAdModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSuccess={() => { refetch(); setIsCreateOpen(false); }} />
-            <EditAdModal ad={editingAd} isOpen={!!editingAd} onClose={() => setEditingAd(null)} onSuccess={() => { refetch(); setEditingAd(null); }} />
-            <DeleteAdModal ad={deletingAd} isOpen={!!deletingAd} onClose={() => setDeletingAd(null)} onSuccess={() => { refetch(); setDeletingAd(null); }} />
+            {editingAd && <EditAdModal ad={editingAd} isOpen={!!editingAd} onClose={() => setEditingAd(null)} onSuccess={() => { refetch(); setEditingAd(null); }} />}
+            {deletingAd && <DeleteAdModal ad={deletingAd} isOpen={!!deletingAd} onClose={() => setDeletingAd(null)} onSuccess={() => { refetch(); setDeletingAd(null); }} />}
         </>
     );
 };
