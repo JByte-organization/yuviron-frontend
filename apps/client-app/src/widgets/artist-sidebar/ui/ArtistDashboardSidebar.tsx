@@ -35,12 +35,13 @@ export const ArtistDashboardSidebar = () => {
             <aside className={`client-sidebar${collapsed ? ' client-sidebar--collapsed' : ''}`}>
                 <div className="client-sidebar__inner">
 
-                    {/* Перемикач акаунтів (особистий ↔ кабінети артистів) */}
-                    <AccountSwitcher collapsed={collapsed} />
-
                     {/* Кабінет */}
                     <div className="client-sidebar__section">
                         <p className="client-sidebar__section-title">Кабінет артиста</p>
+
+                        {/* Перемикач акаунтів (особистий ↔ кабінети артистів) */}
+                        <AccountSwitcher collapsed={collapsed} />
+
                         <nav className="client-sidebar__nav">
                             <NavItem
                                 href="/artist-dashboard"
