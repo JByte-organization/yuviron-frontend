@@ -6,7 +6,7 @@ import {
     usePostApiAdminBanners,
     postApiFilesUpload,
     getApiAdminArtistsAutocomplete,
-    getApiAdminGenresAutocomplete, // 🎯 Імпортуємо автокомплит жанрів
+    getApiAdminGenresAutocomplete,
     type CreateBannerCommand
 } from '@repo/api/admin.ts';
 import { ALLOWED_COUNTRIES } from '@/shared/config/countries';
