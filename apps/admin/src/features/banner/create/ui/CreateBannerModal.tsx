@@ -271,7 +271,6 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
                                 </div>
                             </div>
 
-                            {/* 🚨 1) НАША КАСТОМНА КРОС-ВАЛІДАЦІЯ ДАТ НА ЛЕТУ */}
                             <div className="row">
                                 <div className="col-md-6 mb-3">
                                     <label className="form-label admin-text small fw-bold">CAMPAIGN STARTS (LOCAL TIME)</label>

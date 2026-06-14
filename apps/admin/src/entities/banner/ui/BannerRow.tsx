@@ -24,6 +24,7 @@ const formatDate = (dateString?: string | null): string => {
     });
 };
 
+
 export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: BannerRowProps) => {
     const previewUrl = getImageUrl(banner.bannerUrl);
 
