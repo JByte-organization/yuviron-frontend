@@ -30,7 +30,6 @@ type FormValues = {
     targetGenres: string;
 };
 
-
 const formatInputDate = (isoString?: string | null): string => {
     if (!isoString) return '';
     const date = new Date(isoString);
