@@ -28,6 +28,7 @@ export const AcceptTeamInviteCard = () => {
     const artistIdFromLink = searchParams?.get('artistId') ?? null;
 
     const userId = useSessionStore((s) => s.user?.id);
+    const userEmail = useSessionStore((s) => s.user?.email);
     const queryClient = useQueryClient();
 
     const [error, setError] = useState<string | null>(null);
@@ -44,11 +45,22 @@ export const AcceptTeamInviteCard = () => {
             await queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
             setTimeout(() => router.push('/artist-dashboard'), 1200);
         } catch (e) {
-            const data = (e as { response?: { data?: { detail?: string; title?: string } } })?.response?.data;
-            setError(
-                data?.detail || data?.title ||
-                'Запрошення недійсне або застаріле. Попросіть надіслати нове.',
-            );
+            const res = (e as { response?: { status?: number; data?: { detail?: string; title?: string } } })?.response;
+            const raw = (res?.data?.detail || res?.data?.title || '').toString();
+            const lower = raw.toLowerCase();
+
+            // Інвайт привʼязаний до конкретної пошти — найчастіша помилка: юзер
+            // увійшов іншим акаунтом. Локалізуємо й підказуємо, що робити.
+            if (lower.includes('different email') || lower.includes('email address')) {
+                setError(
+                    `Це запрошення надіслано на іншу електронну адресу.${userEmail ? ` Ви увійшли як ${userEmail}.` : ''}` +
+                    ' Увійдіть в акаунт із поштою, на яку прийшов лист, і відкрийте посилання ще раз.',
+                );
+            } else if (res?.status === 404 || lower.includes('not found') || lower.includes('expired')) {
+                setError('Запрошення недійсне або застаріле. Попросіть надіслати нове.');
+            } else {
+                setError('Не вдалося прийняти запрошення. Спробуйте ще раз або попросіть надіслати нове.');
+            }
         }
     };
 
