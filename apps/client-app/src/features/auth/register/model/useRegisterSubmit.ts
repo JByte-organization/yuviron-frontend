@@ -6,16 +6,16 @@ import { usePostApiAuthRegister } from '@repo/api/client.ts';
 import { Gender } from '@repo/api/generated/client/models/gender';
 import type { RegisterCommand } from '@repo/api/generated/client/models/registerCommand';
 import { clearRegisterDraft, getRegisterDraft, type RegisterDraft } from './registerDraft';
-import { countryLabel } from './regions';
 
 // Собирает тело register-запроса из черновика. Дату рождения бэк ждёт ISO-строкой,
 // поэтому склеиваем день/месяц/год в UTC, чтобы не словить смещение часового пояса.
-// country шлём названием ('Польща'), а не кодом 'PL' — бек хранит как есть.
+// country шлём КОДОМ ('UA'/'PL'), а не названием: бек валидирует/хранит по коду —
+// название ('Україна') валит DB-инсерт 500. city шлём как есть ('Київ').
 const buildRegisterPayload = (draft: RegisterDraft): RegisterCommand => ({
     email: draft.email?.trim(),
     password: draft.password,
     firstName: draft.firstName?.trim(),
-    country: countryLabel(draft.country),
+    country: draft.country,
     city: draft.city,
     dateOfBirth: new Date(
         Date.UTC(Number(draft.year), Number(draft.month) - 1, Number(draft.day)),
