@@ -2,7 +2,26 @@
 
 import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { usePostApiAdminBanners, postApiFilesUpload, type CreateBannerCommand } from '@repo/api/admin.ts';
+import {
+    usePostApiAdminBanners,
+    postApiFilesUpload,
+    getApiAdminArtistsAutocomplete,
+    type CreateBannerCommand,
+    type ArtistAutocompleteDto,
+} from '@repo/api/admin.ts';
+import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
+
+// Пошук артистів для опційного таргетингу банера (порожньо = платформенний).
+const searchArtists = async (term: string): Promise<SelectOption[]> => {
+    if (!term.trim()) return [];
+    try {
+        const res = await getApiAdminArtistsAutocomplete({ searchTerm: term, limit: 20 });
+        const list = (res as { data?: ArtistAutocompleteDto[] })?.data ?? [];
+        return list.map((a) => ({ id: a.id ?? '', label: a.name ?? a.ownerEmail ?? '(unnamed)' }));
+    } catch {
+        return [];
+    }
+};
 
 interface Props {
     isOpen: boolean;
@@ -45,6 +64,7 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
     const [previewUrl,    setPreviewUrl]    = useState<string | null>(null);
     const [isUploading,   setIsUploading]   = useState(false);
     const [uploadError,   setUploadError]   = useState<string | null>(null);
+    const [artist,        setArtist]        = useState<SelectOption[]>([]); // cap 1, порожньо = платформенний
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { mutateAsync: createBanner, isPending } = usePostApiAdminBanners();
@@ -75,6 +95,7 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
         setBannerFileId(null);
         setPreviewUrl(null);
         setUploadError(null);
+        setArtist([]);
         onClose();
     };
 
@@ -84,15 +105,19 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
             return;
         }
 
-        // targetUrl/sortOrder розширюємо в тип окремо — бек то додає, то прибирає їх
+        // targetUrl розширюємо в тип окремо — бек то додає, то прибирає його
         // зі swagger, тож не привʼязуємось жорстко до згенерованого CreateBannerCommand.
         // Зайві поля бек ігнорує при біндингу.
-        const body: CreateBannerCommand & { targetUrl?: string | null; sortOrder?: number } = {
-            title:        values.title     || null,
-            targetUrl:    values.targetUrl || null,
-            bannerFileId: bannerFileId,
-            sortOrder:    values.sortOrder,
-            isActive:     values.isActive,
+        const body: CreateBannerCommand & { targetUrl?: string | null } = {
+            title:           values.title     || null,
+            targetUrl:       values.targetUrl || null,
+            bannerFileId:    bannerFileId,
+            isActive:        values.isActive,
+            artistId:        artist[0]?.id ?? null,
+            startsAtUtc:     toIsoOrNull(values.startsAtUtc),
+            endsAtUtc:       toIsoOrNull(values.endsAtUtc),
+            targetCountries: values.targetCountries || null,
+            targetGenres:    values.targetGenres    || null,
         };
 
         try {
@@ -223,6 +248,15 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
                                     <div className="invalid-feedback">{errors.targetUrl.message}</div>
                                 )}
                             </div>
+
+                            {/* Артист (опційний таргет) */}
+                            <AsyncSelect
+                                label="TARGET ARTIST"
+                                placeholder="Search artist — leave empty for platform banner"
+                                selected={artist}
+                                onChange={(items) => setArtist(items.slice(-1))}
+                                onSearch={searchArtists}
+                            />
 
                             {/* Період показу */}
                             <div className="row g-3 mb-4">

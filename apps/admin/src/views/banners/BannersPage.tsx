@@ -83,13 +83,6 @@ export const BannersPage = () => {
         if (activeFilters.isActive !== undefined && b.isActive !== activeFilters.isActive) {
             return false;
         }
-        const sortOrder = (b as { sortOrder?: number }).sortOrder ?? 0;
-        if (activeFilters.sortOrderFrom !== undefined && sortOrder < activeFilters.sortOrderFrom) {
-            return false;
-        }
-        if (activeFilters.sortOrderTo !== undefined && sortOrder > activeFilters.sortOrderTo) {
-            return false;
-        }
         return true;
     });
 

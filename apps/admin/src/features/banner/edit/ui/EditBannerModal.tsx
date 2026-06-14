@@ -7,11 +7,26 @@ import {
     usePutApiAdminBannersId,
     postApiFilesUpload,
     getGetApiAdminBannersIdQueryKey,
+    getApiAdminArtistsAutocomplete,
     type BannerListItemDto,
     type BannerDetailsDto,
     type UpdateBannerCommand,
+    type ArtistAutocompleteDto,
 } from '@repo/api/admin.ts';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
+
+// Пошук артистів для опційного таргетингу банера (порожньо = платформенний).
+const searchArtists = async (term: string): Promise<SelectOption[]> => {
+    if (!term.trim()) return [];
+    try {
+        const res = await getApiAdminArtistsAutocomplete({ searchTerm: term, limit: 20 });
+        const list = (res as { data?: ArtistAutocompleteDto[] })?.data ?? [];
+        return list.map((a) => ({ id: a.id ?? '', label: a.name ?? a.ownerEmail ?? '(unnamed)' }));
+    } catch {
+        return [];
+    }
+};
 
 interface Props {
     banner: BannerListItemDto | null;
@@ -56,6 +71,7 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
     const [previewUrl,   setPreviewUrl]   = useState<string | null>(null);
     const [isUploading,  setIsUploading]  = useState(false);
     const [uploadError,  setUploadError]  = useState<string | null>(null);
+    const [artist,       setArtist]       = useState<SelectOption[]>([]); // cap 1, порожньо = платформенний
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // ─── Запити ───────────────────────────────────────────
@@ -77,12 +93,22 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
         if (!details) return;
 
         reset({
-            title:     details.title     ?? '',
-            // targetUrl/sortOrder читаємо «м'яко» — поля дрейфують у живому DTO.
-            targetUrl: (details as { targetUrl?: string | null }).targetUrl ?? '',
-            sortOrder: (details as { sortOrder?: number }).sortOrder ?? 1,
-            isActive:  details.isActive  ?? true,
+            title:           details.title ?? '',
+            // targetUrl читаємо «м'яко» — поле дрейфує у живому DTO.
+            targetUrl:       (details as { targetUrl?: string | null }).targetUrl ?? '',
+            isActive:        details.isActive ?? true,
+            startsAtUtc:     isoToLocalInput(details.startsAtUtc),
+            endsAtUtc:       isoToLocalInput(details.endsAtUtc),
+            targetCountries: details.targetCountries ?? '',
+            targetGenres:    details.targetGenres ?? '',
         });
+
+        // Артист (опційний таргет) — порожньо = платформенний банер.
+        setArtist(
+            details.artistId
+                ? [{ id: details.artistId, label: details.artistName ?? details.artistId }]
+                : [],
+        );
 
         //Image
         setPreviewUrl(getImageUrl(details.bannerUrl));
@@ -114,6 +140,7 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
         setBannerFileId(null);
         setPreviewUrl(null);
         setUploadError(null);
+        setArtist([]);
         onClose();
     };
 
@@ -121,12 +148,13 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
     const onSubmit = async (values: FormValues) => {
         if (!bannerId) return;
 
-        const body: UpdateBannerCommand & { targetUrl?: string | null; sortOrder?: number } = {
+        const body: UpdateBannerCommand & { targetUrl?: string | null } = {
             bannerId,
             title:           values.title     || null,
             bannerFileId:    bannerFileId ?? null,
             targetUrl:       values.targetUrl || null,
             isActive:        values.isActive,
+            artistId:        artist[0]?.id ?? null,
             startsAtUtc:     toIsoOrNull(values.startsAtUtc),
             endsAtUtc:       toIsoOrNull(values.endsAtUtc),
             targetCountries: values.targetCountries || null,
@@ -264,6 +292,15 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
                                         URL куди веде баннер при кліку
                                     </div>
                                 </div>
+
+                                {/* Артист (опційний таргет) */}
+                                <AsyncSelect
+                                    label="TARGET ARTIST"
+                                    placeholder="Search artist — leave empty for platform banner"
+                                    selected={artist}
+                                    onChange={(items) => setArtist(items.slice(-1))}
+                                    onSearch={searchArtists}
+                                />
 
                                 {/* Період показу */}
                                 <div className="row g-3 mb-4">
