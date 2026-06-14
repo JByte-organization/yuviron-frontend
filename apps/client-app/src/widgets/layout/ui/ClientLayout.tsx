@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Header } from '@/widgets/header/ui/Header';
 import { Sidebar } from '@/widgets/sidebar/ui/Sidebar';
 import { GuestSidebar } from '@/widgets/sidebar/ui/GuestSidebar';
-import { useSessionStore } from '@/entities/session/model/store';
+import { useSessionStore, selectIsAuthenticated } from '@/entities/session/model/store';
 import { Footer } from '@/widgets/footer/ui/Footer';
 import { RightSidebar } from '@/widgets/right-sidebar/ui/RightSidebar';
 import { PlaylistToastProvider } from '@/shared/ui/PlaylistToast';
@@ -35,7 +35,10 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
     // ─── Правий сайдбар ───────────────────────────────────
     const { isOpen, userClosed, open, close, openManually } = useRightSidebarState();
 
-    const accessToken = useSessionStore(s => s.accessToken);
+    // Каркас рендеримо за статусом, а не за наявністю токена «прямо зараз»:
+    // під час refresh токена ще нема, але показувати гостьовий UI не можна.
+    const status = useSessionStore(s => s.status);
+    const isAuthenticated = useSessionStore(selectIsAuthenticated);
 
     // На мобайлі marginLeft = 0, сайдбар display:none через CSS
     const marginLeft = !isDesktop
@@ -52,9 +55,11 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
                         <Header />
 
                         <div className="client-layout__body">
-                            {accessToken
-                                ? <Sidebar onResizeStart={onResizeStart} />
-                                : <GuestSidebar onResizeStart={onResizeStart} />
+                            {status === 'loading'
+                                ? null
+                                : isAuthenticated
+                                    ? <Sidebar onResizeStart={onResizeStart} />
+                                    : <GuestSidebar onResizeStart={onResizeStart} />
                             }
 
                             <main

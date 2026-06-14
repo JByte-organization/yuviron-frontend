@@ -18,6 +18,7 @@ const PAGE_SIZE = 20;
 
 const TABLE_COLUMNS = ['Preview', 'Title', 'Status', 'Starts At', 'Ends At'];
 
+// Банери перейшли з ручного sortOrder на вікно показу (startsAtUtc/endsAtUtc).
 const SORT_OPTIONS = [
     { value: 'Title',        label: 'Title (A-Z)' },
     { value: 'StartsAtUtc',  label: 'Start Date' },
@@ -88,7 +89,7 @@ export const BannersPage = () => {
         <>
             <BaseTable
                 title="Banners"
-                subtitle={`Manage homepage slider banners (Total: ${totalCount})`}
+                subtitle={`Manage promo banners (Total: ${totalCount})`}
                 columns={TABLE_COLUMNS}
                 onNewClick={() => setIsCreateOpen(true)}
                 searchPlaceholder="Search by title..."

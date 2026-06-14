@@ -6,14 +6,16 @@ import { usePostApiAuthRegister } from '@repo/api/client.ts';
 import { Gender } from '@repo/api/generated/client/models/gender';
 import type { RegisterCommand } from '@repo/api/generated/client/models/registerCommand';
 import { clearRegisterDraft, getRegisterDraft, type RegisterDraft } from './registerDraft';
+import { countryLabel } from './regions';
 
 // Собирает тело register-запроса из черновика. Дату рождения бэк ждёт ISO-строкой,
 // поэтому склеиваем день/месяц/год в UTC, чтобы не словить смещение часового пояса.
+// country шлём названием ('Польща'), а не кодом 'PL' — бек хранит как есть.
 const buildRegisterPayload = (draft: RegisterDraft): RegisterCommand => ({
     email: draft.email?.trim(),
     password: draft.password,
     firstName: draft.firstName?.trim(),
-    country: draft.country,
+    country: countryLabel(draft.country),
     city: draft.city,
     dateOfBirth: new Date(
         Date.UTC(Number(draft.year), Number(draft.month) - 1, Number(draft.day)),
@@ -39,21 +41,35 @@ export const useRegisterSubmit = () => {
                 clearRegisterDraft();
                 router.push(`/register/check-email?email=${encodeURIComponent(email)}`);
             },
-            onError: (error: any) => {
-                if (error?.response?.status === 409) {
+            onError: (error: unknown) => {
+                const response = (
+                    error as { response?: { status?: number; data?: unknown } }
+                )?.response;
+                if (response?.status === 409) {
                     setEmailTaken(true);
                     return;
                 }
-                const data = error?.response?.data;
-                const fieldErrors = data?.errors
-                    ? Object.values(data.errors).flat().join(' ')
+                const data = response?.data as
+                    | {
+                          errors?: Record<string, string[]>;
+                          detail?: string;
+                          title?: string;
+                          message?: string;
+                          error?: string;
+                      }
+                    | string
+                    | undefined;
+                const objData =
+                    typeof data === 'object' && data !== null ? data : undefined;
+                const fieldErrors = objData?.errors
+                    ? Object.values(objData.errors).flat().join(' ')
                     : null;
                 setServerError(
                     fieldErrors ||
-                        data?.detail ||
-                        data?.title ||
-                        data?.message ||
-                        data?.error ||
+                        objData?.detail ||
+                        objData?.title ||
+                        objData?.message ||
+                        objData?.error ||
                         (typeof data === 'string' ? data : null) ||
                         'Не вдалося зареєструватися. Спробуйте ще раз.',
                 );

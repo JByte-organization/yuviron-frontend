@@ -1,0 +1,308 @@
+// ─── Перемикач акаунтів (Header, зліва біля лого) ─────────────────────────
+// Особистий профіль ↔ кабінети артистів. Темний глассморфізм під стать
+// .user-dropdown. Тригер — компактний чип, меню — плаваюча панель.
+
+.account-switcher {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+
+  &__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 220px;
+    padding: 6px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  &__trigger-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    line-height: 1.2;
+  }
+
+  &__trigger-name {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__trigger-sub {
+    font-size: 11px;
+    color: #8c8c9e;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__chevron {
+    font-size: 12px;
+    color: #8c8c9e;
+    transition: transform 0.18s ease;
+
+    &--up {
+      transform: rotate(180deg);
+    }
+  }
+
+  // ─── Аватар (тригер + пункти) ───────────────────────────────
+  &__avatar {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+    background: rgba(255, 255, 255, 0.06);
+
+    &--placeholder {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #9aa3b2;
+      font-size: 14px;
+    }
+
+    &--add {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: $client-accent;
+      background: rgba(0, 166, 255, 0.12);
+      font-size: 14px;
+    }
+  }
+
+  // ─── Оверлей для клік-аут ───────────────────────────────────
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 299;
+    background: transparent;
+  }
+
+  // ─── Меню ───────────────────────────────────────────────────
+  &__menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    min-width: 280px;
+    z-index: 300;
+    padding: 6px;
+
+    background: rgba(17, 17, 22, 1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    box-shadow:
+      0 16px 48px rgba(0, 0, 0, 0.65),
+      inset 0 1px 1px rgba(255, 255, 255, 0.02);
+    overflow: hidden;
+    animation: dropdownFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &__label {
+    padding: 8px 12px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: #6b6b7b;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: #c7c7d2;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.16s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    &--active {
+      background: rgba(0, 166, 255, 0.10);
+    }
+
+    &--add {
+      color: #c7c7d2;
+    }
+  }
+
+  &__item-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+  }
+
+  &__item-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #fff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__item-sub {
+    font-size: 11.5px;
+    color: #8c8c9e;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__check {
+    margin-left: auto;
+    font-size: 16px;
+    color: $client-accent;
+  }
+
+  &__divider {
+    height: 1px;
+    margin: 6px 8px;
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+// На вузьких екранах ховаємо текст, лишаємо тільки аватар+chevron.
+@media (max-width: 720px) {
+  .account-switcher__trigger-text {
+    display: none;
+  }
+}
+
+// ─── Поп-ап «Створіть акаунт артиста» (гейт Premium) ──────────────────────
+.premium-gate-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: dropdownFadeIn 0.2s ease;
+}
+
+.premium-gate-modal {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  padding: 28px 26px 24px;
+  text-align: center;
+  background: rgba(17, 17, 22, 1);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+
+  &__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    border: none;
+    background: transparent;
+    color: #8c8c9e;
+    font-size: 16px;
+    cursor: pointer;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 16px;
+    border-radius: 50%;
+    background: rgba(0, 166, 255, 0.14);
+    color: $client-accent;
+    font-size: 26px;
+  }
+
+  &__title {
+    margin: 0 0 10px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  &__text {
+    margin: 0 0 22px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #a9b0bd;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.16s ease, border-color 0.16s ease;
+
+    &--primary {
+      background: $client-accent;
+      color: #000;
+
+      &:hover {
+        background: $client-accent-hover;
+      }
+    }
+
+    &--ghost {
+      background: transparent;
+      border-color: rgba(255, 255, 255, 0.14);
+      color: #c7c7d2;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+    }
+  }
+}
