@@ -10,9 +10,11 @@ import {
     getApiAdminArtistsAutocomplete,
     getApiAdminGenresAutocomplete, // 🎯 Імпортуємо автокомплит жанрів
     getGetApiAdminBannersIdQueryKey,
+    getApiAdminArtistsAutocomplete,
     type BannerListItemDto,
     type BannerDetailsDto,
     type UpdateBannerCommand,
+    type ArtistAutocompleteDto,
 } from '@repo/api/admin.ts';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { ALLOWED_COUNTRIES } from '@/shared/config/countries';

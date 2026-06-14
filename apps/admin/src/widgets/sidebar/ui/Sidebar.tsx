@@ -97,6 +97,7 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
                             {elementsOpen && (
                                 <ul className="list-unstyled ps-4 submenu">
                                     {navLink('/banners',    'Banners')}
+                                    {navLink('/banner-requests', 'Banner Requests')}
                                     {navLink('/tracks',    'Tracks')}
                                     {navLink('/albums',    'Albums')}
                                     {navLink('/genres',    'Genres')}
