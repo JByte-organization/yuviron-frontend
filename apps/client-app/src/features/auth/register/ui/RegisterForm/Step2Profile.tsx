@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
 import { getRegisterDraft, setRegisterDraft } from '../../model/registerDraft';
+import { COUNTRIES, citiesFor } from '../../model/regions';
 import { useRegisterSubmit } from '../../model/useRegisterSubmit';
 import { EmailTakenModal } from '../EmailTakenModal';
 
@@ -32,15 +33,17 @@ const MONTHS = [
 ];
 
 
-const COUNTRIES: ReadonlyArray<{ code: string; label: string }> = [
-    { code: 'UA', label: 'Україна' },
-    { code: 'PL', label: 'Польща' },
-    { code: 'DE', label: 'Німеччина' },
-];
-const CITIES = ['Київ', 'Львів', 'Одеса'];
-
 const CURRENT_YEAR = new Date().getFullYear();
 const MIN_AGE_YEARS = 16;
+
+// Кількість днів у місяці з урахуванням високосного року. Якщо рік ще не
+// введений/некоректний — беремо високосний (2000), щоб не блокувати 29 лютого
+// передчасно; точна перевірка спрацює, коли рік стане валідним.
+const daysInMonth = (month: number, year: number): number => {
+    if (!Number.isInteger(month) || month < 1 || month > 12) return 31;
+    const y = Number.isInteger(year) && year >= 1900 ? year : 2000;
+    return new Date(y, month, 0).getDate();
+};
 
 type ProfileState = {
     name: string;
@@ -66,17 +69,22 @@ const validate = (state: ProfileState): ProfileErrors => {
     if (!state.name.trim()) errors.name = 'Введіть ім’я';
     else if (state.name.trim().length > 50) errors.name = 'Ім’я не може бути довшим за 50 символів';
 
-    const day = Number(state.day);
-    if (!state.day) errors.day = '—';
-    else if (!Number.isInteger(day) || day < 1 || day > 31) errors.day = 'День 1–31';
-
     const month = Number(state.month);
+    const year = Number(state.year);
+    const day = Number(state.day);
+
     if (!state.month) errors.month = '—';
 
-    const year = Number(state.year);
     if (!state.year) errors.year = '—';
     else if (!Number.isInteger(year) || year < 1900 || year > CURRENT_YEAR) {
         errors.year = `Рік 1900–${CURRENT_YEAR}`;
+    }
+
+    // Верхня межа дня залежить від обраного місяця (і року для лютого).
+    const maxDay = state.month ? daysInMonth(month, year) : 31;
+    if (!state.day) errors.day = '—';
+    else if (!Number.isInteger(day) || day < 1 || day > maxDay) {
+        errors.day = `День 1–${maxDay}`;
     }
 
     if (!errors.day && !errors.month && !errors.year) {
@@ -98,7 +106,7 @@ export const Step2Profile = () => {
         const draftCountry = draft.country ?? '';
         const country = COUNTRIES.some((c) => c.code === draftCountry) ? draftCountry : '';
         const draftCity = draft.city ?? '';
-        const city = CITIES.includes(draftCity) ? draftCity : '';
+        const city = citiesFor(country).includes(draftCity) ? draftCity : '';
         return {
             name: draft.firstName ?? '',
             day: draft.day ?? '',
@@ -115,9 +123,15 @@ export const Step2Profile = () => {
 
     const update = <K extends keyof ProfileState>(key: K, value: ProfileState[K]) => {
         const next = { ...state, [key]: value };
+        // Зміна країни → скидаємо місто, якщо воно не належить новій країні.
+        if (key === 'country' && !citiesFor(value as string).includes(next.city)) {
+            next.city = '';
+        }
         setState(next);
         if (submitted) setErrors(validate(next));
     };
+
+    const cities = citiesFor(state.country);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -305,7 +319,7 @@ export const Step2Profile = () => {
                                     <option value="">
                                         {state.country ? 'Місто' : 'Спочатку оберіть країну'}
                                     </option>
-                                    {CITIES.map((city) => (
+                                    {cities.map((city) => (
                                         <option key={city} value={city}>
                                             {city}
                                         </option>

@@ -29,6 +29,7 @@ import {
     type WalletTransactionDto,
 } from '@repo/api/artist.ts';
 import { useCurrentArtist } from '@/entities/artist/model/currentArtist';
+import { useArtistPermissions } from '@/entities/artist/model/useArtistPermissions';
 import {
     CHART_COLORS,
     ChartError,
@@ -94,7 +95,8 @@ const PAYOUT_STATUS: Record<string, { label: string; color: string }> = {
 };
 
 export const ArtistFinancePage = () => {
-    const { artistId, canManage } = useCurrentArtist();
+    const { artistId } = useCurrentArtist();
+    const canManage = useArtistPermissions().can('finance');
     const queryClient = useQueryClient();
     const chart = useChartAxisColors();
 

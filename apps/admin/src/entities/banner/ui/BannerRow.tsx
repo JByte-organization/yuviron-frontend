@@ -26,6 +26,7 @@ const formatDate = (dateString?: string | null): string => {
 
 export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: BannerRowProps) => {
     const previewUrl = getImageUrl(banner.bannerUrl);
+    const status = computeStatus(banner.isActive, banner.startsAtUtc, banner.endsAtUtc);
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>
