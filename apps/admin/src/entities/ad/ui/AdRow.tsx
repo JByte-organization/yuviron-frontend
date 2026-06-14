@@ -11,10 +11,11 @@ interface AdRowProps {
     ad: AdSummaryDto;
     isSelected: boolean;
     isPlaying: boolean;
+    isLoading: boolean;
     onSelect: () => void;
     onEdit: (ad: AdSummaryDto) => void;
     onDelete: (ad: AdSummaryDto) => void;
-    onPlayToggle: (adId: string, audioUrl: string | null | undefined) => void;
+    onPlayToggle: (adId: string) => void;
     onToggleStatus: (ad: AdSummaryDto) => void;
 }
 
@@ -24,13 +25,21 @@ const calculateCTR = (impressions?: number, clicks?: number): string => {
     return `${ctr.toFixed(2)}%`;
 };
 
-export const AdRow = ({ ad, isSelected, isPlaying, onSelect, onEdit, onDelete, onPlayToggle, onToggleStatus }: AdRowProps) => {
-    const impressions = ad.impressionsCount ?? 0;
+export const AdRow = ({
+                          ad,
+                          isSelected,
+                          isPlaying,
+                          isLoading,
+                          onSelect,
+                          onEdit,
+                          onDelete,
+                          onPlayToggle,
+                          onToggleStatus
+                      }: AdRowProps) => {    const impressions = ad.impressionsCount ?? 0;
     const clicks = ad.clicksCount ?? 0;
 
-    // Кастимо до any, оскільки бек тільки-но додав ці поля у схему списку
     const rawAd = ad as any;
-    const adImageUrl = getImageUrl(rawAd.imageUrl);
+    const adImageUrl = getImageUrl(rawAd.imageUrl) || getImageUrl(rawAd.coverUrl);
     const adAudioUrl = rawAd.audioUrl;
 
     return (
@@ -46,9 +55,8 @@ export const AdRow = ({ ad, isSelected, isPlaying, onSelect, onEdit, onDelete, o
 
             <td className="py-3">
                 <div className="d-flex align-items-center gap-3">
-                    {/* Контейнер баннера з інтерактивною кнопкою плеєра поверх */}
                     <div
-                        className="rounded overflow-hidden bg-secondary d-flex align-items-center justify-content-center flex-shrink-0 position-relative admin-ads-row__cover-container"
+                        className="rounded overflow-hidden bg-secondary d-flex align-items-center justify-content-center flex-shrink-0"
                         style={{
                             width: '45px',
                             height: '45px',
@@ -61,18 +69,8 @@ export const AdRow = ({ ad, isSelected, isPlaying, onSelect, onEdit, onDelete, o
                         ) : (
                             <i className="bi bi-image text-secondary" style={{ fontSize: '1.1rem' }} />
                         )}
-
-                        {/* Накладання кнопки Play поверх картинки */}
-                        <div
-                            className={`position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center admin-ads-row__player-overlay ${isPlaying ? 'admin-ads-row__player-overlay--active' : ''}`}
-                            onClick={() => ad.id && onPlayToggle(ad.id, adAudioUrl)}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <i className={`bi ${isPlaying ? 'bi-pause-fill text-cyan' : 'bi-play-fill text-white'} fs-5`} />
-                        </div>
                     </div>
 
-                    {/* Текстовий блок кампанії */}
                     <div className="d-flex flex-column min-w-0">
                         <span className="text-white fw-semibold text-truncate">{ad.advertiserName || '—'}</span>
                         <span className="text-secondary small text-truncate" style={{ maxWidth: '200px' }}>
@@ -83,12 +81,12 @@ export const AdRow = ({ ad, isSelected, isPlaying, onSelect, onEdit, onDelete, o
             </td>
 
             <td className="text-white-50 small font-monospace">
-                <i className="bi bi-eye-fill text-muted me-1" />
+                <i className="bi bi-eye-fill text-info me-1" />
                 {formatNumber(impressions)}
             </td>
 
             <td className="text-white-50 small font-monospace">
-                <i className="bi bi-cursor-fill text-muted me-1" />
+                <i className="bi bi-cursor-fill text-info me-1" />
                 {formatNumber(clicks)}
             </td>
 
@@ -113,8 +111,23 @@ export const AdRow = ({ ad, isSelected, isPlaying, onSelect, onEdit, onDelete, o
                 {formatDate(ad.createdAt)}
             </td>
 
-            <td className="text-end px-4">
+            <td className="px-4 text-end">
                 <div className="d-flex justify-content-end gap-2">
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-secondary border-0 shadow-none d-flex align-items-center justify-content-center"
+                        title={isPlaying ? 'Pause Advertisement' : 'Play Audio Clip'}
+                        onClick={() => ad.id && onPlayToggle(ad.id)}
+                        disabled={isLoading} // Блокуємо кнопку під час завантаження
+                        style={{ width: '32px', height: '32px', borderRadius: '50%' }}
+                    >
+                        {isLoading ? (
+                            <span className="spinner-border spinner-border-sm text-cyan" role="status" style={{ width: '14px', height: '14px' }} />
+                        ) : (
+                            <i className={`bi ${isPlaying ? 'bi-pause-fill text-cyan' : 'bi-play-fill text-white'} fs-5`} />
+                        )}
+                    </button>
+
                     <button className="btn btn-sm btn-secondary border-0 shadow-none" onClick={() => onEdit(ad)} title="Edit Campaign">
                         <Image src="/images/icons/edit-btn.svg" width={16} height={16} alt="edit" />
                     </button>

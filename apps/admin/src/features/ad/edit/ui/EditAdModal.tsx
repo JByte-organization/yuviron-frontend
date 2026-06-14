@@ -33,7 +33,6 @@ export const EditAdModal = ({ ad, isOpen, onClose, onSuccess }: EditAdModalProps
 
     const adId = ad?.id ?? '';
 
-    // ─── Медіа-стейти (Картинка + Аудіо) ───
     const [imageFileId, setImageFileId] = useState<string | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -47,10 +46,7 @@ export const EditAdModal = ({ ad, isOpen, onClose, onSuccess }: EditAdModalProps
     const audioInputRef = useRef<HTMLInputElement>(null);
 
     const { data: detailsRaw, isLoading } = useGetApiAdminAdsId(adId, {
-        query: {
-            queryKey: getGetApiAdminAdsIdQueryKey(adId),
-            enabled: isOpen && !!adId,
-        }
+        query: { queryKey: getGetApiAdminAdsIdQueryKey(adId), enabled: isOpen && !!adId }
     });
 
     const { mutateAsync: updateAd, isPending } = usePutApiAdminAdsId();
@@ -89,7 +85,7 @@ export const EditAdModal = ({ ad, isOpen, onClose, onSuccess }: EditAdModalProps
             }
         } catch {
             setUploadError(`Failed to upload ${type} resource asset.`);
-        } {
+        } finally {
             setIsUploading('none');
         }
     };
@@ -150,7 +146,6 @@ export const EditAdModal = ({ ad, isOpen, onClose, onSuccess }: EditAdModalProps
                             <div className="modal-body p-4 d-flex flex-column gap-3" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                                 {uploadError && <div className="alert alert-danger py-2 small">{uploadError}</div>}
 
-                                {/* 1. Зображення Баннера */}
                                 <div>
                                     <label className="form-label text-secondary small fw-bold">PROMOTIONAL BANNER IMAGE</label>
                                     <div className="rounded overflow-hidden bg-secondary d-flex align-items-center justify-content-center mb-2 position-relative" style={{ width: '100%', height: 140, cursor: 'pointer' }} onClick={() => imageInputRef.current?.click()}>
@@ -160,11 +155,12 @@ export const EditAdModal = ({ ad, isOpen, onClose, onSuccess }: EditAdModalProps
                                     <input ref={imageInputRef} type="file" accept="image/*" className="d-none" onChange={e => handleFileUpload(e, 'image')} />
                                 </div>
 
-                                {/* 2. Аудіо Трэк */}
                                 <div>
                                     <label className="form-label text-secondary small fw-bold">COMMERCIAL AUDIO TRACK</label>
                                     <div className="p-3 rounded bg-dark border border-secondary mb-2 d-flex flex-column gap-2">
-                                        {previewAudioUrl && <audio src={previewAudioUrl} controls className="w-100 admin-audio-native" style={{ height: '32px' }} />}
+                                        <span className="small text-secondary font-monospace text-truncate">
+                                            {previewAudioUrl ? `Asset Core CDN: ...${previewAudioUrl.substring(previewAudioUrl.length - 24)}` : 'No file loaded.'}
+                                        </span>
                                         <button type="button" className="btn btn-sm btn-admin-dark w-100" disabled={isUploading !== 'none'} onClick={() => audioInputRef.current?.click()}>
                                             {isUploading === 'audio' ? 'Uploading audio file...' : 'Replace Audio File'}
                                         </button>

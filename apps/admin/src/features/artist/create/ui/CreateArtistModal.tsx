@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import {
     usePostApiAdminArtists,
@@ -23,6 +23,18 @@ type FormValues = {
     verificationStatus: VerificationStatus;
 };
 
+const ALLOWED_COUNTRIES = [
+    { value: 'Ukraine', label: 'Ukraine' },
+    { value: 'United States', label: 'United States' },
+    { value: 'United Kingdom', label: 'United Kingdom' },
+    { value: 'Germany', label: 'Germany' },
+    { value: 'Poland', label: 'Poland' },
+    { value: 'France', label: 'France' },
+    { value: 'Canada', label: 'Canada' },
+    { value: 'Spain', label: 'Spain' },
+    { value: 'Italy', label: 'Italy' },
+];
+
 export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
     const {
         register,
@@ -33,6 +45,8 @@ export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
         reset,
         formState: { errors, isSubmitting },
     } = useForm<FormValues>({
+        // 🚨 1) ФИКС: Мгновенная валидация при любом изменении символа
+        mode: 'onChange',
         defaultValues: {
             name: '',
             ownerEmail: '',
@@ -46,7 +60,6 @@ export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    // Поиск пользователей по Search или Email (зависит от API)
     const { data: usersData, isLoading: isSearching } = useGetApiAdminUsers({
         Search: searchQuery,
         PageSize: 5
@@ -55,17 +68,21 @@ export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
     } as any);
 
     const { mutateAsync: createArtist, isPending } = usePostApiAdminArtists();
-
-    // Извлекаем айтемы (учитываем, что они в корне объекта)
     const foundUsers = (usersData as any)?.items ?? [];
 
-    const handleSelectUser = (user: any) => {
+    const handleSelectUser = useCallback((user: any) => {
         setValue('ownerEmail', user.email, { shouldValidate: true });
         setValue('ownerUserId', user.id, { shouldValidate: true });
         clearErrors(['ownerEmail', 'ownerUserId']);
         setIsDropdownOpen(false);
         setSearchQuery('');
-    };
+    }, [setValue, clearErrors]);
+
+    const handleReset = useCallback(() => {
+        reset();
+        setSearchQuery('');
+        setIsDropdownOpen(false);
+    }, [reset]);
 
     const onSubmit = async (values: FormValues) => {
         if (!values.ownerUserId) {
@@ -77,7 +94,7 @@ export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
             Name: values.name,
             OwnerUserId: values.ownerUserId,
             Bio: values.bio || "",
-            Country: values.country || "",
+            Country: values.country,
             VerificationStatus: values.verificationStatus,
         };
 
@@ -91,9 +108,7 @@ export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
             const detail = error.response?.data?.detail || "";
             const serverErrors = error.response?.data?.errors;
 
-            // Проверка правила: 1 Юзер = 1 Артист
             if (status === 400 || status === 409) {
-                // Ищем в ошибках валидации или в тексте ошибки
                 if (detail.includes('already has an artist') || serverErrors?.OwnerUserId) {
                     setError('ownerEmail', {
                         type: 'manual',
@@ -103,7 +118,6 @@ export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
                 }
             }
 
-            // Маппинг остальных серверных ошибок
             if (serverErrors) {
                 Object.keys(serverErrors).forEach((field) => {
                     const key = (field.charAt(0).toLowerCase() + field.slice(1)) as keyof FormValues;
@@ -113,12 +127,6 @@ export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
                 alert(`Error: ${detail || 'Failed to create artist'}`);
             }
         }
-    };
-
-    const handleReset = () => {
-        reset();
-        setSearchQuery('');
-        setIsDropdownOpen(false);
     };
 
     if (!isOpen) return null;
@@ -132,11 +140,7 @@ export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
                             <span className="text-info me-2">●</span>
                             Create New Artist
                         </h5>
-                        <button
-                            type="button"
-                            className="btn-close btn-close-white"
-                            onClick={() => { onClose(); handleReset(); }}
-                        />
+                        <button type="button" className="btn-close btn-close-white" onClick={() => { onClose(); handleReset(); }} />
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)}>
@@ -157,30 +161,23 @@ export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
                             {/* Owner Search */}
                             <div className="mb-4 position-relative">
                                 <label className="form-label admin-text small fw-bold text-uppercase">Owner Email (Linked User) *</label>
-                                <div className="input-group">
-                                    <input
-                                        type="text"
-                                        autoComplete="off"
-                                        className={`form-control admin-login__input ${errors.ownerEmail ? 'border-danger' : ''}`}
-                                        placeholder="Start typing email to search user..."
-                                        {...register('ownerEmail', {
-                                            onChange: (e) => {
-                                                setSearchQuery(e.target.value);
-                                                setIsDropdownOpen(true);
-                                                setValue('ownerUserId', ''); // Сброс ID при изменении
-                                            }
-                                        })}
-                                    />
-                                </div>
-
-                                {/* Красивое сообщение об ошибке (например, если юзер уже занят) */}
+                                <input
+                                    type="text"
+                                    autoComplete="off"
+                                    className={`form-control admin-login__input ${errors.ownerEmail ? 'border-danger' : ''}`}
+                                    placeholder="Start typing email to search user..."
+                                    {...register('ownerEmail', {
+                                        onChange: (e) => {
+                                            setSearchQuery(e.target.value);
+                                            setIsDropdownOpen(true);
+                                            setValue('ownerUserId', '');
+                                        }
+                                    })}
+                                />
                                 {errors.ownerEmail && (
-                                    <div className="text-danger small mt-2 fw-medium d-flex align-items-center">
-                                        <span className="me-1">⚠️</span> {errors.ownerEmail.message}
-                                    </div>
+                                    <div className="text-danger small mt-2 fw-medium">⚠️ {errors.ownerEmail.message}</div>
                                 )}
 
-                                {/* Dropdown результатов */}
                                 {isDropdownOpen && searchQuery.length > 2 && (
                                     <div className="list-group position-absolute w-100 shadow-lg z-3 mt-1" style={{ maxHeight: '250px', overflowY: 'auto', border: '1px solid #444' }}>
                                         {isSearching ? (
@@ -207,13 +204,17 @@ export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
 
                             <div className="row">
                                 <div className="col-md-6 mb-4">
-                                    <label className="form-label admin-text small fw-bold text-uppercase">Country</label>
-                                    <input
-                                        type="text"
-                                        className="form-control admin-login__input"
-                                        placeholder="Ukraine"
-                                        {...register('country')}
-                                    />
+                                    <label className="form-label admin-text small fw-bold text-uppercase">Country *</label>
+                                    <select
+                                        className={`form-select admin-login__input text-white ${errors.country ? 'is-invalid' : ''}`}
+                                        {...register('country', { required: 'Please choose a valid country allocation' })}
+                                    >
+                                        <option value="" disabled className="text-secondary">Select country...</option>
+                                        {ALLOWED_COUNTRIES.map(c => (
+                                            <option key={c.value} value={c.value} className="text-white">{c.label}</option>
+                                        ))}
+                                    </select>
+                                    {errors.country && <div className="invalid-feedback d-block">{errors.country.message}</div>}
                                 </div>
 
                                 <div className="col-md-6 mb-4">
@@ -238,21 +239,9 @@ export const CreateArtistModal = ({ isOpen, onClose, onSuccess }: Props) => {
                         </div>
 
                         <div className="modal-footer border-0 p-4">
-                            <button
-                                type="button"
-                                className="btn btn-admin-dark px-4 shadow-none"
-                                onClick={() => { onClose(); handleReset(); }}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="btn btn-primary px-5 fw-bold shadow-sm"
-                                disabled={isPending || isSubmitting}
-                            >
-                                {isPending ? (
-                                    <><span className="spinner-border spinner-border-sm me-2" />Creating...</>
-                                ) : 'Create Artist'}
+                            <button type="button" className="btn btn-admin-dark px-4 shadow-none" onClick={() => { onClose(); handleReset(); }}>Cancel</button>
+                            <button type="submit" className="btn btn-primary px-5 fw-bold shadow-sm" disabled={isPending || isSubmitting}>
+                                {isPending ? <><span className="spinner-border spinner-border-sm me-2" />Creating...</> : 'Create Artist'}
                             </button>
                         </div>
                     </form>
