@@ -39,12 +39,16 @@ const Avatar = ({ src, fallbackIcon }: { src: string | null; fallbackIcon: strin
     );
 
 /**
- * Перемикач акаунтів (зліва біля лого). Особистий профіль ↔ кабінети артистів,
+ * Перемикач акаунтів (зверху сайдбара). Особистий профіль ↔ кабінети артистів,
  * якими керує користувач (власні + ті, куди запросили менеджером). Активний акаунт
  * визначається маршрутом: у /artist-dashboard — обраний артист, інакше — особистий.
  * «Особистий» не скидає обраного артиста (повернення в кабінет лишає того самого).
+ *
+ * Живе тільки в сайдбарах (клієнтський + кабінет артиста), у хедер НЕ додаємо —
+ * у кабінеті це дублювало внутрішній перемикач артистів. `collapsed` — згорнутий
+ * сайдбар: лишаємо тільки аватар.
  */
-export const AccountSwitcher = () => {
+export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) => {
     const router = useRouter();
     const pathname = usePathname();
     const isAuthenticated = useSessionStore(selectIsAuthenticated);
@@ -103,13 +107,14 @@ export const AccountSwitcher = () => {
     const triggerSub = activeArtist ? roleLabel(activeArtist.role) ?? 'Кабінет артиста' : 'Особистий профіль';
 
     return (
-        <div className="account-switcher">
+        <div className={`account-switcher account-switcher--sidebar${collapsed ? ' account-switcher--collapsed' : ''}`}>
             <button
                 type="button"
                 className="account-switcher__trigger"
                 onClick={() => setOpen((v) => !v)}
                 aria-haspopup="menu"
                 aria-expanded={open}
+                title={collapsed ? triggerName : undefined}
             >
                 <Avatar src={triggerAvatar} fallbackIcon={activeArtist ? 'bi-music-note-beamed' : 'bi-person-fill'} />
                 <span className="account-switcher__trigger-text">

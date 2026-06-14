@@ -199,6 +199,42 @@
   }
 }
 
+// ─── Варіант для сайдбара ─────────────────────────────────────────────────
+// Тригер на всю ширину, зверху над навігацією. Меню розкривається під ним.
+.account-switcher--sidebar {
+  display: flex;
+  width: 100%;
+  margin-bottom: 14px;
+
+  .account-switcher__trigger {
+    width: 100%;
+    max-width: none;
+  }
+
+  .account-switcher__chevron {
+    margin-left: auto;
+  }
+
+  // Згорнутий сайдбар — лишаємо тільки аватар по центру.
+  &.account-switcher--collapsed {
+    .account-switcher__trigger {
+      justify-content: center;
+      gap: 0;
+      padding: 6px;
+    }
+
+    .account-switcher__trigger-text,
+    .account-switcher__chevron {
+      display: none;
+    }
+
+    .account-switcher__menu {
+      left: 0;
+      min-width: 240px;
+    }
+  }
+}
+
 // ─── Поп-ап «Створіть акаунт артиста» (гейт Premium) ──────────────────────
 .premium-gate-modal-overlay {
   position: fixed;

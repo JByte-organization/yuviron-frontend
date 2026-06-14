@@ -15,7 +15,6 @@ import {
 import { useSessionStore, selectIsAuthenticated } from '@/entities/session/model/store';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
-import { AccountSwitcher } from '@/widgets/account-switcher/ui/AccountSwitcher';
 import { SearchDropdown } from './SearchDropdown';
 import { UserDropdown } from './UserDropdown';
 
@@ -96,9 +95,6 @@ export const Header = () => {
             <Link href="/home" className="client-header__logo">
                 <Image src="/images/logo.svg" alt="Lumitune" width={32} height={32} />
             </Link>
-
-            {/* Перемикач акаунтів (особистий ↔ кабінети артистів) */}
-            <AccountSwitcher />
 
             {/* Пошук */}
             <div className="client-header__search-wrap" ref={searchRef}>

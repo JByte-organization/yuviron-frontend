@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/widgets/layout/model/contexts';
+import { AccountSwitcher } from '@/widgets/account-switcher/ui/AccountSwitcher';
 import { CreatePlaylistModal } from '@/features/playlist/create/ui/CreatePlaylistModal';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import {
@@ -87,6 +88,9 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
                 style={{ width: collapsed ? undefined : sidebarWidth }}
             >
                 <div className="client-sidebar__inner">
+
+                    {/* ─── Перемикач акаунтів (особистий ↔ кабінети артистів) ── */}
+                    <AccountSwitcher collapsed={collapsed} />
 
                     {/* ─── Заголовок "Меню" з кнопкою collapse ── */}
                     <div className="client-sidebar__header">
