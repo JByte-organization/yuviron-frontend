@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/widgets/layout/model/contexts';
-import { ArtistSwitcher } from './ArtistSwitcher';
+import { AccountSwitcher } from '@/widgets/account-switcher/ui/AccountSwitcher';
 
 interface NavItemProps {
     label: string;
@@ -35,8 +35,8 @@ export const ArtistDashboardSidebar = () => {
             <aside className={`client-sidebar${collapsed ? ' client-sidebar--collapsed' : ''}`}>
                 <div className="client-sidebar__inner">
 
-                    {/* Перемикач артистів (лише якщо керованих > 1) */}
-                    <ArtistSwitcher />
+                    {/* Перемикач акаунтів (особистий ↔ кабінети артистів) */}
+                    <AccountSwitcher collapsed={collapsed} />
 
                     {/* Кабінет */}
                     <div className="client-sidebar__section">
