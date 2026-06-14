@@ -64,14 +64,30 @@ export const useRegisterSubmit = () => {
                 const fieldErrors = objData?.errors
                     ? Object.values(objData.errors).flat().join(' ')
                     : null;
+                const rawMessage = [
+                    objData?.detail,
+                    objData?.title,
+                    objData?.message,
+                    objData?.error,
+                    typeof data === 'string' ? data : null,
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLowerCase();
+
+                // Бек на дублі пошти інколи віддає generic 500 «saving to the database»
+                // замість 409 — не світимо англомовне повідомлення, підказуємо причину.
+                const isDbSaveError =
+                    response?.status === 500 ||
+                    rawMessage.includes('saving to the database') ||
+                    rawMessage.includes('database');
+
                 setServerError(
-                    fieldErrors ||
-                        objData?.detail ||
-                        objData?.title ||
-                        objData?.message ||
-                        objData?.error ||
-                        (typeof data === 'string' ? data : null) ||
-                        'Не вдалося зареєструватися. Спробуйте ще раз.',
+                    fieldErrors // валідаційні помилки полів — інформативні, лишаємо
+                        ? fieldErrors
+                        : isDbSaveError
+                          ? 'Не вдалося завершити реєстрацію. Можливо, ця пошта вже зареєстрована або сервіс тимчасово недоступний. Спробуйте іншу пошту чи повторіть пізніше.'
+                          : 'Не вдалося зареєструватися. Спробуйте ще раз.',
                 );
             },
         },
