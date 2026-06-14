@@ -89,9 +89,6 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
             >
                 <div className="client-sidebar__inner">
 
-                    {/* ─── Перемикач акаунтів (особистий ↔ кабінети артистів) ── */}
-                    <AccountSwitcher collapsed={collapsed} />
-
                     {/* ─── Заголовок "Меню" з кнопкою collapse ── */}
                     <div className="client-sidebar__header">
                         {/* В expanded режимі — слово "Меню" */}
@@ -116,6 +113,9 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
                             />
                         </button>
                     </div>
+
+                    {/* ─── Перемикач акаунтів (особистий ↔ кабінети артистів) ── */}
+                    <AccountSwitcher collapsed={collapsed} />
 
                     {/* ─── Навігація ────────────────────────── */}
                     <div className="client-sidebar__section">
