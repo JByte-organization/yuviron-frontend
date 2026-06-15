@@ -79,10 +79,12 @@ export const ArtistMarketingPage = () => {
         if (!artistId || !formValid || !bannerFile) return;
         setError(null);
         setBusy(true);
+        let step = 'завантаження банера';
         try {
             const bannerFileId = extractFileId(await uploadFile({ data: { file: bannerFile } }));
-            if (!bannerFileId) throw new Error('upload');
+            if (!bannerFileId) throw new Error('Аплоад не повернув fileId');
 
+            step = 'створення заявки';
             const res = await submitBannerRequest({
                 artistId,
                 albumId,
@@ -103,8 +105,23 @@ export const ArtistMarketingPage = () => {
             await refetchActive();
             setBannerFile(null);
             setTitle('');
-        } catch {
-            setError('Не вдалося створити заявку на банер. Перевірте дані та спробуйте ще раз.');
+        } catch (e) {
+            // DEBUG (тимчасово): реальний крок + статус + тіло бекенду, щоб точно
+            // зрозуміти причину. Прибрати після діагностики.
+            const r = (e as { response?: { status?: number; data?: unknown } })?.response;
+            const data = r?.data;
+            const raw =
+                typeof data === 'string'
+                    ? data
+                    : (data as { detail?: string; title?: string })?.detail ||
+                      (data as { detail?: string; title?: string })?.title ||
+                      (data ? JSON.stringify(data) : '') ||
+                      (e as Error)?.message ||
+                      '';
+            setError(
+                `Не вдалося [${step}]${r?.status ? ` (HTTP ${r.status})` : ''}` +
+                `${raw ? `: ${raw}` : ''}.`,
+            );
         } finally {
             setBusy(false);
         }
