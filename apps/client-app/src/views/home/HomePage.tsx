@@ -109,7 +109,6 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
             title:       t.title ?? '',
             artistNames: (t.artists ?? []).map((a: TrackArtistDto) => a.name ?? ''),
             coverUrl:    getImageUrl(t.coverUrl),
-            // 🚨 ФІКС: Передаємо реальний статус збереження треку з бази даних
             isSaved:     t.isSaved ?? false,
         }));
     }, [topTracksRaw]);
@@ -157,7 +156,7 @@ export const HomePage = ({ isAuthenticated = false }: HomePageProps) => {
                     moods={moods.length > 0 ? moods : undefined}
                     genres={genres.length > 0 ? genres : undefined}
                     isLoading={moodsLoading || genresLoading}
-                    title={moodTitle}
+                    isAuthenticated={isAuthenticated}
                 />
 
                 <TopTracksSection

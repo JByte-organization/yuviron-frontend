@@ -107,6 +107,7 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
                         {navLink('/verification', 'Verification')}
                         {navLink('/payout', 'Finance')}
                         {navLink('/ads', 'Ads')}
+                        {navLink('/themes', 'Premium Themes')}
 
                         <li className="nav-group">
                             <div

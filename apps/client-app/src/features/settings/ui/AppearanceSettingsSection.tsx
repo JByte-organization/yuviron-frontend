@@ -1,24 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import React, { useEffect, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     useGetApiAuthMe,
     useGetApiMeSettingsPreferences,
     usePutApiMeSettingsTheme,
-    usePutApiMeAppearanceCustomTheme,
     getGetApiMeSettingsPreferencesQueryKey,
+    customInstance,
     type ThemeMode,
     type CurrentUserDto,
-    type UserSettingsDto
+    type UserSettingsDto,
+    type UpdateThemeCommand
 } from '@repo/api/client';
 import { useTheme } from '@/shared/lib/ThemeProvider';
+import { applyThemeGradients, type ClientThemeDto } from '@/shared/lib/applyThemeGradients';
 
-export const AppearanceSettingsSection = () => {
+interface AppearanceSettingsSectionProps {
+    onToast?: (msg: string) => void;
+}
+
+export const AppearanceSettingsSection = ({ onToast }: AppearanceSettingsSectionProps) => {
     const queryClient = useQueryClient();
     const { theme: localTheme, toggleTheme } = useTheme();
 
-    // ─── Запити даних ─────────────────────────────────
     const { data: meRaw } = useGetApiAuthMe();
     const me = (meRaw as CurrentUserDto) ?? null;
     const isPremium = me?.isPremium ?? false;
@@ -26,61 +31,71 @@ export const AppearanceSettingsSection = () => {
     const { data: prefsRaw } = useGetApiMeSettingsPreferences();
     const prefs = (prefsRaw as { data?: UserSettingsDto })?.data ?? (prefsRaw as UserSettingsDto);
 
-    // ─── Мутації ──────────────────────────────────────────
-    const { mutateAsync: updateBaseTheme } = usePutApiMeSettingsTheme();
-    const { mutateAsync: updateCustomTheme } = usePutApiMeAppearanceCustomTheme();
+    // ─── 🚨 ФІКС МАРШРУТУ ТА ЦИКЛУ ТУТ ─────────────────────
+    const { data: themesRaw, isLoading: isThemesLoading } = useQuery({
+        queryKey: ['api', 'admin', 'themes', 'list'], // Спільний ключ для перевикористання кешу
+        queryFn: ({ signal }) => customInstance<any>('/api/admin/themes?Page=1&PageSize=100', { method: 'GET', signal }),
+        enabled: isPremium,
+        retry: false, // 👈 Жорстко вимикаємо повторні спроби
+        staleTime: 1000 * 60 * 15,
+    });
 
-    // ─── Локальні кольори конструктора ────────────────────
-    const [primaryColor, setPrimaryColor] = useState('#7AE0FF');
-    const [secondaryColor, setSecondaryColor] = useState('#1D4ED8');
-    const [backgroundColor, setBackgroundColor] = useState('#0B0C12');
-    const [isSaving, setIsSaving] = useState(false);
+    const availableThemes = useMemo(() => {
+        const raw = (themesRaw as any)?.data ?? themesRaw;
+        return (Array.isArray(raw) ? raw : raw?.items ?? []) as ClientThemeDto[];
+    }, [themesRaw]);
+
+    const { mutateAsync: updateTheme, isPending: isSaving } = usePutApiMeSettingsTheme();
+
+    useEffect(() => {
+        if (prefs) {
+            applyThemeGradients(prefs.themeId, availableThemes);
+        }
+    }, [prefs, availableThemes]);
 
     const handleModeChange = async (mode: ThemeMode) => {
         if (mode === 'White' && localTheme !== 'light') toggleTheme();
         else if (mode === 'Dark' && localTheme !== 'dark') toggleTheme();
 
         try {
-            await updateBaseTheme({ data: { themeMode: mode } });
+            await updateTheme({
+                data: {
+                    themeMode: mode,
+                    themeId: prefs?.themeId ?? null
+                } as unknown as UpdateThemeCommand
+            });
             await queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
+            onToast?.(`Режим інтерфейсу змінено на ${mode}.`);
         } catch (err) {
             console.error('[ThemeMode] Failed to save mode:', err);
         }
     };
 
-    const handleSaveGradient = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!isPremium) return;
-        setIsSaving(true);
+    const handleSelectPreset = async (theme: ClientThemeDto) => {
+        if (!isPremium || isSaving || !theme.id) return;
 
         try {
-            await updateCustomTheme({
+            await updateTheme({
                 data: {
-                    primaryColor: primaryColor.toUpperCase(),
-                    secondaryColor: secondaryColor.toUpperCase(),
-                    backgroundColor: backgroundColor.toUpperCase()
-                }
+                    themeMode: (prefs?.themeMode as ThemeMode) ?? 'System',
+                    themeId: theme.id
+                } as unknown as UpdateThemeCommand
             });
 
+            applyThemeGradients(theme.id, availableThemes);
             await queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
-            alert('Custom layout mapping successfully deployed.');
+            onToast?.(`Амбієнтну тему успішно змінено на "${theme.name}".`);
         } catch (err) {
-            console.error('[CustomTheme] 400 Validation Crash:', err);
-        } finally {
-            setIsSaving(false);
+            console.error('[PremiumTheme] Failed to push theme preset:', err);
         }
     };
 
     return (
         <div className="yuviron-settings-appearance d-flex flex-column gap-4">
-
-            {/* 🌗 БЛОК 1: ПЕРЕМИКАЧ РЕЖИМІВ ИНТЕРФЕЙСУ */}
             <div className="appearance-card-v2 p-4 rounded-4">
                 <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
                     <div>
-                        {/* 🌟 ФІКС: Прибрано text-white, колір йде з .card-label */}
                         <span className="card-label d-block fw-bold mb-1">Interface Base Shell</span>
-                        {/* 🌟 ФІКС: Прибрано text-muted, колір йде з .card-description */}
                         <p className="card-description small mb-0">Select your preferred client layout canvas scheme.</p>
                     </div>
 
@@ -88,12 +103,7 @@ export const AppearanceSettingsSection = () => {
                         {(['System', 'Dark', 'White'] as ThemeMode[]).map((mode) => {
                             const isActive = prefs?.themeMode === mode;
                             return (
-                                <button
-                                    key={mode}
-                                    type="button"
-                                    className={`segmented-btn-v2 ${isActive ? 'active-mode-bold' : ''}`}
-                                    onClick={() => handleModeChange(mode)}
-                                >
+                                <button key={mode} type="button" className={`segmented-btn-v2 ${isActive ? 'active-mode-bold' : ''}`} onClick={() => handleModeChange(mode)}>
                                     {mode}
                                 </button>
                             );
@@ -102,77 +112,62 @@ export const AppearanceSettingsSection = () => {
                 </div>
             </div>
 
-            {/* 🔮 БЛОК 2: АМБІЄНТНЕ НАЛАШТУВАННЯ ДЛЯ PREMIUM */}
             <div className="appearance-card-v2 p-4 rounded-4 position-relative overflow-hidden">
                 {!isPremium && (
                     <div className="premium-blur-overlay-v2 rounded-4 text-center p-4">
                         <div className="overlay-glass-card-v2 p-4 rounded-4">
                             <i className="bi bi-crown-fill crown-icon-v2 mb-2" />
-                            {/* 🌟 ФІКС: Прибрано text-white, стилі беруться з контейнера */}
                             <h5 className="fw-bold mb-1 overlay-title">Theme Laboratory Gated</h5>
-                            {/* 🌟 ФІКС: Прибрано text-muted */}
-                            <p className="small mb-0 overlay-desc">Custom radial gradients and layout personalization fields require active Premium status.</p>
+                            <p className="small mb-0 overlay-desc">Custom approved ambient templates require active Premium status.</p>
                         </div>
                     </div>
                 )}
 
-                <div className="mb-2">
-                    {/* 🌟 ФІКС: Прибрано text-white */}
-                    <span className="card-label d-block fw-bold mb-1">Ambient Universe Customization</span>
-                    {/* 🌟 ФІКС: Прибрано text-muted */}
-                    <p className="card-description small mb-4">Pick an accent color node to re-generate the dynamic layout background glow mapping.</p>
+                <div className="mb-4">
+                    <span className="card-label d-block fw-bold mb-1">Ambient Universe Preset Selection</span>
+                    <p className="card-description small mb-0">Choose one of the official volumetric layouts deployed by server administration.</p>
                 </div>
 
-                <form onSubmit={handleSaveGradient} className="d-flex flex-column gap-4">
-                    <div className="d-flex align-items-center gap-4 flex-wrap flex-md-nowrap">
-                        <div
-                            className="gradient-preview-viewport-v2 flex-grow-1 rounded-3 p-3 d-flex align-items-end"
-                            style={{ background: `linear-gradient(135deg, ${backgroundColor} 0%, ${secondaryColor} 50%, ${primaryColor} 100%)` }}
-                        >
-                            <div className="viewport-content-v2">
-                                <span className="v-title">Active Universe Node</span>
-                                <span className="v-sub font-monospace">HEX mapping system</span>
-                            </div>
-                        </div>
-
-                        <div className="color-node-pickers-stack d-flex flex-column gap-2 flex-shrink-0">
-                            <div className="premium-color-slot-row">
-                                <div className="color-input-circle-wrapper">
-                                    <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
-                                </div>
-                                <span className="node-title-text">Primary Accent ({primaryColor.toUpperCase()})</span>
-                            </div>
-                            <div className="premium-color-slot-row">
-                                <div className="color-input-circle-wrapper">
-                                    <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} />
-                                </div>
-                                <span className="node-title-text">Dynamic Fog ({secondaryColor.toUpperCase()})</span>
-                            </div>
-                            <div className="premium-color-slot-row">
-                                <div className="color-input-circle-wrapper">
-                                    <input type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} />
-                                </div>
-                                <span className="node-title-text">Deep Ground ({backgroundColor.toUpperCase()})</span>
-                            </div>
-                        </div>
+                {isThemesLoading ? (
+                    <div className="text-center py-4">
+                        <div className="spinner-border text-info spinner-border-sm" role="status" />
                     </div>
-
-                    <div className="d-flex justify-content-end mt-2">
-                        <button type="submit" className="yuviron-btn-minimal py-2 px-4" disabled={isSaving || !isPremium}>
-                            {isSaving ? 'Deploying Nodes...' : 'Apply Cosmic Layout'}
-                        </button>
+                ) : (
+                    <div className="row g-3">
+                        {availableThemes.map((preset) => {
+                            const isSelected = prefs?.themeId === preset.id;
+                            return (
+                                <div key={preset.id} className="col-12 col-sm-6 col-md-3">
+                                    <div
+                                        className={`gradient-preview-viewport-v2 rounded-3 p-3 d-flex flex-column justify-content-between position-relative transition-all ${isSelected ? 'border border-cyan shadow-lg scale-102' : 'border border-transparent'}`}
+                                        style={{
+                                            background: `linear-gradient(135deg, ${preset.backgroundColor ?? '#000'} 0%, ${preset.secondaryColor ?? '#000'} 50%, ${preset.primaryColor ?? '#000'} 100%)`,
+                                            minHeight: '125px',
+                                            cursor: isPremium && !isSaving ? 'pointer' : 'not-allowed',
+                                            opacity: isPremium ? 1 : 0.4
+                                        }}
+                                        onClick={() => handleSelectPreset(preset)}
+                                    >
+                                        <div className="d-flex justify-content-end w-100">
+                                            {isSelected && (
+                                                <span className="badge bg-cyan text-dark rounded-circle d-flex align-items-center justify-content-center" style={{ width: '22px', height: '22px' }}>
+                                                    <i className="bi bi-check-lg" style={{ fontSize: '13px' }} />
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="viewport-content-v2">
+                                            <span className="v-title d-block fw-bold text-white small">{preset.name ?? 'Untitled Theme'}</span>
+                                            <span className="v-sub font-monospace text-white-50 text-uppercase" style={{ fontSize: '9px', letterSpacing: '0.5px' }}>
+                                                Approved Preset
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                </form>
+                )}
             </div>
-
-            {/* 🛠️ ДЕВЕЛОПЕРСЬКИЙ КАНАЛ */}
-            {/*{process.env.NODE_ENV !== 'production' && (*/}
-            {/*    <div className="dev-debug-pill-container p-2 rounded-3 mt-4 text-center">*/}
-            {/*        <span className="font-monospace text-warning" style={{ fontSize: '10px', fontWeight: 700 }}>*/}
-            {/*            ⚙️ LOCAL DEV ENVIRONMENT • VERIFIED RE-FETCH CLIENT ENGINES ACTIVE*/}
-            {/*        </span>*/}
-            {/*    </div>*/}
-            {/*)}*/}
         </div>
     );
 };
