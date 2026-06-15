@@ -1,8 +1,10 @@
 'use client';
-import { useSessionStore } from '@/entities/session/model/store';
+import { useSessionStore, selectIsAuthenticated } from '@/entities/session/model/store';
 import { HomePage } from '@/views/home/HomePage';
 
 export default function Page() {
-    const accessToken = useSessionStore(s => s.accessToken);
-    return <HomePage isAuthenticated={!!accessToken} />;
+    // За статусом, а не за токеном: під час refresh показуємо авторизований
+    // варіант (за підказкою), щоб не блимнути гостьовою домашньою.
+    const isAuthenticated = useSessionStore(selectIsAuthenticated);
+    return <HomePage isAuthenticated={isAuthenticated} />;
 }

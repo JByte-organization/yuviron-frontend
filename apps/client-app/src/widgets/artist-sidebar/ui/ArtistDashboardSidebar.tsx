@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/widgets/layout/model/contexts';
-import { ArtistSwitcher } from './ArtistSwitcher';
+import { AccountSwitcher } from '@/widgets/account-switcher/ui/AccountSwitcher';
 
 interface NavItemProps {
     label: string;
@@ -35,12 +35,13 @@ export const ArtistDashboardSidebar = () => {
             <aside className={`client-sidebar${collapsed ? ' client-sidebar--collapsed' : ''}`}>
                 <div className="client-sidebar__inner">
 
-                    {/* Перемикач артистів (лише якщо керованих > 1) */}
-                    <ArtistSwitcher />
-
                     {/* Кабінет */}
                     <div className="client-sidebar__section">
                         <p className="client-sidebar__section-title">Кабінет артиста</p>
+
+                        {/* Перемикач акаунтів (особистий ↔ кабінети артистів) */}
+                        <AccountSwitcher collapsed={collapsed} />
+
                         <nav className="client-sidebar__nav">
                             <NavItem
                                 href="/artist-dashboard"
@@ -85,6 +86,26 @@ export const ArtistDashboardSidebar = () => {
                                 label="Фінанси"
                                 isActive={isActive('/artist-dashboard/finance')}
                                 icon={<i className="bi bi-wallet2" />}
+                            />
+                        </nav>
+                        <hr className="client-sidebar__divider" />
+                    </div>
+
+                    {/* Монетизація: підписка та реклама */}
+                    <div className="client-sidebar__section">
+                        <p className="client-sidebar__section-title">Монетизація</p>
+                        <nav className="client-sidebar__nav">
+                            <NavItem
+                                href="/artist-dashboard/subscription"
+                                label="Підписка"
+                                isActive={isActive('/artist-dashboard/subscription')}
+                                icon={<i className="bi bi-star" />}
+                            />
+                            <NavItem
+                                href="/artist-dashboard/marketing"
+                                label="Реклама"
+                                isActive={isActive('/artist-dashboard/marketing')}
+                                icon={<i className="bi bi-megaphone" />}
                             />
                         </nav>
                         <hr className="client-sidebar__divider" />

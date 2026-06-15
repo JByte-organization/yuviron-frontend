@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Sidebar } from '@/widgets/sidebar';
 import { AdminHeader } from '@/widgets/header';
 import { SIDEBAR_WIDTH } from '@/shared/config/constants';
 import "@repo/ui/styles";
-
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -18,32 +17,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     useEffect(() => {
         const check = () => {
             const desktop = window.innerWidth >= 992;
-            setIsDesktop(desktop);
-            // При первом рендере открываем на десктопе
-            if (desktop) setSidebarOpen(true);
+            setIsDesktop(prev => (prev === desktop ? prev : desktop));
+            setSidebarOpen(prev => (desktop ? true : prev));
         };
         check();
         window.addEventListener('resize', check);
         return () => window.removeEventListener('resize', check);
     }, []);
 
+    const handleClose = useCallback(() => setSidebarOpen(false), []);
+    const handleToggle = useCallback(() => setSidebarOpen(o => !o), []);
 
+    const showOverlay = useMemo(() => sidebarOpen && !isDesktop, [sidebarOpen, isDesktop]);
 
-    const showOverlay = sidebarOpen && !isDesktop;
-    const contentShift = sidebarOpen && isDesktop ? SIDEBAR_WIDTH : 0;
+    // Зсув контенту робимо ТІЛЬКИ на десктопі, якщо сайдбар відкритий
+    const contentShift = useMemo(() => (sidebarOpen && isDesktop ? SIDEBAR_WIDTH : 0), [sidebarOpen, isDesktop]);
+
+    const handleOverlayKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+            setSidebarOpen(false);
+        }
+    }, []);
 
     return (
-        <div className="admin-layout" style={{ minHeight: '100vh', backgroundColor: '#151921' }}>
-
+        <div className="admin-layout" style={{ minHeight: '100vh', backgroundColor: '#121212', overflowX: 'hidden' }}>
             <Sidebar
                 isOpen={sidebarOpen}
-                onClose={() => setSidebarOpen(false)}
+                onClose={handleClose}
             />
 
-            {/* Overlay — только моб */}
             {showOverlay && (
                 <div
-                    onClick={() => setSidebarOpen(false)}
+                    role="button"
+                    aria-label="Закрыть боковую панель"
+                    tabIndex={0}
+                    onClick={handleClose}
+                    onKeyDown={handleOverlayKeyDown}
                     style={{
                         position: 'fixed',
                         inset: 0,
@@ -53,20 +62,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 />
             )}
 
-            {/* Контент */}
             <div
                 style={{
-                    marginLeft: contentShift,
+                    marginLeft: `${contentShift}px`,
                     transition: 'margin-left 0.25s ease',
-                    minHeight: '100vh',
                     display: 'flex',
                     flexDirection: 'column',
+                    minHeight: '100vh',
                 }}
             >
-                <AdminHeader onMenuToggle={() => setSidebarOpen(o => !o)} />
+                <AdminHeader
+                    onMenuToggle={handleToggle}
+                    sidebarOpen={sidebarOpen}
+                    isDesktop={isDesktop}
+                />
 
-                <main className="flex-grow-1">
-                    <div className="container-fluid p-3 p-md-4">
+                {/* Головний контент */}
+                <main className="grow" style={{ paddingTop: '80px' }}>
+                    <div className="container-fluid p-2 p-md-4">
                         <div className="admin-secondary rounded-3 p-3">
                             {children}
                         </div>

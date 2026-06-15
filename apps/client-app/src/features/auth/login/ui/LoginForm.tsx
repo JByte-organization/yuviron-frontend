@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { usePostApiAuthLogin, usePostApiAuthSendCode } from '@repo/api/client.ts';
 import { useSessionStore } from '@/entities/session/model/store';
 import { useQueryClient } from '@tanstack/react-query';
@@ -12,6 +12,23 @@ type LoginErrors = {
     identifier?: string;
     password?: string;
 };
+
+// Помилка з customInstance: кидається Error із доданим полем `response`
+// ({ status, data }). data — або об'єкт ProblemDetails, або сирий рядок.
+type ApiErrorData = {
+    errors?: Record<string, string[]>;
+    detail?: string;
+    title?: string;
+    message?: string;
+    error?: string;
+};
+type ApiError = { response?: { status?: number; data?: ApiErrorData | string } };
+
+const asApiError = (error: unknown): ApiError =>
+    typeof error === 'object' && error !== null ? (error as ApiError) : {};
+
+// Успішна відповідь login: токен лежить у корені або під .data.
+type LoginSuccess = { token?: string; data?: { token?: string } };
 
 const validate = (identifier: string, password: string): LoginErrors => {
     const errors: LoginErrors = {};
@@ -41,12 +58,32 @@ export const LoginForm = () => {
     const [errors, setErrors] = useState<LoginErrors>({});
     const [submitted, setSubmitted] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
+    // Бэкенд при перевищенні ліміту входів (ASP.NET lockout / rate-limit) віддає
+    // 429 з англомовним повідомленням «Please wait a minute…». Показуємо
+    // локалізований текст і блокуємо кнопку зі зворотним відліком, щоб не
+    // виглядало як «зламалось».
+    const [cooldown, setCooldown] = useState(0);
+
+    useEffect(() => {
+        if (cooldown <= 0) return;
+        const id = setTimeout(() => setCooldown((s) => Math.max(0, s - 1)), 1000);
+        return () => clearTimeout(id);
+    }, [cooldown]);
+
+    // Спільний обробник 429 для login та send-code. Повертає true, якщо це був
+    // rate-limit (далі викликаючий код може зупинитись).
+    const handleRateLimit = (status?: number): boolean => {
+        if (status !== 429) return false;
+        setCooldown(60);
+        setServerError('Забагато спроб. Зачекайте хвилину та спробуйте ще раз.');
+        return true;
+    };
 
     const { mutate, isPending } = usePostApiAuthLogin({
         mutation: {
-            onSuccess: (response: any) => {
-                const data = response?.data ?? response;
-                const token = data?.token;
+            onSuccess: (response: unknown) => {
+                const r = response as LoginSuccess | null;
+                const token = r?.data?.token ?? r?.token;
 
                 if (!token) {
                     setServerError('Не вдалося отримати токен. Спробуйте ще раз.');
@@ -57,24 +94,25 @@ export const LoginForm = () => {
                 queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
                 router.push('/home');
             },
-            onError: (error: any) => {
-                console.log('[login] status:', error?.response?.status);
-                console.log('[login] data:', JSON.stringify(error?.response?.data, null, 2));
-                const status = error?.response?.status;
+            onError: (error: unknown) => {
+                const { status, data } = asApiError(error).response ?? {};
+                console.log('[login] status:', status);
+                console.log('[login] data:', JSON.stringify(data, null, 2));
                 if (status === 401) {
                     setServerError('Невірний email або пароль');
                     return;
                 }
-                const data = error?.response?.data;
-                const fieldErrors = data?.errors
-                    ? Object.values(data.errors).flat().join(' ')
+                if (handleRateLimit(status)) return;
+                const objData = typeof data === 'object' && data !== null ? data : undefined;
+                const fieldErrors = objData?.errors
+                    ? Object.values(objData.errors).flat().join(' ')
                     : null;
                 const message =
                     fieldErrors ||
-                    data?.detail ||
-                    data?.title ||
-                    data?.message ||
-                    data?.error ||
+                    objData?.detail ||
+                    objData?.title ||
+                    objData?.message ||
+                    objData?.error ||
                     (typeof data === 'string' ? data : null) ||
                     'Не вдалося увійти. Спробуйте ще раз.';
                 setServerError(message);
@@ -90,12 +128,14 @@ export const LoginForm = () => {
                 const email = variables.data.email ?? '';
                 router.push(`/verify-code?email=${encodeURIComponent(email)}`);
             },
-            onError: (error: any) => {
-                const data = error?.response?.data;
+            onError: (error: unknown) => {
+                const { status, data } = asApiError(error).response ?? {};
+                if (handleRateLimit(status)) return;
+                const objData = typeof data === 'object' && data !== null ? data : undefined;
                 setServerError(
-                    data?.detail ||
-                        data?.title ||
-                        data?.message ||
+                    objData?.detail ||
+                        objData?.title ||
+                        objData?.message ||
                         'Не вдалося надіслати код. Спробуйте ще раз.',
                 );
             },
@@ -120,6 +160,7 @@ export const LoginForm = () => {
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        if (cooldown > 0) return;
         setSubmitted(true);
         setServerError(null);
         const nextErrors = validate(identifier, password);
@@ -227,16 +268,20 @@ export const LoginForm = () => {
             <button
                 type="submit"
                 className="btn client-login-form__submit w-100"
-                disabled={isPending}
+                disabled={isPending || cooldown > 0}
             >
-                {isPending ? 'Вхід…' : 'Увійти'}
+                {cooldown > 0
+                    ? `Зачекайте ${cooldown} с`
+                    : isPending
+                        ? 'Вхід…'
+                        : 'Увійти'}
             </button>
 
             <button
                 type="button"
                 className="btn client-login-form__alt-btn w-100"
                 onClick={handleCodeLogin}
-                disabled={isPending || isSendingCode}
+                disabled={isPending || isSendingCode || cooldown > 0}
             >
                 {isSendingCode ? 'Надсилання…' : 'Увійти за кодом'}
             </button>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { usePostApiAdminAds, postApiFilesUpload } from '@repo/api/admin.ts';
 
@@ -24,8 +24,8 @@ export const CreateAdModal = ({ isOpen, onClose, onSuccess }: Props) => {
 
     const { mutateAsync: createAd, isPending } = usePostApiAdminAds();
 
-    // Стейты медиафайлов
     const [imageFileId, setImageFileId] = useState<string | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [audioFileId, setAudioFileId] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState<'none' | 'image' | 'audio'>('none');
     const [uploadError, setUploadError] = useState<string | null>(null);
@@ -33,15 +33,15 @@ export const CreateAdModal = ({ isOpen, onClose, onSuccess }: Props) => {
     const imageInputRef = useRef<HTMLInputElement>(null);
     const audioInputRef = useRef<HTMLInputElement>(null);
 
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         reset();
         setImageFileId(null);
+        setPreviewUrl(null);
         setAudioFileId(null);
         setUploadError(null);
         onClose();
-    };
+    }, [reset, onClose]);
 
-    // Обобщенный хендлер загрузки файлов на сервер хранения Yuviron
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'audio') => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -50,13 +50,17 @@ export const CreateAdModal = ({ isOpen, onClose, onSuccess }: Props) => {
         setIsUploading(type);
 
         try {
-            // Используем системную функцию отправки файлов multipart/form-data
             const res = await postApiFilesUpload({ file });
             const data = (res as any)?.data ?? res;
 
             if (data?.fileId) {
-                if (type === 'image') setImageFileId(data.fileId);
-                if (type === 'audio') setAudioFileId(data.fileId);
+                if (type === 'image') {
+                    setImageFileId(data.fileId);
+                    setPreviewUrl(data.url ?? null); // Сохраняем превью-путь
+                }
+                if (type === 'audio') {
+                    setAudioFileId(data.fileId);
+                }
             } else {
                 setUploadError(`Failed to fetch identifier for ${type} file asset.`);
             }
@@ -106,16 +110,13 @@ export const CreateAdModal = ({ isOpen, onClose, onSuccess }: Props) => {
                         <div className="modal-body p-4 d-flex flex-column gap-3">
                             {uploadError && <div className="alert alert-danger py-2 small">{uploadError}</div>}
 
-                            {/* Загрузка графического баннера */}
                             <div>
                                 <label className="form-label text-secondary small fw-bold">PROMOTIONAL BANNER IMAGE *</label>
-                                <input type="file" accept="image/*" ref={imageInputRef} className="d-none" onChange={e => handleFileUpload(e, 'image')} />
-                                <div className="d-flex gap-2">
-                                    <button type="button" className="btn btn-sm btn-admin-dark" disabled={isUploading !== 'none'} onClick={() => imageInputRef.current?.click()}>
-                                        {isUploading === 'image' ? 'Uploading Image...' : imageFileId ? '✓ Change Banner' : '➕ Upload Image'}
-                                    </button>
-                                    {imageFileId && <span className="text-success small align-self-center font-monospace">ID: {imageFileId.slice(0, 8)}...</span>}
+                                <div className="rounded overflow-hidden bg-secondary d-flex align-items-center justify-content-center mb-2 position-relative" style={{ width: '100%', height: 140, cursor: 'pointer' }} onClick={() => imageInputRef.current?.click()}>
+                                    {previewUrl ? <img src={previewUrl} alt="Preview" className="w-100 h-100 object-fit-cover" /> : <span className="text-muted small">➕ Click to upload banner image</span>}
+                                    {isUploading === 'image' && <div className="position-absolute w-100 h-100 bg-dark bg-opacity-70 d-flex align-items-center justify-content-center"><div className="spinner-border spinner-border-sm text-primary" /></div>}
                                 </div>
+                                <input type="file" accept="image/*" ref={imageInputRef} className="d-none" onChange={e => handleFileUpload(e, 'image')} />
                             </div>
 
                             {/* Загрузка аудиодорожки рекламы */}
@@ -124,13 +125,12 @@ export const CreateAdModal = ({ isOpen, onClose, onSuccess }: Props) => {
                                 <input type="file" accept="audio/*" ref={audioInputRef} className="d-none" onChange={e => handleFileUpload(e, 'audio')} />
                                 <div className="d-flex gap-2">
                                     <button type="button" className="btn btn-sm btn-admin-dark" disabled={isUploading !== 'none'} onClick={() => audioInputRef.current?.click()}>
-                                        {isUploading === 'audio' ? 'Uploading Audio...' : audioFileId ? '✓ Change Audio' : '➕ Upload Audio'}
+                                        {isUploading === 'audio' ? 'Uploading Audio...' : audioFileId ? '✓ Change Audio File' : '➕ Upload Audio File'}
                                     </button>
                                     {audioFileId && <span className="text-success small align-self-center font-monospace">ID: {audioFileId.slice(0, 8)}...</span>}
                                 </div>
                             </div>
 
-                            {/* Текстовые поля */}
                             <div>
                                 <label className="form-label text-secondary small fw-bold">ADVERTISER BRAND NAME *</label>
                                 <input type="text" className={`form-control admin-login__input ${errors.advertiserName ? 'is-invalid' : ''}`} placeholder="e.g., Nike" {...register('advertiserName', { required: true })} />

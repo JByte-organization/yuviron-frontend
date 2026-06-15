@@ -9,6 +9,8 @@ import { clearRegisterDraft, getRegisterDraft, type RegisterDraft } from './regi
 
 // Собирает тело register-запроса из черновика. Дату рождения бэк ждёт ISO-строкой,
 // поэтому склеиваем день/месяц/год в UTC, чтобы не словить смещение часового пояса.
+// country шлём КОДОМ ('UA'/'PL'), а не названием: бек валидирует/хранит по коду —
+// название ('Україна') валит DB-инсерт 500. city шлём как есть ('Київ').
 const buildRegisterPayload = (draft: RegisterDraft): RegisterCommand => ({
     email: draft.email?.trim(),
     password: draft.password,
@@ -39,23 +41,53 @@ export const useRegisterSubmit = () => {
                 clearRegisterDraft();
                 router.push(`/register/check-email?email=${encodeURIComponent(email)}`);
             },
-            onError: (error: any) => {
-                if (error?.response?.status === 409) {
+            onError: (error: unknown) => {
+                const response = (
+                    error as { response?: { status?: number; data?: unknown } }
+                )?.response;
+                if (response?.status === 409) {
                     setEmailTaken(true);
                     return;
                 }
-                const data = error?.response?.data;
-                const fieldErrors = data?.errors
-                    ? Object.values(data.errors).flat().join(' ')
+                const data = response?.data as
+                    | {
+                          errors?: Record<string, string[]>;
+                          detail?: string;
+                          title?: string;
+                          message?: string;
+                          error?: string;
+                      }
+                    | string
+                    | undefined;
+                const objData =
+                    typeof data === 'object' && data !== null ? data : undefined;
+                const fieldErrors = objData?.errors
+                    ? Object.values(objData.errors).flat().join(' ')
                     : null;
+                const rawMessage = [
+                    objData?.detail,
+                    objData?.title,
+                    objData?.message,
+                    objData?.error,
+                    typeof data === 'string' ? data : null,
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLowerCase();
+
+                // Бек на дублі пошти інколи віддає generic 500 «saving to the database»
+                // замість 409 — не світимо англомовне повідомлення, підказуємо причину.
+                const isDbSaveError =
+                    response?.status === 500 ||
+                    rawMessage.includes('saving to the database') ||
+                    rawMessage.includes('database');
+
                 setServerError(
-                    fieldErrors ||
-                        data?.detail ||
-                        data?.title ||
-                        data?.message ||
-                        data?.error ||
-                        (typeof data === 'string' ? data : null) ||
-                        'Не вдалося зареєструватися. Спробуйте ще раз.',
+                    fieldErrors // валідаційні помилки полів — інформативні, лишаємо
+                        ? fieldErrors
+                        : isDbSaveError
+                          ? 'Не вдалося завершити реєстрацію. Можливо, ця пошта вже зареєстрована або сервіс тимчасово недоступний. Спробуйте іншу пошту чи повторіть пізніше.'
+                          : 'Не вдалося зареєструватися. Спробуйте ще раз.',
                 );
             },
         },

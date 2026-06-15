@@ -12,7 +12,7 @@ import {
     getGetApiAuthMeQueryKey,
     getGetApiNotificationsUnreadCountQueryKey,
 } from '@repo/api/client.ts';
-import { useSessionStore } from '@/entities/session/model/store';
+import { useSessionStore, selectIsAuthenticated } from '@/entities/session/model/store';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { SearchDropdown } from './SearchDropdown';
@@ -22,6 +22,10 @@ export const Header = () => {
     const router = useRouter();
     const accessToken = useSessionStore(s => s.accessToken);
     const clearSession = useSessionStore(s => s.clearSession);
+    // Каркас за статусом, а не за токеном: під час refresh токена ще нема,
+    // але показувати кнопки «Увійти/Реєстрація» не можна (саме це блимання).
+    const status = useSessionStore(s => s.status);
+    const isAuthenticated = useSessionStore(selectIsAuthenticated);
     const artistId = useCurrentArtistId();
 
     // ─── Дані поточного користувача ───────────────────────
@@ -127,10 +131,14 @@ export const Header = () => {
 
             {/* Праві дії */}
             <div className="client-header__actions">
-                {accessToken && me ? (
+                {status === 'loading' ? (
+                    // Поки відновлюється сесія — не показуємо ні кнопки входу,
+                    // ні аватар, щоб уникнути блимання. Стан короткочасний.
+                    null
+                ) : isAuthenticated ? (
                     <div className="client-header__user">
                         {/* Premium кнопка */}
-                        {!me.isPremium && (
+                        {!me?.isPremium && (
                             <Link href="/premium" className="client-header__premium-btn">
                                 Дізнатися про Premium
                             </Link>
@@ -165,7 +173,7 @@ export const Header = () => {
                             {avatarSrc ? (
                                 <img
                                     src={avatarSrc}
-                                    alt={me.profile?.firstName ?? me.email ?? 'Avatar'}
+                                    alt={me?.profile?.firstName ?? me?.email ?? 'Avatar'}
                                     className="client-header__avatar"
                                 />
                             ) : (
@@ -173,15 +181,15 @@ export const Header = () => {
                                     <i className="bi bi-person-fill" />
                                 </div>
                             )}
-                            {me.isPremium && (
+                            {me?.isPremium && (
                                 <span className="client-header__premium-badge">Premium</span>
                             )}
                         </button>
 
                         {showUserMenu && (
                             <UserDropdown
-                                userId={me.id ?? ''}
-                                isPremium={me.isPremium}
+                                userId={me?.id ?? ''}
+                                isPremium={me?.isPremium ?? false}
                                 isArtist={!!artistId}
                                 onClose={() => setShowUserMenu(false)}
                                 onLogout={() => logout()}
