@@ -1673,3 +1673,90 @@ $sidebar-margin: 12px;
     }
   }
 }
+
+
+
+// ══════════════════════════════════════════════════════════
+// MOBILE NAVIGATION (TAB BAR)
+// ══════════════════════════════════════════════════════════
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: var(--client-header-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--client-border);
+  // Навігація має перекривати контент, але йти під глобальними модалками
+  z-index: 200;
+  padding-bottom: env(safe-area-inset-bottom, 0px); // Безпечна зона для нових iPhone/Android
+
+  &__inner {
+    height: 100%;
+    padding: 0 8px;
+  }
+
+  &__tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    background: none;
+    border: none;
+    padding: 4px 0;
+    text-decoration: none;
+    color: var(--client-text-muted);
+    transition: color 0.2s ease, transform 0.1s ease;
+
+    &:active {
+      transform: scale(0.96);
+    }
+
+    &--active {
+      color: $client-link !important;
+
+      .mobile-nav__icon {
+        // М'яке підсвічування активної іконки через фільтр, якщо іконка біла
+        filter: drop-shadow(0 0 4px color-mix(in srgb, $client-link 40%, transparent));
+      }
+    }
+  }
+
+  &__icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 3px;
+    height: 22px;
+  }
+
+  &__icon {
+    transition: filter 0.2s ease;
+    opacity: 0.85;
+
+    .mobile-nav__tab--active & {
+      opacity: 1;
+    }
+  }
+
+  &__label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+    white-space: nowrap;
+    color: inherit;
+  }
+}
+
+// ─── Оптимізація відступів головного контенту додатка ──────
+// Щоб нижній плеєр або списки треків не перекривалися мобільною навігацією
+@media (max-width: 991.98px) {
+  .client-layout {
+    // Робимо безпечний відступ знизу для всього контенту мобільного інтерфейсу
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
