@@ -6,6 +6,7 @@ export interface ClientThemeDto {
     backgroundColor?: string | null;
 }
 
+// 🚨 ФІКС: Повертаємо сигнатуру на два обов'язкові аргументи для TanStack-потоку
 export const applyThemeGradients = (
     themeId: string | null | undefined,
     availableThemes: ClientThemeDto[] | null | undefined
@@ -14,7 +15,7 @@ export const applyThemeGradients = (
 
     const root = document.documentElement;
 
-    // Якщо тема не налаштована або список тем порожній — повертаємо стандартний ембієнт плеєра
+    // Якщо тема не обрана або список пресетів з бекенду ще не завантажився — скидаємо в дефолт
     if (!themeId || !availableThemes || availableThemes.length === 0) {
         root.style.removeProperty('--premium-primary');
         root.style.removeProperty('--premium-secondary');
@@ -23,7 +24,7 @@ export const applyThemeGradients = (
         return;
     }
 
-    // Шукаємо активну тему серед реальних моделей, створених в адмінці
+    // Шукаємо активну тему в реальному масиві, що прийшов зі Сваггер-роуту
     const activeTheme = availableThemes.find(t => t.id === themeId);
 
     if (activeTheme?.primaryColor && activeTheme?.secondaryColor && activeTheme?.backgroundColor) {

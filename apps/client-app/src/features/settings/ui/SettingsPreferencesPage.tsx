@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query'; // 👈 ДодалиuseQuery
 import {
     useGetApiAuthMe,
     useGetApiMeSettingsPreferences,
@@ -10,7 +10,7 @@ import {
     usePutApiMeSettingsPrivacy,
     usePutApiMeSettingsPrivateSession,
     getGetApiMeSettingsPreferencesQueryKey,
-    customInstance,
+    customInstance, // 👈 Імпортуємо інстанс клієнта
     type UserSettingsDto,
     type UpdatePrivacyTogglesCommand,
     type CurrentUserDto
@@ -23,20 +23,22 @@ export const SettingsPreferencesPage = () => {
     const queryClient = useQueryClient();
     const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
+    // ─── Реальна сесія користувача ────────────────────────
     const { data: meRaw, isLoading: isUserLoading } = useGetApiAuthMe();
     const me = (meRaw as CurrentUserDto) ?? null;
     const isPremiumUser = me?.isPremium ?? false;
 
+    // ─── Запити даних конфігурації ────────────────────────
     const { data: prefsRaw, isLoading: isPrefsLoading } = useGetApiMeSettingsPreferences();
     const prefs = (prefsRaw as { data?: UserSettingsDto })?.data ?? (prefsRaw as UserSettingsDto);
 
-    // ─── 🚨 ФІКС МАРШРУТУ ТА БЛОКУВАННЯ РЕТРАЇВ ТУТ ─────────────────────
-    const { data: themesRaw, isError: isThemesError } = useQuery({
-        queryKey: ['api', 'admin', 'themes', 'list'], // Оновлений ключ
-        queryFn: ({ signal }) => customInstance<any>('/api/admin/themes?Page=1&PageSize=100', { method: 'GET', signal }),
+    // ─── 🚨 ГЛАВНИЙ ФІКС: Завантажуємо теми з правильного клієнтського роуту Сваггера ───
+    const { data: themesRaw, isLoading: isThemesLoading } = useQuery({
+        queryKey: ['api', 'client', 'appearance', 'themes'], // Спільний ключ кешу із секцією
+        queryFn: ({ signal }) => customInstance<any>('/api/me/appearance/themes', { method: 'GET', signal }),
         enabled: isPremiumUser,
-        retry: false, // 👈 Стоп ланцюговому перезапуску!
-        staleTime: 1000 * 60 * 15,
+        retry: false,
+        staleTime: 1000 * 60 * 15, // Кешуємо на 15 хвилин
     });
 
     const availableThemes = useMemo(() => {
@@ -44,14 +46,17 @@ export const SettingsPreferencesPage = () => {
         return (Array.isArray(raw) ? raw : raw?.items ?? []) as ClientThemeDto[];
     }, [themesRaw]);
 
+    // ─── Мутації налаштувань ──────────────────────────────
     const { mutateAsync: updateAudioQuality } = usePutApiMeSettingsAudioQuality();
     const { mutateAsync: updateCrossfade } = usePutApiMeSettingsAudioCrossfade();
     const { mutateAsync: updatePrivacy } = usePutApiMeSettingsPrivacy();
     const { mutateAsync: updatePrivateSession } = usePutApiMeSettingsPrivateSession();
 
+    // ─── Локальні стейти інтерактива ──────────────────────
     const [localCrossfade, setLocalCrossfade] = useState<number>(0);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+    // Синхронізуємо повзунок кросфейду лише один раз при завантаженні даних
     useEffect(() => {
         if (prefs && !isInitialized) {
             setLocalCrossfade(prefs.crossfadeMs ?? 0);
@@ -59,15 +64,15 @@ export const SettingsPreferencesPage = () => {
         }
     }, [prefs, isInitialized]);
 
+    // ─── 🚨 ЕФЕКТ СИНХРОНІЗАЦІЇ: Тепер передаємо повний набір даних ───
     useEffect(() => {
         if (prefs) {
             applyThemeGradients(prefs.themeId, availableThemes);
         }
     }, [prefs, availableThemes]);
 
-    // 🚨 КРИТИЧНИЙ ФІКС: Ми ПРИБРАЛИ звідси «isThemesLoading».
-    // Якщо запит на теми завершиться помилкою (наприклад, 404), сторінка НЕ застрягне на екрані завантаження!
-    if (isPrefsLoading || isUserLoading) {
+    // Кастомний преміальний кібер-лоадер
+    if (isPrefsLoading || isUserLoading || isThemesLoading) {
         return (
             <div className="yuviron-loader-wrapper">
                 <div className="cyber-spinner">
@@ -79,6 +84,8 @@ export const SettingsPreferencesPage = () => {
         );
     }
 
+    // ─── Хендлери атомарного оновлення ───────────────────
+
     const triggerToast = (msg: string) => {
         setSuccessMessage(msg);
         setTimeout(() => setSuccessMessage(null), 3500);
@@ -88,6 +95,7 @@ export const SettingsPreferencesPage = () => {
         try {
             await updateAudioQuality({ data: { audioQualityPreference: quality } });
             await queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
+
             const qualityLabels: Record<number, string> = { 1: 'Low', 2: 'Normal', 3: 'High', 4: 'Lossless' };
             triggerToast(`Audio quality streaming set to ${qualityLabels[quality] || 'Custom'}.`);
         } catch (err) {
@@ -140,6 +148,7 @@ export const SettingsPreferencesPage = () => {
                 </header>
 
                 <div className="d-flex flex-column gap-5">
+                    {/* СЕКЦІЯ 1: APPEARANCE */}
                     <section className="settings-section">
                         <h3 className="section-caption">Appearance</h3>
                         <AppearanceSettingsSection onToast={triggerToast} />
@@ -147,6 +156,7 @@ export const SettingsPreferencesPage = () => {
 
                     <hr className="settings-divider" />
 
+                    {/* СЕКЦІЯ 2: AUDIO QUALITY */}
                     <section className="settings-section">
                         <h3 className="section-caption">Audio Experience</h3>
 
@@ -169,6 +179,7 @@ export const SettingsPreferencesPage = () => {
                             </div>
                         </div>
 
+                        {/* КРОССФЕЙД */}
                         <div className="settings-row flex-column align-items-stretch gap-3">
                             <div className="d-flex justify-content-between align-items-center">
                                 <div className="settings-info">
@@ -195,6 +206,7 @@ export const SettingsPreferencesPage = () => {
 
                     <hr className="settings-divider" />
 
+                    {/* СЕКЦІЯ 3: PRIVACY */}
                     <section className="settings-section">
                         <h3 className="section-caption">Social & Privacy</h3>
 
@@ -205,8 +217,14 @@ export const SettingsPreferencesPage = () => {
                             </div>
 
                             <label className="yuviron-checkbox-wrapper">
-                                <input type="checkbox" checked={prefs?.makePlaylistsPublicByDefault ?? false} onChange={() => handlePrivacyToggle('playlists')} />
-                                <div className="custom-checkbox-box"><i className="bi bi-check-lg check-icon" /></div>
+                                <input
+                                    type="checkbox"
+                                    checked={prefs?.makePlaylistsPublicByDefault ?? false}
+                                    onChange={() => handlePrivacyToggle('playlists')}
+                                />
+                                <div className="custom-checkbox-box">
+                                    <i className="bi bi-check-lg check-icon" />
+                                </div>
                             </label>
                         </div>
 
@@ -217,23 +235,36 @@ export const SettingsPreferencesPage = () => {
                             </div>
 
                             <label className="yuviron-checkbox-wrapper">
-                                <input type="checkbox" checked={prefs?.showFollowers ?? false} onChange={() => handlePrivacyToggle('followers')} />
-                                <div className="custom-checkbox-box"><i className="bi bi-check-lg check-icon" /></div>
+                                <input
+                                    type="checkbox"
+                                    checked={prefs?.showFollowers ?? false}
+                                    onChange={() => handlePrivacyToggle('followers')}
+                                />
+                                <div className="custom-checkbox-box">
+                                    <i className="bi bi-check-lg check-icon" />
+                                </div>
                             </label>
                         </div>
 
                         <div className={`settings-row ${!isPremiumUser ? 'disabled' : ''}`}>
                             <div className="settings-info">
-                                <span className="settings-label d-flex align-items-center gap-2">
-                                    Private Session
-                                    {!isPremiumUser && <span className="premium-pill">Premium</span>}
-                                </span>
-                                <p className="settings-description">Anonymize listening logs. Plays won`t affect recommendation algorithms.</p>
+                            <span className="settings-label d-flex align-items-center gap-2">
+                                Private Session
+                                {!isPremiumUser && <span className="premium-pill">Premium</span>}
+                            </span>
+                                <p className="settings-description">Anonymize listening logs. Plays won't affect recommendation algorithms.</p>
                             </div>
 
                             <label className="yuviron-checkbox-wrapper">
-                                <input type="checkbox" disabled={!isPremiumUser} checked={prefs?.privateSession ?? false} onChange={handlePrivateSessionToggle} />
-                                <div className="custom-checkbox-box"><i className="bi bi-check-lg check-icon" /></div>
+                                <input
+                                    type="checkbox"
+                                    disabled={!isPremiumUser}
+                                    checked={prefs?.privateSession ?? false}
+                                    onChange={handlePrivateSessionToggle}
+                                />
+                                <div className="custom-checkbox-box">
+                                    <i className="bi bi-check-lg check-icon" />
+                                </div>
                             </label>
                         </div>
                     </section>
