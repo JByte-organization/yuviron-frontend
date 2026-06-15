@@ -58,16 +58,37 @@ export const AcceptTeamInviteCard = () => {
             await queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
             setTimeout(() => router.push('/artist-dashboard'), 1200);
         } catch (e) {
-            const res = (e as { response?: { status?: number; data?: { detail?: string; title?: string } } })?.response;
-            const raw = (res?.data?.detail || res?.data?.title || '').toString();
+            const res = (e as { response?: { status?: number; data?: unknown } })?.response;
+            // Бек віддає помилку і як ProblemDetails (JSON), і як text/plain (рядок) —
+            // читаємо обидва, інакше рядкове тіло губилось і ВСЕ падало в generic.
+            const data = res?.data;
+            const raw = (
+                typeof data === 'string'
+                    ? data
+                    : (data as { detail?: string; title?: string })?.detail ||
+                      (data as { detail?: string; title?: string })?.title ||
+                      ''
+            ).toString();
             const lower = raw.toLowerCase();
 
-            // Інвайт привʼязаний до конкретної пошти — найчастіша помилка: юзер
-            // увійшов іншим акаунтом. Локалізуємо й підказуємо, що робити.
+            // Явна згадка про іншу пошту в тілі — однозначний кейс.
             if (lower.includes('different email') || lower.includes('email address')) {
                 setError(
                     `Це запрошення надіслано на іншу електронну адресу.${userEmail ? ` Ви увійшли як ${userEmail}.` : ''}` +
                     ' Увійдіть в акаунт із поштою, на яку прийшов лист, і відкрийте посилання ще раз.',
+                );
+                return;
+            }
+
+            // 403 від цього ендпоінта — порожнє тіло, не залежить від акаунта/пошти
+            // (відтворюється навіть на підтвердженому коректному юзері). Це відмова
+            // authorization-policy на боці бекенду (accept-invite помилково вимагає
+            // артист-прав, яких у запрошеного ще нема). Користувач тут безсилий —
+            // не звинувачуємо його, повідомляємо про проблему сервера.
+            if (res?.status === 403) {
+                setError(
+                    'Не вдалося прийняти запрошення: сервер відхилив запит (помилка доступу). ' +
+                    'Це проблема на боці сервера — повідомте власника кабінету або спробуйте пізніше.',
                 );
                 return;
             }
