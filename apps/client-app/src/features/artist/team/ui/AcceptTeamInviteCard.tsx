@@ -4,10 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-    AppPermission,
-    usePostApiStudioArtistTeamAcceptInvite,
-} from '@repo/api/artist.ts';
+import { usePostApiStudioArtistTeamAcceptInvite } from '@repo/api/artist.ts';
 import {
     getApiAuthMe,
     getGetApiAuthMeQueryKey,
@@ -50,9 +47,10 @@ export const AcceptTeamInviteCard = () => {
     const handleAccept = async () => {
         setError(null);
         try {
-            await acceptInvite({
-                data: { token, requiredPermission: AppPermission.AccessBasic },
-            });
+            // Після фіксу беку authorization винесено в хендлер (по токену інвайта),
+            // тож поле requiredPermission прибрано зі схеми AcceptTeamInviteCommand —
+            // шлемо лише token, інакше build падає на drift'і swagger при деплої.
+            await acceptInvite({ data: { token } });
             if (artistIdFromLink) setStoredArtistId(userId, artistIdFromLink);
             // Тепер юзер у команді артиста → /auth/me поверне його в managedArtists.
             await queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
