@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     useGetApiAuthMe,
@@ -31,12 +31,12 @@ export const AppearanceSettingsSection = ({ onToast }: AppearanceSettingsSection
     const { data: prefsRaw } = useGetApiMeSettingsPreferences();
     const prefs = (prefsRaw as { data?: UserSettingsDto })?.data ?? (prefsRaw as UserSettingsDto);
 
-    // ─── 🚨 ФІКС МАРШРУТУ ТА ЦИКЛУ ТУТ ─────────────────────
+    // ─── 🚨 ФІКС 1: Отримання списку тем з правильного ендпоінту ───────────
     const { data: themesRaw, isLoading: isThemesLoading } = useQuery({
-        queryKey: ['api', 'admin', 'themes', 'list'], // Спільний ключ для перевикористання кешу
-        queryFn: ({ signal }) => customInstance<any>('/api/admin/themes?Page=1&PageSize=100', { method: 'GET', signal }),
+        queryKey: ['api', 'client', 'appearance', 'themes'],
+        queryFn: ({ signal }) => customInstance<any>('/api/me/appearance/themes', { method: 'GET', signal }),
         enabled: isPremium,
-        retry: false, // 👈 Жорстко вимикаємо повторні спроби
+        retry: false,
         staleTime: 1000 * 60 * 15,
     });
 
@@ -45,7 +45,9 @@ export const AppearanceSettingsSection = ({ onToast }: AppearanceSettingsSection
         return (Array.isArray(raw) ? raw : raw?.items ?? []) as ClientThemeDto[];
     }, [themesRaw]);
 
-    const { mutateAsync: updateTheme, isPending: isSaving } = usePutApiMeSettingsTheme();
+    const { mutateAsync: updateTheme, isPending: isModeSaving } = usePutApiMeSettingsTheme();
+    const [isThemeActivating, setIsThemeActivating] = useState(false);
+    const isSaving = isModeSaving || isThemeActivating;
 
     useEffect(() => {
         if (prefs) {
@@ -71,27 +73,32 @@ export const AppearanceSettingsSection = ({ onToast }: AppearanceSettingsSection
         }
     };
 
+    // ─── 🚨 ФІКС 2: Активація теми через виділений роут Сваггера ───────────
     const handleSelectPreset = async (theme: ClientThemeDto) => {
         if (!isPremium || isSaving || !theme.id) return;
+        setIsThemeActivating(true);
 
         try {
-            await updateTheme({
-                data: {
-                    themeMode: (prefs?.themeMode as ThemeMode) ?? 'System',
-                    themeId: theme.id
-                } as unknown as UpdateThemeCommand
+            // Викликаємо нативний PUT-метод активації зі скріншоту Сваггера
+            await customInstance(`/api/me/appearance/themes/${theme.id}/activate`, {
+                method: 'PUT'
             });
 
+            // 🚨 ФІКС: Передаємо 2 аргументи (ID нової теми та поточний масив тем)
             applyThemeGradients(theme.id, availableThemes);
+
             await queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
             onToast?.(`Амбієнтну тему успішно змінено на "${theme.name}".`);
         } catch (err) {
-            console.error('[PremiumTheme] Failed to push theme preset:', err);
+            console.error('[PremiumTheme] Failed to activate theme preset:', err);
+        } finally {
+            setIsThemeActivating(false);
         }
     };
 
     return (
         <div className="yuviron-settings-appearance d-flex flex-column gap-4">
+            {/* БЛОК 1: INTERFACE BASE SHELL */}
             <div className="appearance-card-v2 p-4 rounded-4">
                 <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
                     <div>
@@ -112,6 +119,7 @@ export const AppearanceSettingsSection = ({ onToast }: AppearanceSettingsSection
                 </div>
             </div>
 
+            {/* БЛОК 2: AMBIENT UNIVERSE PRESET SELECTION */}
             <div className="appearance-card-v2 p-4 rounded-4 position-relative overflow-hidden">
                 {!isPremium && (
                     <div className="premium-blur-overlay-v2 rounded-4 text-center p-4">
@@ -132,6 +140,8 @@ export const AppearanceSettingsSection = ({ onToast }: AppearanceSettingsSection
                     <div className="text-center py-4">
                         <div className="spinner-border text-info spinner-border-sm" role="status" />
                     </div>
+                ) : availableThemes.length === 0 ? (
+                    <div className="text-center py-3 text-muted small">Немає доступних пресетів у базі даних додатка.</div>
                 ) : (
                     <div className="row g-3">
                         {availableThemes.map((preset) => {

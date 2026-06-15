@@ -27,15 +27,15 @@ export const PlayerInitializer = () => {
 
     const analytics = useAudioAnalytics(audioRef);
 
-    // Налаштування користувача
+    // Налаштування користувача (база знає про обраний themeId)
     const { data: prefsRaw } = useGetApiMeSettingsPreferences();
     const prefs = (prefsRaw as any)?.data ?? prefsRaw;
 
-    // 🚨 ФІКС: Зміна маршруту на реальний + заміна налаштувань для блокування циклу запитів
+    // ─── 🚨 ФІКС: Запит до правильного ендпоінту зі скріншоту Сваггера ───
     const { data: themesRaw } = useQuery({
-        queryKey: ['api', 'admin', 'themes', 'list'], // Оновлений унікальний ключ
-        queryFn: ({ signal }) => customInstance<any>('/api/admin/themes?Page=1&PageSize=100', { method: 'GET', signal }),
-        retry: false, // 👈 Жорстко вимикаємо ретраї при 404/401
+        queryKey: ['api', 'client', 'appearance', 'themes'],
+        queryFn: ({ signal }) => customInstance<any>('/api/me/appearance/themes', { method: 'GET', signal }),
+        retry: false,
         staleTime: 1000 * 60 * 15, // Кешуємо на 15 хвилин
     });
 
