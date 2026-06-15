@@ -26,16 +26,13 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
 // ══════════════════════════════════════════════════════════
 .client-layout {
   min-height: 100vh;
+
+  // 1. Свечение по умолчанию для обычных пользователей (базовая тема)
+  background-color: var(--client-bg);
   background-image:
           radial-gradient(circle at 50% 40%, rgba(33, 58, 128, 0.38) 0%, transparent 55%),
-
-            // Верхнее правое темно-изумрудное/бирюзовое свечение
           radial-gradient(circle at 85% 20%, rgba(15, 76, 71, 0.35) 0%, transparent 45%),
-
-            // Верхнее левое приглушенное сине-зеленое свечение
           radial-gradient(circle at 15% 15%, rgba(14, 52, 70, 0.35) 0%, transparent 45%),
-
-            // Нижнее правое очень мягкое синее пятно для объема
           radial-gradient(circle at 85% 85%, rgba(20, 45, 80, 0.25) 0%, transparent 50%);
 
   background-attachment: fixed;
@@ -43,6 +40,27 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
   color: $client-text;
   display: flex;
   flex-direction: column;
+  transition: background-color 0.5s ease-in-out;
+
+  // 🔮 2. МАГИЧЕСКИЙ ЭМБИЕНТ ДЛЯ PREMIUM ПРЕСЕТОВ ИЗ АДМИНКИ
+  html[data-premium-theme="true"] & {
+    // Глубокий цвет подложки берется из Deep Ground пресета
+    background-color: var(--premium-bg) !important;
+
+    // Пересчитываем альфа-каналы для кругов на лету при помощи color-mix в пространстве srgb
+    background-image:
+            // Центральное фоновое свечение (смесь Dynamic Fog)
+            radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--premium-secondary) 38%, transparent) 0%, transparent 55%),
+
+              // Верхнее правое акцентное свечение (Primary Accent)
+            radial-gradient(circle at 85% 20%, color-mix(in srgb, var(--premium-primary) 35%, transparent) 0%, transparent 45%),
+
+              // Верхнее левое приглушенное свечение (Dynamic Fog)
+            radial-gradient(circle at 15% 15%, color-mix(in srgb, var(--premium-secondary) 35%, transparent) 0%, transparent 45%),
+
+              // Нижнее правое мягкое пятно для объема (Primary Accent)
+            radial-gradient(circle at 85% 85%, color-mix(in srgb, var(--premium-primary) 25%, transparent) 0%, transparent 50%) !important;
+  }
 
   &__body {
     display: flex;
@@ -85,7 +103,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     }
   }
 }
-
 // ══════════════════════════════════════════════════════════
 // HEADER
 // ══════════════════════════════════════════════════════════

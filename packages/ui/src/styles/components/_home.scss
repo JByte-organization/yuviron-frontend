@@ -160,62 +160,73 @@
 
 // ─── MoodSection ─────────────────────────────────────────
 .mood-section {
-  &__scroll {
-    display: flex;
-    gap: 16px;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    scrollbar-width: none;
+  position: relative;
 
-    &::-webkit-scrollbar { display: none; }
+  &__filter-wrap {
+    position: relative;
+    display: inline-block;
   }
 
   &__filter-btn {
-    height: 28px;
-    padding: 0 10px;
-    border-radius: 6px;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 8px;
     border: 1px solid $client-border;
     background: $client-surface;
     color: $client-text-muted;
-    font-size: 12px;
+    font-size: 13px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    transition: 0.2s ease;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
 
     &:hover {
       border-color: $client-accent;
       color: $client-text;
+      background: $client-hover;
     }
   }
 
   &__dropdown {
     position: absolute;
     right: 0;
-    top: calc(100% + 4px);
-    min-width: 120px;
+    top: calc(100% + 6px);
+    min-width: 140px;
     background: $client-surface-2;
     border: 1px solid $client-border;
     border-radius: 8px;
-    padding: 4px 0;
-    z-index: 100;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    padding: 6px 0;
+    z-index: 1100;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   }
 
   &__dropdown-item {
     display: block;
     width: 100%;
     text-align: left;
-    padding: 8px 14px;
+    padding: 10px 16px;
     border: none;
     background: transparent;
     color: $client-text-muted;
     font-size: 13px;
-    transition: 0.15s ease;
+    cursor: pointer;
+    transition: all 0.15s ease;
 
     &:hover, &--active {
       color: $client-accent;
+      background: rgba(255, 255, 255, 0.03);
     }
+  }
+
+  &__dropdown-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1050;
+    background: transparent;
   }
 }
 
@@ -224,30 +235,55 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
-  min-width: 80px;
+  min-width: 90px;
   text-align: center;
+  user-select: none;
+  background: transparent;
+
+  &__circle-wrap {
+    position: relative;
+    padding: 2px; // Захисний буфер для запобігання обрізання граней при трансформації
+  }
 
   &__circle {
-    width: 80px;
-    height: 80px;
+    width: 84px;
+    height: 84px;
     border-radius: 50%;
     border: 2px solid $client-border;
-    background: $client-hover;
+    background: $client-surface;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s ease,
+    background-color 0.25s ease;
 
-    img, i { color: $client-text-muted; font-size: 28px; }
+    img, i {
+      color: $client-text-muted;
+      font-size: 26px;
+      transition: color 0.25s ease;
+    }
   }
 
   &__name {
     font-size: 13px;
     font-weight: 500;
     color: $client-text-muted;
-    transition: color 0.2s ease;
+    transition: color 0.25s ease;
+  }
+
+  &:hover {
+    .mood-card__circle {
+      border-color: rgba($client-accent, 0.5);
+      background: $client-hover;
+
+      i, img { color: $client-text; }
+    }
+    .mood-card__name {
+      color: $client-text;
+    }
   }
 
   &--active {
@@ -255,7 +291,7 @@
       border-color: $client-accent;
       background: rgba(0, 166, 255, 0.12);
 
-      i { color: $client-accent; }
+      i, img { color: $client-accent; }
     }
 
     .mood-card__name {
@@ -263,7 +299,6 @@
     }
   }
 }
-
 
 // ─── AlbumCard ────────────────────────────────────────────
 .album-card {
@@ -963,7 +998,6 @@
   }
 
   // Like кнопка — знизу справа на обкладинці
-  // Like кнопка — знизу справа на обкладинці
   &__like-btn {
     position: absolute;
     bottom: 8px;
@@ -986,15 +1020,13 @@
       transform: scale(1.1);
     }
 
-    // 🚨 ФІКС №1: Справжній селектор приховання для BEM вкладеності
     &--hidden {
       opacity: 0;
       pointer-events: none;
     }
 
-    // 🚨 ФІКС №2: Активний стан — показуємо серце ЗАВЖДИ і фарбуємо в зелений
     &--active {
-      color: $green !important; // Якщо на FavoritesPage хочеш червоне, зміни тут на $red
+      color: $green !important;
       opacity: 1 !important;
       pointer-events: auto !important;
     }

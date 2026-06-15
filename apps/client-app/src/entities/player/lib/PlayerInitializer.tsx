@@ -1,12 +1,19 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { usePlayerStore } from '../model/playerStore';
-import { playerAudioRef, playerAdAudioRef, audioAnalyticsRef } from '../lib/playerRefs'; //
+import { playerAudioRef, playerAdAudioRef, audioAnalyticsRef } from '../lib/playerRefs';
 import { usePlayer } from '../lib/usePlayer';
 import { useAudioAnalytics } from '../lib/useAudioAnalytics';
 
-import { getApiTracksIdPlay, type TrackStreamUrlResponse } from '@repo/api/client';
+import {
+    getApiTracksIdPlay,
+    useGetApiMeSettingsPreferences,
+    customInstance,
+    type TrackStreamUrlResponse
+} from '@repo/api/client';
+import { applyThemeGradients, type ClientThemeDto } from '@/shared/lib/applyThemeGradients';
 
 export const PlayerInitializer = () => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -19,6 +26,29 @@ export const PlayerInitializer = () => {
     const currentTrack = usePlayerStore(s => s.currentTrack);
 
     const analytics = useAudioAnalytics(audioRef);
+
+    // Налаштування користувача
+    const { data: prefsRaw } = useGetApiMeSettingsPreferences();
+    const prefs = (prefsRaw as any)?.data ?? prefsRaw;
+
+    // 🚨 ФІКС: Зміна маршруту на реальний + заміна налаштувань для блокування циклу запитів
+    const { data: themesRaw } = useQuery({
+        queryKey: ['api', 'admin', 'themes', 'list'], // Оновлений унікальний ключ
+        queryFn: ({ signal }) => customInstance<any>('/api/admin/themes?Page=1&PageSize=100', { method: 'GET', signal }),
+        retry: false, // 👈 Жорстко вимикаємо ретраї при 404/401
+        staleTime: 1000 * 60 * 15, // Кешуємо на 15 хвилин
+    });
+
+    const availableThemes = useMemo(() => {
+        const raw = (themesRaw as any)?.data ?? themesRaw;
+        return (Array.isArray(raw) ? raw : raw?.items ?? []) as ClientThemeDto[];
+    }, [themesRaw]);
+
+    useEffect(() => {
+        if (prefs) {
+            applyThemeGradients(prefs.themeId, availableThemes);
+        }
+    }, [prefs, availableThemes]);
 
     useEffect(() => {
         playerAudioRef.current = audioRef.current;

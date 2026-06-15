@@ -88,6 +88,7 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
                         {navLink('/payout', 'Finance')}
                         {navLink('/ads', 'Ads')}
                         {navLink('/plans', 'Premium Plans')}
+                        {navLink('/themes', 'Premium Themes')}
 
                         <li className="nav-group">
                             <div className="nav-link d-flex justify-content-between align-items-center" style={{ cursor: 'pointer' }} onClick={() => setElementsOpen(o => !o)}>

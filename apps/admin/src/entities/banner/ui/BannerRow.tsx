@@ -75,3 +75,4 @@ export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: Ba
         </tr>
     );
 };
+
