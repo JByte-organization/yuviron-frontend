@@ -91,6 +91,26 @@ export const ArtistDashboardSidebar = () => {
                         <hr className="client-sidebar__divider" />
                     </div>
 
+                    {/* Монетизація: підписка та реклама */}
+                    <div className="client-sidebar__section">
+                        <p className="client-sidebar__section-title">Монетизація</p>
+                        <nav className="client-sidebar__nav">
+                            <NavItem
+                                href="/artist-dashboard/subscription"
+                                label="Підписка"
+                                isActive={isActive('/artist-dashboard/subscription')}
+                                icon={<i className="bi bi-star" />}
+                            />
+                            <NavItem
+                                href="/artist-dashboard/marketing"
+                                label="Реклама"
+                                isActive={isActive('/artist-dashboard/marketing')}
+                                icon={<i className="bi bi-megaphone" />}
+                            />
+                        </nav>
+                        <hr className="client-sidebar__divider" />
+                    </div>
+
                     {/* Налаштування */}
                     <div className="client-sidebar__section">
                         <nav className="client-sidebar__nav">
