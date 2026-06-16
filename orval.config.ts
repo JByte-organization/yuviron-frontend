@@ -25,7 +25,6 @@ const queryConfig = {
 };
 
 const config: Parameters<typeof defineConfig>[0] = {
-    // ─── Адмінка ──────────────────────────────────────────
     yuviron_admin: {
         input: adminInput,
         output: {
@@ -41,7 +40,6 @@ const config: Parameters<typeof defineConfig>[0] = {
         },
     },
 
-    // ─── Клієнт ───────────────────────────────────────────
     yuviron_client: {
         input: clientInput,
         output: {
@@ -56,7 +54,6 @@ const config: Parameters<typeof defineConfig>[0] = {
             },
         },
     },
-    // ─── Артист  ──────────
     yuviron_artist: {
         input: artistInput,
         output: {

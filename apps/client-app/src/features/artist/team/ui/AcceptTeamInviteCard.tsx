@@ -14,19 +14,10 @@ import { setStoredArtistId } from '@/entities/artist/model/currentArtist';
 import { useSessionStore } from '@/entities/session/model/store';
 import { unwrap } from '@/shared/lib/unwrapApi';
 
-/**
- * Прийняття запрошення до команди артиста. Бек шле лист із посиланням
- * /studio/invites?code=… (раніше очікували token/artistId — фактичний параметр
- * `code`, тримаємо token як фолбек). Прийняття — свідома дія, тому кнопка,
- * а не авто-сабміт (на відміну від confirm-email).
- */
 export const AcceptTeamInviteCard = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
-    // Бек шле ?code=… ; лишаємо ?token= як фолбек на випадок старих листів.
     const token = searchParams?.get('code') ?? searchParams?.get('token') ?? '';
-    // Якщо лист містить artistId — збережемо, щоб кабінет одразу відкрився
-    // на потрібному артисті (accept-invite повертає 204 без тіла).
     const artistIdFromLink = searchParams?.get('artistId') ?? null;
 
     const userId = useSessionStore((s) => s.user?.id);
@@ -35,13 +26,6 @@ export const AcceptTeamInviteCard = () => {
 
     const [error, setError] = useState<string | null>(null);
     const [alreadyMember, setAlreadyMember] = useState(false);
-    // Бек переніс accept-invite зі studio-artist API (де він був закритий
-    // артист-політикою → дедлок 403: запрошений ще не має артист-прав) у КЛІЄНТСЬКИЙ
-    // API: POST /api/artist-profiles/accept-invite, security=Bearer (будь-який
-    // залогінений), тіло — лише { token }. Старий хук usePostApiStudioArtistTeamAcceptInvite
-    // бив у стару (досі закриту політикою) адресу й тому давав 403 навіть на правильній пошті.
-    // Кличемо новий ендпоінт напряму через customInstance (manual-layer), щоб не залежати
-    // від регенерації згенерованого клієнта.
     const { mutateAsync: acceptInvite, isPending, isSuccess } = useMutation({
         mutationFn: (vars: { token: string }) =>
             customInstance<void>('/api/artist-profiles/accept-invite', {
@@ -51,7 +35,6 @@ export const AcceptTeamInviteCard = () => {
             }),
     });
 
-    // Веде в кабінет артиста; якщо керований один — одразу обираємо його.
     const goToCabinet = (managed: CurrentUserDto['managedArtists']) => {
         const only = managed?.length === 1 ? managed[0]?.artistId : null;
         if (only) setStoredArtistId(userId, only);
@@ -63,16 +46,11 @@ export const AcceptTeamInviteCard = () => {
         try {
             await acceptInvite({ token });
             if (artistIdFromLink) setStoredArtistId(userId, artistIdFromLink);
-            // Тепер юзер у команді артиста → /auth/me поверне його в managedArtists.
             await queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
             setTimeout(() => router.push('/artist-dashboard'), 1200);
         } catch (e) {
             const res = (e as { response?: { status?: number; data?: unknown } })?.response;
-            // Бек віддає помилку і як ProblemDetails (JSON), і як text/plain (рядок) —
-            // читаємо обидва, інакше рядкове тіло губилось і ВСЕ падало в generic.
             const data = res?.data;
-            // customInstance віддає ProblemDetails як JSON (detail/title), а text/plain
-            // загортає в { rawText } — читаємо всі варіанти, інакше тіло помилки губиться.
             const data2 = data as { detail?: string; title?: string; rawText?: string };
             const raw = (
                 typeof data === 'string'
@@ -81,10 +59,6 @@ export const AcceptTeamInviteCard = () => {
             ).toString();
             const lower = raw.toLowerCase();
 
-            // «Чужа пошта» показуємо ЛИШЕ якщо бек явно сказав це в тілі. Голий 403
-            // (порожнє тіло) — це НЕ про пошту: підтверджено на правильній адресі бек
-            // усе одно віддає 403, тобто спрацьовує authorization-gate ендпоінта, а не
-            // перевірка адресата інвайта. Не звинувачуємо юзера у неправильній пошті.
             if (lower.includes('different email') || lower.includes('email address')) {
                 setError(
                     `Це запрошення надіслано на іншу електронну адресу.${userEmail ? ` Ви увійшли як ${userEmail}.` : ''}` +
@@ -93,10 +67,6 @@ export const AcceptTeamInviteCard = () => {
                 return;
             }
 
-            // Псевдо-збій: інвайт міг уже бути прийнятий (повторний перехід / токен
-            // спалено), але юзер УЖЕ в команді. Перевіряємо /auth/me свіжим запитом —
-            // якщо керовані артисти є, ведемо в кабінет замість помилки. Робимо це до
-            // показу будь-якої помилки, щоб покрити і 400, і випадковий 403.
             try {
                 const fresh = unwrap<CurrentUserDto>(await getApiAuthMe());
                 const managed = fresh?.managedArtists ?? [];
@@ -107,12 +77,8 @@ export const AcceptTeamInviteCard = () => {
                     return;
                 }
             } catch {
-                // /auth/me не вдалось — падаємо у звичайні гілки помилок нижче.
             }
 
-            // Голий 403 без тіла — відмова authorization-policy на боці сервера
-            // (accept-invite вимагає прав, яких у запрошеного ще нема). Користувач тут
-            // безсилий: повідомляємо про серверне обмеження, не про його пошту.
             if (res?.status === 403) {
                 setError(
                     'Не вдалося прийняти запрошення: сервер відхилив запит (помилка доступу). ' +

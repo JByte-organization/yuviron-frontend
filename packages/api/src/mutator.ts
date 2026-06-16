@@ -1,4 +1,3 @@
-// src/shared/api/mutator.ts
 
 import { getDeviceFingerprint } from './fingerprint';
 
@@ -70,18 +69,13 @@ const fingerprintHeaders = async (): Promise<Record<string, string>> => {
     return fingerprint ? { 'X-Device-Fingerprint': fingerprint } : {};
 };
 
-/**
- * ОПРЕДЕЛЯЕМ, КТО ДЕЛАЕТ ЗАПРОС:
- * Если configuredBaseUrl отсутствует, значит это админ-панель (ходит напрямую).
- */
 const isAdminApp = (): boolean => !configuredBaseUrl;
 
 const refreshAccessToken = async (): Promise<string> => {
     const baseUrl = getBaseUrl();
 
-    // ИСПРАВЛЕНО: Если это админка, рефрешимся через админский эндпоинт, иначе через клиентский
     const refreshUrl = isAdminApp()
-        ? `${baseUrl}/auth/refresh` // Если бэк общий, но требует заголовков, или поменяй на /auth/admin/refresh при необходимости
+        ? `${baseUrl}/auth/refresh`
         : `${baseUrl}/auth/refresh`;
 
     const response = await fetch(refreshUrl, {
@@ -155,7 +149,6 @@ export const customInstance = async <T>(
     let token = getAccessToken();
     let response = await makeRequest(token);
 
-    // --- 401: токен истёк, пробуем обновить ---
     if (response.status === 401 && !authRoute) {
         if (isRefreshing) {
             return new Promise((resolve, reject) => {
@@ -184,7 +177,6 @@ export const customInstance = async <T>(
         } catch (refreshError) {
             processQueue(refreshError, null);
 
-            // Чистим куку админа при падении рефреша
             if (typeof window !== 'undefined') {
                 document.cookie = "admin_logged_in=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
             }

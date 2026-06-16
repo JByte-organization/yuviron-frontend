@@ -95,8 +95,6 @@
       color: #fff;
     }
 
-    // Белые бейджи Google/Apple сливаются с белой карточкой на светлой теме —
-    // тонкая граница очерчивает их (на тёмной теме незаметна).
     &--google {
       background: #fff;
       color: #ea4335;
@@ -425,8 +423,6 @@
       color: #fff;
     }
 
-    // Белые бейджи Google/Apple сливаются с белой карточкой на светлой теме —
-    // тонкая граница очерчивает их (на тёмной теме незаметна).
     &--google {
       background: #fff;
       color: #ea4335;
@@ -471,9 +467,6 @@
 }
 
 
-/* =========================
-   REGISTER DETAILS PAGE
-========================= */
 
 .client-register-details-page {
   width: 100%;
@@ -678,9 +671,6 @@
   }
 }
 
-/* =========================
-   REGISTER PROFILE PAGE
-========================= */
 
 .client-register-profile-page {
   width: 100%;
@@ -884,9 +874,6 @@
   }
 }
 
-/* =========================
-   FORM ERROR STATES
-========================= */
 
 .client-forgot-page {
   width: 100%;
@@ -1062,9 +1049,6 @@
   }
 }
 
-/* =========================
-   RESET PASSWORD PAGE
-========================= */
 
 .client-reset-page {
   width: 100%;
@@ -1099,10 +1083,6 @@
   }
 }
 
-// Страница «Дані акаунту» внутри клиентской оболочки (header + сайдбары).
-// Карточка по центру контентной области; форма внутри переиспользует
-// .client-reset-form стили инпутов/кнопок. Сообщения error/success скоупим
-// сюда, т.к. в самом .client-reset-form они не определены.
 .client-account-page {
   padding: 32px 24px;
   display: flex;
@@ -1282,9 +1262,6 @@
 }
 
 
-// ══════════════════════════════════════════════════════════
-// TRACK PAGE
-// ══════════════════════════════════════════════════════════
 .track-page {
   padding: 0 1.5rem 2rem;
 
@@ -1308,13 +1285,9 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// TRACK PAGE HEADER
-// ══════════════════════════════════════════════════════════
 .track-page-header {
   padding: 24px 0 32px;
 
-  // ─── Обкладинка ───────────────────────────────────────
   &__cover {
     width: 120px;
     height: 120px;
@@ -1335,7 +1308,6 @@
     }
   }
 
-  // ─── Тип ──────────────────────────────────────────────
   &__type {
     font-size: 12px;
     font-weight: 600;
@@ -1345,7 +1317,6 @@
     margin: 0 0 8px;
   }
 
-  // ─── Назва ────────────────────────────────────────────
   &__title {
     font-size: 36px;
     font-weight: 700;
@@ -1356,7 +1327,6 @@
     @media (min-width: 768px) { font-size: 52px; }
   }
 
-  // ─── Мета інфо ────────────────────────────────────────
   &__meta {
     display: flex;
     align-items: center;
@@ -1378,7 +1348,6 @@
     opacity: 0.5;
   }
 
-  // ─── Кнопки дій ───────────────────────────────────────
   &__actions {
     display: flex;
     align-items: center;
@@ -1396,7 +1365,6 @@
     justify-content: center;
     transition: 0.2s ease;
 
-    // Play — велика кругла кнопка
     &--play {
       width: 52px;
       height: 52px;
@@ -1411,7 +1379,6 @@
       }
     }
 
-    // Іконки — прозорі
     &--icon {
       width: 36px;
       height: 36px;
@@ -1422,7 +1389,6 @@
       &:hover { color: $client-text; }
     }
 
-    // Активний лайк
     &--liked {
       color: $client-accent !important;
     }
@@ -1431,16 +1397,10 @@
 
 
 
-// ══════════════════════════════════════════════════════════
-// ARTIST PAGE
-// ══════════════════════════════════════════════════════════
 .artist-page {
   padding: 0 1.5rem 2rem;
 }
 
-// ══════════════════════════════════════════════════════════
-// ARTIST PAGE HEADER
-// ══════════════════════════════════════════════════════════
 .artist-page-header {
   padding: 24px 0 32px;
 
@@ -1453,7 +1413,6 @@
     margin: 0 0 8px;
   }
 
-  // ─── Аватар ───────────────────────────────────────────
   &__avatar {
     width: 100px;
     height: 100px;
@@ -1474,7 +1433,6 @@
     }
   }
 
-  // ─── Верифікація ──────────────────────────────────────
   &__verified {
     display: flex;
     align-items: center;
@@ -1487,7 +1445,6 @@
     i { font-size: 14px; }
   }
 
-  // ─── Назва ────────────────────────────────────────────
   &__name {
     font-size: 40px;
     font-weight: 700;
@@ -1498,14 +1455,12 @@
     @media (min-width: 768px) { font-size: 56px; }
   }
 
-  // ─── Слухачі ──────────────────────────────────────────
   &__listeners {
     font-size: 14px;
     color: $client-text-muted;
     margin: 0;
   }
 
-  // ─── Кнопки дій ───────────────────────────────────────
   &__actions {
     display: flex;
     align-items: center;
@@ -1574,9 +1529,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// ARTIST MUSIC TABS
-// ══════════════════════════════════════════════════════════
 .artist-music-tabs {
   display: flex;
   gap: 8px;
@@ -1613,9 +1565,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// ARTIST ABOUT SECTION
-// ══════════════════════════════════════════════════════════
 .artist-about {
   &__card {
     border-radius: 16px;
@@ -1639,7 +1588,6 @@
     }
   }
 
-  // Градієнт знизу
   &__overlay {
     position: absolute;
     bottom: 0;
@@ -1668,7 +1616,6 @@
     line-height: 1.6;
     max-width: 600px;
 
-    // Обрізаємо довгий текст
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -1676,7 +1623,6 @@
   }
 }
 
-// Спільний клас слайдера для сторінки артиста
 .artist-slider {
   scrollbar-width: none;
   padding-bottom: 8px;
@@ -1688,9 +1634,6 @@
 
 
 
-// ══════════════════════════════════════════════════════════
-// NOTIFICATIONS PAGE
-// ══════════════════════════════════════════════════════════
 .notifications-page {
   padding: 1.5rem 2rem 2rem;
 
@@ -1736,7 +1679,6 @@
     }
   }
 
-  // ─── Фільтр-таби ──────────────────────────────────────
   &__filters {
     display: flex;
     gap: 8px;
@@ -1778,7 +1720,6 @@
     margin-bottom: 24px;
   }
 
-  // ─── Групи ────────────────────────────────────────────
   &__group {
     margin-bottom: 32px;
   }
@@ -1790,7 +1731,6 @@
     margin-bottom: 16px;
   }
 
-  // ─── Порожній стан ────────────────────────────────────
   &__empty {
     display: flex;
     flex-direction: column;
@@ -1805,9 +1745,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// NOTIFICATION CARD — трек/альбом
-// ══════════════════════════════════════════════════════════
 .notification-card {
   display: flex;
   align-items: flex-start;
@@ -1823,7 +1760,6 @@
 
   &:hover { background: $client-surface-2; }
 
-  // ─── Непрочитане ──────────────────────────────────────
   &--unread {
     border-color: rgba(0, 166, 255, 0.25);
     background: rgba(0, 166, 255, 0.04);
@@ -1840,7 +1776,6 @@
     flex-shrink: 0;
   }
 
-  // ─── Обкладинка ───────────────────────────────────────
   &__cover {
     width: 80px;
     height: 80px;
@@ -1856,7 +1791,6 @@
     }
   }
 
-  // ─── Інфо ─────────────────────────────────────────────
   &__info {
     flex: 1;
     min-width: 0;
@@ -1913,7 +1847,6 @@
     margin: 4px 0 0;
   }
 
-  // ─── Кнопки дій ───────────────────────────────────────
   &__actions {
     display: flex;
     align-items: center;
@@ -1966,9 +1899,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// FRIEND REQUEST CARD
-// ══════════════════════════════════════════════════════════
 .friend-request-card {
   display: flex;
   align-items: center;
@@ -2065,9 +1995,6 @@
 }
 
 
-// ══════════════════════════════════════════════════════════
-// SEARCH PAGE
-// ══════════════════════════════════════════════════════════
 .search-page {
   padding: 1.5rem 2rem 2rem;
 
@@ -2088,7 +2015,6 @@
     margin: 0;
   }
 
-  // ─── Фільтр таби ──────────────────────────────────────
   &__filters {
     display: flex;
     gap: 8px;
@@ -2144,7 +2070,6 @@
     text-align: center;
   }
 
-  // ─── Секції результатів ───────────────────────────────
   &__results {
     display: flex;
     flex-direction: column;
@@ -2152,7 +2077,6 @@
   }
 
   &__section {
-    // нічого — відступи через gap на results
   }
 
   &__section-title {
@@ -2163,10 +2087,8 @@
   }
 
   &__tracks {
-    // TrackRow вже має свої стилі
   }
 
-  // ─── Порожній стан ────────────────────────────────────
   &__empty {
     display: flex;
     flex-direction: column;
@@ -2195,9 +2117,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// GENRE CARD
-// ══════════════════════════════════════════════════════════
 .genre-card {
   display: block;
   border-radius: 12px;
@@ -2245,9 +2164,6 @@
 }
 
 
-// ══════════════════════════════════════════════════════════
-// CLIENT MODAL
-// ══════════════════════════════════════════════════════════
 .client-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -2275,7 +2191,6 @@
   &.modal-dialog-md { max-width: 520px; }
   &.modal-dialog-lg { max-width: 680px; }
 
-  // ─── Заголовок ────────────────────────────────────────
   &__header {
     display: flex;
     align-items: center;
@@ -2312,12 +2227,10 @@
     }
   }
 
-  // ─── Тіло ─────────────────────────────────────────────
   &__body {
     padding: 0 20px 20px;
   }
 
-  // ─── Повідомлення + дії (напр. «пошта вже зареєстрована») ──
   &__message {
     font-size: 14px;
     line-height: 1.5;
@@ -2369,7 +2282,6 @@
     }
   }
 
-  // ─── Інпут ────────────────────────────────────────────
   &__input {
     width: 100%;
     height: 44px;
@@ -2389,7 +2301,6 @@
     &--error { border-color: $client-danger; }
   }
 
-  // ─── Textarea ─────────────────────────────────────────
   &__textarea {
     width: 100%;
     border-radius: 8px;
@@ -2408,14 +2319,12 @@
     &:focus { border-color: $client-accent; }
   }
 
-  // ─── Помилка поля ─────────────────────────────────────
   &__field-error {
     font-size: 12px;
     color: $client-danger;
     margin: 4px 0 0;
   }
 
-  // ─── Toggle ───────────────────────────────────────────────
   &__toggle-row {
     display: flex;
     align-items: center;
@@ -2460,7 +2369,6 @@
     color: $client-text-muted;
   }
 
-  // ─── Підказка знизу ───────────────────────────────────
   &__hint {
     font-size: 12px;
     color: $client-text-muted;
@@ -2468,7 +2376,6 @@
     margin: 16px 0 0;
   }
 
-  // ─── Підтвердження видалення ──────────────────────────
   &__confirm-text {
     font-size: 15px;
     color: $client-text-muted;
@@ -2482,7 +2389,6 @@
     margin: 0 0 8px;
   }
 
-  // ─── Футер з кнопками ─────────────────────────────────
   &__footer {
     display: flex;
     align-items: center;
@@ -2491,7 +2397,6 @@
     margin-top: 24px;
   }
 
-  // ─── Кнопки ───────────────────────────────────────────
   &__btn {
     display: flex;
     align-items: center;
@@ -2543,9 +2448,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// COVER UPLOAD
-// ══════════════════════════════════════════════════════════
 .cover-upload {
   &__zone {
     width: 148px;
@@ -2574,7 +2476,6 @@
     }
   }
 
-  // Прев'ю завантаженого фото
   &__preview {
     width: 100%;
     height: 100%;
@@ -2582,7 +2483,6 @@
     display: block;
   }
 
-  // Overlay поверх прев'ю
   &__overlay {
     position: absolute;
     inset: 0;
@@ -2623,7 +2523,6 @@
     &:hover { background: rgba(255, 80, 80, 0.35); }
   }
 
-  // Плейсхолдер (без фото)
   &__placeholder {
     width: 100%;
     height: 100%;
@@ -2652,13 +2551,9 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// PLAYLIST PAGE
-// ══════════════════════════════════════════════════════════
 .playlist-page {
   padding: 0 1.5rem 2rem;
 
-  // ─── Колонки таблиці ──────────────────────────────────
   &__columns {
     display: grid;
     grid-template-columns: 32px 1fr 1fr 140px 80px;
@@ -2691,9 +2586,6 @@
   &__tracks { margin-bottom: 40px; }
 }
 
-// ══════════════════════════════════════════════════════════
-// PLAYLIST PAGE HEADER
-// ══════════════════════════════════════════════════════════
 .playlist-page-header {
   padding: 24px 0 32px;
 
@@ -2754,7 +2646,6 @@
 
   &__dot { opacity: 0.5; }
 
-  // ─── Кнопки дій ───────────────────────────────────────
   &__actions {
     display: flex;
     align-items: center;
@@ -2825,9 +2716,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// PLAYLIST RECOMMENDATIONS
-// ══════════════════════════════════════════════════════════
 .playlist-recommendations {
   margin-top: 8px;
 
@@ -2871,7 +2759,7 @@
     animation: spin 0.8s linear infinite;
   }
 
-  &__list { /* TrackRow має свої стилі */ }
+  &__list { }
 }
 
 @keyframes spin {
@@ -2879,9 +2767,6 @@
   to   { transform: rotate(360deg); }
 }
 
-// ══════════════════════════════════════════════════════════
-// ADD TO PLAYLIST MODAL
-// ══════════════════════════════════════════════════════════
 .add-playlist-modal {
   &__search-wrap {
     position: relative;
@@ -3023,12 +2908,9 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// PLAYLIST TOAST
-// ══════════════════════════════════════════════════════════
 .playlist-toast {
   position: fixed;
-  bottom: 80px; // над плеєром
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
   opacity: 0;
@@ -3101,9 +2983,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// USER PAGE
-// ══════════════════════════════════════════════════════════
 .user-page {
   padding-bottom: 2rem;
 
@@ -3112,25 +2991,19 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// USER PAGE HEADER
-// ══════════════════════════════════════════════════════════
 .user-page-header {
   position: relative;
   padding: 48px 1.5rem 32px;
   margin-bottom: 32px;
   overflow: hidden;
 
-  // ─── Градієнт з аватарки ──────────────────────────────
   &__gradient {
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 0;
-    // background задається інлайн через dominantColor
   }
 
-  // Контент поверх градієнту
   &__content {
     position: relative;
     z-index: 1;
@@ -3146,7 +3019,6 @@
     }
   }
 
-  // ─── Аватарка ─────────────────────────────────────────
   &__avatar {
     width: 160px;
     height: 160px;
@@ -3168,7 +3040,6 @@
     }
   }
 
-  // ─── Інфо ─────────────────────────────────────────────
   &__info {
     flex: 1;
     min-width: 0;
@@ -3194,7 +3065,6 @@
     @media (min-width: 768px) { font-size: 72px; }
   }
 
-  // ─── Статистика ───────────────────────────────────────
   &__stats {
     display: flex;
     align-items: center;
@@ -3227,7 +3097,6 @@
 
   &__dot { opacity: 0.5; }
 
-  // ─── Кнопки дій ───────────────────────────────────────
   &__actions {
     position: relative;
     z-index: 1;
@@ -3287,9 +3156,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// USER CARD — підписник / підписка
-// ══════════════════════════════════════════════════════════
 .user-card {
   display: flex;
   flex-direction: column;
@@ -3344,7 +3210,6 @@
   }
 }
 
-// Слайдер на сторінці користувача
 .user-slider {
   scrollbar-width: none;
   padding-bottom: 8px;
@@ -3355,9 +3220,6 @@
 }
 
 
-// ══════════════════════════════════════════════════════════
-// AUTH REQUIRED MODAL
-// ══════════════════════════════════════════════════════════
 .auth-required-modal {
   &-overlay {
     position: fixed;
@@ -3487,9 +3349,6 @@
 }
 
 
-// ══════════════════════════════════════════════════════════
-// GUEST SIDEBAR CARDS
-// ══════════════════════════════════════════════════════════
 .guest-sidebar-card {
   position: relative;
   background: $client-surface-2;
@@ -3531,9 +3390,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// AUTH POPOVER
-// ══════════════════════════════════════════════════════════
 .guest-auth-popover {
   position: absolute;
   left: calc(100% + 12px);
@@ -3613,9 +3469,6 @@
   from { opacity: 0; transform: translateX(-6px); }
   to   { opacity: 1; transform: translateX(0); }
 }
-// ══════════════════════════════════════════════════════════
-// BECOME ARTIST — /become-artist (вибір, створення, заявка)
-// ══════════════════════════════════════════════════════════
 .client-become-artist {
   max-width: 720px;
   margin: 40px auto;
@@ -3651,7 +3504,6 @@
     margin: 0;
   }
 
-  // ─── Вибір шляху ──────────────────────────────────────
   &__choices {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -3702,7 +3554,6 @@
     margin: 0;
   }
 
-  // ─── Форма ────────────────────────────────────────────
   &__form { display: flex; flex-direction: column; gap: 18px; }
 
   &__avatar {
@@ -3767,7 +3618,6 @@
     }
   }
 
-  // ─── Пошук артиста ────────────────────────────────────
   &__search { display: flex; flex-direction: column; gap: 12px; }
 
   &__results {
@@ -3820,7 +3670,6 @@
   &__result-name { flex: 1; font-size: 14px; color: $client-text; }
   &__result-arrow { color: $client-text-muted; font-size: 14px; }
 
-  // ─── Обраний артист ───────────────────────────────────
   &__selected {
     display: flex;
     align-items: center;
@@ -3862,7 +3711,6 @@
     &:hover { text-decoration: underline; }
   }
 
-  // ─── Екрани результату (успіх / ліміт / очікування) ───
   &__result {
     display: flex;
     flex-direction: column;
@@ -3897,16 +3745,12 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// NOTIFICATIONS — список + універсальна картка (реальний контракт)
-// ══════════════════════════════════════════════════════════
 .notifications-page__list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-// Картка як <button> у вертикальному списку: іконка + title/body + час.
 .notifications-page__list .notification-card {
   width: 100%;
   text-align: left;
@@ -3942,9 +3786,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// APP NOTIFICATION TOAST — real-time пуш (SignalR)
-// ══════════════════════════════════════════════════════════
 .app-notif-toast {
   position: fixed;
   top: 80px;
@@ -4026,7 +3867,7 @@
   &__draggable-row-holder {
     transition: background-color 0.15s ease, transform 0.15s ease;
     border-radius: 8px;
-    touch-action: none; // Захищає від випадкових скролів екрану пальцем на мобільних
+    touch-action: none;
 
     &--dragging {
       background: rgba(255, 255, 255, 0.07) !important;

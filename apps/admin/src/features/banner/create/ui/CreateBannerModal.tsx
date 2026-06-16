@@ -33,31 +33,26 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
         defaultValues: { title: '', targetUrl: '', isActive: true, artistId: '', startsAtUtc: '', endsAtUtc: '', targetCountries: '', targetGenres: '' }
     });
 
-    // Слідкуємо за датами для миттєвої крос-валідації
     const startsAtUtc = watch('startsAtUtc');
     const endsAtUtc = watch('endsAtUtc');
 
-    // Тригеримо взаємну перевірку полей при зміні будь-якого з них
     useEffect(() => {
         if (startsAtUtc || endsAtUtc) {
             trigger(['startsAtUtc', 'endsAtUtc']);
         }
     }, [startsAtUtc, endsAtUtc, trigger]);
 
-    // ─── Стейты для автокомплита артистов ───────────────────
     const [artistSearch, setArtistSearch] = useState('');
     const [artistsOptions, setArtistsOptions] = useState<{ id: string; name: string }[]>([]);
     const [isArtistsLoading, setIsArtistsLoading] = useState(false);
     const [isArtistDropdownOpen, setIsArtistDropdownOpen] = useState(false);
 
-    // ─── Стейты для тегування та пошуку жанрів ──────────────
     const [genreSearch, setGenreSearch] = useState('');
     const [genreOptions, setGenreOptions] = useState<string[]>([]);
     const [isGenresLoading, setIsGenresLoading] = useState(false);
     const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
     const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
-    // ─── Стейты для зображення ──────────────────────────────
     const [bannerFileId, setBannerFileId] = useState<string | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -66,7 +61,6 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
 
     const { mutateAsync: createBanner, isPending } = usePostApiAdminBanners();
 
-    // Автокомплит артистів
     useEffect(() => {
         if (artistSearch.trim().length < 3) {
             setArtistsOptions([]);
@@ -103,9 +97,7 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
                 const raw = res as any[] | { data?: any[] };
                 const list = Array.isArray(raw) ? raw : (raw.data ?? []);
 
-                // Безпечно мапимо рядки або об'єкти жанрів
                 const mapped = list.map((g: any) => typeof g === 'string' ? g : (g.name || g.title || ''));
-                // Фільтруємо ті, що вже обрані адміном
                 setGenreOptions(mapped.filter((g: string) => g && !selectedGenres.includes(g)));
                 setIsGenreDropdownOpen(mapped.length > 0);
             } catch {
@@ -182,7 +174,7 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
             startsAtUtc: formatUtcString(values.startsAtUtc),
             endsAtUtc: formatUtcString(values.endsAtUtc),
             targetCountries: values.targetCountries || null,
-            targetGenres: values.targetGenres || null, // Сервер отримає чистий рядок "Pop, Rock"
+            targetGenres: values.targetGenres || null,
         };
 
         try {
@@ -347,7 +339,6 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
                                             ))}
                                         </ul>
                                     )}
-                                    {/* Приховане обов'язкове поле для валідації форми */}
                                     <input type="hidden" {...register('targetGenres', { required: 'Please attach at least one genre parameter.' })} />
                                     {errors.targetGenres && <div className="text-danger small mt-1">{errors.targetGenres.message}</div>}
                                 </div>

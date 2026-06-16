@@ -6,7 +6,6 @@ import { PlaylistCard, type PlaylistCardData } from '@/entities/playlist/ui/Play
 import { ShowAllButton } from '@/shared/ui/ShowAllButton';
 import { useHasOverflow } from '@/shared/lib/useHasOverflow';
 
-// ─── Типи ─────────────────────────────────────────────────────────────────────
 interface LibraryPlaylistsSectionProps {
     playlists?: PlaylistCardData[];
     isLoading?: boolean;
@@ -14,16 +13,12 @@ interface LibraryPlaylistsSectionProps {
     onPlaylistClick?: (id: string) => void;
 }
 
-// ─── Компонент ────────────────────────────────────────────────────────────────
-// Дані приймає через props — логіка запиту живе в LibraryPage.
-// Причина: секція відповідає тільки за відображення, не за отримання даних.
 export const LibraryPlaylistsSection = ({
                                             playlists = [],
                                             isLoading = false,
                                             showAllHref = '/playlists',
                                             onPlaylistClick,
                                         }: LibraryPlaylistsSectionProps) => {
-    // Стрілки — лише коли контент переповнює слайдер (є що гортати).
     const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([playlists]);
 
     const scroll = (dir: 'prev' | 'next') => {
@@ -35,7 +30,6 @@ export const LibraryPlaylistsSection = ({
         });
     };
 
-    // Не показуємо секцію якщо немає даних і не завантажуємо
     if (!isLoading && playlists.length === 0) return null;
 
     return (

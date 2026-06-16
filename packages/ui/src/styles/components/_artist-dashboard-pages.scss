@@ -1,6 +1,3 @@
-// ══════════════════════════════════════════════════════════
-// ARTIST TRACKS PAGE
-// ══════════════════════════════════════════════════════════
 .artist-tracks-page {
   padding: 2rem;
 
@@ -33,7 +30,6 @@
     flex-wrap: wrap;
   }
 
-  // Пошук
   &__search {
     position: relative;
     display: flex;
@@ -79,7 +75,6 @@
     &:hover { color: $client-text; }
   }
 
-  // Upload/Create кнопка
   &__upload-btn {
     display: flex;
     align-items: center;
@@ -99,7 +94,6 @@
     &:hover { background: $client-accent-hover; }
   }
 
-  // Колонки
   &__columns {
     display: grid;
     grid-template-columns: 32px 1fr 1fr 140px 80px;
@@ -121,7 +115,6 @@
     margin-bottom: 8px;
   }
 
-  // Рядок з кнопками
   &__row-wrap {
     position: relative;
     display: flex;
@@ -174,9 +167,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// ARTIST ALBUMS PAGE
-// ══════════════════════════════════════════════════════════
 .artist-albums-page {
   padding: 2rem;
 
@@ -209,9 +199,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// ALBUM DETAIL MODAL
-// ══════════════════════════════════════════════════════════
 .album-detail-modal {
   &__cover {
     width: 64px;
@@ -239,9 +226,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// UPLOAD TRACK MODAL
-// ══════════════════════════════════════════════════════════
 .upload-track-modal {
   &__cover {
     width: 120px;
@@ -299,9 +283,6 @@
   &__audio-hint  { font-size: 12px; }
 }
 
-// ══════════════════════════════════════════════════════════
-// ARTIST ANALYTICS PAGE
-// ══════════════════════════════════════════════════════════
 .artist-analytics-page {
   padding: 2rem;
 
@@ -347,7 +328,6 @@
     }
   }
 
-  // Summary cards
   &__card {
     background: $client-surface;
     border: 1px solid $client-border;
@@ -378,7 +358,6 @@
     letter-spacing: 0.05em;
   }
 
-  // Chart blocks
   &__chart-block {
     background: $client-surface;
     border: 1px solid $client-border;
@@ -393,7 +372,6 @@
     margin: 0 0 16px;
   }
 
-  // Top tracks
   &__top-track {
     display: flex;
     align-items: center;
@@ -441,7 +419,6 @@
     text-align: right;
   }
 
-  // Legend
   &__legend {
     display: flex;
     flex-direction: column;
@@ -465,9 +442,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// ARTIST SETTINGS PAGE
-// ══════════════════════════════════════════════════════════
 .artist-settings-page {
   padding: 2rem;
   max-width: 800px;
@@ -514,7 +488,6 @@
     text-align: center;
   }
 
-  // Банер
   &__banner {
     width: 100%;
     height: 160px;
@@ -567,7 +540,6 @@
     i { font-size: 18px; }
   }
 
-  // Аватарка
   &__avatar {
     width: 120px;
     height: 120px;
@@ -613,9 +585,6 @@
 }
 
 
-// ══════════════════════════════════════════════════════════
-// ARTIST DASHBOARD HEADER
-// ══════════════════════════════════════════════════════════
 .artist-dashboard-header {
   position: relative;
   min-height: 320px;
@@ -624,7 +593,6 @@
 
   @media (min-width: 768px) { min-height: 380px; }
 
-  // ─── Банер / градієнт ─────────────────────────────────
   &__banner {
     position: absolute;
     inset: 0;
@@ -634,7 +602,6 @@
     z-index: 0;
   }
 
-  // ─── Темний оверлей знизу ─────────────────────────────
   &__overlay {
     position: absolute;
     inset: 0;
@@ -647,7 +614,6 @@
     z-index: 1;
   }
 
-  // ─── Основний контент ─────────────────────────────────
   &__content {
     position: relative;
     z-index: 2;
@@ -664,7 +630,6 @@
     }
   }
 
-  // ─── Аватарка ─────────────────────────────────────────
   &__avatar-wrap {
     position: relative;
     flex-shrink: 0;
@@ -700,7 +665,6 @@
     font-size: 18px;
   }
 
-  // ─── Текстова інфо ────────────────────────────────────
   &__info {
     flex: 1;
     min-width: 0;
@@ -727,7 +691,6 @@
     @media (min-width: 992px) { font-size: 64px; }
   }
 
-  // ─── Статистика ───────────────────────────────────────
   &__stats {
     display: flex;
     align-items: center;
@@ -766,7 +729,6 @@
     flex-shrink: 0;
   }
 
-  // ─── Біо ──────────────────────────────────────────────
   &__bio {
     max-width: 520px;
 
@@ -779,7 +741,6 @@
     line-height: 1.6;
     margin: 0 0 4px;
 
-    // Обрізаємо до 2 рядків
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -803,7 +764,6 @@
     &:hover { color: $client-accent-hover; }
   }
 
-  // ─── Кнопки дій ───────────────────────────────────────
   &__actions {
     position: absolute;
     top: 16px;
@@ -838,9 +798,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// ARTIST DASHBOARD CONTENT
-// ══════════════════════════════════════════════════════════
 .artist-dashboard {
   &__content {
     padding: 0 2rem 2rem;

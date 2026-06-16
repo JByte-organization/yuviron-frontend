@@ -1,4 +1,3 @@
-// Ендпоінти Адмінки
 export * from './generated/admin/endpoints/admin-tracks';
 export * from './generated/admin/endpoints/admin-users';
 export * from './generated/admin/endpoints/admin-artists';
@@ -18,7 +17,6 @@ export * from './generated/admin/endpoints/admin-plans';
 
 export * from './generated/client/endpoints/files';
 
-// МОДЕЛІ АДМІНКИ — аналогічно, однією строкою
 export * from './generated/admin/models';
 
 export { configureApiClient, initCsrfToken, customInstance } from './mutator';

@@ -35,11 +35,9 @@ export const ArtistDashboardSidebar = () => {
             <aside className={`client-sidebar${collapsed ? ' client-sidebar--collapsed' : ''}`}>
                 <div className="client-sidebar__inner">
 
-                    {/* Кабінет */}
                     <div className="client-sidebar__section">
                         <p className="client-sidebar__section-title">Кабінет артиста</p>
 
-                        {/* Перемикач акаунтів (особистий ↔ кабінети артистів) */}
                         <AccountSwitcher collapsed={collapsed} />
 
                         <nav className="client-sidebar__nav">
@@ -71,7 +69,6 @@ export const ArtistDashboardSidebar = () => {
                         <hr className="client-sidebar__divider" />
                     </div>
 
-                    {/* Аналітика та фінанси */}
                     <div className="client-sidebar__section">
                         <p className="client-sidebar__section-title">Аналітика</p>
                         <nav className="client-sidebar__nav">
@@ -91,7 +88,6 @@ export const ArtistDashboardSidebar = () => {
                         <hr className="client-sidebar__divider" />
                     </div>
 
-                    {/* Монетизація: підписка та реклама */}
                     <div className="client-sidebar__section">
                         <p className="client-sidebar__section-title">Монетизація</p>
                         <nav className="client-sidebar__nav">
@@ -111,7 +107,6 @@ export const ArtistDashboardSidebar = () => {
                         <hr className="client-sidebar__divider" />
                     </div>
 
-                    {/* Налаштування */}
                     <div className="client-sidebar__section">
                         <nav className="client-sidebar__nav">
                             <NavItem

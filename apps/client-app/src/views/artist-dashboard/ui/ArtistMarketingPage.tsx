@@ -33,7 +33,6 @@ export const ArtistMarketingPage = () => {
     const { can, lockTitle } = useArtistPermissions();
     const canBanners = can('banners');
 
-    // ─── Альбоми для вибору ─────────────────────────────
     const albumsParams = { ArtistId: artistId ?? undefined, Page: 1, PageSize: 100 };
     const { data: albumsRaw } = useGetApiStudioArtistAlbums(albumsParams, {
         query: {
@@ -43,14 +42,12 @@ export const ArtistMarketingPage = () => {
     });
     const albums = unwrapItems<AlbumOpt>(albumsRaw);
 
-    // ─── Активна заявка (ручний шар — ендпоінт ще не згенерований) ──
     const { data: active, refetch: refetchActive } = useQuery({
         queryKey: ['banner-request-active', artistId],
         queryFn: () => getActiveBannerRequest(artistId as string),
         enabled: !!artistId && canBanners,
     });
 
-    // ─── Форма заявки ───────────────────────────────────
     const [albumId, setAlbumId] = useState('');
     const [title, setTitle] = useState('');
     const [durationDays, setDurationDays] = useState('7');
@@ -101,13 +98,10 @@ export const ArtistMarketingPage = () => {
                 window.location.href = res.checkoutUrl;
                 return;
             }
-            // Без checkoutUrl — заявка створена, оновлюємо активну.
             await refetchActive();
             setBannerFile(null);
             setTitle('');
         } catch (e) {
-            // DEBUG (тимчасово): реальний крок + статус + тіло бекенду, щоб точно
-            // зрозуміти причину. Прибрати після діагностики.
             const r = (e as { response?: { status?: number; data?: unknown } })?.response;
             const data = r?.data;
             const raw =
@@ -168,7 +162,6 @@ export const ArtistMarketingPage = () => {
 
             {error && <div className="client-modal__field-error mb-3">{error}</div>}
 
-            {/* ─── Активна заявка ──────────────────────── */}
             {active && (
                 <div className="artist-analytics-page__chart-block mb-4">
                     <h2 className="artist-analytics-page__chart-title">Поточна заявка</h2>
@@ -212,7 +205,6 @@ export const ArtistMarketingPage = () => {
                 </div>
             )}
 
-            {/* ─── Нова заявка ─────────────────────────── */}
             <div className="artist-analytics-page__chart-block">
                 <h2 className="artist-analytics-page__chart-title">Замовити банер</h2>
                 <p className="text-secondary mt-1 mb-3" style={{ fontSize: 13 }}>

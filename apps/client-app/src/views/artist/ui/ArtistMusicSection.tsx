@@ -34,12 +34,7 @@ export const ArtistMusicSection = ({
                                    }: ArtistMusicSectionProps) => {
     const [activeTab, setActiveTab] = useState<MusicTab>('popular');
 
-    // ─── Мапінг даних через useMemo ──────────────────────────────────────────
-    // Хелпер тримаємо ВСЕРЕДИНІ useMemo: інакше React Compiler виводить його як
-    // окрему залежність, яка не збігається з ручним списком deps (preserve-manual-memoization).
     const dataMap = useMemo<Record<MusicTab, AlbumCardData[]>>(() => {
-        // Підставляємо ім'я поточного артиста; tracksCount немає в ArtistAlbumDto,
-        // тож AlbumCard виведе гарний підпис "by Artist".
         const mapToCardData = (list: ArtistAlbumDto[]): AlbumCardData[] =>
             list.map((a) => ({
                 id:          a.id ?? '',
@@ -60,7 +55,6 @@ export const ArtistMusicSection = ({
 
     const hasData = currentData.length > 0;
 
-    // Стрілки — лише коли контент переповнює слайдер (перевіряємо й при зміні таба).
     const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([currentData]);
 
     const scroll = (dir: 'prev' | 'next') => {
@@ -77,7 +71,6 @@ export const ArtistMusicSection = ({
                 onNext={hasOverflow ? () => scroll('next') : undefined}
             />
 
-            {/* ─── Таби ─────────────────────────────────── */}
             <div className="artist-music-tabs mb-3 d-flex gap-2">
                 {TABS.map((tab) => (
                     <button
@@ -90,7 +83,6 @@ export const ArtistMusicSection = ({
                 ))}
             </div>
 
-            {/* ─── Слайдер / Скелетон ────────────────────── */}
             {isLoading ? (
                 <div className="section-slider-wrap">
                     <div className="row g-3 flex-nowrap overflow-hidden">

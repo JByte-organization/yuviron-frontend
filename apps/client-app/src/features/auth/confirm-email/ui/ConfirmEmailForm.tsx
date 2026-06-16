@@ -5,18 +5,12 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { usePostApiAuthConfirmEmail } from '@repo/api/client.ts';
 
-// Подтверждение почты при регистрации = link-based. Бэк шлёт письмо с кнопкой
-// → /confirm-email?token=... Эта форма достаёт token из query и дёргает
-// POST /api/auth/confirm-email { token }. 6-значный код тут НЕ при чём — это
-// отдельный флоу входа без пароля (см. features/auth/login-with-code).
 export const ConfirmEmailForm = () => {
     const searchParams = useSearchParams();
     const token = searchParams?.get('token') ?? '';
 
     const { mutate, isPending, isSuccess, isError, error } = usePostApiAuthConfirmEmail();
 
-    // Авто-подтверждение при заходе по ссылке. firedRef защищает от повторного
-    // вызова в StrictMode/ре-рендерах.
     const firedRef = useRef(false);
     useEffect(() => {
         if (!token || firedRef.current) return;
@@ -110,7 +104,6 @@ export const ConfirmEmailForm = () => {
         );
     }
 
-    // idle / isPending
     return (
         <div className="client-forgot-form">
             <div className="client-forgot-form__logo">

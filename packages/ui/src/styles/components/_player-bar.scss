@@ -1,4 +1,3 @@
-// ─── PLAYER BAR — фіксований знизу ──────────────────────────
 .player-bar {
   position: fixed;
   bottom: 0;
@@ -23,7 +22,6 @@
     padding: 0 24px;
   }
 
-  // ─── Трек інфо ────────────────────────────────────────
   &__track {
     display: flex;
     align-items: center;
@@ -61,7 +59,7 @@
 
     &--heart {
       &.player-bar__action-btn--active {
-        color: $green !important; // Твій колір бренду Yuviron
+        color: $green !important;
         filter: drop-shadow(0 0 4px rgba($green, 0.3));
       }
     }
@@ -140,7 +138,6 @@
     }
   }
 
-  // ─── Контроли та Прогрес бар ──────────────────────────────
   &__controls {
     display: flex;
     flex-direction: column;
@@ -201,7 +198,6 @@
     &--sm { font-size: 18px; }
   }
 
-  // ─── Прогрес (Реалізація заповнення кольором) ──────────────
   &__progress {
     display: flex;
     align-items: center;
@@ -261,7 +257,6 @@
     }
   }
 
-  // ─── Гучність ─────────────────────────────────────────
   &__volume {
     display: flex;
     align-items: center;
@@ -277,7 +272,6 @@
     width: 90px;
     height: 4px;
     appearance: none;
-    // Аналогічно зафарбовуємо гучність
     background: linear-gradient(to right, #ffffff var(--volume-progress, 100%), $client-border-strong var(--volume-progress, 100%));
     border-radius: 2px;
     cursor: pointer;
@@ -294,7 +288,6 @@
   }
 }
 
-// ─── Динамічний відступ для контенту (вирівняно під нову висоту) ───
 .client-layout__main {
   &--player-open {
     padding-bottom: 76px;

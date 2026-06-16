@@ -1,31 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { customInstance } from '@repo/api/artist.ts';
 
-/**
- * Ручний API-шар аналітики Artist Studio.
- *
- * Цих ендпоінтів НЕМАЄ у /swagger/artist (дока «Інтеграція аналітичного модуля
- * Studio Artist», 2026-06-07), тому Orval їх не генерує. Типи й шляхи звірені
- * з докою вручну; коли бек додасть групу у свагер — замінити на згенеровані
- * хуки з @repo/api/artist.ts і видалити цей файл.
- *
- * Дані з ClickHouse, кешуються на беку — відповіді швидкі, але на перший
- * рендер усе одно показуємо скелетони (рекомендація з доки).
- */
 
-// ─── DTO (за докою) ─────────────────────────────────────────
 
 export interface TrackRetentionPointDto {
-    /** Секунда треку */
     second: number;
-    /** Абсолютна кількість прослуховувань, що дійшли до цієї секунди */
     absolutePlays: number;
-    /** % слухачів, що дослухали до цієї секунди (0–100, 2 знаки) */
     retentionPercent: number;
 }
 
 export interface PlaysOverTimePointDto {
-    /** ISO-8601 / yyyy-MM-dd */
     date: string;
     totalPlays: number;
     uniqueListeners: number;
@@ -46,7 +30,6 @@ export interface ArtistAudienceDashboardDto {
     devices: AudienceDeviceDto[];
 }
 
-// ─── Фетчери ────────────────────────────────────────────────
 
 const BASE = '/api/studio-artist';
 
@@ -83,9 +66,6 @@ export const getArtistPlaysOverTime = (artistId: string, days = 30) =>
         { method: 'GET' },
     );
 
-// ─── React-query хуки ───────────────────────────────────────
-// artistId приходить з useCurrentArtistId() і може бути null до резолву —
-// у такому разі запит вимкнено (enabled: false), як у решті studio-сторінок.
 
 export const useTrackRetention = (trackId: string | undefined, artistId: string | null) =>
     useQuery({

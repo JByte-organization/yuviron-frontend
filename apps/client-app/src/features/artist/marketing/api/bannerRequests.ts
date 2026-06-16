@@ -1,8 +1,3 @@
-// Ручний шар для banner-request ендпоінтів. Запінений artist-swagger старший за
-// живий бек: GET .../active і POST .../{id}/pay взагалі НЕ згенеровані, а в
-// згенерованому SubmitBannerRequestCommand НЕМА durationDays/targetCountries/
-// targetGenres (бек їх уже приймає). Тому всі три ходять тут напряму через
-// customInstance з повними типами. Коли пін оновлять — прибрати, перейти на хуки.
 import { customInstance } from '@repo/api/artist.ts';
 
 export type BannerRequestStatus =
@@ -37,7 +32,6 @@ export interface PayBannerResponse {
     checkoutUrl?: string | null;
 }
 
-// Повний live-тип команди (згенерований — застарілий, без durationDays/таргетингу).
 export interface SubmitBannerRequestBody {
     artistId: string;
     albumId: string;
@@ -64,7 +58,6 @@ export const submitBannerRequest = (
         { method: 'POST', body: JSON.stringify(body) },
     );
 
-// 204 (немає активної заявки) → customInstance віддає {} → нормалізуємо в null.
 export const getActiveBannerRequest = async (
     artistId: string,
 ): Promise<ActiveBannerRequestDto | null> => {

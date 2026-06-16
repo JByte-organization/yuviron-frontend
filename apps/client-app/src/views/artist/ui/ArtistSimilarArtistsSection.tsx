@@ -10,9 +10,6 @@ import { ArtistCard, type ArtistCardData } from '@/entities/artist/ui/ArtistCard
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import type { SimilarArtistDto } from '@repo/api/client';
 
-// Переконайся, що стилі Swiper імпортовані у твоєму додатку (наприклад, в layout.tsx абоapp.scss):
-// import 'swiper/css';
-// import 'swiper/css/free-mode';
 
 interface ArtistSimilarArtistsSectionProps {
     artists?: SimilarArtistDto[];
@@ -25,10 +22,8 @@ export const ArtistSimilarArtistsSection = ({
                                                 isLoading = false,
                                                 onArtistClick,
                                             }: ArtistSimilarArtistsSectionProps) => {
-    // Екземпляр Swiper для керування стрілками з SectionHeader
     const [swiperInstance, setSwiperInstance] = useState<SwiperClass | null>(null);
 
-    // Мапінг даних у внутрішній формат картки
     const mappedArtists = useMemo<ArtistCardData[]>(() => {
         if (!artists || artists.length === 0) return [];
 
@@ -44,7 +39,6 @@ export const ArtistSimilarArtistsSection = ({
 
     return (
         <section className="artist-similar mb-5">
-            {/* Зовнішні стрілки навігації через методи Swiper */}
             <SectionHeader
                 title="Шанувальникам також подобаються"
                 highlightedWord="подобаються"
@@ -53,7 +47,6 @@ export const ArtistSimilarArtistsSection = ({
             />
 
             {isLoading ? (
-                // Скелетони під час завантаження (рендеримо 7 штук у ряд для ідеального UI)
                 <div className="section-slider-wrap">
                     <div className="d-flex gap-4 overflow-hidden">
                         {Array.from({ length: 7 }).map((_, i) => (
@@ -71,7 +64,6 @@ export const ArtistSimilarArtistsSection = ({
                 </div>
             ) : (
                 <div className="section-slider-wrap">
-                    {/* Твій кастомний Swiper з точними брейкпоїнтами */}
                     <Swiper
                         modules={[FreeMode]}
                         freeMode

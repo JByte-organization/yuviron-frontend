@@ -18,24 +18,20 @@ export const ArtistRelatedTracksSection = ({
                                                isLoading = false,
                                                onTrackClick,
                                            }: ArtistRelatedTracksSectionProps) => {
-    // Стрілки — лише коли контент переповнює слайдер (є що гортати).
     const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([tracks]);
 
-    // ─── Маппинг DTO в данные для отображения карточки ────────────────────────
     const mappedTracks: TrackCardData[] = useMemo(() => {
         if (!tracks || tracks.length === 0) return [];
 
         return tracks.map((t) => ({
             id:          t.id ?? '',
             title:       t.title ?? 'Без назви',
-            // Извлекаем массив имён артистов из TrackArtistDto[]
             artistNames: (t.artists ?? []).map(a => a.name ?? '').filter(Boolean),
             coverUrl:    getImageUrl(t.coverUrl),
             durationMs:  t.durationMs,
         }));
     }, [tracks]);
 
-    // Если загрузка завершена и треков нет — скрываем всю секцию
     if (!isLoading && mappedTracks.length === 0) return null;
 
     const scroll = (dir: 'prev' | 'next') => {
@@ -54,7 +50,6 @@ export const ArtistRelatedTracksSection = ({
             />
 
             {isLoading ? (
-                // Скелетоны теперь тоже прокручиваются как слайдер для красоты
                 <div className="section-slider-wrap">
                     <div className="row g-3 flex-nowrap overflow-hidden">
                         {Array.from({ length: 6 }).map((_, i) => (
@@ -76,12 +71,10 @@ export const ArtistRelatedTracksSection = ({
                             <div key={track.id} className="col-6 col-md-4 col-lg-2" style={{ flex: '0 0 auto' }}>
                                 <TrackCard
                                     track={track}
-                                    // Передаем всю готовую очередь из этой секции наружу
                                     onClick={() => onTrackClick?.(mappedTracks, index)}
                                 />
                             </div>
                         ))}
-                        {/* Дополнительный отступ в конце слайдера */}
                         <div className="col-auto" style={{ minWidth: 40 }} />
                     </div>
                 </div>

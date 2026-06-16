@@ -15,7 +15,6 @@ interface Props {
     requestId: string | null;
     isOpen: boolean;
     onClose: () => void;
-    /** Вызывается после успешного approve/reject — родитель перезапрашивает список. */
     onResolved: () => void;
 }
 
@@ -78,7 +77,6 @@ export const VerificationRequestModal = ({ requestId, isOpen, onClose, onResolve
     const proofSrc = getImageUrl(detail?.proofFileUrl);
     const isPending = detail?.status === VerificationRequestStatus.Pending;
 
-    // links — свободный текст с одной/несколькими ссылками; рвём по пробелам/запятым.
     const links = (detail?.links ?? '')
         .split(/[\s,;]+/)
         .map((l) => l.trim())
@@ -102,7 +100,6 @@ export const VerificationRequestModal = ({ requestId, isOpen, onClose, onResolve
                             </div>
                         ) : (
                             <>
-                                {/* Артист */}
                                 <div
                                     className="d-flex align-items-center gap-3 p-3 rounded-3 mb-4"
                                     style={{
@@ -185,7 +182,6 @@ export const VerificationRequestModal = ({ requestId, isOpen, onClose, onResolve
                                     </Field>
                                 )}
 
-                                {/* Решение */}
                                 {isPending && (
                                     <div className="mt-4">
                                         <label className="text-secondary small text-uppercase fw-semibold mb-1">

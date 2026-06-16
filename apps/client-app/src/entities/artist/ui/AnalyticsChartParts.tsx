@@ -3,18 +3,12 @@
 import React from 'react';
 import { useTheme } from '@/shared/lib/ThemeProvider';
 
-/**
- * Спільні дрібниці для графіків аналітики Artist Studio
- * (сторінка статистики + модалка аналітики треку).
- */
 
-// Акцентні кольори серій (data-viz, не залежать від теми).
 export const CHART_COLORS = {
     accent:  '#00A6FF',
     accent2: '#7B61FF',
 };
 
-/** Стиль тултіпа recharts під тему через CSS-змінні. */
 export const chartTooltipStyle = {
     contentStyle: {
         background: 'var(--client-surface)',
@@ -24,10 +18,6 @@ export const chartTooltipStyle = {
     labelStyle: { color: 'var(--client-text)' },
 };
 
-/**
- * Кольори осей/сітки — SVG-атрибути, де var() не резолвиться,
- * тому підбираємо їх під активну тему вручну.
- */
 export const useChartAxisColors = () => {
     const { theme } = useTheme();
     return theme === 'light'
@@ -35,7 +25,6 @@ export const useChartAxisColors = () => {
         : { grid: 'rgba(119,145,178,0.15)', text: 'rgba(206,216,227,0.55)' };
 };
 
-/** HTTP-статус з помилки customInstance (err.response.status). */
 export const errorStatus = (error: unknown): number | undefined =>
     (error as { response?: { status?: number } } | null)?.response?.status;
 
@@ -43,7 +32,6 @@ export const ChartSkeleton = ({ height = 260 }: { height?: number }) => (
     <div className="skeleton w-100" style={{ height, borderRadius: 12 }} />
 );
 
-/** Блок-заглушка для 403/404/інших помилок аналітики. */
 export const ChartError = ({ error }: { error: unknown }) => {
     const status = errorStatus(error);
     const message = status === 403

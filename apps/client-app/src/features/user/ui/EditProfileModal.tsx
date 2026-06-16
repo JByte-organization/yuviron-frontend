@@ -96,7 +96,6 @@ export const EditProfileModal = ({
                 localStorage.removeItem(`yuviron_temp_avatar_${userId}`);
             }
 
-            // Формуємо тіло запиту під новий контракт
             const requestBody = {
                 name: values.name,
                 bio: null,

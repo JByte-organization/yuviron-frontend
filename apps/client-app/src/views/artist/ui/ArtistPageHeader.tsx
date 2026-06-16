@@ -9,7 +9,7 @@ interface ArtistPageHeaderProps {
     avatarUrl?: string | null;
     isVerified?: boolean;
     monthlyListeners?: number;
-    isPlaying?: boolean; // 🚨 ФИКС: Флаг текущего состояния плеера
+    isPlaying?: boolean;
     onPlay?: () => void;
     onFollow?: () => void;
     isFollowing?: boolean;
@@ -27,25 +27,21 @@ export const ArtistPageHeader = ({
                                      avatarUrl,
                                      isVerified = false,
                                      monthlyListeners,
-                                     isPlaying = false, // По умолчанию не играет
+                                     isPlaying = false,
                                      onPlay,
                                      onFollow,
                                      isFollowing = false,
                                      followPending = false,
                                  }: ArtistPageHeaderProps) => {
-    // Стан підписки контролюється зверху (ArtistPage): значення з API + оптимістичний апдейт.
     const following = isFollowing;
 
-    // Переводим на единый хелпер картинок FSD архитектуры
     const avatarSrc = getImageUrl(avatarUrl)
         ?? `https://picsum.photos/seed/artist-${artistId}/200/200`;
 
     return (
         <div className="artist-page-header">
-            {/* ─── Breadcrumb ───────────────────────────── */}
             <p className="artist-page-header__breadcrumb">Виконавець</p>
 
-            {/* ─── Аватар + інфо ────────────────────────── */}
             <div className="row align-items-end g-4 mb-4">
                 <div className="col-auto">
                     <div className="artist-page-header__avatar">
@@ -54,7 +50,6 @@ export const ArtistPageHeader = ({
                 </div>
 
                 <div className="col">
-                    {/* Верифікація */}
                     {isVerified && (
                         <div className="artist-page-header__verified">
                             <i className="bi bi-patch-check-fill" />
@@ -62,10 +57,8 @@ export const ArtistPageHeader = ({
                         </div>
                     )}
 
-                    {/* Назва */}
                     <h1 className="artist-page-header__name">{name}</h1>
 
-                    {/* Слухачі */}
                     {monthlyListeners && (
                         <p className="artist-page-header__listeners">
                             {formatListeners(monthlyListeners)}
@@ -74,19 +67,15 @@ export const ArtistPageHeader = ({
                 </div>
             </div>
 
-            {/* ─── Кнопки дій ───────────────────────────── */}
             <div className="artist-page-header__actions">
-                {/* Play / Pause Toggle Button */}
                 <button
                     className="artist-page-header__btn artist-page-header__btn--play"
                     onClick={onPlay}
                     aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
-                    {/* 🚨 ДИНАМИЧЕСКАЯ ИКОНКА */}
                     <i className={isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill'} />
                 </button>
 
-                {/* Підписатися / Відписатися */}
                 <button
                     className={`artist-page-header__btn artist-page-header__btn--follow${following ? ' artist-page-header__btn--following' : ''}`}
                     onClick={onFollow}
@@ -100,7 +89,6 @@ export const ArtistPageHeader = ({
                     )}
                 </button>
 
-                {/* Більше опцій */}
                 <button
                     className="artist-page-header__btn artist-page-header__btn--icon ms-2"
                     aria-label="Більше опцій"

@@ -13,14 +13,12 @@ export default function UserDetailPage() {
     const me = meRaw as unknown as { id?: string } | undefined;
     const isOwnProfile = !!me?.id && me.id === params?.id;
 
-    // Выполняем редирект как сайд-эффект ПОСЛЕ рендеринга
     useEffect(() => {
         if (isOwnProfile) {
             router.replace('/my-account');
         }
     }, [isOwnProfile, router]);
 
-    // Пока идет загрузка или если нужен редирект, показываем пустой экран или спиннер
     if (isLoading || isOwnProfile) {
         return (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>

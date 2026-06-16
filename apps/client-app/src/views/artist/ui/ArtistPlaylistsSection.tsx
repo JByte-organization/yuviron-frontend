@@ -23,10 +23,8 @@ export const ArtistPlaylistsSection = ({
                                            isLoading = false,
                                            onPlaylistClick,
                                        }: ArtistPlaylistsSectionProps) => {
-    // Екземпляр Swiper для керування зовнішніми стрілками
     const [swiperInstance, setSwiperInstance] = useState<SwiperClass | null>(null);
 
-    // ─── Маппинг даних з DTO у формат картки ────────────────
     const mappedPlaylists = useMemo(() => {
         if (!playlists || playlists.length === 0) return [];
 
@@ -51,7 +49,6 @@ export const ArtistPlaylistsSection = ({
             />
 
             {isLoading ? (
-                // Скелетони: чітко підігнані під сітку з 7 елементів
                 <div className="section-slider-wrap">
                     <div className="d-flex gap-4 overflow-hidden">
                         {Array.from({ length: 7 }).map((_, i) => (
@@ -69,7 +66,6 @@ export const ArtistPlaylistsSection = ({
                 </div>
             ) : (
                 <div className="section-slider-wrap">
-                    {/* Сучасна карусель на Swiper з брейкпоїнтом на 7 слайдів */}
                     <Swiper
                         modules={[FreeMode]}
                         freeMode
@@ -79,7 +75,7 @@ export const ArtistPlaylistsSection = ({
                             480:  { slidesPerView: 3 },
                             768:  { slidesPerView: 4 },
                             992:  { slidesPerView: 5 },
-                            1200: { slidesPerView: 7 }, // Ідеальні 7 штук в ряд на десктопі
+                            1200: { slidesPerView: 7 },
                         }}
                         onSwiper={setSwiperInstance}
                         className="artist-playlists__swiper"

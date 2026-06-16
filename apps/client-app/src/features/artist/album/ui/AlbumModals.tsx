@@ -18,9 +18,6 @@ import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 import { extractFileId } from '@/shared/lib/unwrapApi';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 
-// ══════════════════════════════════════════════════════════
-// CREATE ALBUM MODAL
-// ══════════════════════════════════════════════════════════
 interface CreateProps {
     isOpen: boolean;
     onClose: () => void;
@@ -166,9 +163,6 @@ export const CreateAlbumModal = ({ isOpen, onClose, onSuccess }: CreateProps) =>
     );
 };
 
-// ══════════════════════════════════════════════════════════
-// ALBUM DETAIL MODAL
-// ══════════════════════════════════════════════════════════
 const unwrapArray = <T,>(raw: unknown): T[] => {
     if (Array.isArray(raw)) return raw as T[];
     const obj = raw as { data?: T[] } | null;
@@ -186,7 +180,6 @@ export const AlbumDetailModal = ({ isOpen, album, onClose }: DetailProps) => {
         query: { enabled: isOpen && !!album.id, queryKey: getGetApiStudioArtistAlbumsIdTracksQueryKey(album.id) },
     });
 
-    // Формуємо чистий масив треків для таблиці
     const tracks: TrackRowData[] = useMemo(() => {
         return unwrapArray<StudioAlbumTrackDto>(tracksRaw).map((t, i) => ({
             id:          t.id ?? '',
@@ -234,7 +227,6 @@ export const AlbumDetailModal = ({ isOpen, album, onClose }: DetailProps) => {
                     ) : (
                         <div className="d-flex flex-column gap-1">
                             {tracks.map(track => (
-                                /* 🚨 ФІКС: Передаємо сумісну сигнатуру пропсів автономного TrackRow */
                                 <TrackRow
                                     key={`${track.id}-${track.isSaved}`}
                                     track={track}
@@ -257,9 +249,6 @@ export const AlbumDetailModal = ({ isOpen, album, onClose }: DetailProps) => {
     );
 };
 
-// ══════════════════════════════════════════════════════════
-// DELETE ALBUM MODAL
-// ══════════════════════════════════════════════════════════
 interface DeleteAlbumProps {
     isOpen: boolean;
     album: AlbumCardData;

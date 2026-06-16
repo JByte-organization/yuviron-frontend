@@ -28,19 +28,14 @@ interface ClientLayoutProps {
 export const ClientLayout = ({ children }: ClientLayoutProps) => {
     const isDesktop = useIsDesktop();
 
-    // ─── Лівий сайдбар ────────────────────────────────────
     const [collapsed, setCollapsed] = useState(false);
     const { sidebarWidth, isResizing, onResizeStart } = useSidebarResize();
 
-    // ─── Правий сайдбар ───────────────────────────────────
     const { isOpen, userClosed, open, close, openManually } = useRightSidebarState();
 
-    // Каркас рендеримо за статусом, а не за наявністю токена «прямо зараз»:
-    // під час refresh токена ще нема, але показувати гостьовий UI не можна.
     const status = useSessionStore(s => s.status);
     const isAuthenticated = useSessionStore(selectIsAuthenticated);
 
-    // На мобайлі marginLeft = 0, сайдбар display:none через CSS
     const marginLeft = !isDesktop
         ? 0
         : collapsed

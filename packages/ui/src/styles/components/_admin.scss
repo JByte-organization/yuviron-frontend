@@ -65,7 +65,6 @@ $active-blue: #40A2FF;
     }
   }
 
-  // Навигация
   .sidebar-nav {
     .nav-link {
       color: rgba($white, 0.6);
@@ -99,7 +98,6 @@ $active-blue: #40A2FF;
       }
     }
 
-    // Подменю
     .submenu {
       .nav-link {
         padding-left: 20px;
@@ -115,7 +113,6 @@ $active-blue: #40A2FF;
     }
   }
 
-  // Иконка стрелочки
   .chevron {
     font-size: 0.7rem;
     transition: transform 0.3s ease;
@@ -125,7 +122,6 @@ $active-blue: #40A2FF;
     }
   }
 
-  // Футер
   .sidebar-footer {
     .btn-outline-danger {
       border-color: rgba($admin-stroke, 0.3);
@@ -167,7 +163,7 @@ $active-blue: #40A2FF;
     width: 100%;
     border-collapse: collapse;
     color: $white;
-    table-layout: fixed; // Критично для корректного ресайза
+    table-layout: fixed;
 
     thead th {
       background-color: rgba($white, 0.03);
@@ -178,7 +174,7 @@ $active-blue: #40A2FF;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       border-bottom: 1px solid rgba($admin-stroke, 0.3);
-      position: relative; // Для ресайзера
+      position: relative;
 
       .resizer {
         position: absolute;
@@ -221,7 +217,6 @@ $active-blue: #40A2FF;
   }
 }
 
-// Кастомный стиль для выпадающего фильтра
 .filter-dropdown-menu {
   background-color: #1e1e1e;
   border: 1px solid rgba($admin-stroke, 0.5);
@@ -258,7 +253,7 @@ $active-blue: #40A2FF;
   }
 
   .text-cyan {
-    color: $cyan; // Твой #82E2FF
+    color: $cyan;
     &:hover {
       color: color.adjust($cyan, $lightness: -10%);
     }
@@ -266,7 +261,7 @@ $active-blue: #40A2FF;
 }
 .table-toolbar {
   .form-control {
-    background-color: #24282c !important; // Темный фон инпута
+    background-color: #24282c !important;
     border-radius: 8px;
     border-color: rgba(255, 255, 255, 0.1) !important;
     font-size: 0.9rem;
@@ -382,7 +377,7 @@ $active-blue: #40A2FF;
     }
 
     .save-btn {
-      background-color: $cyan; // #82E2FF
+      background-color: $cyan;
       border: none;
       border-radius: 8px;
     }
@@ -399,7 +394,6 @@ $active-blue: #40A2FF;
   }
 }
 
-// АДМИН ЛОГИН
 .admin-login {
   background: $admin-bg;
   color: $white;
@@ -503,9 +497,6 @@ $active-blue: #40A2FF;
 }
 
 
-// ══════════════════════════════════════════════════════════
-// ADMIN PAGINATION
-// ══════════════════════════════════════════════════════════
 .admin-pagination {
 
   &__btn {
@@ -536,7 +527,6 @@ $active-blue: #40A2FF;
       cursor: not-allowed;
     }
 
-    // Активна сторінка
     &--active {
       background: $admin-primary;
       border-color: $admin-primary;
@@ -564,14 +554,10 @@ $active-blue: #40A2FF;
 }
 
 
-// ══════════════════════════════════════════════════════════
-// ADMIN LAYOUT
-// ══════════════════════════════════════════════════════════
 .admin-layout {
   min-height: 100vh;
   background-color: #151921;
 
-  // ─── Overlay (мобайл) ─────────────────────────────────
   &__overlay {
     position: fixed;
     inset: 0;
@@ -579,7 +565,6 @@ $active-blue: #40A2FF;
     z-index: 1040;
   }
 
-  // ─── Основний контент ─────────────────────────────────
   &__content {
     min-height: 100vh;
     display: flex;
@@ -730,7 +715,7 @@ $active-blue: #40A2FF;
 .top-entity-table {
   background-color: #1e2330;
   border: 1px solid $admin-secondary;
-  border-radius: 0.5rem; // rounded-3
+  border-radius: 0.5rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 
   &__title-icon {
@@ -777,7 +762,6 @@ $active-blue: #40A2FF;
       color: $admin-btn-primary !important;
     }
 
-    // Модифікатор для 2-го місця
     &--second {
       color: $admin-primary !important;
     }
@@ -812,7 +796,7 @@ $active-blue: #40A2FF;
 .recent-users {
   background-color: #1e2330;
   border: 1px solid $admin-secondary;
-  border-radius: 0.5rem; // rounded-3
+  border-radius: 0.5rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 
   &__title-icon {
@@ -846,7 +830,6 @@ $active-blue: #40A2FF;
     cursor: default;
     transition: background-color 0.2s ease;
 
-    // Мапимо кольори рядків через селектори
     &:nth-child(even) {
       background-color: #1e2330;
     }

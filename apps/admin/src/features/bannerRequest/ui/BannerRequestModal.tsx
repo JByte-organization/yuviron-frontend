@@ -15,11 +15,9 @@ interface Props {
     request: BannerRequestListItemDto | null;
     isOpen: boolean;
     onClose: () => void;
-    /** Викликається після успішного approve/reject — батько перезапитує список. */
     onResolved: () => void;
 }
 
-// datetime-local ('YYYY-MM-DDTHH:mm') → ISO-UTC або null.
 const toIsoOrNull = (local: string): string | null =>
     local ? new Date(local).toISOString() : null;
 
@@ -36,7 +34,6 @@ export const BannerRequestModal = ({ request, isOpen, onClose, onResolved }: Pro
     const [reason,     setReason]     = useState('');
     const [error,      setError]      = useState<string | null>(null);
 
-    // Скидаємо локальний стан щоразу при відкритті нової заявки.
     useEffect(() => {
         if (isOpen) { setIsActive(true); setStartsAt(''); setReason(''); setError(null); }
     }, [isOpen, request?.id]);
@@ -102,7 +99,6 @@ export const BannerRequestModal = ({ request, isOpen, onClose, onResolved }: Pro
                     </div>
 
                     <div className="modal-body p-4">
-                        {/* Preview */}
                         <div
                             className="rounded overflow-hidden bg-secondary d-flex align-items-center justify-content-center mb-4"
                             style={{ width: '100%', height: 160 }}
@@ -146,7 +142,6 @@ export const BannerRequestModal = ({ request, isOpen, onClose, onResolved }: Pro
                             </Field>
                         )}
 
-                        {/* Параметри рішення — лише для Pending */}
                         {isPending && (
                             <div className="mt-4 d-flex flex-column gap-3">
                                 <div className="form-check form-switch">

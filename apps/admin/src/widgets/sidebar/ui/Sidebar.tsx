@@ -27,7 +27,6 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
 
     const handleLogout = async () => {
         try {
-            // ИСПРАВЛЕНО: Используем мутатор для автоматической подстановки кук и CSRF
             await customInstance('/auth/logout', {
                 method: 'POST',
             });
@@ -35,7 +34,6 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
             console.error('Logout request failed:', error);
         }
 
-        // ИСПРАВЛЕНО: Стираем правильную куку для middleware
         document.cookie = ADMIN_LOGGED_IN_COOKIE;
         clearAdminSession();
         router.replace('/login');

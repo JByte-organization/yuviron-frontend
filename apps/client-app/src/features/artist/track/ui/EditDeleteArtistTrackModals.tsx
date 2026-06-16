@@ -10,9 +10,6 @@ import {
 import { usePostApiFilesUpload } from '@repo/api/client.ts';
 import { extractFileId } from '@/shared/lib/unwrapApi';
 
-// ══════════════════════════════════════════════════════════
-// EDIT TRACK MODAL
-// ══════════════════════════════════════════════════════════
 interface EditProps {
     isOpen: boolean;
     trackId: string;
@@ -49,8 +46,6 @@ export const EditTrackModal = ({ isOpen, trackId, trackTitle, onClose, onSuccess
     const onSubmit = async (values: EditFormValues) => {
         setError(null);
         try {
-            // Обкладинку чіпаємо лише якщо вибрали новий файл — інакше не шлемо
-            // поле взагалі, щоб бек не скинув наявну обкладинку.
             const coverFileId = coverFile
                 ? extractFileId(await uploadFile({ data: { file: coverFile } }))
                 : null;
@@ -141,9 +136,6 @@ export const EditTrackModal = ({ isOpen, trackId, trackTitle, onClose, onSuccess
     );
 };
 
-// ══════════════════════════════════════════════════════════
-// DELETE TRACK MODAL
-// ══════════════════════════════════════════════════════════
 interface DeleteProps {
     isOpen: boolean;
     trackId: string;

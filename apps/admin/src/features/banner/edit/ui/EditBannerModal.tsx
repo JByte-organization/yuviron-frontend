@@ -8,7 +8,7 @@ import {
     usePutApiAdminBannersId,
     postApiFilesUpload,
     getApiAdminArtistsAutocomplete,
-    getApiAdminGenresAutocomplete, // 🎯 Імпортуємо автокомплит жанрів
+    getApiAdminGenresAutocomplete,
     getGetApiAdminBannersIdQueryKey,
     type BannerListItemDto,
     type BannerDetailsDto,
@@ -55,20 +55,17 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
         }
     }, [startsAtUtc, endsAtUtc, trigger]);
 
-    // ─── Стейты для автокомплита артистов ───────────────────
     const [artistSearch, setArtistSearch] = useState('');
     const [artistsOptions, setArtistsOptions] = useState<{ id: string; name: string }[]>([]);
     const [isArtistsLoading, setIsArtistsLoading] = useState(false);
     const [isArtistDropdownOpen, setIsArtistDropdownOpen] = useState(false);
 
-    // ─── Стейты для тегування та пошуку жанрів ──────────────
     const [genreSearch, setGenreSearch] = useState('');
     const [genreOptions, setGenreOptions] = useState<string[]>([]);
     const [isGenresLoading, setIsGenresLoading] = useState(false);
     const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
     const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
-    // ─── Стейты для медіафайлів ────────────────────────────
     const [bannerFileId, setBannerFileId] = useState<string | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -82,7 +79,6 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
     const { mutateAsync: updateBanner, isPending } = usePutApiAdminBannersId();
     const details = (detailsRaw as { data?: BannerDetailsDto } | undefined)?.data ?? detailsRaw as BannerDetailsDto | undefined;
 
-    // Автокомплит артистів
     useEffect(() => {
         if (artistSearch.trim().length < 3) {
             setArtistsOptions([]);
@@ -106,7 +102,6 @@ export const EditBannerModal = ({ banner, isOpen, onClose, onSuccess }: Props) =
         return () => clearTimeout(timer);
     }, [artistSearch]);
 
-    // Пошук жанрів
     useEffect(() => {
         if (genreSearch.trim().length < 2) {
             setGenreOptions([]);

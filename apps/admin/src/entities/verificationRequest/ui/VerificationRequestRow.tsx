@@ -10,7 +10,6 @@ interface Props {
     request: VerificationRequestListItemDto;
     isSelected: boolean;
     onSelect: () => void;
-    /** Открыть детали заявки (Approve/Reject внутри модалки). */
     onOpen: (request: VerificationRequestListItemDto) => void;
 }
 
@@ -44,7 +43,6 @@ export const VerificationRequestRow = ({ request, isSelected, onSelect, onOpen }
                 />
             </td>
 
-            {/* Artist */}
             <td className="py-3">
                 <div className="text-white fw-bold text-nowrap">
                     {request.artistName || 'Unknown Artist'}
@@ -54,19 +52,14 @@ export const VerificationRequestRow = ({ request, isSelected, onSelect, onOpen }
                 </div>
             </td>
 
-            {/* Submitted by */}
             <td className="text-secondary small">{request.submittedByUserEmail || '—'}</td>
 
-            {/* Claimed role */}
             <td className="text-white small">{request.claimedRole ?? '—'}</td>
 
-            {/* Status */}
             <td>{statusBadge(request.status)}</td>
 
-            {/* Created */}
             <td className="text-secondary small">{created}</td>
 
-            {/* Action */}
             <td className="text-end pe-4" onClick={(e) => e.stopPropagation()}>
                 <button
                     className="btn btn-sm btn-admin-dark text-nowrap"

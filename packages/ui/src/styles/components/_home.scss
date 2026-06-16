@@ -1,16 +1,12 @@
-// views/home styles
 @import "../abstract/variables";
 
-// ─── HomePage wrapper ────────────────────────────────────
 .home-page {
   padding-top: 0.8rem;
 }
 
 
-// ─── SectionHeader ───────────────────────────────────────
 .section-header {
   &__title {
-    //font-size: 16px;
     font-weight: 700;
     color: $client-text;
   }
@@ -38,41 +34,36 @@
   }
 }
 
-// ─── HeroPanoramicBanner ───────────────────────────────────
 .hero-panoramic-banner {
   width: 100%;
   position: relative;
-  overflow: hidden; // Гарантує, що слайдер не розтягне ширину всього сайту
+  overflow: hidden;
 
   __container {
     width: 100%;
-    // Дозволяємо слайдам виходити за межі стандартного Swiper-контейнера
     .panoramic-banner-swiper {
       overflow: visible !important;
       width: 100%;
 
       __slide {
-        // Бокові (сусідні) слайди рівні, але трохи приглушені
         opacity: 0.4;
-        transform: scale(0.96); // Легкий благородний відступ по глибині, без перекосів
+        transform: scale(0.96);
         transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1),
         transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
         cursor: pointer;
 
-        // ЦЕНТРАЛЬНИЙ АКТИВНИЙ БАННЕР
         &.swiper-slide-active {
           opacity: 1;
-          transform: scale(1); // Натуральний повноцінний розмір за сіткою
+          transform: scale(1);
         }
       }
     }
   }
 
-  // Об'єкт самої картки баннера
   .panoramic-banner-card {
     width: 100%;
-    aspect-ratio: 16 / 9; // Мобільний формат за замовчуванням
-    border-radius: 0; // На мобільних лежить впритул до країв
+    aspect-ratio: 16 / 9;
+    border-radius: 0;
     overflow: hidden;
     position: relative;
     background: #121212;
@@ -84,14 +75,14 @@
     }
 
     @media (min-width: 1200px) {
-      aspect-ratio: 16 / 5.2; // Кінематографічний рівний формат для десктопу
-      border-radius: 16px; // Радіус округлення як у вашої картки
+      aspect-ratio: 16 / 5.2;
+      border-radius: 16px;
     }
 
     img {
       width: 100%;
       height: 100%;
-      object-fit: cover; // Зображення обрізається строго по центру під будь-який монітор
+      object-fit: cover;
       object-position: center;
       user-select: none;
     }
@@ -107,7 +98,6 @@
     }
   }
 
-  // Адаптивний скелетон повторює логіку розмірів
   &-skeleton {
     width: 100%;
     aspect-ratio: 16 / 9;
@@ -126,7 +116,6 @@
     }
   }
 
-  // Крапки пагінації під банером
   &__dots {
     display: flex;
     justify-content: center;
@@ -158,7 +147,6 @@
   }
 }
 
-// ─── MoodSection ─────────────────────────────────────────
 .mood-section {
   &__scroll {
     display: flex;
@@ -219,7 +207,6 @@
   }
 }
 
-// ─── MoodCard ─────────────────────────────────────────────
 .mood-card {
   display: flex;
   flex-direction: column;
@@ -265,7 +252,6 @@
 }
 
 
-// ─── AlbumCard ────────────────────────────────────────────
 .album-card {
   cursor: pointer;
   min-width: 0;
@@ -305,7 +291,6 @@
     margin: 0;
   }
 
-  // Мобильный горизонтальный вариант
   &--horizontal {
     display: flex;
     align-items: center;
@@ -361,30 +346,26 @@
   }
 }
 
-// ─── ArtistCard ───────────────────────────────────────────
-// ─── ArtistCard (Spotify Style Layout) ─────────────────────
 .artist-card {
   display: flex;
   flex-direction: column;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.02); // Дефолтне ледь помітне тло карти
+  background: rgba(255, 255, 255, 0.02);
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  text-align: left; // Перемикаємо на лівий край для автентичного вигляду
+  text-align: left;
   width: 100%;
 
-  // Ефект ховеру на всю картку
   &:hover {
-    background-color: rgba(255, 255, 255, 0.07); // М'яке підсвічування плитки
+    background-color: rgba(255, 255, 255, 0.07);
 
     .artist-card__play-btn {
       opacity: 1;
-      transform: translateY(0); // Повертаємо кнопку на дефолтну позицію
+      transform: translateY(0);
     }
   }
 
-  // Обгортка для утримання пропорцій та позиціонування кнопки
   &__avatar-wrapper {
     position: relative;
     width: 100%;
@@ -395,7 +376,7 @@
   &__avatar {
     width: 100%;
     height: 100%;
-    border-radius: 50%; // Строге коло для артиста
+    border-radius: 50%;
     overflow: hidden;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 
@@ -407,7 +388,6 @@
     }
   }
 
-  // Кастомна зелена кнопка плейліста
   &__play-btn {
     position: absolute;
     bottom: 8px;
@@ -415,14 +395,13 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background-color: #1db954; // Фірмовий насичений зелений
+    background-color: #1db954;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 
-    // Початковий стан для анімації випливання
     opacity: 0;
     transform: translateY(8px);
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
@@ -431,13 +410,12 @@
     i {
       font-size: 26px;
       color: #000000;
-      margin-left: 2px; // Оптичне вирівнювання трикутника іконки по центру
+      margin-left: 2px;
     }
 
-    // Мікро-ховер на саму кнопку (ефект збільшення)
     &:hover {
       transform: scale(1.06) !important;
-      background-color: #1ed760; // Легке освітлення зеленого
+      background-color: #1ed760;
     }
   }
 
@@ -473,11 +451,10 @@
   text-decoration: none;
   transition: 0.2s ease;
 
-  // ─── Коло ─────────────────────────────────────────────
   &__circle {
     width: 52px;
     height: 52px;
-    border-radius: 50%;        // ← рівне коло
+    border-radius: 50%;
     border: 1px solid $client-border;
     background: $client-surface;
     display: flex;
@@ -492,7 +469,6 @@
     }
   }
 
-  // ─── Текст під колом ──────────────────────────────────
   &__label {
     font-size: 13px;
     color: $client-text-muted;
@@ -512,7 +488,6 @@
   }
 }
 
-// ─── Горизонтальный скролл (общий) ───────────────────────
 .h-scroll {
   display: flex;
   gap: 12px;
@@ -523,7 +498,6 @@
   &::-webkit-scrollbar { display: none; }
 }
 
-// ─── Skeleton ────────────────────────────────────────────
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.4; }
@@ -538,12 +512,8 @@
   &--rounded { border-radius: 8px; }
 }
 
-// ══════════════════════════════════════════════════════════
-// MOOD SECTION
-// ══════════════════════════════════════════════════════════
 .mood-section {
 
-  // ─── Фільтр дропдаун ──────────────────────────────────
   &__filter-wrap {
     position: relative;
   }
@@ -614,39 +584,20 @@
     }
   }
 
-  //// ─── Слайдер ──────────────────────────────────────────
-  //// Bootstrap row flex-nowrap + overflow-x для скролу на mobile
-  //&__slider {
-  //  overflow-x: auto;
-  //  padding-bottom: 8px;
-  //  cursor: grab;
-  //  user-select: none;
-  //  scrollbar-width: none;
-  //
-  //  &::-webkit-scrollbar { display: none; }
-  //  &:active { cursor: grabbing; }
-  //}
 }
 
-// ══════════════════════════════════════════════════════════
-// MOOD CARD
-// ══════════════════════════════════════════════════════════
 .mood-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  //gap: 12px;
   cursor: pointer;
   text-align: center;
-  //padding: 0;             // відступи між картками — через Bootstrap g-* на row
   transition: transform 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
   }
 
-  // ─── Обгортка — задає квадратні пропорції ─────────────
-  // width: 100% від колонки, aspect-ratio робить висоту = ширині
   &__circle-wrap {
     width: 100%;
     max-height: 160px;
@@ -671,7 +622,6 @@
     transition: background 0.25s ease;
   }
 
-  // ─── Внутрішнє коло — темно-синій радіальний градієнт ─
   &__circle-inner {
     width: 100%;
     height: 100%;
@@ -696,7 +646,6 @@
     filter: drop-shadow(0 2px 4px rgba(0, 100, 200, 0.3));
   }
 
-  // ─── Назва ────────────────────────────────────────────
   &__name {
     font-size: $h6-font-size;
     font-weight: 600;
@@ -704,7 +653,6 @@
     transition: color 0.2s ease;
   }
 
-  // ─── Hover ────────────────────────────────────────────
   &:hover {
     .mood-card__circle {
       background: linear-gradient(
@@ -720,7 +668,6 @@
     }
   }
 
-  // ─── Активний ─────────────────────────────────────────
   &--active {
     .mood-card__circle {
       background: linear-gradient(
@@ -746,9 +693,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// FOOTER
-// ══════════════════════════════════════════════════════════
 .client-footer {
   background: $client-surface;
   padding: 32px 32px 20px;
@@ -756,7 +700,6 @@
   margin-bottom: 0.8rem;
   border-radius: 8px;
 
-  // ─── Верхній блок ─────────────────────────────────────
   &__top {
     display: flex;
     align-items: flex-start;
@@ -771,7 +714,6 @@
     }
   }
 
-  // ─── Лого ─────────────────────────────────────────────
   &__logo {
     display: flex;
     align-items: center;
@@ -781,7 +723,6 @@
     img { display: block; }
   }
 
-  // ─── Контакти ─────────────────────────────────────────
   &__contact-block {
     display: flex;
     flex-direction: column;
@@ -802,7 +743,6 @@
     line-height: 1.5;
   }
 
-  // ─── Соцмережі ────────────────────────────────────────
   &__socials {
     display: flex;
     align-items: center;
@@ -841,14 +781,12 @@
     &--rss { background: $client-accent; }
   }
 
-  // ─── Розділювач ───────────────────────────────────────
   &__divider {
     border-color: $client-border;
     opacity: 1;
     margin: 0 0 16px;
   }
 
-  // ─── Нижній блок ──────────────────────────────────────
   &__bottom {
     display: flex;
     align-items: center;
@@ -893,38 +831,30 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// NEW RELEASES — слайдер
-// ══════════════════════════════════════════════════════════
 .new-releases-slider {
   scrollbar-width: none;
   padding-bottom: 8px;
 
   &::-webkit-scrollbar { display: none; }
 
-  // Фіксуємо мінімальну ширину колонки на мобайлі
-  // щоб bootstrap col-6 не стискався нижче ніж треба
   .col-6 {
     min-width: 160px;
   }
 }
 
 
-// ══════════════════════════════════════════════════════════
-// TRACK CARD
-// ══════════════════════════════════════════════════════════
 .track-card {
-  position: relative; // потрібно щоб кнопки позиціонувались відносно картки
+  position: relative;
   cursor: pointer;
 
   &--playing {
     .track-card__title {
-      color: $green; // акцентний колір для поточного треку
+      color: $green;
     }
   }
 
   &__cover {
-    position: relative; // для абсолютного позиціонування кнопок
+    position: relative;
     aspect-ratio: 1 / 1;
     border-radius: 8px;
     overflow: hidden;
@@ -938,7 +868,6 @@
     }
   }
 
-  // Play кнопка — знизу зліва на обкладинці
   &__play-btn {
     position: absolute;
     bottom: 8px;
@@ -962,8 +891,6 @@
     }
   }
 
-  // Like кнопка — знизу справа на обкладинці
-  // Like кнопка — знизу справа на обкладинці
   &__like-btn {
     position: absolute;
     bottom: 8px;
@@ -986,15 +913,13 @@
       transform: scale(1.1);
     }
 
-    // 🚨 ФІКС №1: Справжній селектор приховання для BEM вкладеності
     &--hidden {
       opacity: 0;
       pointer-events: none;
     }
 
-    // 🚨 ФІКС №2: Активний стан — показуємо серце ЗАВЖДИ і фарбуємо в зелений
     &--active {
-      color: $green !important; // Якщо на FavoritesPage хочеш червоне, зміни тут на $red
+      color: $green !important;
       opacity: 1 !important;
       pointer-events: auto !important;
     }
@@ -1005,7 +930,6 @@
     }
   }
 
-  // Показуємо дефолтне (сіре) серце при ховері на саму картку
   &:hover &__like-btn,
   &--hovered &__like-btn {
     opacity: 1;
@@ -1050,9 +974,6 @@
     }
   }
 }
-// ══════════════════════════════════════════════════════════
-// TOP TRACKS — слайдер
-// ══════════════════════════════════════════════════════════
 .top-tracks-slider {
   scrollbar-width: none;
   padding-bottom: 8px;
@@ -1065,9 +986,6 @@
 }
 
 
-// ══════════════════════════════════════════════════════════
-// MEDIA CARD — базовий компонент для AlbumCard і PlaylistCard
-// ══════════════════════════════════════════════════════════
 .media-card {
   cursor: pointer;
   border-radius: 12px;
@@ -1123,9 +1041,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// LIBRARY PAGE
-// ══════════════════════════════════════════════════════════
 .library-page {
   padding: 1.5rem 2rem 2rem;
 
@@ -1137,7 +1052,6 @@
   }
 }
 
-// Слайдер — спільний для всіх секцій медіатеки
 .library-slider {
   scrollbar-width: none;
   padding-bottom: 8px;

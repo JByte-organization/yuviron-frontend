@@ -8,9 +8,6 @@ import type { RegisterCommand } from '@repo/api/generated/client/models/register
 import { clearRegisterDraft, getRegisterDraft, type RegisterDraft } from './registerDraft';
 import { countryLabel } from './regions';
 
-// Собирает тело register-запроса из черновика. Дату рождения бэк ждёт ISO-строкой,
-// поэтому склеиваем день/месяц/год в UTC, чтобы не словить смещение часового пояса.
-// country шлём названием ('Польща'), а не кодом 'PL' — бек хранит как есть.
 const buildRegisterPayload = (draft: RegisterDraft): RegisterCommand => ({
     email: draft.email?.trim(),
     password: draft.password,
@@ -25,10 +22,6 @@ const buildRegisterPayload = (draft: RegisterDraft): RegisterCommand => ({
     acceptTerms: true,
 });
 
-// Единая точка отправки register для обоих экранов (email-шаг и шаг профиля).
-// 409 Conflict = почта занята → поднимаем флаг emailTaken (модалку рисует вызывающий
-// компонент). Любую другую ошибку отдаём текстом в serverError. На успехе чистим
-// черновик и ведём на экран «перевірте пошту» (подтверждение идёт по ссылке из письма).
 export const useRegisterSubmit = () => {
     const router = useRouter();
     const [emailTaken, setEmailTaken] = useState(false);
@@ -77,7 +70,6 @@ export const useRegisterSubmit = () => {
         },
     });
 
-    // Читаем черновик в момент сабмита — вызывающий пишет в него непосредственно перед.
     const submit = () => {
         setServerError(null);
         mutate({ data: buildRegisterPayload(getRegisterDraft()) });

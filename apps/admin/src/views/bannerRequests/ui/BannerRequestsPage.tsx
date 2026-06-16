@@ -31,27 +31,22 @@ interface FilterState {
     status: BannerRequestStatus | null;
 }
 
-// За замовчуванням показуємо чергу Pending — це робочий список модератора.
 const DEFAULT_FILTERS: FilterState = { status: BannerRequestStatus.Pending };
 
 export const BannerRequestsPage = () => {
-    // ─── Модалка ──────────────────────────────────────────
     const [opened, setOpened] = useState<BannerRequestListItemDto | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-    // ─── Пагінація / пошук / сортування ──────────────────
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [searchInput, setSearchInput] = useState('');
     const [sortBy, setSortBy] = useState<string | undefined>(undefined);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-    // ─── Фільтри ──────────────────────────────────────────
     const [draftFilters, setDraftFilters] = useState<FilterState>(DEFAULT_FILTERS);
     const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTERS);
     const activeFiltersCount = activeFilters.status ? 1 : 0;
 
-    // ─── Запит ────────────────────────────────────────────
     const queryParams: GetApiAdminBannersRequestsParams = {
         Page:       page,
         PageSize:   PAGE_SIZE,
@@ -68,7 +63,6 @@ export const BannerRequestsPage = () => {
     const totalPages = responseData?.totalPages ?? 1;
     const totalCount = responseData?.totalCount ?? 0;
 
-    // ─── Handlers ─────────────────────────────────────────
     const handleToggleSelect = (id: string) => {
         setSelectedIds(prev => {
             const next = new Set(prev);
@@ -101,7 +95,6 @@ export const BannerRequestsPage = () => {
     const handleApplyFilters = () => { setActiveFilters({ ...draftFilters }); setPage(1); };
     const handleResetFilters = () => { setDraftFilters(DEFAULT_FILTERS); setActiveFilters(DEFAULT_FILTERS); setPage(1); };
 
-    // ─── Filter content ───────────────────────────────────
     const filterContent = (
         <div className="d-flex flex-column gap-4">
             <div>

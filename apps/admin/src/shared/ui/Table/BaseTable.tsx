@@ -17,12 +17,10 @@ interface BaseTableProps {
     isAllSelected?: boolean;
     onSelectAll?: () => void;
     selectedCount?: number;
-    // Фильтры
     filterContent?: React.ReactNode;
     onApplyFilters?: () => void;
     onResetFilters?: () => void;
     activeFiltersCount?: number;
-    // Сортировка
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     onSortChange?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
@@ -59,17 +57,13 @@ export const BaseTable = ({
     return (
         <div className="p-2 p-lg-3 bg-admin-primary" style={{ minHeight: '100vh' }}>
 
-            {/* ─── Header ───────────────────────────────── */}
             <div className="row align-items-center gap-3 gap-xxl-2 mb-4">
-                {/* Title */}
                 <div className="col-12 col-md-auto">
                     <p className="h4 text-white fw-semibold mb-1">{title}</p>
                     {subtitle && <p className="text-white h6 fw-light mb-0">{subtitle}</p>}
                 </div>
 
-                {/* Controls */}
                 <div className="col-12 col-md d-flex align-items-center justify-content-start justify-content-xxl-end gap-2 flex-wrap flex-md-nowrap">
-                    {/* Search */}
                     <div className="search-wrapper py-2 flex-grow-1 flex-md-grow-0">
                         <Image
                             src="/images/icons/search.svg"
@@ -95,7 +89,6 @@ export const BaseTable = ({
                         )}
                     </div>
 
-                    {/* Sort dropdown */}
                     {sortOptions && sortOptions.length > 0 && (
                         <div className="dropdown">
                             <button
@@ -128,7 +121,6 @@ export const BaseTable = ({
                         </div>
                     )}
 
-                    {/* Filters button */}
                     <button
                         className="btn btn-admin-dark py-2 h6 d-flex align-items-center mb-0 gap-2"
                         type="button"
@@ -151,7 +143,6 @@ export const BaseTable = ({
                         )}
                     </button>
 
-                    {/* New button */}
                     {onNewClick && (
                         <button
                             className="btn btn-admin-dark h5 px-4 py-2 text-nowrap mb-0"
@@ -164,7 +155,6 @@ export const BaseTable = ({
             </div>
 
 
-            {/* ─── Table ────────────────────────────────── */}
             <div className="rounded-3 overflow-hidden shadow-lg table-admin">
                 <div className="table-responsive">
                     <table className="table table-dark table-striped table-hover mb-0 align-middle">
@@ -190,7 +180,6 @@ export const BaseTable = ({
                 </div>
             </div>
 
-            {/* ─── Footer ───────────────────────────────── */}
             <div className="d-flex justify-content-between align-items-center mt-4">
                 <div>{pagination}</div>
                 <button
@@ -202,7 +191,6 @@ export const BaseTable = ({
                 </button>
             </div>
 
-            {/* ─── Offcanvas фільтри ────────────────────── */}
             <div
                 className="offcanvas offcanvas-end bg-admin-primary text-white"
                 tabIndex={-1}
@@ -225,14 +213,12 @@ export const BaseTable = ({
                 </div>
 
                 <div className="offcanvas-body d-flex flex-column">
-                    {/* Контент фильтров */}
                     <div className="flex-grow-1 overflow-auto">
                         {filterContent ?? (
                             <p className="text-secondary">No filters available.</p>
                         )}
                     </div>
 
-                    {/* Кнопки Apply / Reset */}
                     <div className="d-flex gap-2 pt-3 border-top border-secondary">
                         <button
                             className="btn btn-outline-secondary flex-grow-1"

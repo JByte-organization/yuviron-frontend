@@ -11,11 +11,9 @@ interface Props {
     request: BannerRequestListItemDto;
     isSelected: boolean;
     onSelect: () => void;
-    /** Відкрити заявку (Approve/Reject усередині модалки). */
     onOpen: (request: BannerRequestListItemDto) => void;
 }
 
-// Статуси можуть дрейфувати у swagger — невідомі рендеримо нейтрально (bg-secondary).
 export const statusBadge = (status?: BannerRequestStatus) => {
     const s = String(status ?? '');
     const cls =
@@ -47,7 +45,6 @@ export const BannerRequestRow = ({ request, isSelected, onSelect, onOpen }: Prop
                 />
             </td>
 
-            {/* Preview */}
             <td className="py-3">
                 <div
                     className="rounded overflow-hidden bg-secondary d-flex align-items-center justify-content-center"
@@ -59,7 +56,6 @@ export const BannerRequestRow = ({ request, isSelected, onSelect, onOpen }: Prop
                 </div>
             </td>
 
-            {/* Artist */}
             <td>
                 <div className="text-white fw-bold text-nowrap">
                     {request.artistName || 'Unknown Artist'}
@@ -69,19 +65,14 @@ export const BannerRequestRow = ({ request, isSelected, onSelect, onOpen }: Prop
                 </div>
             </td>
 
-            {/* Album */}
             <td className="text-secondary small">{request.albumTitle || '—'}</td>
 
-            {/* Title */}
             <td className="text-white small">{request.title || '—'}</td>
 
-            {/* Status */}
             <td>{statusBadge(request.status)}</td>
 
-            {/* Created */}
             <td className="text-secondary small">{created}</td>
 
-            {/* Action */}
             <td className="text-end pe-4" onClick={(e) => e.stopPropagation()}>
                 <button
                     className="btn btn-sm btn-admin-dark text-nowrap"

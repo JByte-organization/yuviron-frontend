@@ -1,9 +1,5 @@
-// ══════════════════════════════════════════════════════════
-// TRACK ROW
-// ══════════════════════════════════════════════════════════
 .track-row {
   display: grid;
-  // # | info | альбом | дата | дії
   grid-template-columns: 32px 1fr 1fr 140px 80px;
   align-items: center;
   gap: 16px;
@@ -13,12 +9,10 @@
   transition: background 0.15s ease;
   color: $client-text-muted;
 
-  // Мобайл — тільки # | info | дії
   @media (max-width: 767px) {
     grid-template-columns: 32px 1fr 80px;
   }
 
-  // Tablet — без дати
   @media (min-width: 768px) and (max-width: 991px) {
     grid-template-columns: 32px 1fr 1fr 80px;
   }
@@ -49,7 +43,6 @@
     }
   }
 
-  // ─── Індекс ───────────────────────────────────────────
   &__index {
     font-size: 14px;
     color: $client-text-muted;
@@ -64,10 +57,8 @@
 
   &__playing-icon {
     color: $client-accent;
-    // TODO: замінити на CSS анімацію equalizer
   }
 
-  // ─── Info: обкладинка + назва + артист ────────────────
   &__info {
     display: flex;
     align-items: center;
@@ -119,7 +110,6 @@
     &:hover { color: $client-text; text-decoration: underline; }
   }
 
-  // ─── Альбом ───────────────────────────────────────────
   &__album {
     font-size: 13px;
     color: $client-text-muted;
@@ -130,13 +120,11 @@
     &:hover { color: $client-text; text-decoration: underline; }
   }
 
-  // ─── Дата ─────────────────────────────────────────────
   &__date {
     font-size: 13px;
     color: $client-text-muted;
   }
 
-  // ─── Дії + тривалість ─────────────────────────────────
   &__actions {
     display: flex;
     align-items: center;
@@ -151,21 +139,19 @@
     font-size: 15px;
     padding: 0;
     cursor: pointer;
-    opacity: 0; // По умолчанию скрыта для нелайкнутых треков
+    opacity: 0;
     transition: opacity 0.15s ease, color 0.15s ease;
 
     &:hover {
       color: $client-text-strong;
     }
 
-    // 🚨 ФИКС 1: Правильный модификатор активного лайка
     &--active {
       color: $red !important;
-      opacity: 1 !important; // 🚨 ФИКС 2: Активное сердце должно быть видно ВСЕГДА, а не только при ховере!
+      opacity: 1 !important;
     }
   }
 
-  // Показуємо лайк тільки при ховері на рядок (для нелайкнутых треков)
   &:hover &__like-btn,
   &--hovered &__like-btn {
     opacity: 1;
@@ -212,9 +198,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// FAVORITES PAGE
-// ══════════════════════════════════════════════════════════
 .favorites-page {
   padding: 0 1.5rem 2rem;
 
@@ -236,9 +219,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// FAVORITES HEADER
-// ══════════════════════════════════════════════════════════
 .favorites-header {
   padding: 24px 0 8px;
 
@@ -268,7 +248,6 @@
     gap: 4px;
   }
 
-  // ─── Кнопки дій ───────────────────────────────────────
   &__actions {
     display: flex;
     align-items: center;
@@ -325,7 +304,6 @@
     &:hover { color: $client-text; }
   }
 
-  // ─── Заголовки колонок ────────────────────────────────
   &__columns {
     display: grid;
     grid-template-columns: 32px 1fr 1fr 140px 80px;

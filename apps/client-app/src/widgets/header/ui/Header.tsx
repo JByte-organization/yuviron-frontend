@@ -22,13 +22,10 @@ export const Header = () => {
     const router = useRouter();
     const accessToken = useSessionStore(s => s.accessToken);
     const clearSession = useSessionStore(s => s.clearSession);
-    // Каркас за статусом, а не за токеном: під час refresh токена ще нема,
-    // але показувати кнопки «Увійти/Реєстрація» не можна (саме це блимання).
     const status = useSessionStore(s => s.status);
     const isAuthenticated = useSessionStore(selectIsAuthenticated);
     const artistId = useCurrentArtistId();
 
-    // ─── Дані поточного користувача ───────────────────────
     const { data: meRaw, refetch } = useGetApiAuthMe({
         query: {
             queryKey: getGetApiAuthMeQueryKey(),
@@ -46,7 +43,6 @@ export const Header = () => {
     const me = (meRaw as CurrentUserDto) ?? null;
     const avatarSrc = getImageUrl(me?.profile?.avatarUrl);
 
-    // ─── Лічильник непрочитаних ───────────────────────────
     const { data: unreadRaw } = useGetApiNotificationsUnreadCount({
         query: {
             enabled: !!accessToken,
@@ -55,7 +51,6 @@ export const Header = () => {
     });
     const unreadCount = (unreadRaw as unknown as number) ?? 0;
 
-    // ─── Пошук ────────────────────────────────────────────
     const [query,        setQuery]        = useState('');
     const [showDropdown, setShowDropdown] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -79,7 +74,6 @@ export const Header = () => {
         if (e.key === 'Escape') setShowDropdown(false);
     };
 
-    // ─── Logout ───────────────────────────────────────────
     const { mutate: logout } = usePostApiAuthLogout({
         mutation: {
             onSettled: () => {
@@ -91,12 +85,10 @@ export const Header = () => {
 
     return (
         <header className="client-header">
-            {/* Лого */}
             <Link href="/home" className="client-header__logo">
                 <Image src="/images/logo.svg" alt="Lumitune" width={32} height={32} />
             </Link>
 
-            {/* Пошук */}
             <div className="client-header__search-wrap" ref={searchRef}>
                 <i className="bi bi-search client-header__search-icon" />
                 <input
@@ -129,22 +121,17 @@ export const Header = () => {
                 )}
             </div>
 
-            {/* Праві дії */}
             <div className="client-header__actions">
                 {status === 'loading' ? (
-                    // Поки відновлюється сесія — не показуємо ні кнопки входу,
-                    // ні аватар, щоб уникнути блимання. Стан короткочасний.
                     null
                 ) : isAuthenticated ? (
                     <div className="client-header__user">
-                        {/* Premium кнопка */}
                         {!me?.isPremium && (
                             <Link href="/premium" className="client-header__premium-btn">
                                 Дізнатися про Premium
                             </Link>
                         )}
 
-                        {/* Повідомлення */}
                         <Link
                             href="/notifications"
                             className="client-header__icon-btn client-header__notif-btn"
@@ -164,7 +151,6 @@ export const Header = () => {
                             )}
                         </Link>
 
-                        {/* Аватар */}
                         <button
                             className="client-header__avatar-btn"
                             onClick={() => setShowUserMenu(v => !v)}

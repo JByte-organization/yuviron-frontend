@@ -1,41 +1,27 @@
 @import "../abstract/variables";
 
-// Перекрашивание белых/светлых SVG-иконок в фирменный циан (~#00A6FF).
-// Рецепт: brightness(0) делает иконку чёрной, далее invert/sepia/hue дают синий.
-// Применяется на светлой теме (где белые иконки сливаются с фоном) и в активных пунктах.
 $icon-blue-filter: brightness(0) saturate(100%) invert(58%) sepia(80%)
 saturate(500%) hue-rotate(180deg) brightness(105%);
 
-// Тематизируемый фон/текст для <body> клиентского приложения.
-// Раньше тут висели Bootstrap-классы bg-dark/text-white, которые
-// форсили тёмную тему и ломали переключение на светлую.
 .client-body {
   min-height: 100vh;
   background: $client-bg;
   color: $client-text;
 }
 
-// Тематизируемый аналог Bootstrap-утилиты .text-white: цвет следует за темой.
-// Использовать вместо text-white в клиентских компонентах.
 .text-theme {
   color: $client-text;
 }
 
-// ══════════════════════════════════════════════════════════
-// LAYOUT
-// ══════════════════════════════════════════════════════════
 .client-layout {
   min-height: 100vh;
   background-image:
           radial-gradient(circle at 50% 40%, rgba(33, 58, 128, 0.38) 0%, transparent 55%),
 
-            // Верхнее правое темно-изумрудное/бирюзовое свечение
           radial-gradient(circle at 85% 20%, rgba(15, 76, 71, 0.35) 0%, transparent 45%),
 
-            // Верхнее левое приглушенное сине-зеленое свечение
           radial-gradient(circle at 15% 15%, rgba(14, 52, 70, 0.35) 0%, transparent 45%),
 
-            // Нижнее правое очень мягкое синее пятно для объема
           radial-gradient(circle at 85% 85%, rgba(20, 45, 80, 0.25) 0%, transparent 50%);
 
   background-attachment: fixed;
@@ -67,14 +53,12 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
       }
     }
 
-    // Правий сайдбар відкритий
     &--right-open {
       @media (min-width: 1200px) {
         margin-right: $right-sidebar-width + $sidebar-margin * 2;
       }
     }
 
-    // Обидва одночасно
     &--left-collapsed#{&}--right-open {
       @media (min-width: 992px) {
         margin-left: 32px;
@@ -86,9 +70,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// HEADER
-// ══════════════════════════════════════════════════════════
 .client-header {
   position: fixed;
   top: 0;
@@ -106,7 +87,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
 
   @media (min-width: 992px) { padding: 0 24px; }
 
-  // ─── Лого ─────────────────────────────────────────────
   &__logo {
     flex-shrink: 0;
     display: flex;
@@ -116,11 +96,10 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     img { display: block; }
   }
 
-  // ─── Пошук — по центру ────────────────────────────────
   &__search-wrap {
     flex: 1;
     max-width: 480px;
-    margin: 0 auto; // ← центрування
+    margin: 0 auto;
     position: relative;
     display: flex;
     align-items: center;
@@ -183,7 +162,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     &:hover { color: $client-accent; }
   }
 
-  // ─── Праві дії ────────────────────────────────────────
   &__actions {
     display: flex;
     align-items: center;
@@ -192,7 +170,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     margin-left: auto;
   }
 
-  // Кнопка Premium
   &__premium-btn {
     display: none;
     padding: 6px 14px;
@@ -215,7 +192,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     }
   }
 
-  // Іконки-кнопки
   &__icon-btn {
     width: 36px;
     height: 36px;
@@ -236,14 +212,12 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     }
   }
 
-  // Перемикач теми
   &__theme-btn {
     color: $client-text-muted;
 
     svg { display: block; }
   }
 
-  // Повідомлення
   &__notif-btn {
     position: relative;
   }
@@ -252,9 +226,8 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     display: block;
     opacity: 0.6;
     transition: opacity 0.2s;
-    filter: invert(1); // біла SVG іконка на тёмній шапці
+    filter: invert(1);
 
-    // На світлій шапці інверсія робить іконку темно-помаранчевою — фарбуємо в циан.
     [data-theme="light"] & { filter: $icon-blue-filter; }
 
     .client-header__notif-btn:hover & { opacity: 1; }
@@ -278,7 +251,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     border: 2px solid $client-bg;
   }
 
-  // Аватар
   &__user {
     display: flex;
     align-items: center;
@@ -344,7 +316,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     }
   }
 
-  // Auth кнопки (незареєстрований)
   &__auth-btn {
     padding: 7px 16px;
     border-radius: 20px;
@@ -372,9 +343,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// SEARCH DROPDOWN
-// ══════════════════════════════════════════════════════════
 .search-dropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -383,7 +351,7 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
   background: $client-surface-2;
   border: 1px solid $client-border;
   border-radius: 12px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6); // Робимо тінь глибшою для відриву від бекграунду
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
   z-index: 300;
   overflow: hidden;
 
@@ -391,7 +359,7 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
   &__empty {
     padding: 18px;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.5) !important; // Безпечний дефолт, якщо токен занадто темний
+    color: rgba(255, 255, 255, 0.5) !important;
     text-align: center;
   }
 
@@ -409,13 +377,12 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     border-radius: 8px;
     text-decoration: none !important;
     transition: background 0.2s ease;
-    color: inherit; // Захист від перевизначення кольору лінка браузером
+    color: inherit;
 
     &:hover {
       background: $client-hover;
       text-decoration: none !important;
 
-      // При наведенні на рядок робимо заголовок треку кришталево білим
       .search-dropdown__title {
         color: #ffffff !important;
       }
@@ -428,7 +395,7 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     border-radius: 6px;
     overflow: hidden;
     flex-shrink: 0;
-    background-color: rgba(255, 255, 255, 0.05); // Слот-підкладка, якщо картинка довго вантажиться
+    background-color: rgba(255, 255, 255, 0.05);
 
     img {
       width: 100%;
@@ -453,7 +420,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
   &__title {
     font-size: 14px;
     font-weight: 500;
-    // 🚨 ГЛАВНИЙ ФІКС КОНТРАСТУ №1: Яскравий білий колір для назви треку/артиста
     color: #ffffff !important;
     white-space: nowrap;
     overflow: hidden;
@@ -463,7 +429,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
 
   &__subtitle {
     font-size: 12px;
-    // 🚨 ГЛАВНИЙ ФІКС КОНТРАСТУ №2: Світло-сірий Spotify-style колір, що чітко читається
     color: #b3b3b3 !important;
     white-space: nowrap;
     overflow: hidden;
@@ -472,7 +437,7 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
 
   &__type-icon {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.4) !important; // Помірна яскравість для службової іконки типу
+    color: rgba(255, 255, 255, 0.4) !important;
     flex-shrink: 0;
   }
 
@@ -483,57 +448,51 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     padding: 12px 16px;
     font-size: 13px;
     font-weight: 500;
-    color: $client-accent !important; // Яскравий акцентний колір (наприклад, зелений або бренд-блакитний)
+    color: $client-accent !important;
     text-decoration: none !important;
     border-top: 1px solid $client-border;
     transition: background 0.2s ease, color 0.2s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.03); // Універсальний світлий блік замість жорсткого хардкоду кольору
-      color: #ffffff !important; // Робимо кнопку "Показати всі результати" ще яскравішою при ховері
+      background: rgba(255, 255, 255, 0.03);
+      color: #ffffff !important;
       text-decoration: none !important;
     }
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// USER DROPDOWN
-// ══════════════════════════════════════════════════════════
 .user-dropdown {
   position: absolute;
-  top: calc(100% + 12px); // Чуть больше воздуха, чтобы панель "парила" в невесомости
+  top: calc(100% + 12px);
   right: 0;
-  min-width: 240px; // Немного просторнее для премиальной читаемости
+  min-width: 240px;
 
-  // 🌌 ГЛУБОКИЙ СТЕЛЛЯРНЫЙ ГЛАССМОРФИЗМ
   background: rgba(17, 17, 22, 1);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 
-  // Тончайшая sub-pixel грань и мягкое внутреннее свечение по контуру
   border: 1px solid rgba(255, 255, 255, 0.03);
   box-shadow:
           0 16px 48px rgba(0, 0, 0, 0.65),
           inset 0 1px 1px rgba(255, 255, 255, 0.02);
 
-  border-radius: 16px; // Современный увеличенный радиус
+  border-radius: 16px;
   z-index: 300;
   overflow: hidden;
 
-  // Изящное появление при монтировании
   animation: dropdownFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   &__overlay {
     position: fixed;
     inset: 0;
     z-index: 299;
-    background: transparent; // Оставляем клик-аут невидимым
+    background: transparent;
   }
 
   &__list {
     list-style: none;
     margin: 0;
-    padding: 6px; // Паддинг-буфер для скругленных элементов
+    padding: 6px;
   }
 
   &__item {
@@ -541,12 +500,12 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     align-items: center;
     gap: 12px;
     padding: 10px 14px;
-    border-radius: 10px; // Скругление пунктов под стать рамке
+    border-radius: 10px;
 
     font-size: 13.5px;
     font-weight: 500;
-    letter-spacing: -0.1px; // Дорогая финтех-типографика
-    color: #8C8C9E; // Мягкий приглушенный цвет по умолчанию
+    letter-spacing: -0.1px;
+    color: #8C8C9E;
     text-decoration: none;
 
     border: none;
@@ -562,13 +521,11 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
       flex-shrink: 0;
       color: #5F5F6E;
 
-      // Надважливий параметр для свічення фільтрів без мікро-смикань верстки
       will-change: color, filter;
       transition:
               color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
               filter 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    // СТРОГАЯ ОПТИМИЗАЦИЯ: Никаких атак на "all" — только дискретные свойства без прыжков
     transition:
             background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
             color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
@@ -591,12 +548,11 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
       color: #FFFFFF;
     }
 
-    // 👑 АКЦЕНТНЫЙ ПУНКТ (PREMIUM СТУДИЯ)
     &--accent {
       color: #7AE0FF;
 
       .user-dropdown__item-icon {
-        color: rgba(122, 224, 255, 0.6); // Напівсвічення в спокої
+        color: rgba(122, 224, 255, 0.6);
         filter: drop-shadow(0 0 4px rgba(122, 224, 255, 0.15));
       }
 
@@ -607,7 +563,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
 
         .user-dropdown__item-icon {
           color: #7AE0FF;
-          // Ефект насиченого магічного свічення корони
           filter: drop-shadow(0 0 8px rgba(122, 224, 255, 0.65));
         }
       }
@@ -626,7 +581,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
 
         .user-dropdown__item-icon {
           color: #f87171;
-          // М'який аварійний спалах
           filter: drop-shadow(0 0 8px rgba(248, 113, 113, 0.45));
         }
       }
@@ -639,13 +593,11 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     opacity: 0.7;
     transition: opacity 0.2s ease;
 
-    // Иконка загорается вместе с текстом
     .user-dropdown__item:hover & {
       opacity: 1;
     }
   }
 
-  // НЕВЕСОМАЯ НИТЬ-РАЗДЕЛИТЕЛЬ
   &__divider {
     height: 1px;
     background: rgba(255, 255, 255, 0.03);
@@ -653,7 +605,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
   }
 }
 
-// ПЛАВНЫЙ КИНЕМАТОГРАФИЧНЫЙ СЛИК
 @keyframes dropdownFadeIn {
   from {
     opacity: 0;
@@ -666,7 +617,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
 }
 
 
-// Банер «режим перегляду» — показуємо учаснику з роллю Viewer (read-only кабінет).
 .artist-readonly-banner {
   display: flex;
   align-items: center;
@@ -684,9 +634,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// CLIENT SIDEBAR
-// ══════════════════════════════════════════════════════════
 .client-sidebar {
   display: none;
 
@@ -708,7 +655,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     transition: width 0.3s ease;
   }
 
-  // ─── Collapsed — вузький сайдбар тільки з іконками ────
   &--collapsed {
     width: 68px !important;
 
@@ -746,13 +692,11 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
       opacity: 0.15;
     }
 
-    // В &--collapsed блоці або окремо:
     &__playlist-item--collapsed {
       padding: 4px 0;
       justify-content: center;
       position: relative;
 
-      // Тултіп при наведенні — назва і автор
       &:hover::after {
         content: attr(title);
         position: absolute;
@@ -772,7 +716,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
       }
     }
 
-    // Аватар в collapsed — трохи більший для зручності
     &--collapsed &__playlist-avatar {
       width: 42px;
       height: 42px;
@@ -780,7 +723,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     }
   }
 
-  // ─── Внутрішній скролл ────────────────────────────────
   &__inner {
     height: 100%;
     padding: 20px 12px;
@@ -794,7 +736,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     flex-direction: column;
   }
 
-  // ─── Заголовок "Меню" з кнопкою collapse ─────────────
   &__header {
     display: flex;
     align-items: center;
@@ -803,7 +744,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     width: 100%;
     flex-shrink: 0;
 
-    // Белые SVG подзаголовков на светлой теме красим в циан.
     [data-theme="light"] & img {
       filter: $icon-blue-filter;
     }
@@ -817,7 +757,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     letter-spacing: 0.08em;
   }
 
-  // ─── Кнопка collapse ──────────────────────────────────
   &__collapse-btn {
     width: 28px;
     height: 28px;
@@ -846,7 +785,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     }
   }
 
-  // ─── Секції ───────────────────────────────────────────
   &__section {
     margin-bottom: 20px;
     flex-shrink: 0;
@@ -858,7 +796,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     }
   }
 
-  // ─── Перемикач артистів ───────────────────────────────
   &__switcher {
     position: relative;
     margin-bottom: 16px;
@@ -969,7 +906,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     padding: 8px 14px;
   }
 
-  // ─── Nav ──────────────────────────────────────────────
   &__nav {
     display: flex;
     flex-direction: column;
@@ -1002,7 +938,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
         filter: brightness(0) invert(1);
         opacity: 1;
 
-        // На светлой теме белый hover невидим — оставляем циан.
         [data-theme="light"] & {
           filter: $icon-blue-filter;
         }
@@ -1048,7 +983,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
       opacity: 0.5;
       transition: opacity 0.2s, filter 0.2s;
 
-      // На светлой теме белые иконки сливаются с фоном — красим в циан.
       [data-theme="light"] & {
         filter: $icon-blue-filter;
         opacity: 1;
@@ -1056,7 +990,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     }
   }
 
-  // ─── Плейлисти і нещодавно прослухані ────────────────
   &__playlist-list {
     display: flex;
     flex-direction: column;
@@ -1121,7 +1054,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
     color: $client-text-muted;
   }
 
-  // ─── Resize handle ────────────────────────────────────
   &__resize-handle {
     position: absolute;
     top: 0;
@@ -1157,9 +1089,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// FOOTER
-// ══════════════════════════════════════════════════════════
 .client-footer {
   margin-top: auto;
   background: $client-surface;
@@ -1288,11 +1217,6 @@ saturate(500%) hue-rotate(180deg) brightness(105%);
 
 
 
-// ══════════════════════════════════════════════════════════
-// RIGHT SIDEBAR
-// Стиль симетричний до лівого сайдбара —
-// floating картка з border-radius і box-shadow
-// ══════════════════════════════════════════════════════════
 
 $right-sidebar-width: 280px;
 $sidebar-margin: 12px;
@@ -1309,27 +1233,23 @@ $sidebar-margin: 12px;
     width: $right-sidebar-width;
     z-index: 100;
 
-    // Floating картка — як лівий сайдбар
     background: $client-surface;
     border: 1px solid $client-border;
     border-radius: 16px;
     box-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
 
-    // Початково закритий — виїжджає вправо
     transform: translateX(calc(100% + #{$sidebar-margin}));
     opacity: 0;
     pointer-events: none;
     transition: transform 0.3s ease, opacity 0.3s ease;
   }
 
-  // ─── Відкритий стан ───────────────────────────────────
   &--open {
     transform: translateX(0);
     opacity: 1;
     pointer-events: all;
   }
 
-  // ─── Внутрішній скрол ─────────────────────────────────
   &__inner {
     height: 100%;
     overflow-y: auto;
@@ -1344,7 +1264,6 @@ $sidebar-margin: 12px;
     position: relative;
   }
 
-  // ─── Кнопка закрити ───────────────────────────────────
   &__close-btn {
     position: absolute;
     top: 12px;
@@ -1375,13 +1294,12 @@ $sidebar-margin: 12px;
     color: $client-accent;
   }
 
-  // ─── Обкладинка ───────────────────────────────────────
   &__cover {
     width: 100%;
     aspect-ratio: 1 / 1;
     border-radius: 12px;
     overflow: hidden;
-    margin-top: 8px; // відступ від кнопки закрити
+    margin-top: 8px;
 
     img {
       width: 100%;
@@ -1391,7 +1309,6 @@ $sidebar-margin: 12px;
     }
   }
 
-  // ─── Назва треку + артист + дії ───────────────────────
   &__track-info {
     display: flex;
     flex-direction: column;
@@ -1446,7 +1363,6 @@ $sidebar-margin: 12px;
     }
   }
 
-  // ─── Кнопки дій (лайк, плейліст) ─────────────────────
   &__track-actions {
     display: flex;
     align-items: center;
@@ -1473,7 +1389,6 @@ $sidebar-margin: 12px;
     &--active { color: $client-accent; }
   }
 
-  // ─── Поділитися ───────────────────────────────────────
   &__share {
     display: flex;
     justify-content: center;
@@ -1502,14 +1417,12 @@ $sidebar-margin: 12px;
     }
   }
 
-  // ─── Роздільник ───────────────────────────────────────
   &__divider {
     border-color: $client-border;
     opacity: 1;
     margin: 0;
   }
 
-  // ─── Про артиста ──────────────────────────────────────
   &__about {
     display: flex;
     flex-direction: column;
@@ -1605,7 +1518,6 @@ $sidebar-margin: 12px;
     overflow: hidden;
   }
 
-  // ─── Порожній стан ────────────────────────────────────
   &__empty {
     flex: 1;
     display: flex;
@@ -1620,7 +1532,6 @@ $sidebar-margin: 12px;
   }
 }
 
-// ─── Кнопка відкрити (коли сайдбар закритий) ─────────────
 .right-sidebar__restore-btn {
   display: none;
 

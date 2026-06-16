@@ -18,7 +18,6 @@ const PAGE_SIZE = 20;
 
 const TABLE_COLUMNS = ['Preview', 'Title', 'Status', 'Starts At', 'Ends At'];
 
-// Банери перейшли з ручного sortOrder на вікно показу (startsAtUtc/endsAtUtc).
 const SORT_OPTIONS = [
     { value: 'Title',        label: 'Title (A-Z)' },
     { value: 'StartsAtUtc',  label: 'Start Date' },
@@ -38,7 +37,6 @@ export const BannersPage = () => {
     const [sortBy,    setSortBy]    = useState<string>('StartsAtUtc');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-    // ─── ФОРМУВАННЯ ПАРАМЕТРІВ ЗАПРОСУ НА СЕРВЕР ──────────────────
     const queryParams: GetApiAdminBannersParams = useMemo(() => ({
         Page:       page,
         PageSize:   PAGE_SIZE,
@@ -54,7 +52,6 @@ export const BannersPage = () => {
     const totalPages = responseData?.totalPages ?? 1;
     const totalCount = responseData?.totalCount ?? 0;
 
-    // ─── МЕМОІЗОВАНІ ОБРОБТЧИКИ ─────────────────────────────────────
     const handleToggleSelect = useCallback((id: string) => {
         setSelectedIds(prev => {
             const next = new Set(prev);

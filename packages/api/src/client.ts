@@ -1,4 +1,3 @@
-// Ендпоінти Клієнта
 export * from './generated/client/endpoints/files';
 export * from './generated/client/endpoints/auth';
 export * from './generated/client/endpoints/home';
@@ -27,8 +26,6 @@ export * from './generated/client/endpoints/plans';
 
 export { postApiAnalyticsPlayStart, postApiAnalyticsPlayCommit } from './generated/client/endpoints/analytics';
 
-// МОДЕЛІ КЛІЄНТА — тепер імпортуємо ВСІ однією строкою без конфліктів!
 export * from './generated/client/models';
 
-// Спільний налаштовувач інстансу
 export { configureApiClient, initCsrfToken, customInstance } from './mutator';

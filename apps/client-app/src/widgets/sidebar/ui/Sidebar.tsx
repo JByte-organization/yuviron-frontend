@@ -16,9 +16,6 @@ import {
     type TrackArtistDto,
 } from '@repo/api/client.ts';
 
-// ══════════════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════════════
 const extractList = <T,>(raw: unknown): T[] => {
     if (!raw) return [];
     if (Array.isArray(raw)) return raw as T[];
@@ -28,16 +25,12 @@ const extractList = <T,>(raw: unknown): T[] => {
     return [];
 };
 
-// ══════════════════════════════════════════════════════════
-// NAV ITEM
-// ══════════════════════════════════════════════════════════
 interface NavItemProps {
     label:     string;
     icon:      string;
     isActive?: boolean;
     href?:     string;
     onClick?:  () => void;
-    // Коли collapsed — показуємо тільки іконку з тултіпом
     collapsed?: boolean;
 }
 
@@ -49,7 +42,6 @@ const NavItem = ({ label, icon, isActive, href, onClick, collapsed }: NavItemPro
             <span className="client-sidebar__nav-icon" title={collapsed ? label : undefined}>
                 <Image src={`/images/icons/${icon}.svg`} alt={label} width={18} height={18} />
             </span>
-            {/* Текст лейбла — прихований в collapsed режимі через CSS */}
             <span className="client-sidebar__nav-label">{label}</span>
         </>
     );
@@ -58,9 +50,6 @@ const NavItem = ({ label, icon, isActive, href, onClick, collapsed }: NavItemPro
     return <button className={className} onClick={onClick}>{content}</button>;
 };
 
-// ══════════════════════════════════════════════════════════
-// SIDEBAR
-// ══════════════════════════════════════════════════════════
 interface SidebarProps {
     onResizeStart?: (e: React.MouseEvent) => void;
 }
@@ -72,12 +61,10 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
 
     const [createPlaylistOpen, setCreatePlaylistOpen] = useState(false);
 
-    // ─── Плейлисти ────────────────────────────────────────
     const { data: playlistsRaw } = useGetApiMePlaylists({ PageSize: 20 });
     const playlists = extractList<UserPlaylistDto>(playlistsRaw)
         .filter(p => !p.isSystem);
 
-    // ─── Нещодавно прослухані ─────────────────────────────
     const { data: recentRaw } = useGetApiMeRecentlyPlayed({ Limit: 5 });
     const recentTracks = extractList<RecentlyPlayedTrackDto>(recentRaw);
 
@@ -89,13 +76,10 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
             >
                 <div className="client-sidebar__inner">
 
-                    {/* ─── Заголовок "Меню" з кнопкою collapse ── */}
                     <div className="client-sidebar__header">
-                        {/* В expanded режимі — слово "Меню" */}
                         {!collapsed && (
                             <span className="client-sidebar__header-title">Меню</span>
                         )}
-                        {/* Кнопка collapse/expand — завжди видима */}
                         <button
                             className="client-sidebar__collapse-btn"
                             onClick={() => setCollapsed(!collapsed)}
@@ -114,10 +98,8 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
                         </button>
                     </div>
 
-                    {/* ─── Перемикач акаунтів (особистий ↔ кабінети артистів) ── */}
                     <AccountSwitcher collapsed={collapsed} />
 
-                    {/* ─── Навігація ────────────────────────── */}
                     <div className="client-sidebar__section">
                         <nav className="client-sidebar__nav">
                             <NavItem
@@ -151,7 +133,6 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
                         <hr />
                     </div>
 
-                    {/* ─── Плейлисти — завжди видимі ──────────── */}
                     <div className="client-sidebar__section">
                         {!collapsed && (
                             <div className="client-sidebar__sub-header">
@@ -185,7 +166,6 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
                                             )}
                                         </div>
 
-                                        {/* Тексти — приховані в collapsed, але показуються в тултіпі */}
                                         {!collapsed && (
                                             <div className="client-sidebar__playlist-info">
                             <span className="client-sidebar__playlist-name">
@@ -209,11 +189,9 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
                         <hr />
                     </div>
 
-                    {/* ─── Плейлисти — приховані в collapsed ── */}
                     {!collapsed && (
                         <>
 
-                            {/* ─── Нещодавно прослухані ─────── */}
                             {recentTracks.length > 0 && (
                                 <div className="client-sidebar__section">
                                     <div className="client-sidebar__sub-header">
@@ -269,7 +247,6 @@ export const Sidebar = ({ onResizeStart }: SidebarProps) => {
                     )}
                 </div>
 
-                {/* Resize handle — тільки в expanded режимі */}
                 {!collapsed && (
                     <div
                         className="client-sidebar__resize-handle"

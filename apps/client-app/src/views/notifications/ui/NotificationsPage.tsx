@@ -15,11 +15,6 @@ import { groupNotifications } from '@/entities/notification/lib/groupNotificatio
 import { invalidateNotifications } from '@/entities/notification/lib/invalidateNotifications';
 import { useNotificationClick } from '@/entities/notification/lib/useNotificationClick';
 
-/**
- * Сторінка: Повідомлення.
- * REST-історія (GET /notifications з фільтром по category), групування по датах
- * на клієнті (date-fns), позначення прочитаним та роутинг — у useNotificationClick.
- */
 export const NotificationsPage = () => {
     const [tab, setTab] = useState<NotificationTab>('all');
     const qc = useQueryClient();
@@ -28,7 +23,6 @@ export const NotificationsPage = () => {
     const tabCfg = NOTIFICATION_TABS.find((t) => t.key === tab) ?? NOTIFICATION_TABS[0];
 
     const { data, isLoading } = useQuery({
-        // key[0] начинается с /api/notifications → попадает под invalidateNotifications.
         queryKey: ['/api/notifications', tab],
         queryFn: () => fetchNotifications({ categories: tabCfg.categories }),
     });
@@ -43,7 +37,6 @@ export const NotificationsPage = () => {
 
     return (
         <div className="notifications-page">
-            {/* ─── Заголовок ────────────────────────────── */}
             <div className="notifications-page__header">
                 <div>
                     <h1 className="notifications-page__title">Повідомлення</h1>
@@ -64,7 +57,6 @@ export const NotificationsPage = () => {
                 )}
             </div>
 
-            {/* ─── Фільтр-таби ──────────────────────────── */}
             <div className="notifications-page__filters">
                 {NOTIFICATION_TABS.map((f) => (
                     <button
@@ -81,7 +73,6 @@ export const NotificationsPage = () => {
 
             <hr className="notifications-page__divider" />
 
-            {/* ─── Контент ──────────────────────────────── */}
             {isLoading ? (
                 <NotificationsSkeleton />
             ) : items.length === 0 ? (

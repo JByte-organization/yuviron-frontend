@@ -14,7 +14,6 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
     const [isSuccess, setIsSuccess] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Инициализируем мутацию из обновленного контракта Orval
     const { mutateAsync: syncTracks, isPending } = usePostApiAdminJamendoSync();
 
     const handleClose = () => {
@@ -29,7 +28,6 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
         setIsSuccess(false);
 
         try {
-            // Вызываем мутацию согласно новому контракту
             const res = await syncTracks({
                 params: {
                     limit,
@@ -37,8 +35,6 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
                 }
             });
 
-            // Успіх — будь-який 2xx (бек міняв 202→200 у контракті; не привʼязуємось
-            // до конкретного коду, щоб не падати при дрейфі swagger).
             if (res.status >= 200 && res.status < 300) {
                 setIsSuccess(true);
             } else {
@@ -67,7 +63,6 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
                         <div className="modal-body p-4 d-flex flex-column gap-3">
                             {error && <div className="alert alert-danger py-2 small">{error}</div>}
 
-                            {/* Новое сообщение об успешном фоновом запуске */}
                             {isSuccess && (
                                 <div className="p-3 rounded bg-dark border border-success border-opacity-25 text-center mb-1">
                                     <i className="bi bi-check-circle-fill text-success fs-3 d-block mb-2" />
@@ -78,7 +73,6 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
                                 </div>
                             )}
 
-                            {/* Поля ввода параметров */}
                             <div>
                                 <label className="form-label text-secondary small fw-bold" style={{ fontSize: '11px' }}>
                                     TRACKS IMPORT LIMIT (MAX)

@@ -40,7 +40,7 @@ export const UserDropdown = ({
             show: true,
         },
         {
-            icon: 'bi-sliders', // Більш технологічна іконка замість шестерні
+            icon: 'bi-sliders',
             label: 'Налаштування',
             href: '/settings',
             show: true,
@@ -62,7 +62,6 @@ export const UserDropdown = ({
 
     return (
         <>
-            {/* Напівпрозорий закриваючий оверлей */}
             <div className="user-dropdown__overlay" onClick={onClose} />
 
             <div className="user-dropdown">

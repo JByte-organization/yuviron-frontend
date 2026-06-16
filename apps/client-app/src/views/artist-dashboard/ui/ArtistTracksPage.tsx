@@ -169,7 +169,6 @@ export const ArtistTracksPage = () => {
                 </div>
             )}
 
-            {/* Модалки */}
             <UploadTrackModal isOpen={showUpload} onClose={() => setShowUpload(false)} onSuccess={() => { setShowUpload(false); refetchTracks(); }} />
             {editingTrack && <EditTrackModal isOpen={!!editingTrack} trackId={editingTrack.id} trackTitle={editingTrack.title} onClose={() => setEditingTrack(null)} onSuccess={() => { setEditingTrack(null); refetchTracks(); }} />}
             {analyticsTrack && <TrackAnalyticsModal isOpen={!!analyticsTrack} trackId={analyticsTrack.id} trackTitle={analyticsTrack.title} onClose={() => setAnalyticsTrack(null)} />}

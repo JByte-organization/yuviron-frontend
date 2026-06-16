@@ -3,10 +3,6 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-// Экран после успешного register. Подтверждение почты идёт по ССЫЛКЕ из письма
-// (/confirm-email?token=...), поэтому тут не вводят код — просто просим открыть
-// письмо. Resend-эндпоинта для confirm у бэка нет, так что кнопки «надіслати
-// ще раз» здесь нет (в отличие от входа по коду).
 export const CheckEmailNotice = () => {
     const searchParams = useSearchParams();
     const email = searchParams?.get('email') ?? '';

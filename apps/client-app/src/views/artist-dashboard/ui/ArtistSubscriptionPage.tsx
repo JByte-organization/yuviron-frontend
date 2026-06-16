@@ -24,7 +24,6 @@ export const ArtistSubscriptionPage = () => {
     const canBill = can('finance');
 
     const { data: plansRaw, isLoading } = useGetApiPlans();
-    // Тільки артист-плани (лістенер-преміум — окремий екран колеги).
     const plans = unwrapList<PlanDto>(plansRaw).filter((p) => p.type === 'Artist');
 
     const { mutateAsync: checkout, isPending: isCheckingOut } =
@@ -36,8 +35,6 @@ export const ArtistSubscriptionPage = () => {
     const [error, setError] = useState<string | null>(null);
     const [notice, setNotice] = useState<string | null>(null);
 
-    // Stripe-редірект: бек повертає URL рядком, ведемо туди браузер. Success/cancel
-    // повертають назад на цей екран.
     const returnUrls = () => {
         const base = typeof window !== 'undefined' ? window.location.origin : '';
         return {

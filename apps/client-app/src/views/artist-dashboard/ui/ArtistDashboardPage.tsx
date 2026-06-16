@@ -34,9 +34,6 @@ const formatCount = (n: number) => {
     return String(n);
 };
 
-// ══════════════════════════════════════════════════════════
-// HEADER
-// ══════════════════════════════════════════════════════════
 interface HeaderProps {
     profile?: StudioArtistProfileDto;
     stats?: ArtistAnalyticsDto;
@@ -60,7 +57,6 @@ const ArtistDashboardHeader = ({ profile, stats }: HeaderProps) => {
 
     return (
         <div className="artist-dashboard-header">
-            {/* Банер або градієнт */}
             <div
                 className="artist-dashboard-header__banner"
                 style={bannerUrl
@@ -71,7 +67,6 @@ const ArtistDashboardHeader = ({ profile, stats }: HeaderProps) => {
             <div className="artist-dashboard-header__overlay" />
 
             <div className="artist-dashboard-header__content">
-                {/* Аватарка */}
                 <div className="artist-dashboard-header__avatar-wrap">
                     {avatarUrl ? (
                         <img
@@ -91,7 +86,6 @@ const ArtistDashboardHeader = ({ profile, stats }: HeaderProps) => {
                     )}
                 </div>
 
-                {/* Текстова інфо */}
                 <div className="artist-dashboard-header__info">
                     <p className="artist-dashboard-header__label">Профіль артиста</p>
                     <h1 className="artist-dashboard-header__name">{profile?.name ?? '—'}</h1>
@@ -126,7 +120,6 @@ const ArtistDashboardHeader = ({ profile, stats }: HeaderProps) => {
                 </div>
             </div>
 
-            {/* Іконки-кнопки */}
             <div className="artist-dashboard-header__actions">
                 <Link
                     href="/artist-dashboard/settings"
@@ -151,9 +144,6 @@ const ArtistDashboardHeader = ({ profile, stats }: HeaderProps) => {
     );
 };
 
-// ══════════════════════════════════════════════════════════
-// PAGE
-// ══════════════════════════════════════════════════════════
 export const ArtistDashboardPage = () => {
     const artistId = useCurrentArtistId();
     const enabled = !!artistId;
@@ -195,7 +185,6 @@ export const ArtistDashboardPage = () => {
         coverUrl: a.coverUrl,
     }));
 
-    // Стрілки прокрутки показуємо лише коли є що гортати (контент переповнює слайдер).
     const [tracksRef, tracksOverflow] = useHasOverflow<HTMLDivElement>([tracks]);
     const [albumsRef, albumsOverflow] = useHasOverflow<HTMLDivElement>([albums]);
 
@@ -205,15 +194,12 @@ export const ArtistDashboardPage = () => {
         ref.current.scrollBy({ left: dir === 'next' ? amount : -amount, behavior: 'smooth' });
     };
 
-    // Стан «ще не артист» тепер обробляє ArtistDashboardLayout (чистий екран без
-    // студійного хрому), тож сюди ми потрапляємо лише з валідним artistId.
 
     return (
         <div className="artist-dashboard">
             <ArtistDashboardHeader profile={profile} stats={stats} />
 
             <div className="artist-dashboard__content">
-                {/* ─── Мої треки ────────────────────── */}
                 <section className="mb-5">
                     <SectionHeader
                         title="Ваші треки"
@@ -243,7 +229,6 @@ export const ArtistDashboardPage = () => {
                     )}
                 </section>
 
-                {/* ─── Мої альбоми ──────────────────── */}
                 <section className="mb-5">
                     <SectionHeader
                         title="Ваші створені альбоми"

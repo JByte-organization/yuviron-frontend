@@ -54,7 +54,6 @@ export const ArtistAlbumsPage = () => {
     return (
         <div className="artist-albums-page">
 
-            {/* ─── Заголовок ────────────────────────── */}
             <div className="artist-tracks-page__header">
                 <div>
                     <h1 className="artist-tracks-page__title">Мої альбоми</h1>
@@ -90,7 +89,6 @@ export const ArtistAlbumsPage = () => {
                 </div>
             </div>
 
-            {/* ─── Картки альбомів ───────────────────── */}
             {albums.length === 0 ? (
                 <div className="artist-tracks-page__empty">
                     {isLoading
@@ -123,7 +121,6 @@ export const ArtistAlbumsPage = () => {
                 </div>
             )}
 
-            {/* ─── Модалки ───────────────────────────── */}
             <CreateAlbumModal
                 isOpen={showCreate}
                 onClose={() => setShowCreate(false)}

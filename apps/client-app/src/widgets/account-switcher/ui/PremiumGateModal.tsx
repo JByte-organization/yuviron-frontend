@@ -3,9 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 
-// Поп-ап для не-Premium при спробі додати акаунт артиста. «Мʼякий» гейт: реальну
-// перевірку робить бек (POST /api/artist-profiles → 403), тут лише гарне пояснення
-// з CTA на сторінку Premium.
 interface PremiumGateModalProps {
     isOpen: boolean;
     onClose: () => void;
