@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { MediaCard } from '@/entities/shared/ui/MediaCard';
 
@@ -14,13 +16,6 @@ interface PlaylistCardProps {
     onClick?: (id: string) => void;
 }
 
-/**
- * Картка плейліста.
- * Розмір контролюється Bootstrap колонками в батьківському компоненті.
- *
- * Підключення даних:
- * coverUrl, name, tracksCount — з useGetApiUserPlaylists()
- */
 export const PlaylistCard = ({ playlist, onClick }: PlaylistCardProps) => {
     const subtitle = playlist.authorName
         ? `by ${playlist.authorName}`
@@ -32,8 +27,8 @@ export const PlaylistCard = ({ playlist, onClick }: PlaylistCardProps) => {
         <MediaCard
             title={playlist.name}
             subtitle={subtitle}
-            coverUrl={playlist.coverUrl}
-            coverSeed={`playlist-${playlist.id}`}
+            coverUrl={playlist.coverUrl} // Передаємо як є
+            coverSeed={`playlist-${playlist.id}`} // 🌟 Префікс 'playlist' залізно ввімкне потрібний плейсхолдер
             onClick={() => onClick?.(playlist.id)}
         />
     );

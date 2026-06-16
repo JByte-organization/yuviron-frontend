@@ -1,18 +1,19 @@
-import React from 'react';
+'use client';
+
+import React, {useMemo} from 'react';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 interface MediaCardProps {
     title: string;
     subtitle?: string;
     coverUrl?: string | null;
-    coverSeed?: string;
+    coverSeed?: string; // Наприклад: 'playlist-123', 'album-456' або 'media'
     onClick?: () => void;
 }
 
 /**
  * Базовий компонент картки — обкладинка + назва + підпис.
  * Використовується в AlbumCard, PlaylistCard і будь-яких інших картках.
- * Розмір контролюється Bootstrap колонками в батьківському компоненті.
  */
 export const MediaCard = ({
                               title,
@@ -22,15 +23,28 @@ export const MediaCard = ({
                               onClick,
                           }: MediaCardProps) => {
 
-    const src = getImageUrl(coverUrl)
-        ?? `https://picsum.photos/seed/track-${coverSeed}/300/300`;
+    // 🌟 ФІКС: Отримуємо шлях з медіа-сервера
+    const fetchedSrc = getImageUrl(coverUrl);
 
+    // 🌟 ФІКС: Якщо зображення немає, дивимось на префікс у coverSeed і ставимо потрібну дефолтну обкладинку
+    const src = useMemo(() => {
+        if (fetchedSrc) return fetchedSrc;
 
+        if (coverSeed.startsWith('playlist')) {
+            return '/images/playlist/placeholder.png';
+        }
+        if (coverSeed.startsWith('album')) {
+            return '/images/album/placeholder.png';
+        }
+
+        // Загальний фолбек, якщо тип не визначено
+        return '/images/track-placeholder.png';
+    }, [fetchedSrc, coverSeed]);
 
     return (
         <div className="media-card" onClick={onClick}>
             <div className="media-card__cover">
-                <img src={src} alt={title} />
+                <img src={src} alt={title} draggable={false} />
             </div>
             <div className="media-card__info">
                 <p className="media-card__title">{title}</p>

@@ -14,11 +14,22 @@ import { NextRequest } from 'next/server';
 //    docker-сети ходим напрямую в сервис `backend` (он слушает HTTP на 5073 —
 //    см. healthcheck/wget в deploy.yml). Это чинило 502 upstream_fetch_failed
 //    на dev.yuviron.com.
+// const CANDIDATE_BASES = [
+//     process.env.BACKEND_URL,
+//     'https://dev-api.yuviron.com/api',
+//     'http://backend:5073/api',
+// ].filter((base): base is string => !!base);
+
+
 const CANDIDATE_BASES = [
     process.env.BACKEND_URL,
+    process.env.NEXT_PUBLIC_API_URL,
     'https://dev-api.yuviron.com/api',
     'http://backend:5073/api',
-].filter((base): base is string => !!base);
+].filter((base): base is string => !!base)
+    .map(base => base.endsWith('/') ? base.slice(0, -1) : base);
+
+
 
 // Первый кандидат, который реально ответил — кешируем, чтобы не дёргать
 // мёртвые базы на каждый запрос. Сбрасывается только рестартом процесса.

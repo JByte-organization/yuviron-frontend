@@ -2,8 +2,6 @@
 
 import React, { useState, useMemo } from 'react';
 import { getImageUrl } from "@/shared/lib/getImageUrl";
-
-// 🚨 ІМПОРТУЄМО КЕРУВАННЯ ПЛЕЄРОМ ТА СТОРОМ
 import { usePlayer } from '@/entities/player/lib/usePlayer';
 import { usePlayerStore } from '@/entities/player/model/playerStore';
 import type { TrackRowData } from '@/entities/track/ui/TrackRow';
@@ -11,7 +9,6 @@ import type { TrackRowData } from '@/entities/track/ui/TrackRow';
 interface PlaylistInfo {
     id: string;
     name: string;
-    description?: string | null;
     coverUrl?: string | null;
     ownerName: string;
     tracksCount: number;
@@ -21,7 +18,7 @@ interface PlaylistInfo {
 interface PlaylistPageHeaderProps {
     playlist: PlaylistInfo;
     isOwner: boolean;
-    tracks: TrackRowData[]; // 🚨 ЗАМІНИЛИ tracksCount на повноцінний масив треків
+    tracks: TrackRowData[];
     onEdit?: () => void;
     onDelete?: () => void;
     onShare?: () => void;
@@ -39,25 +36,21 @@ export const PlaylistPageHeader = ({
                                    }: PlaylistPageHeaderProps) => {
     const [isSubscribed, setIsSubscribed] = useState(playlist.isSubscribed);
 
-    // ─── ЗВ'ЯЗОК З ПЛЕЄРОМ ──────────────────────────────────────────────────
     const { playQueue, togglePlay } = usePlayer();
     const currentTrackId = usePlayerStore((s) => s.currentTrack?.id);
     const playerStatus   = usePlayerStore((s) => s.status);
 
-    // Перевіряємо, чи зараз грає хоча б один трек із цього плейліста
     const isCollectionPlaying = useMemo(() => {
         if (playerStatus !== 'playing' || tracks.length === 0) return false;
         return tracks.some((t) => t.id === currentTrackId);
     }, [tracks, currentTrackId, playerStatus]);
 
-    // Обробник кліку по великій кнопці Play/Pause
     const handlePlayAll = () => {
         if (tracks.length === 0) return;
 
         if (isCollectionPlaying) {
-            togglePlay(); // Якщо вже грає — ставимо на паузу
+            togglePlay();
         } else {
-            // Мапимо треки у формат черги плеєра
             const queue = tracks.map((t) => ({
                 id:          t.id,
                 title:       t.title,
@@ -65,13 +58,12 @@ export const PlaylistPageHeader = ({
                 coverUrl:    t.coverUrl,
                 durationMs:  t.durationMs ?? undefined,
             }));
-            // Запускаємо потік з першого (0-го) треку, тип джерела — Playlist
             playQueue(queue, 0, 'Playlist', playlist.id);
         }
     };
 
     const coverSrc = getImageUrl(playlist.coverUrl)
-        ?? `https://picsum.photos/seed/track-${playlist.id}/200/200`;
+        ?? '/images/playlist/placeholder.png';
 
     const handleSubscribe = () => {
         setIsSubscribed((v) => !v);
@@ -80,10 +72,8 @@ export const PlaylistPageHeader = ({
 
     return (
         <div className="playlist-page-header">
-            {/* Breadcrumb */}
             <p className="playlist-page-header__breadcrumb">Плейліст</p>
 
-            {/* Основний блок метаданих */}
             <div className="row align-items-end g-4 mb-4">
                 <div className="col-auto">
                     <div className="playlist-page-header__cover">
@@ -93,9 +83,7 @@ export const PlaylistPageHeader = ({
 
                 <div className="col">
                     <h1 className="playlist-page-header__title">{playlist.name}</h1>
-                    {playlist.description && (
-                        <p className="playlist-page-header__description">{playlist.description}</p>
-                    )}
+
                     <p className="playlist-page-header__meta">
                         <span className="playlist-page-header__owner">{playlist.ownerName}</span>
                         <span className="playlist-page-header__dot">•</span>
@@ -104,9 +92,7 @@ export const PlaylistPageHeader = ({
                 </div>
             </div>
 
-            {/* Панель дій */}
             <div className="playlist-page-header__actions">
-                {/* Динамічна кнопка Play/Pause */}
                 <button
                     className={`playlist-page-header__btn playlist-page-header__btn--play${isCollectionPlaying ? ' playlist-page-header__btn--active' : ''}`}
                     onClick={handlePlayAll}
@@ -117,7 +103,6 @@ export const PlaylistPageHeader = ({
 
                 {isOwner ? (
                     <>
-                        {/* Редагувати */}
                         <button
                             className="playlist-page-header__btn playlist-page-header__btn--icon"
                             onClick={onEdit}
@@ -127,7 +112,6 @@ export const PlaylistPageHeader = ({
                             <i className="bi bi-pencil" />
                         </button>
 
-                        {/* Видалити */}
                         <button
                             className="playlist-page-header__btn playlist-page-header__btn--icon"
                             onClick={onDelete}
@@ -137,7 +121,6 @@ export const PlaylistPageHeader = ({
                             <i className="bi bi-trash" />
                         </button>
 
-                        {/* Поділитися */}
                         <button
                             className="playlist-page-header__btn playlist-page-header__btn--icon"
                             onClick={onShare}
@@ -146,12 +129,9 @@ export const PlaylistPageHeader = ({
                         >
                             <i className="bi bi-share" />
                         </button>
-
-                        {/* 🚨 КНОПКУ СОАВТОРСТВА ВИДАЛЕНО ЗВІДСИ */}
                     </>
                 ) : (
                     <>
-                        {/* Підписатися / Відписатися */}
                         <button
                             className={`playlist-page-header__subscribe-btn${isSubscribed ? ' playlist-page-header__subscribe-btn--active' : ''}`}
                             onClick={handleSubscribe}
@@ -159,7 +139,6 @@ export const PlaylistPageHeader = ({
                             {isSubscribed ? 'Відписатися' : 'Підписатися'}
                         </button>
 
-                        {/* Поділитися */}
                         <button
                             className="playlist-page-header__btn playlist-page-header__btn--icon"
                             onClick={onShare}
