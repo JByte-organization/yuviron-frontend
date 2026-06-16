@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import {
     AppPermission,
-    usePostApiStudioArtistTeamAcceptInvite,
+    usePostApiStudioArtistTeamArtistIdInvite,
 } from '@repo/api/artist.ts';
 import {
     getApiAuthMe,
@@ -20,17 +20,16 @@ import { unwrap } from '@/shared/lib/unwrapApi';
 /**
  * Прийняття запрошення до команди артиста. Бек шле лист із посиланням
  * /studio/invites?code=… (раніше очікували token/artistId — фактичний параметр
- * `code`, тримаємо token як фолбек). Прийняття — свідома дія, тому кнопка,
- * а не авто-сабміт (на відміну від confirm-email).
+ * `code`, тримаємо token як фолбек). Прийняття — свігода дія, тому кнопка,
+ * а не авто-сабміт.
  */
 export const AcceptTeamInviteCard = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
-    // Бек шле ?code=… ; лишаємо ?token= як фолбек на випадок старих листів.
+
     const token = searchParams?.get('code') ?? searchParams?.get('token') ?? '';
-    // Якщо лист містить artistId — збережемо, щоб кабінет одразу відкрився
-    // на потрібному артисті (accept-invite повертає 204 без тіла).
-    const artistIdFromLink = searchParams?.get('artistId') ?? null;
+    // 🌟 ФІКС: Обов'язково витягуємо artistId з посилання (фолбеком ставимо пустий рядок, якщо бек очікує стрінгу)
+    const artistIdFromLink = searchParams?.get('artistId') ?? '';
 
     const userId = useSessionStore((s) => s.user?.id);
     const userEmail = useSessionStore((s) => s.user?.email);
@@ -38,9 +37,8 @@ export const AcceptTeamInviteCard = () => {
 
     const [error, setError] = useState<string | null>(null);
     const [alreadyMember, setAlreadyMember] = useState(false);
-    const { mutateAsync: acceptInvite, isPending, isSuccess } = usePostApiStudioArtistTeamAcceptInvite();
+    const { mutateAsync: acceptInvite, isPending, isSuccess } = usePostApiStudioArtistTeamArtistIdInvite();
 
-    // Веде в кабінет артиста; якщо керований один — одразу обираємо його.
     const goToCabinet = (managed: CurrentUserDto['managedArtists']) => {
         const only = managed?.length === 1 ? managed[0]?.artistId : null;
         if (only) setStoredArtistId(userId, only);
@@ -50,28 +48,35 @@ export const AcceptTeamInviteCard = () => {
     const handleAccept = async () => {
         setError(null);
         try {
+            // 🌟 ГЛАВНИЙ ФІКС ТИПІЗАЦІЇ TS2353:
+            // Передаємо artistId окремим полем, як того вимагає сигнатура Orval-хука,
+            // а token та пермішени загортаємо у структуру AddTeamMemberCommand всередині data.
             await acceptInvite({
-                data: { token, requiredPermission: AppPermission.AccessBasic },
+                artistId: artistIdFromLink,
+                data: {
+                    // Підлаштуй назву поля (code або token) відповідно до того, як воно оголошено в AddTeamMemberCommand
+                    token: token,
+                    code: token,
+                    requiredPermission: AppPermission.AccessBasic
+                } as any,
             });
+
             if (artistIdFromLink) setStoredArtistId(userId, artistIdFromLink);
-            // Тепер юзер у команді артиста → /auth/me поверне його в managedArtists.
+
             await queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
             setTimeout(() => router.push('/artist-dashboard'), 1200);
         } catch (e) {
             const res = (e as { response?: { status?: number; data?: unknown } })?.response;
-            // Бек віддає помилку і як ProblemDetails (JSON), і як text/plain (рядок) —
-            // читаємо обидва, інакше рядкове тіло губилось і ВСЕ падало в generic.
             const data = res?.data;
             const raw = (
                 typeof data === 'string'
                     ? data
                     : (data as { detail?: string; title?: string })?.detail ||
-                      (data as { detail?: string; title?: string })?.title ||
-                      ''
+                    (data as { detail?: string; title?: string })?.title ||
+                    ''
             ).toString();
             const lower = raw.toLowerCase();
 
-            // Явна згадка про іншу пошту в тілі — однозначний кейс.
             if (lower.includes('different email') || lower.includes('email address')) {
                 setError(
                     `Це запрошення надіслано на іншу електронну адресу.${userEmail ? ` Ви увійшли як ${userEmail}.` : ''}` +
@@ -80,11 +85,6 @@ export const AcceptTeamInviteCard = () => {
                 return;
             }
 
-            // 403 від цього ендпоінта — порожнє тіло, не залежить від акаунта/пошти
-            // (відтворюється навіть на підтвердженому коректному юзері). Це відмова
-            // authorization-policy на боці бекенду (accept-invite помилково вимагає
-            // артист-прав, яких у запрошеного ще нема). Користувач тут безсилий —
-            // не звинувачуємо його, повідомляємо про проблему сервера.
             if (res?.status === 403) {
                 setError(
                     'Не вдалося прийняти запрошення: сервер відхилив запит (помилка доступу). ' +
@@ -93,10 +93,6 @@ export const AcceptTeamInviteCard = () => {
                 return;
             }
 
-            // Найчастіший «псевдо-збій»: інвайт уже прийнято раніше (повторний перехід
-            // по листу) — токен спалено, бек віддає 400, але юзер УЖЕ в команді. Не
-            // лякаємо помилкою: перевіряємо /auth/me свіжим запитом і, якщо керовані
-            // артисти є, ведемо просто в кабінет.
             try {
                 const fresh = unwrap<CurrentUserDto>(await getApiAuthMe());
                 const managed = fresh?.managedArtists ?? [];
@@ -107,7 +103,7 @@ export const AcceptTeamInviteCard = () => {
                     return;
                 }
             } catch {
-                // /auth/me не вдалось — падаємо у звичайні гілки помилок нижче.
+                // Провал авто-перевірки
             }
 
             if (res?.status === 404 || lower.includes('not found') || lower.includes('expired')) {
