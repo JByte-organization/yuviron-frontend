@@ -10,7 +10,7 @@ import { RightSidebar } from '@/widgets/right-sidebar/ui/RightSidebar';
 import { PlaylistToastProvider } from '@/shared/ui/PlaylistToast';
 import { AuthGuardProvider } from '@/shared/lib/useAuthGuard';
 import { PlayerBar } from '@/widgets/player/ui/PlayerBar';
-import { MobileNavigation } from '@/widgets/layout/ui/MobileNavigation'; // 👈 1. Імпортуємо мобільну навігацію
+import { MobileNavigation } from '@/widgets/layout/ui/MobileNavigation';
 
 import {
     SidebarContext,
@@ -60,7 +60,7 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
                                 ? null
                                 : isAuthenticated
                                     ? <Sidebar onResizeStart={onResizeStart} />
-                                    : <GuestSidebar onResizeStart={onResizeStart} />
+                                    : <GuestSidebar/>
                             }
 
                             <main

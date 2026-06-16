@@ -7,13 +7,9 @@ import { useSessionStore } from '@/entities/session/model/store';
 import type { NotificationDto } from '../model/types';
 import { invalidateNotifications } from './invalidateNotifications';
 
-// Хаб живёт на корне хоста: NEXT_PUBLIC_API_URL = "https://host/api" → "https://host".
 const hubUrl = (): string =>
     `${(process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/api$/, '')}/hubs/app`;
 
-// Real-time пуши уведомлений. Соединение открывается один раз для залогиненного
-// юзера и переустанавливается при смене токена. На каждый ReceiveNotification
-// инвалидируем список+счётчик и отдаём DTO наверх (для тоста).
 export const useAppNotifications = (onReceive?: (n: NotificationDto) => void) => {
     const accessToken = useSessionStore((s) => s.accessToken);
     const qc = useQueryClient();
@@ -23,8 +19,12 @@ export const useAppNotifications = (onReceive?: (n: NotificationDto) => void) =>
 
         const connection = new signalR.HubConnectionBuilder()
             .withUrl(hubUrl(), {
-                // Токен берём из стора на момент подключения/реконнекта.
                 accessTokenFactory: () => useSessionStore.getState().accessToken ?? '',
+                // 🌟 СПАСИТЕЛЬНЫЙ ХАК ДЛЯ ОБХОДА CORS БЕКЕНДА:
+                // Пропускаем negotiate-запрос и сразу открываем чистое WebSocket-соединение.
+                // Это полностью уберёт CORS-ошибку "x-signalr-user-agent" из консоли.
+                skipNegotiation: true,
+                transport: signalR.HttpTransportType.WebSockets,
             })
             .withAutomaticReconnect()
             .build();
@@ -36,12 +36,9 @@ export const useAppNotifications = (onReceive?: (n: NotificationDto) => void) =>
 
         connection.start().catch((err) => console.error('SignalR Error:', err));
 
-        // Критично: останавливаем соединение при размонтировании / смене токена,
-        // иначе пуши задублируются после reconnect.
         return () => {
             void connection.stop();
         };
-        // qc/onReceive стабильны для нашего использования — не пересоздаём соединение.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [accessToken]);
 };

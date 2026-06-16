@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { CollectionActions } from '@/shared/ui/Playlist/CollectionActions/CollectionActions';
 
 interface AlbumHeaderProps {
     title: string;
@@ -9,6 +10,10 @@ interface AlbumHeaderProps {
     releaseYear: number | null;
     tracksCount: number;
     dominantColor: string;
+    // Пропсы для управления плеером, которые придут из AlbumPage
+    isCollectionPlaying: boolean;
+    onPlayAll: () => void;
+    onShufflePlay: () => void;
 }
 
 export const AlbumHeader = ({
@@ -18,52 +23,37 @@ export const AlbumHeader = ({
                                 releaseYear,
                                 tracksCount,
                                 dominantColor,
+                                isCollectionPlaying,
+                                onPlayAll,
+                                onShufflePlay,
                             }: AlbumHeaderProps) => {
     return (
-        <div
-            className="album-page__hero d-flex align-items-end p-4 p-md-5 gap-4"
-            style={{
-                background: `linear-gradient(180deg, ${dominantColor} 0%, #121212 100%)`,
-            }}
-        >
-            {/* Обкладинка */}
-            <div className="album-page__cover-wrap shadow-lg flex-shrink-0">
-                <img
-                    src={coverUrl}
-                    alt={`${title} cover`}
-                    className="album-page__cover img-fluid"
-                    style={{ width: 232, height: 232, objectFit: 'cover' }}
-                />
+        <div>
+            <div className="album-header p-4 px-md-5 d-flex flex-column gap-4" style={{ backgroundColor: dominantColor }}>
+                <div className="d-flex flex-column flex-md-row gap-4 align-items-md-end">
+                    <div className="album-header__cover shadow-lg">
+                        <img src={coverUrl} alt={title} style={{ width: 232, height: 232, objectFit: 'cover', borderRadius: 8 }} />
+                    </div>
+
+                    <div className="album-header__info text-white">
+                        <p className="text-uppercase small fw-bold tracking-wider text-white-50 mb-1">Альбом</p>
+                        <h1 className="display-4 fw-black mb-2">{title}</h1>
+                        <div className="album-header__meta d-flex align-items-center gap-2 small text-white-50">
+                            <span className="fw-bold text-white">{artistsNames}</span>
+                            {releaseYear && <span>• {releaseYear}</span>}
+                            <span>• {tracksCount} треків</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* Метадані */}
-            <div className="album-page__meta text-white">
-                <p className="text-uppercase small fw-bold mb-1 tracking-wider m-0">
-                    Альбом
-                </p>
-                <h1
-                    className="display-4 fw-black mb-3 m-0 text-break"
-                    style={{ fontWeight: 900, lineHeight: 1.1 }}
-                >
-                    {title}
-                </h1>
-                <div className="d-flex align-items-center gap-1 flex-wrap small fw-bold">
-                    <span className="album-page__artist-link text-white">
-                        {artistsNames}
-                    </span>
-                    {releaseYear && (
-                        <>
-                            <span className="text-secondary">•</span>
-                            <span className="text-secondary">{releaseYear}</span>
-                        </>
-                    )}
-                    {tracksCount > 0 && (
-                        <>
-                            <span className="text-secondary">•</span>
-                            <span>{tracksCount} треків</span>
-                        </>
-                    )}
-                </div>
+            <div className="px-md-5 mt-3 mb-4">
+                <CollectionActions
+                    isCollectionPlaying={isCollectionPlaying}
+                    onPlayAll={onPlayAll}
+                    onShufflePlay={onShufflePlay}
+                    className="mt-2"
+                />
             </div>
         </div>
     );

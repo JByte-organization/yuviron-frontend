@@ -3,7 +3,6 @@
 import React, { useMemo } from 'react';
 import Link from 'next/link';
 
-// Real API Hooks & Types
 import {
     useGetApiSearch,
     getGetApiSearchQueryKey,
@@ -43,7 +42,6 @@ const getHref = (result: SearchResult): string => {
 
 export const SearchDropdown = ({ query, onClose }: SearchDropdownProps) => {
 
-    // ─── 🚨 ФІКС ДЛЯ TS2741 (Обов'язковий queryKey у конфігу) ────────────────
     const searchQueryParams = { query, limit: 7 };
     const { data: searchRaw, isLoading } = useGetApiSearch(
         searchQueryParams,
