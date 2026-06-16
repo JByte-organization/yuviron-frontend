@@ -9,6 +9,7 @@ import {
     usePostApiStudioArtistTeamArtistIdInvite,
 } from '@repo/api/artist.ts';
 import {
+    customInstance,
     getApiAuthMe,
     getGetApiAuthMeQueryKey,
     type CurrentUserDto,
@@ -68,6 +69,9 @@ export const AcceptTeamInviteCard = () => {
         } catch (e) {
             const res = (e as { response?: { status?: number; data?: unknown } })?.response;
             const data = res?.data;
+            // customInstance віддає ProblemDetails як JSON (detail/title), а text/plain
+            // загортає в { rawText } — читаємо всі варіанти, інакше тіло помилки губиться.
+            const data2 = data as { detail?: string; title?: string; rawText?: string };
             const raw = (
                 typeof data === 'string'
                     ? data
@@ -104,6 +108,17 @@ export const AcceptTeamInviteCard = () => {
                 }
             } catch {
                 // Провал авто-перевірки
+            }
+
+            // Голий 403 без тіла — відмова authorization-policy на боці сервера
+            // (accept-invite вимагає прав, яких у запрошеного ще нема). Користувач тут
+            // безсилий: повідомляємо про серверне обмеження, не про його пошту.
+            if (res?.status === 403) {
+                setError(
+                    'Не вдалося прийняти запрошення: сервер відхилив запит (помилка доступу). ' +
+                    'Імовірно, це обмеження на боці сервера — повідомте власника кабінету або спробуйте пізніше.',
+                );
+                return;
             }
 
             if (res?.status === 404 || lower.includes('not found') || lower.includes('expired')) {
