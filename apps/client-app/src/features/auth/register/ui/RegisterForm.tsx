@@ -86,33 +86,6 @@ export const RegisterForm = () => {
                 {isPending ? 'Реєстрація…' : 'Далі'}
             </button>
 
-            <div className="client-register-form__divider">
-                <span>або</span>
-            </div>
-
-            <div className="client-register-form__socials">
-                <button type="button" className="client-register-form__social-btn">
-                    <span className="client-register-form__social-icon client-register-form__social-icon--facebook">
-                        f
-                    </span>
-                    <span>Увійти з Facebook</span>
-                </button>
-
-                <button type="button" className="client-register-form__social-btn">
-                    <span className="client-register-form__social-icon client-register-form__social-icon--google">
-                        G
-                    </span>
-                    <span>Увійти з Google</span>
-                </button>
-
-                <button type="button" className="client-register-form__social-btn">
-                    <span className="client-register-form__social-icon client-register-form__social-icon--apple">
-
-                    </span>
-                    <span>Увійти з Apple</span>
-                </button>
-            </div>
-
             <div className="client-register-form__bottom-divider" />
 
             <div className="client-register-form__login text-center">
