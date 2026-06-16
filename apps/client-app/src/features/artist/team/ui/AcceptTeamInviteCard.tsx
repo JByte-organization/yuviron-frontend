@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
-import { usePostApiStudioArtistTeamAcceptInvite } from '@repo/api/artist.ts';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
+    customInstance,
     getApiAuthMe,
     getGetApiAuthMeQueryKey,
     type CurrentUserDto,
@@ -35,7 +35,21 @@ export const AcceptTeamInviteCard = () => {
 
     const [error, setError] = useState<string | null>(null);
     const [alreadyMember, setAlreadyMember] = useState(false);
-    const { mutateAsync: acceptInvite, isPending, isSuccess } = usePostApiStudioArtistTeamAcceptInvite();
+    // Бек переніс accept-invite зі studio-artist API (де він був закритий
+    // артист-політикою → дедлок 403: запрошений ще не має артист-прав) у КЛІЄНТСЬКИЙ
+    // API: POST /api/artist-profiles/accept-invite, security=Bearer (будь-який
+    // залогінений), тіло — лише { token }. Старий хук usePostApiStudioArtistTeamAcceptInvite
+    // бив у стару (досі закриту політикою) адресу й тому давав 403 навіть на правильній пошті.
+    // Кличемо новий ендпоінт напряму через customInstance (manual-layer), щоб не залежати
+    // від регенерації згенерованого клієнта.
+    const { mutateAsync: acceptInvite, isPending, isSuccess } = useMutation({
+        mutationFn: (vars: { token: string }) =>
+            customInstance<void>('/api/artist-profiles/accept-invite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: vars.token }),
+            }),
+    });
 
     // Веде в кабінет артиста; якщо керований один — одразу обираємо його.
     const goToCabinet = (managed: CurrentUserDto['managedArtists']) => {
@@ -47,10 +61,7 @@ export const AcceptTeamInviteCard = () => {
     const handleAccept = async () => {
         setError(null);
         try {
-            // Після фіксу беку authorization винесено в хендлер (по токену інвайта),
-            // тож поле requiredPermission прибрано зі схеми AcceptTeamInviteCommand —
-            // шлемо лише token, інакше build падає на drift'і swagger при деплої.
-            await acceptInvite({ data: { token } });
+            await acceptInvite({ token });
             if (artistIdFromLink) setStoredArtistId(userId, artistIdFromLink);
             // Тепер юзер у команді артиста → /auth/me поверне його в managedArtists.
             await queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
@@ -60,12 +71,13 @@ export const AcceptTeamInviteCard = () => {
             // Бек віддає помилку і як ProblemDetails (JSON), і як text/plain (рядок) —
             // читаємо обидва, інакше рядкове тіло губилось і ВСЕ падало в generic.
             const data = res?.data;
+            // customInstance віддає ProblemDetails як JSON (detail/title), а text/plain
+            // загортає в { rawText } — читаємо всі варіанти, інакше тіло помилки губиться.
+            const data2 = data as { detail?: string; title?: string; rawText?: string };
             const raw = (
                 typeof data === 'string'
                     ? data
-                    : (data as { detail?: string; title?: string })?.detail ||
-                      (data as { detail?: string; title?: string })?.title ||
-                      ''
+                    : data2?.detail || data2?.title || data2?.rawText || ''
             ).toString();
             const lower = raw.toLowerCase();
 
