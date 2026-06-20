@@ -52,7 +52,6 @@ export const ArtistTeamPage = () => {
     const refetchTeam = () =>
         queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/team'] });
 
-    // ─── Інвайт ─────────────────────────────────────────
     const [inviteEmail, setInviteEmail] = useState('');
     const [inviteRole, setInviteRole] = useState<ArtistTeamRole>(ArtistTeamRole.Viewer);
     const [inviteError, setInviteError] = useState<string | null>(null);
@@ -88,7 +87,6 @@ export const ArtistTeamPage = () => {
         }
     };
 
-    // ─── Зміна ролі / видалення ─────────────────────────
     const { mutateAsync: changeRole } = usePutApiStudioArtistTeamArtistIdTargetUserIdRole();
     const { mutateAsync: removeMember } = useDeleteApiStudioArtistTeamArtistIdTargetUserId();
     const [rowError, setRowError] = useState<string | null>(null);
@@ -130,12 +128,10 @@ export const ArtistTeamPage = () => {
     return (
         <div className="artist-analytics-page">
 
-            {/* ─── Заголовок ────────────────────────── */}
             <div className="artist-analytics-page__header">
                 <h1 className="artist-analytics-page__title">Команда</h1>
             </div>
 
-            {/* ─── Інвайт (лише для тих, хто може керувати командою) ─── */}
             {canTeam && (
             <div className="artist-analytics-page__chart-block mb-5">
                 <h2 className="artist-analytics-page__chart-title">Запросити учасника</h2>
@@ -181,7 +177,6 @@ export const ArtistTeamPage = () => {
             </div>
             )}
 
-            {/* ─── Список учасників ──────────────────── */}
             <div className="artist-analytics-page__chart-block">
                 <h2 className="artist-analytics-page__chart-title">Учасники</h2>
                 {rowError && <div className="client-modal__field-error mt-2">{rowError}</div>}
@@ -269,7 +264,6 @@ export const ArtistTeamPage = () => {
                 )}
             </div>
 
-            {/* ─── Підтвердження видалення ───────────── */}
             {removing && (
                 <div className="client-modal-backdrop" onClick={() => setRemoving(null)}>
                     <div className="client-modal modal-dialog-sm" onClick={e => e.stopPropagation()}>
