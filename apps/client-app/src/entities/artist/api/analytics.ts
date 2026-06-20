@@ -13,7 +13,6 @@ import { customInstance } from '@repo/api/artist.ts';
  * рендер усе одно показуємо скелетони (рекомендація з доки).
  */
 
-// ─── DTO (за докою) ─────────────────────────────────────────
 
 export interface TrackRetentionPointDto {
     /** Секунда треку */
@@ -46,7 +45,6 @@ export interface ArtistAudienceDashboardDto {
     devices: AudienceDeviceDto[];
 }
 
-// ─── Фетчери ────────────────────────────────────────────────
 
 const BASE = '/api/studio-artist';
 
@@ -83,9 +81,6 @@ export const getArtistPlaysOverTime = (artistId: string, days = 30) =>
         { method: 'GET' },
     );
 
-// ─── React-query хуки ───────────────────────────────────────
-// artistId приходить з useCurrentArtistId() і може бути null до резолву —
-// у такому разі запит вимкнено (enabled: false), як у решті studio-сторінок.
 
 export const useTrackRetention = (trackId: string | undefined, artistId: string | null) =>
     useQuery({

@@ -77,7 +77,6 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
 
     const artist = (artistData?.data || artistData) as ArtistDetailsDto | undefined;
 
-    // ─── Підписка на виконавця ───────────────────────────────────────────────
     const apiFollowed = artist?.isFollowed ?? false;
     const [isFollowing, setIsFollowing] = useState(apiFollowed);
     const [prevApiFollowed, setPrevApiFollowed] = useState(apiFollowed);
@@ -93,12 +92,12 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
     const handleFollow = () => {
         requireAuth(() => {
             const next = !isFollowing;
-            setIsFollowing(next); // оптимістично
+            setIsFollowing(next);
             const mutation = next ? followMutation : unfollowMutation;
             mutation.mutate(
                 { id: artistId },
                 {
-                    onError: () => setIsFollowing(!next), // відкат
+                    onError: () => setIsFollowing(!next),
                     onSuccess: () => {
                         queryClient.invalidateQueries({
                             queryKey: getGetApiMeFollowingArtistsQueryKey(),

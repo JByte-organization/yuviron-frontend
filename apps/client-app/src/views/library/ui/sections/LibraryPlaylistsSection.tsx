@@ -23,7 +23,6 @@ export const LibraryPlaylistsSection = ({
                                             showAllHref = '/playlists',
                                             onPlaylistClick,
                                         }: LibraryPlaylistsSectionProps) => {
-    // Стрілки — лише коли контент переповнює слайдер (є що гортати).
     const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([playlists]);
 
     const scroll = (dir: 'prev' | 'next') => {
