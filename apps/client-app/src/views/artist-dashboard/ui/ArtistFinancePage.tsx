@@ -57,8 +57,6 @@ const money = (value: number | undefined): string =>
 const dateTime = (iso: string | undefined): string =>
     iso ? format(parseISO(iso), 'dd.MM.yyyy HH:mm') : '—';
 
-// Достаём человекочитаемое сообщение из ответа сервера (ProblemDetails.detail/title)
-// или из сырого текста — для тоста на 400 ("Сума менша за мінімальну" и т.п.).
 const serverMessage = (error: unknown): string | null => {
     const data = (error as { response?: { data?: unknown } } | null)?.response?.data;
     if (!data) return null;
@@ -67,10 +65,6 @@ const serverMessage = (error: unknown): string | null => {
     return d.detail ?? d.title ?? d.rawText ?? null;
 };
 
-// PayoutMethod у живому свагері — рядковий enum PayPal|Stripe|BankTransfer (бек
-// замінив старі int 1|2|3). Ключі = значення, які приймає бек; типізуємо як
-// Record<string,…>, щоб код компілювався і зі старим int-enum у закоміченому
-// fallback (CI генерує з живого — рядки), і не залежав від типу PayoutMethod.
 const PAYOUT_METHOD_LABELS: Record<string, string> = {
     PayPal: 'PayPal',
     Stripe: 'Stripe (картка)',
@@ -98,7 +92,6 @@ export const ArtistFinancePage = () => {
     const queryClient = useQueryClient();
     const chart = useChartAxisColors();
 
-    // ─── Запити ─────────────────────────────────────────
     const walletParams = { artistId: artistId ?? undefined };
     const walletKey = getGetApiStudioArtistFinanceWalletQueryKey(walletParams);
     const walletQuery = useGetApiStudioArtistFinanceWallet(walletParams, {
@@ -111,11 +104,8 @@ export const ArtistFinancePage = () => {
         query: { enabled: !!artistId, queryKey: getGetApiStudioArtistFinanceSettingsQueryKey(settingsParams) },
     });
     const settings = unwrap<PayoutSettingsDto>(settingsQuery.data);
-    // Реквізити збережені, лише якщо заповнено accountDetails (бек віддає порожній
-    // DTO/ null, поки артист не вказав рахунок). Без них виплата заблокована.
     const hasSettings = !!settings?.accountDetails;
 
-    // PageSize побільше — щоб вистачило точок для графіка доходів (бек пагінує).
     const txParams = { ArtistId: artistId ?? undefined, Page: 1, PageSize: 100 };
     const txQuery = useGetApiStudioArtistFinanceTransactions(txParams, {
         query: { enabled: !!artistId, queryKey: getGetApiStudioArtistFinanceTransactionsQueryKey(txParams) },
@@ -128,8 +118,6 @@ export const ArtistFinancePage = () => {
     });
     const payouts = unwrapItems<ArtistPayoutRequestDto>(payoutsQuery.data);
 
-    // ─── Дані графіка доходів ───────────────────────────
-    // Беремо лише RoyaltyAccrual, групуємо по днях: X = день, Y = сума роялті.
     const revenueData = React.useMemo(() => {
         const byDay = new Map<string, number>();
         for (const tx of transactions) {
@@ -145,7 +133,6 @@ export const ArtistFinancePage = () => {
             }));
     }, [transactions]);
 
-    // ─── Тост + конфетті ────────────────────────────────
     const [toast, setToast] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
     const [confettiKey, setConfettiKey] = useState(0);
     const toastTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -168,14 +155,11 @@ export const ArtistFinancePage = () => {
         if (confettiTimer.current) clearTimeout(confettiTimer.current);
     }, []);
 
-    // ─── Realtime (SignalR): рефреш кошелька на події біллінгу ──
-    // payout_approved → зелений тост + фоновий рефреш; first_royalties → конфетті.
     useFinanceRealtime({
         onPayoutApproved: () => showToast('ok', 'Виплату схвалено — гроші в дорозі! 🎉'),
         onFirstRoyalties: () => { fireConfetti(); showToast('ok', 'Перші роялті зараховано! 🎉'); },
     });
 
-    // ─── Запит виплати ──────────────────────────────────
     const [amount, setAmount] = useState('');
     const { mutateAsync: requestPayout, isPending: isRequesting } = usePostApiStudioArtistFinancePayouts();
 
@@ -186,8 +170,6 @@ export const ArtistFinancePage = () => {
     const submitPayout = async () => {
         if (!artistId || !amountValid || !hasSettings) return;
 
-        // Оптимістично: одразу віднімаємо з «Доступно» і додаємо в «Резерв» —
-        // не чекаємо сервер (doc). На помилці відкочуємо знімок назад.
         const prevWallet = queryClient.getQueryData<ArtistWalletDto>(walletKey);
         queryClient.setQueryData<ArtistWalletDto>(walletKey, old =>
             old
@@ -210,25 +192,21 @@ export const ArtistFinancePage = () => {
             setAmount('');
             fireConfetti();
             showToast('ok', 'Запит на виплату створено — очікуйте на рішення.');
-            // Узгоджуємо локальний стан із сервером.
             await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/finance/wallet'] });
             await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/finance/payouts'] });
             await queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/finance/transactions'] });
         } catch (err) {
-            queryClient.setQueryData<ArtistWalletDto>(walletKey, prevWallet); // rollback
+            queryClient.setQueryData<ArtistWalletDto>(walletKey, prevWallet);
             showToast('error', serverMessage(err) ?? 'Не вдалося створити запит на виплату.');
         }
     };
 
-    // ─── Налаштування виплат ────────────────────────────
     const [method, setMethod] = useState<string>('PayPal');
     const [accountDetails, setAccountDetails] = useState('');
     const [settingsError, setSettingsError] = useState<string | null>(null);
     const [settingsOk, setSettingsOk] = useState(false);
     const { mutateAsync: saveSettings, isPending: isSavingSettings } = usePostApiStudioArtistFinanceSettings();
 
-    // Prefill після завантаження поточних налаштувань — синхронізація стану
-    // прямо під час рендера (react.dev/learn/you-might-not-need-an-effect).
     const [syncedSettings, setSyncedSettings] = useState<PayoutSettingsDto | undefined>(undefined);
     if (settings && settings !== syncedSettings) {
         setSyncedSettings(settings);
@@ -243,8 +221,6 @@ export const ArtistFinancePage = () => {
             await saveSettings({
                 data: {
                     artistId,
-                    // method тримаємо як рядок (значення живого enum); каст через
-                    // unknown — щоб компілювалось і зі старим int-enum у fallback.
                     method: method as unknown as PayoutMethod,
                     accountDetails: accountDetails.trim(),
                     requiredPermission: AppPermission.StudioArtistManage,
@@ -262,12 +238,10 @@ export const ArtistFinancePage = () => {
 
             {confettiKey > 0 && <Confetti key={confettiKey} seed={confettiKey} />}
 
-            {/* ─── Заголовок ────────────────────────── */}
             <div className="artist-analytics-page__header">
                 <h1 className="artist-analytics-page__title">Фінанси</h1>
             </div>
 
-            {/* ─── Баланси ───────────────────────────── */}
             {walletQuery.isLoading ? (
                 <ChartSkeleton height={120} />
             ) : walletQuery.isError ? (
@@ -294,7 +268,6 @@ export const ArtistFinancePage = () => {
 
             {canManage && (
             <div className="row g-4 mb-5">
-                {/* ─── Запит на виплату ───────────────── */}
                 <div className="col-12 col-lg-6">
                     <div className="artist-analytics-page__chart-block h-100">
                         <h2 className="artist-analytics-page__chart-title">Запит на виплату</h2>
@@ -321,7 +294,6 @@ export const ArtistFinancePage = () => {
                                     Спочатку вкажіть реквізити виплати →
                                 </div>
                             )}
-                            {/* span-обгортка тримає тултип навіть на disabled-кнопці */}
                             <span title={!hasSettings ? 'Спочатку вкажіть реквізити' : undefined} className="d-inline-block mt-3">
                                 <button
                                     className="client-modal__btn client-modal__btn--primary"
@@ -335,7 +307,6 @@ export const ArtistFinancePage = () => {
                     </div>
                 </div>
 
-                {/* ─── Налаштування виплат ────────────── */}
                 <div className="col-12 col-lg-6">
                     <div className="artist-analytics-page__chart-block h-100">
                         <h2 className="artist-analytics-page__chart-title">Реквізити виплат</h2>
@@ -382,7 +353,6 @@ export const ArtistFinancePage = () => {
             </div>
             )}
 
-            {/* ─── Графік доходів ────────────────────── */}
             <div className="artist-analytics-page__chart-block mb-5">
                 <h2 className="artist-analytics-page__chart-title">Динаміка доходів (роялті)</h2>
                 {txQuery.isLoading ? (
@@ -409,7 +379,6 @@ export const ArtistFinancePage = () => {
                 )}
             </div>
 
-            {/* ─── Заявки на виплату ─────────────────── */}
             <div className="artist-analytics-page__chart-block mb-5">
                 <h2 className="artist-analytics-page__chart-title">Запити на вивід</h2>
                 {payoutsQuery.isLoading ? (
@@ -447,7 +416,6 @@ export const ArtistFinancePage = () => {
                 )}
             </div>
 
-            {/* ─── Транзакції ────────────────────────── */}
             <div className="artist-analytics-page__chart-block">
                 <h2 className="artist-analytics-page__chart-title">Історія транзакцій</h2>
                 {txQuery.isLoading ? (
@@ -485,7 +453,6 @@ export const ArtistFinancePage = () => {
                 )}
             </div>
 
-            {/* ─── Тост (успіх / помилка) ────────────── */}
             {toast && (
                 <div
                     role="status"

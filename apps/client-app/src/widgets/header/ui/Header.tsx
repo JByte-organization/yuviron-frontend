@@ -22,8 +22,6 @@ export const Header = () => {
     const router = useRouter();
     const accessToken = useSessionStore(s => s.accessToken);
     const clearSession = useSessionStore(s => s.clearSession);
-    // Каркас за статусом, а не за токеном: під час refresh токена ще нема,
-    // але показувати кнопки «Увійти/Реєстрація» не можна (саме це блимання).
     const status = useSessionStore(s => s.status);
     const isAuthenticated = useSessionStore(selectIsAuthenticated);
     const artistId = useCurrentArtistId();
@@ -132,8 +130,6 @@ export const Header = () => {
             {/* Праві дії */}
             <div className="client-header__actions">
                 {status === 'loading' ? (
-                    // Поки відновлюється сесія — не показуємо ні кнопки входу,
-                    // ні аватар, щоб уникнути блимання. Стан короткочасний.
                     null
                 ) : isAuthenticated ? (
                     <div className="client-header__user">

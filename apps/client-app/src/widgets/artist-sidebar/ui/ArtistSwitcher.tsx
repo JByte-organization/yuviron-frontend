@@ -20,10 +20,6 @@ const Avatar = ({ artist }: { artist: UserManagedArtistDto | undefined }) =>
         </span>
     );
 
-// Перемикач артистів — для юзерів, що керують кількома (label/manager). Пише вибір
-// у scoped-localStorage через setStoredArtistId; useCurrentArtist підхоплює його як
-// пріоритетний (якщо в списку managedArtists) і весь кабінет перемикається миттєво.
-// При одному артисті не показуємо.
 export const ArtistSwitcher = () => {
     const { artists } = useManagedArtists();
     const currentId = useCurrentArtistId();

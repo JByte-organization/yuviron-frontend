@@ -1,7 +1,5 @@
 import type { NotificationDto } from '../model/types';
 
-// Иконка без хардкода данных: сначала по строковому ключу type (его задаёт бэк),
-// иначе откатываемся к иконке по category, иначе — колокольчик.
 const TYPE_ICONS: Record<string, string> = {
     artist_claim_approved: 'bi-patch-check-fill',
     artist_claim_rejected: 'bi-patch-exclamation-fill',
@@ -23,7 +21,6 @@ const CATEGORY_ICONS: Record<string, string> = {
 export const iconForNotification = (n: NotificationDto): string =>
     TYPE_ICONS[n.type ?? ''] ?? CATEGORY_ICONS[n.category ?? ''] ?? 'bi-bell-fill';
 
-// Относительное время по createdAt (UTC → локаль браузера).
 export const formatRelativeTime = (createdAt?: string): string => {
     if (!createdAt) return '';
     const diff = Date.now() - new Date(createdAt).getTime();

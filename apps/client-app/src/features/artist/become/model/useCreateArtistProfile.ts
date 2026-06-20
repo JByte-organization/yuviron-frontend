@@ -13,19 +13,10 @@ import { useSessionStore } from '@/entities/session/model/store';
 import { setStoredArtistId } from '@/entities/artist/model/currentArtist';
 import { extractApiError, extractFileId } from './helpers';
 
-// idle → submitting → success (рефреш не удался — показываем экран с ручной
-// ссылкой в студию) | limit (403 — лимит на free).
 export type CreateStatus = 'idle' | 'submitting' | 'success' | 'limit';
 
-// Студия артиста в этом приложении = /artist-dashboard.
 export const STUDIO_ROUTE = '/artist-dashboard';
 
-// Путь 2: «создать нового артиста». Опциональный аватар грузим отдельным
-// запросом (/files/upload) и передаём avatarFileId в create. На успешном create
-// бэк выдаёт роль ManagementUser — старый JWT её не знает (ТЗ п.2), поэтому
-// ОБЯЗАТЕЛЬНО рефрешим токен ДО входа в студию, иначе бэк отдаст 403.
-// При успешном рефреше сразу пускаем в студию (router.push), иначе остаёмся на
-// экране успеха с ручной ссылкой — роль подхватится при следующем рефреше.
 export const useCreateArtistProfile = () => {
     const router = useRouter();
     const [status, setStatus] = useState<CreateStatus>('idle');
@@ -49,13 +40,8 @@ export const useCreateArtistProfile = () => {
             const r = res as unknown as { artistId?: string; data?: { artistId?: string } };
             const newArtistId = r?.data?.artistId ?? r?.artistId ?? null;
             setArtistId(newArtistId);
-            // Зберігаємо для кабінету (scoped на поточного юзера): studio-API
-            // вимагає artistId; це місток до моменту, коли claim приїде в JWT
-            // після рефреша нижче. Ключ привʼязаний до userId, щоб не протекти
-            // іншому акаунту на тому самому браузері.
             setStoredArtistId(useSessionStore.getState().user?.id, newArtistId);
 
-            // Рефреш роли перед входом в студию.
             let refreshedOk = false;
             try {
                 const refreshed = await postApiAuthRefresh();
@@ -67,12 +53,8 @@ export const useCreateArtistProfile = () => {
                     refreshedOk = true;
                 }
             } catch {
-                /* fallback на экран успеха */
             }
 
-            // Свіжий токен → /auth/me має повернути нового артиста в managedArtists
-            // (авторитетне джерело резолву). Інвалідуємо, щоб кабінет не залежав
-            // лише від localStorage-містка.
             await queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
 
             if (refreshedOk) {

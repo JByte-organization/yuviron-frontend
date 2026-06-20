@@ -47,7 +47,6 @@ export const TrackAnalyticsModal = ({ isOpen, trackId, trackTitle, onClose }: Pr
     const artistId = useCurrentArtistId();
     const [days, setDays] = useState<PeriodDays>(30);
 
-    // Хуки самі вимикаються без trackId/artistId; модалка рендериться лише isOpen.
     const retentionQuery = useTrackRetention(isOpen ? trackId : undefined, artistId);
     const playsQuery = useTrackPlaysOverTime(isOpen ? trackId : undefined, artistId, days);
 
@@ -64,7 +63,6 @@ export const TrackAnalyticsModal = ({ isOpen, trackId, trackTitle, onClose }: Pr
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`Аналітика: ${trackTitle}`} size="lg">
 
-            {/* ─── Утримання аудиторії ───────────────── */}
             <div className="mb-4">
                 <h3 className="artist-analytics-page__chart-title mb-3">Утримання аудиторії</h3>
                 {retentionQuery.isLoading ? (
@@ -119,7 +117,6 @@ export const TrackAnalyticsModal = ({ isOpen, trackId, trackTitle, onClose }: Pr
                 )}
             </div>
 
-            {/* ─── Динаміка прослуховувань ───────────── */}
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <h3 className="artist-analytics-page__chart-title m-0">Прослуховування</h3>
                 <div className="artist-analytics-page__period-tabs">

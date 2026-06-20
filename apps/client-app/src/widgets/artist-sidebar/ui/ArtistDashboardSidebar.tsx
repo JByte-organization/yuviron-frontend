@@ -35,7 +35,6 @@ export const ArtistDashboardSidebar = () => {
             <aside className={`client-sidebar${collapsed ? ' client-sidebar--collapsed' : ''}`}>
                 <div className="client-sidebar__inner">
 
-                    {/* Перемикач артистів (лише якщо керованих > 1) */}
                     <ArtistSwitcher />
 
                     {/* Кабінет */}
@@ -70,7 +69,6 @@ export const ArtistDashboardSidebar = () => {
                         <hr className="client-sidebar__divider" />
                     </div>
 
-                    {/* Аналітика та фінанси */}
                     <div className="client-sidebar__section">
                         <p className="client-sidebar__section-title">Аналітика</p>
                         <nav className="client-sidebar__nav">

@@ -195,7 +195,6 @@ export const ArtistDashboardPage = () => {
         coverUrl: a.coverUrl,
     }));
 
-    // Стрілки прокрутки показуємо лише коли є що гортати (контент переповнює слайдер).
     const [tracksRef, tracksOverflow] = useHasOverflow<HTMLDivElement>([tracks]);
     const [albumsRef, albumsOverflow] = useHasOverflow<HTMLDivElement>([albums]);
 
@@ -205,8 +204,6 @@ export const ArtistDashboardPage = () => {
         ref.current.scrollBy({ left: dir === 'next' ? amount : -amount, behavior: 'smooth' });
     };
 
-    // Стан «ще не артист» тепер обробляє ArtistDashboardLayout (чистий екран без
-    // студійного хрому), тож сюди ми потрапляємо лише з валідним artistId.
 
     return (
         <div className="artist-dashboard">

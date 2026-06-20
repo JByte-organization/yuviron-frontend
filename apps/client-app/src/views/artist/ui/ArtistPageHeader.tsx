@@ -33,7 +33,6 @@ export const ArtistPageHeader = ({
                                      isFollowing = false,
                                      followPending = false,
                                  }: ArtistPageHeaderProps) => {
-    // Стан підписки контролюється зверху (ArtistPage): значення з API + оптимістичний апдейт.
     const following = isFollowing;
 
     // Переводим на единый хелпер картинок FSD архитектуры

@@ -7,10 +7,6 @@ import { Gender } from '@repo/api/generated/client/models/gender';
 import type { RegisterCommand } from '@repo/api/generated/client/models/registerCommand';
 import { clearRegisterDraft, getRegisterDraft, type RegisterDraft } from './registerDraft';
 
-// Собирает тело register-запроса из черновика. Дату рождения бэк ждёт ISO-строкой,
-// поэтому склеиваем день/месяц/год в UTC, чтобы не словить смещение часового пояса.
-// country шлём КОДОМ ('UA'/'PL'), а не названием: бек валидирует/хранит по коду —
-// название ('Україна') валит DB-инсерт 500. city шлём как есть ('Київ').
 const buildRegisterPayload = (draft: RegisterDraft): RegisterCommand => ({
     email: draft.email?.trim(),
     password: draft.password,
@@ -25,10 +21,6 @@ const buildRegisterPayload = (draft: RegisterDraft): RegisterCommand => ({
     acceptTerms: true,
 });
 
-// Единая точка отправки register для обоих экранов (email-шаг и шаг профиля).
-// 409 Conflict = почта занята → поднимаем флаг emailTaken (модалку рисует вызывающий
-// компонент). Любую другую ошибку отдаём текстом в serverError. На успехе чистим
-// черновик и ведём на экран «перевірте пошту» (подтверждение идёт по ссылке из письма).
 export const useRegisterSubmit = () => {
     const router = useRouter();
     const [emailTaken, setEmailTaken] = useState(false);
@@ -75,15 +67,13 @@ export const useRegisterSubmit = () => {
                     .join(' ')
                     .toLowerCase();
 
-                // Бек на дублі пошти інколи віддає generic 500 «saving to the database»
-                // замість 409 — не світимо англомовне повідомлення, підказуємо причину.
                 const isDbSaveError =
                     response?.status === 500 ||
                     rawMessage.includes('saving to the database') ||
                     rawMessage.includes('database');
 
                 setServerError(
-                    fieldErrors // валідаційні помилки полів — інформативні, лишаємо
+                    fieldErrors
                         ? fieldErrors
                         : isDbSaveError
                           ? 'Не вдалося завершити реєстрацію. Можливо, ця пошта вже зареєстрована або сервіс тимчасово недоступний. Спробуйте іншу пошту чи повторіть пізніше.'
@@ -93,7 +83,6 @@ export const useRegisterSubmit = () => {
         },
     });
 
-    // Читаем черновик в момент сабмита — вызывающий пишет в него непосредственно перед.
     const submit = () => {
         setServerError(null);
         mutate({ data: buildRegisterPayload(getRegisterDraft()) });

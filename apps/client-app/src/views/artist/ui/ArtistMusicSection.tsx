@@ -35,11 +35,7 @@ export const ArtistMusicSection = ({
     const [activeTab, setActiveTab] = useState<MusicTab>('popular');
 
     // ─── Мапінг даних через useMemo ──────────────────────────────────────────
-    // Хелпер тримаємо ВСЕРЕДИНІ useMemo: інакше React Compiler виводить його як
-    // окрему залежність, яка не збігається з ручним списком deps (preserve-manual-memoization).
     const dataMap = useMemo<Record<MusicTab, AlbumCardData[]>>(() => {
-        // Підставляємо ім'я поточного артиста; tracksCount немає в ArtistAlbumDto,
-        // тож AlbumCard виведе гарний підпис "by Artist".
         const mapToCardData = (list: ArtistAlbumDto[]): AlbumCardData[] =>
             list.map((a) => ({
                 id:          a.id ?? '',
@@ -60,7 +56,6 @@ export const ArtistMusicSection = ({
 
     const hasData = currentData.length > 0;
 
-    // Стрілки — лише коли контент переповнює слайдер (перевіряємо й при зміні таба).
     const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([currentData]);
 
     const scroll = (dir: 'prev' | 'next') => {
