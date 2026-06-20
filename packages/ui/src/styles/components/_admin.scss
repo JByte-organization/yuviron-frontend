@@ -141,11 +141,6 @@ $active-blue: #40A2FF;
   }
 }
 
-// Контентная область
-//main {
-//  background-color: $admin-bg;
-//  color: $white;
-//}
 
 .admin-layout main {
   background-color: $admin-bg;
@@ -405,7 +400,7 @@ $active-blue: #40A2FF;
 }
 
 .admin-login {
-  background: color.mix($black, $admin-bg, 72%);
+  background: $admin-bg;
   color: $white;
 
   &__label {

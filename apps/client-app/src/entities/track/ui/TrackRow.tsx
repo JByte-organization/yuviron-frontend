@@ -79,7 +79,7 @@ export const TrackRow = ({
     const [menuCoords, setMenuCoords] = useState<{ x: number; y: number } | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const { requireAuth } = useAuthGuard();
+    const { requireAuth, isAuthenticated } = useAuthGuard();
     const { playQueue } = usePlayer();
     const { showToast } = usePlaylistToast();
     const queryClient = useQueryClient();
@@ -87,7 +87,7 @@ export const TrackRow = ({
     const currentTrackId = usePlayerStore(s => s.currentTrack?.id);
     const playerStatus   = usePlayerStore(s => s.status);
 
-    // 🚨 ОНОВЛЕНО: Підключаємо ініціалізацію лайку рядка до реального поля isSaved
+
     const { isLiked, toggle: toggleLike } = useFavoriteTrack({
         initialLiked: track.isSaved ?? false,
     });
@@ -95,7 +95,15 @@ export const TrackRow = ({
     const isCurrentlyPlaying = currentTrackId === track.id && playerStatus === 'playing';
     const coverSrc = getImageUrl(track.coverUrl) ?? `https://picsum.photos/seed/track-${track.id}/40/40`;
 
-    const { data: playlistsRaw } = useGetApiMePlaylists({ PageSize: 7 });
+    const { data: playlistsRaw } = useGetApiMePlaylists(
+        { PageSize: 7 },
+        {
+            query: {
+                queryKey: ['getApiMePlaylists', { PageSize: 7 }],
+                enabled: isAuthenticated,
+            }
+        }
+    );
     const { mutateAsync: addTrackToPlaylist } = usePostApiMePlaylistsIdTracks();
 
     const quickPlaylists = useMemo(() => {
@@ -108,7 +116,7 @@ export const TrackRow = ({
             title: p.title ?? 'Без назви',
             isSaved:     track.isSaved ?? false
         }));
-    }, [playlistsRaw]);
+    }, [playlistsRaw, track.isSaved]);
 
     const handleQuickAddToPlaylist = async (playlistId: string) => {
         const targetPlaylist = quickPlaylists.find(p => p.id === playlistId);
@@ -180,7 +188,13 @@ export const TrackRow = ({
             onContextMenu={handleContextMenu}
         >
             <div className="track-row__index">
-                {isCurrentlyPlaying ? <i className="bi bi-volume-up-fill track-row__playing-icon" /> : isHovered ? <i className="bi bi-play-fill" /> : <span>{track.index}</span>}
+                {isCurrentlyPlaying ? (
+                    <i className="bi bi-volume-up-fill track-row__playing-icon" />
+                ) : isHovered ? (
+                    isAuthenticated ? <i className="bi bi-play-fill" /> : <i className="bi bi-lock-fill text-muted" />
+                ) : (
+                    <span>{track.index}</span>
+                )}
             </div>
 
             <div className="track-row__info">

@@ -6,13 +6,14 @@ import {
     type DashboardSummaryDto,
     type RecentUserDto,
     type TopEntityDto,
-    type PopularAlbumDto
+    type PopularAlbumDto, AdAnalyticsPointDto
 } from '@repo/api/admin.ts';
 import { SummaryCards }     from '../ui/components/SummaryCards';
 import { RecentUsersTable } from '../ui/components/RecentUsersTable';
 import { TopEntityTable }   from '../ui/components/TopEntityTable';
 import { PopularAlbums }    from '../ui/components/PopularAlbums';
 import { AnalyticsCharts }  from '../ui/components/AnalyticsCharts';
+import {AdAnalytics} from "@/views/dashboard/ui/components/AdAnalytics.tsx";
 
 interface AdminDashboardStats {
     summary?: DashboardSummaryDto;
@@ -25,15 +26,15 @@ interface AdminDashboardStats {
 export const DashboardPage = () => {
     const { data, isLoading, isError } = useGetApiAdminDashboardStats();
 
-    // Безопасное приведение типов ответа Orval к нашему строгому интерфейсу
-    const d = (data as { data?: AdminDashboardStats } | undefined)?.data
-        ?? (data as AdminDashboardStats | undefined);
+    const d = (data as { data?: AdminDashboardStats & { adAnalytics?: AdAnalyticsPointDto[] } } | undefined)?.data
+        ?? (data as (AdminDashboardStats & { adAnalytics?: AdAnalyticsPointDto[] }) | undefined);
 
     const summary       = d?.summary;
     const recentUsers   = d?.recentUsers   ?? [];
     const topGenres     = d?.topGenres     ?? [];
     const topMoods      = d?.topMoods      ?? [];
     const popularAlbums = d?.popularAlbums ?? [];
+    const adAnalytics   = d?.adAnalytics   ?? [];
 
     if (isLoading) {
         return (
@@ -69,6 +70,8 @@ export const DashboardPage = () => {
             <SummaryCards summary={summary} />
 
             <AnalyticsCharts topGenres={topGenres} topMoods={topMoods} />
+
+            <AdAnalytics adAnalytics={adAnalytics} />
 
             <div className="row g-4 mb-4">
                 <div className="col-12 col-xl-6">

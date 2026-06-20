@@ -17,12 +17,12 @@ interface BaseTableProps {
     isAllSelected?: boolean;
     onSelectAll?: () => void;
     selectedCount?: number;
-    // Фільтри — кожна сторінка передає свій контент
+    // Фильтры
     filterContent?: React.ReactNode;
     onApplyFilters?: () => void;
     onResetFilters?: () => void;
     activeFiltersCount?: number;
-    // Сортування
+    // Сортировка
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     onSortChange?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
@@ -225,7 +225,7 @@ export const BaseTable = ({
                 </div>
 
                 <div className="offcanvas-body d-flex flex-column">
-                    {/* Контент фільтрів — передається з кожної сторінки */}
+                    {/* Контент фильтров */}
                     <div className="flex-grow-1 overflow-auto">
                         {filterContent ?? (
                             <p className="text-secondary">No filters available.</p>

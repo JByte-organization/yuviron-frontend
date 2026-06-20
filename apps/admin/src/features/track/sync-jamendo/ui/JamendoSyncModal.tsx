@@ -37,8 +37,9 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
                 }
             });
 
-            // Проверяем статус ответа (202 Accepted означает успешный запуск фоновой задачи)
-            if (res.status === 202) {
+            // Успіх — будь-який 2xx (бек міняв 202→200 у контракті; не привʼязуємось
+            // до конкретного коду, щоб не падати при дрейфі swagger).
+            if (res.status >= 200 && res.status < 300) {
                 setIsSuccess(true);
             } else {
                 setError('Jamendo node responded with an unexpected status layer.');

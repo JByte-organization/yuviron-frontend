@@ -1,41 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// ══════════════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════════════
-
-/**
- * Декодує payload JWT без верифікації підпису.
- * Middleware не має доступу до секрету — верифікація на бекенді.
- */
-const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
-    try {
-        const part = token.split('.')[1];
-        if (!part) return null;
-        return JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/')));
-    } catch {
-        return null;
-    }
-};
-
-const hasAdminPermission = (token: string): boolean => {
-    const payload = decodeJwtPayload(token);
-    return payload?.session_type === 'admin';
-};
-
-const isTokenExpired = (token: string): boolean => {
-    const payload = decodeJwtPayload(token);
-    if (!payload || typeof payload.exp !== 'number') return true;
-    return Date.now() / 1000 > payload.exp;
-};
-
-// ══════════════════════════════════════════════════════════
-// MIDDLEWARE
-// ══════════════════════════════════════════════════════════
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
+    // Статика и API
     if (
         pathname.startsWith('/_next') ||
         pathname.startsWith('/api')   ||
@@ -44,7 +13,22 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // Редирект с / на /dashboard
+    // Проверка наличия токена авторизации
+    const token = request.cookies.get('admin_logged_in')?.value;
+
+    const isAuthPage = pathname.startsWith('/login');
+
+    // Если пользователь не авторизирован
+    if (!token && !isAuthPage && pathname !== '/') {
+        return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    // Если авторизован
+    if (token && isAuthPage) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    // Редирект на dashboard
     if (pathname === '/') {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }

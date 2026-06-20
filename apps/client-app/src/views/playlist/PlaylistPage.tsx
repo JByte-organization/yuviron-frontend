@@ -36,7 +36,6 @@ interface TrackRowData extends BaseTrackRowData {
     position: number;
 }
 
-// ─── ОНОВЛЕНИЙ ЧИСТИЙ МАППЕР ──────────────────────────────────────────────────
 const mapTrack = (t: PlaylistTrackItemClientDto, index: number): TrackRowData => ({
     id:          t.trackId   ?? '',
     index:       index + 1,
@@ -49,7 +48,6 @@ const mapTrack = (t: PlaylistTrackItemClientDto, index: number): TrackRowData =>
     durationMs:  t.durationMs ?? null,
     coverUrl:    t.coverUrl  ?? null,
     position:    t.position  ?? 0,
-    // 🚨 ГЛАВНИЙ ФІКС №1: Перевіряємо обидва варіанти поля лайку від бекенду
     isSaved:     t.isSaved ?? (t as any).isLiked ?? false,
 });
 
@@ -68,7 +66,6 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
     const tracksData = tracksRaw   as unknown as { items?: PlaylistTrackItemClientDto[] };
     const me         = meRaw        as unknown as CurrentUserDto;
 
-    // Сортуємо строго по зростанню дробових індексів position
     const tracks: TrackRowData[] = useMemo(() => {
         const list = (tracksData?.items ?? []).map(mapTrack);
         return list.sort((a, b) => a.position - b.position).map((t, idx) => ({
@@ -156,15 +153,34 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
         setAddToPlaylistTitle(title);
     };
 
-    const handleEditSuccess = async (values: { name: string; description?: string; coverUrl?: string | null; isPrivate: boolean; }) => {
+    // ─── ОНОВЛЕНИЙ ОБРОБНИК ЗБЕРЕЖЕННЯ ────────────────────────────────────────
+    const handleEditSuccess = async (values: {
+        name: string;
+        coverFileId: string | null;
+        coverUrl: string | null;
+        isPrivate: boolean;
+    }) => {
         const body: UpdatePlaylistRequest = {
             title:       values.name,
-            coverFileId: values.coverUrl ?? null,
+            coverFileId: values.coverFileId,
             visibility:  values.isPrivate ? PlaylistVisibility.Private : PlaylistVisibility.Public,
         };
-        await updatePlaylist({ id: playlistId, data: body });
-        refetchPlaylist();
-        setShowEdit(false);
+
+        queryClient.setQueryData(['getApiPlaylistsId', playlistId], (old: any) => {
+            if (!old) return old;
+            return {
+                ...old,
+                title: values.name,
+                coverUrl: values.coverUrl ?? old.coverUrl
+            };
+        });
+
+        try {
+            await updatePlaylist({ id: playlistId, data: body });
+            await refetchPlaylist();
+        } catch (error) {
+            console.error('[Edit Error] Не вдалося зберегти зміни плейліста:', error);
+        }
     };
 
     const handleDeleteSuccess = async () => {
@@ -195,7 +211,6 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
     const playlistToEdit: PlaylistToEdit = {
         id:          playlist.id          ?? '',
         name:        playlist.title       ?? '',
-        description: playlist.description ?? null,
         coverUrl:    playlist.coverUrl    ?? null,
         isPrivate:   playlist.visibility  === PlaylistVisibility.Private,
     };
@@ -248,7 +263,6 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
                                                     {...dragProvided.dragHandleProps}
                                                     className={`playlist-page__draggable-row-holder ${snapshot.isDragging ? 'playlist-page__draggable-row-holder--dragging' : ''}`}
                                                 >
-                                                    {/* 🚨 ГЛАВНИЙ ФІКС №2: Динамічний комбінований ключ для синхронізації станів серця */}
                                                     <TrackRow
                                                         key={`${track.id}-${track.isSaved}`}
                                                         track={track}
@@ -272,7 +286,7 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
 
             <AddToPlaylistModal isOpen={!!addToPlaylistTrackId} onClose={() => setAddToPlaylistTrackId(null)} trackId={addToPlaylistTrackId ?? ''} trackTitle={addToPlaylistTitle} onCreatePlaylist={() => { setAddToPlaylistTrackId(null); setShowCreate(true); }} />
             {showEdit && <EditPlaylistModal isOpen={showEdit} onClose={() => setShowEdit(false)} onSuccess={handleEditSuccess} playlist={playlistToEdit} />}
-            <DeletePlaylistModal isOpen={showDelete} onClose={() => setShowDelete(false)} onSuccess={handleDeleteSuccess} playlistName={playlist.title ?? ''} playlistId={playlist.id ?? ''} />
+            <DeletePlaylistModal isOpen={showDelete} onClose={() => setShowDelete(false)} onSuccess={handleDeleteSuccess} playlistName={playlist.title ?? ''} />
             <CreatePlaylistModal isOpen={showCreate} onClose={() => setShowCreate(false)} onSuccess={() => setShowCreate(false)} />
         </div>
     );

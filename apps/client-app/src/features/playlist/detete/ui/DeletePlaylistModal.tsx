@@ -3,35 +3,33 @@
 import React, { useState } from 'react';
 import { Modal } from '@/shared/ui/Modal';
 
-// ─── Типи ─────────────────────────────────────────────────────────────────────
 interface DeletePlaylistModalProps {
     isOpen: boolean;
     onClose: () => void;
-    // onSuccess тепер async — бо в PlaylistPage ми await deletePlaylist()
     onSuccess?: () => Promise<void>;
     playlistName: string;
-    playlistId: string;
 }
 
-// ─── Компонент ────────────────────────────────────────────────────────────────
-// Архітектура: модалка НЕ робить API запит сама.
-// Вона тільки підтверджує дію і викликає onSuccess.
-// Реальне видалення відбувається в PlaylistPage через handleDeleteSuccess.
-// Причина: сторінка знає куди редіректити після видалення, модалка — ні.
 export const DeletePlaylistModal = ({
                                         isOpen,
                                         onClose,
                                         onSuccess,
                                         playlistName,
-                                        playlistId: _playlistId, // eslint-disable-line @typescript-eslint/no-unused-vars
                                     }: DeletePlaylistModalProps) => {
     const [isDeleting, setIsDeleting] = useState(false);
 
     const handleDelete = async () => {
+        if (!onSuccess) {
+            onClose();
+            return;
+        }
+
         setIsDeleting(true);
         try {
-            await onSuccess?.();
+            await onSuccess();
             onClose();
+        } catch (error) {
+            console.error('[DeletePlaylist Error] Не вдалося видалити плейліст:', error);
         } finally {
             setIsDeleting(false);
         }

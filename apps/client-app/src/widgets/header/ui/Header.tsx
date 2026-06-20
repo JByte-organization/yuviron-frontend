@@ -22,6 +22,7 @@ export const Header = () => {
     const router = useRouter();
     const accessToken = useSessionStore(s => s.accessToken);
     const clearSession = useSessionStore(s => s.clearSession);
+
     const status = useSessionStore(s => s.status);
     const isAuthenticated = useSessionStore(selectIsAuthenticated);
     const artistId = useCurrentArtistId();

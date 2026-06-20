@@ -13,6 +13,7 @@ import { usePostApiFilesUpload } from '@repo/api/client.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { useCurrentArtist } from '@/entities/artist/model/currentArtist';
+import { useArtistPermissions } from '@/entities/artist/model/useArtistPermissions';
 import {
     ArtistSocialLinksBlock,
     ArtistVerificationBlock,
@@ -27,7 +28,9 @@ type FormValues = {
 };
 
 export const ArtistSettingsPage = () => {
-    const { artistId, canManage } = useCurrentArtist();
+    const { artistId } = useCurrentArtist();
+    const { can, lockTitle } = useArtistPermissions();
+    const canManage = can('editProfile');
     const queryClient = useQueryClient();
 
     const { data: profileRaw } = useGetApiStudioArtistProfileArtistId(artistId ?? '', {
@@ -270,6 +273,7 @@ export const ArtistSettingsPage = () => {
                         type="submit"
                         className="client-modal__btn client-modal__btn--primary"
                         disabled={isSubmitting || !hasChanges || !artistId || !canManage}
+                        title={!canManage ? lockTitle : undefined}
                     >
                         {isSubmitting
                             ? <><span className="spinner-border spinner-border-sm me-2" />Збереження...</>

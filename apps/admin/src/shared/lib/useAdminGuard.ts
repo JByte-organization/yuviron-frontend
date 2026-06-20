@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
 import { useAdminSessionStore } from '@/entities/adminSession/model/store';
@@ -10,17 +10,18 @@ interface YuvironAdminJwtPayload {
     exp?:         number;
 }
 
-// ══════════════════════════════════════════════════════════
-// useAdminGuard
-// Перевіряє наявність токена і права AccessAdminPanel.
-// Використовується в layout адмінки.
-// ══════════════════════════════════════════════════════════
+const ADMIN_LOGGED_IN_COOKIE = "admin_logged_in=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+
 export const useAdminGuard = (): boolean => {
-    const token  = useAdminSessionStore(s => s.adminAccessToken);
+    const token = useAdminSessionStore(s => s.adminAccessToken);
     const router = useRouter();
+    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
+        setIsMounted(true);
+
         if (!token) {
+            document.cookie = ADMIN_LOGGED_IN_COOKIE;
             router.replace('/login');
             return;
         }
@@ -33,12 +34,13 @@ export const useAdminGuard = (): boolean => {
                 router.replace('/403');
             }
         } catch {
-            // Токен невалідний
             useAdminSessionStore.getState().clearAdminSession();
+            document.cookie = ADMIN_LOGGED_IN_COOKIE;
             router.replace('/login');
         }
     }, [token, router]);
 
+    if (!isMounted) return false;
     if (!token) return false;
 
     try {

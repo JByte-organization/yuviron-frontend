@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query'; // 👈 ДодалиuseQuery
 import {
     useGetApiAuthMe,
     useGetApiMeSettingsPreferences,
@@ -10,12 +10,14 @@ import {
     usePutApiMeSettingsPrivacy,
     usePutApiMeSettingsPrivateSession,
     getGetApiMeSettingsPreferencesQueryKey,
+    customInstance, // 👈 Імпортуємо інстанс клієнта
     type UserSettingsDto,
     type UpdatePrivacyTogglesCommand,
     type CurrentUserDto
 } from '@repo/api/client';
 
 import { AppearanceSettingsSection } from '@/features/settings/ui/AppearanceSettingsSection';
+import { applyThemeGradients, type ClientThemeDto } from '@/shared/lib/applyThemeGradients';
 
 export const SettingsPreferencesPage = () => {
     const queryClient = useQueryClient();
@@ -29,6 +31,20 @@ export const SettingsPreferencesPage = () => {
     // ─── Запити даних конфігурації ────────────────────────
     const { data: prefsRaw, isLoading: isPrefsLoading } = useGetApiMeSettingsPreferences();
     const prefs = (prefsRaw as { data?: UserSettingsDto })?.data ?? (prefsRaw as UserSettingsDto);
+
+    // ─── 🚨 ГЛАВНИЙ ФІКС: Завантажуємо теми з правильного клієнтського роуту Сваггера ───
+    const { data: themesRaw, isLoading: isThemesLoading } = useQuery({
+        queryKey: ['api', 'client', 'appearance', 'themes'], // Спільний ключ кешу із секцією
+        queryFn: ({ signal }) => customInstance<any>('/api/me/appearance/themes', { method: 'GET', signal }),
+        enabled: isPremiumUser,
+        retry: false,
+        staleTime: 1000 * 60 * 15, // Кешуємо на 15 хвилин
+    });
+
+    const availableThemes = useMemo(() => {
+        const raw = (themesRaw as any)?.data ?? themesRaw;
+        return (Array.isArray(raw) ? raw : raw?.items ?? []) as ClientThemeDto[];
+    }, [themesRaw]);
 
     // ─── Мутації налаштувань ──────────────────────────────
     const { mutateAsync: updateAudioQuality } = usePutApiMeSettingsAudioQuality();
@@ -48,8 +64,15 @@ export const SettingsPreferencesPage = () => {
         }
     }, [prefs, isInitialized]);
 
+    // ─── 🚨 ЕФЕКТ СИНХРОНІЗАЦІЇ: Тепер передаємо повний набір даних ───
+    useEffect(() => {
+        if (prefs) {
+            applyThemeGradients(prefs.themeId, availableThemes);
+        }
+    }, [prefs, availableThemes]);
+
     // Кастомний преміальний кібер-лоадер
-    if (isPrefsLoading || isUserLoading) {
+    if (isPrefsLoading || isUserLoading || isThemesLoading) {
         return (
             <div className="yuviron-loader-wrapper">
                 <div className="cyber-spinner">
@@ -128,7 +151,7 @@ export const SettingsPreferencesPage = () => {
                     {/* СЕКЦІЯ 1: APPEARANCE */}
                     <section className="settings-section">
                         <h3 className="section-caption">Appearance</h3>
-                        <AppearanceSettingsSection />
+                        <AppearanceSettingsSection onToast={triggerToast} />
                     </section>
 
                     <hr className="settings-divider" />
@@ -247,7 +270,6 @@ export const SettingsPreferencesPage = () => {
                     </section>
                 </div>
 
-                {/* 🚨 ПЛАВАЮЧИЙ ТОСТ НАД СКРОЛОМ */}
                 {successMessage && (
                     <div className="yuviron-alert alert-success-toast">
                         <i className="bi bi-check-circle-fill alert-icon" />

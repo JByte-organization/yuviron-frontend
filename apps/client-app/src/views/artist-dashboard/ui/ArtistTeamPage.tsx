@@ -15,6 +15,7 @@ import {
     type TeamMemberDto,
 } from '@repo/api/artist.ts';
 import { useCurrentArtist } from '@/entities/artist/model/currentArtist';
+import { useArtistPermissions } from '@/entities/artist/model/useArtistPermissions';
 import { ChartError, ChartSkeleton } from '@/entities/artist/ui/AnalyticsChartParts';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { unwrapList } from '@/shared/lib/unwrapApi';
@@ -35,7 +36,9 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export const ArtistTeamPage = () => {
-    const { artistId, canManage } = useCurrentArtist();
+    const { artistId } = useCurrentArtist();
+    const { can, lockTitle } = useArtistPermissions();
+    const canTeam = can('manageTeam');
     const queryClient = useQueryClient();
 
     const teamQuery = useGetApiStudioArtistTeamArtistId(artistId ?? '', {
@@ -49,6 +52,7 @@ export const ArtistTeamPage = () => {
     const refetchTeam = () =>
         queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/team'] });
 
+    // ─── Інвайт ─────────────────────────────────────────
     const [inviteEmail, setInviteEmail] = useState('');
     const [inviteRole, setInviteRole] = useState<ArtistTeamRole>(ArtistTeamRole.Viewer);
     const [inviteError, setInviteError] = useState<string | null>(null);
@@ -84,6 +88,7 @@ export const ArtistTeamPage = () => {
         }
     };
 
+    // ─── Зміна ролі / видалення ─────────────────────────
     const { mutateAsync: changeRole } = usePutApiStudioArtistTeamArtistIdTargetUserIdRole();
     const { mutateAsync: removeMember } = useDeleteApiStudioArtistTeamArtistIdTargetUserId();
     const [rowError, setRowError] = useState<string | null>(null);
@@ -125,11 +130,13 @@ export const ArtistTeamPage = () => {
     return (
         <div className="artist-analytics-page">
 
+            {/* ─── Заголовок ────────────────────────── */}
             <div className="artist-analytics-page__header">
                 <h1 className="artist-analytics-page__title">Команда</h1>
             </div>
 
-            {canManage && (
+            {/* ─── Інвайт (лише для тих, хто може керувати командою) ─── */}
+            {canTeam && (
             <div className="artist-analytics-page__chart-block mb-5">
                 <h2 className="artist-analytics-page__chart-title">Запросити учасника</h2>
                 <div className="row g-3 mt-1 align-items-end">
@@ -174,6 +181,7 @@ export const ArtistTeamPage = () => {
             </div>
             )}
 
+            {/* ─── Список учасників ──────────────────── */}
             <div className="artist-analytics-page__chart-block">
                 <h2 className="artist-analytics-page__chart-title">Учасники</h2>
                 {rowError && <div className="client-modal__field-error mt-2">{rowError}</div>}
@@ -231,7 +239,8 @@ export const ArtistTeamPage = () => {
                                             className="client-modal__input"
                                             style={{ width: 'auto', minWidth: 140 }}
                                             value={member.role ?? ArtistTeamRole.Viewer}
-                                            disabled={!canManage}
+                                            disabled={!canTeam}
+                                            title={!canTeam ? lockTitle : undefined}
                                             onChange={e => handleRoleChange(member, e.target.value as ArtistTeamRole)}
                                         >
                                             {ASSIGNABLE_ROLES.map(role => (
@@ -244,7 +253,7 @@ export const ArtistTeamPage = () => {
                                         {member.addedAt ? format(parseISO(member.addedAt), 'dd.MM.yyyy') : ''}
                                     </span>
 
-                                    {!isOwner && canManage && (
+                                    {!isOwner && canTeam && (
                                         <button
                                             className="artist-tracks-page__row-btn artist-tracks-page__row-btn--danger"
                                             title="Видалити з команди"
@@ -260,6 +269,7 @@ export const ArtistTeamPage = () => {
                 )}
             </div>
 
+            {/* ─── Підтвердження видалення ───────────── */}
             {removing && (
                 <div className="client-modal-backdrop" onClick={() => setRemoving(null)}>
                     <div className="client-modal modal-dialog-sm" onClick={e => e.stopPropagation()}>

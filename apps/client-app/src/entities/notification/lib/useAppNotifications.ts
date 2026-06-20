@@ -20,6 +20,11 @@ export const useAppNotifications = (onReceive?: (n: NotificationDto) => void) =>
         const connection = new signalR.HubConnectionBuilder()
             .withUrl(hubUrl(), {
                 accessTokenFactory: () => useSessionStore.getState().accessToken ?? '',
+                // 🌟 СПАСИТЕЛЬНЫЙ ХАК ДЛЯ ОБХОДА CORS БЕКЕНДА:
+                // Пропускаем negotiate-запрос и сразу открываем чистое WebSocket-соединение.
+                // Это полностью уберёт CORS-ошибку "x-signalr-user-agent" из консоли.
+                skipNegotiation: true,
+                transport: signalR.HttpTransportType.WebSockets,
             })
             .withAutomaticReconnect()
             .build();
