@@ -172,31 +172,6 @@ export const LoginForm = () => {
 
     return (
         <form className="client-login-form" onSubmit={handleSubmit} noValidate>
-            <div className="client-login-form__socials">
-                <button type="button" className="client-login-form__social-btn">
-                    <span className="client-login-form__social-icon client-login-form__social-icon--facebook">
-                        f
-                    </span>
-                    <span>Увійти з Facebook</span>
-                </button>
-
-                <button type="button" className="client-login-form__social-btn">
-                    <span className="client-login-form__social-icon client-login-form__social-icon--google">
-                        G
-                    </span>
-                    <span>Увійти з Google</span>
-                </button>
-
-                <button type="button" className="client-login-form__social-btn">
-                    <span className="client-login-form__social-icon client-login-form__social-icon--apple">
-
-                    </span>
-                    <span>Увійти з Apple</span>
-                </button>
-            </div>
-
-            <div className="client-login-form__divider" />
-
             <div className="mb-3">
                 <label htmlFor="identifier" className="form-label client-login-form__label">
                     Електронна пошта або ім’я користувача
