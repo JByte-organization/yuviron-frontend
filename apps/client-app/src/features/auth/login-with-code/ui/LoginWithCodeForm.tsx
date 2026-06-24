@@ -15,7 +15,6 @@ const validateCode = (code: string): string | undefined => {
     return undefined;
 };
 
-// G******3@G*.com — оставляем первую букву, последний символ локала и первую букву домена.
 const maskEmail = (email: string): string => {
     const at = email.indexOf('@');
     if (at < 1) return email;
@@ -46,10 +45,6 @@ export const LoginWithCodeForm = () => {
 
     const maskedEmail = useMemo(() => (email ? maskEmail(email) : ''), [email]);
 
-    // Вход по коду (passwordless login). login-with-code верифицирует код и
-    // логинит: возвращает тот же payload, что обычный login
-    // ({ token, userId, email, permissions }) плюс ставит refresh-куку.
-    // Подтверждение email при регистрации идёт ОТДЕЛЬНО, по ссылке (/confirm-email).
     const { mutate, isPending } = usePostApiAuthLoginWithCode({
         mutation: {
             onSuccess: (res: any) => {

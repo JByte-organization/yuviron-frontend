@@ -4,8 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useSidebar } from '@/widgets/layout/model/contexts';
-import { GuestSidebarCard } from '@/shared/ui/GuestSidebarCard';
+import { GuestSidebarCard } from '@/shared/ui/Cards/GuestSidebarCard/GuestSidebarCard.tsx';
 
 interface NavItemProps {
     label: string;
@@ -26,81 +25,45 @@ const NavItem = ({ label, icon, href, isActive }: NavItemProps) => (
     </Link>
 );
 
-interface GuestSidebarProps {
-    onResizeStart?: (e: React.MouseEvent) => void;
-}
-
-export const GuestSidebar = ({ onResizeStart }: GuestSidebarProps) => {
+export const GuestSidebar = () => {
     const pathname = usePathname();
-    const { collapsed, setCollapsed, sidebarWidth } = useSidebar();
 
     return (
-        <>
-            <aside
-                className={`client-sidebar${collapsed ? ' client-sidebar--collapsed' : ''}`}
-                style={{ width: collapsed ? undefined : sidebarWidth }}
-            >
-                <div className="client-sidebar__inner">
+        <aside className="client-sidebar client-sidebar--guest">
+            <div className="client-sidebar__inner">
 
-                    {/* Навігація */}
-                    <div className="client-sidebar__section">
-                        <nav className="client-sidebar__nav">
-                            <NavItem
-                                href="/home"
-                                icon="home"
-                                label="Головна"
-                                isActive={pathname === '/home'}
-                            />
-                        </nav>
-                    </div>
-
-                    {/* CTA картки */}
-                    <div className="client-sidebar__section">
-                        <GuestSidebarCard
-                            title="Створи свій перший плейліст"
-                            text="Це зовсім не складно! Ми допоможемо."
-                            btnLabel="Створити плейліст"
-                            popoverTitle="Створюй плейлісти"
-                            popoverText="Щоб створювати плейлісти та ділитися ними, увійди в акаунт."
+                {/* Navigation */}
+                <div className="client-sidebar__section">
+                    <nav className="client-sidebar__nav">
+                        <NavItem
+                            href="/home"
+                            icon="home"
+                            label="Головна"
+                            isActive={pathname === '/home'}
                         />
-
-                        <GuestSidebarCard
-                            title="Відкрий Premium"
-                            text="Слухай без реклами та обмежень."
-                            btnLabel="Дізнатися більше"
-                            popoverTitle="Отримай Premium"
-                            popoverText="Щоб оформити підписку, увійди в акаунт."
-                        />
-                    </div>
-
+                    </nav>
                 </div>
 
-                {/* ─── Resize handle ──────────────────────── */}
-                {!collapsed && (
-                    <div
-                        className="client-sidebar__resize-handle"
-                        onMouseDown={onResizeStart}
+                {/* CTA cards */}
+                <div className="client-sidebar__section">
+                    <GuestSidebarCard
+                        title="Створи свій перший плейліст"
+                        text="Це зовсім не складно! Ми допоможемо."
+                        btnLabel="Створити плейліст"
+                        popoverTitle="Створюй плейлісти"
+                        popoverText="Щоб створювати плейлісти та ділитися ними, увійди в акаунт."
                     />
-                )}
 
-                <button
-                    className="client-sidebar__toggle"
-                    onClick={() => setCollapsed(true)}
-                    aria-label="Сховати сайдбар"
-                >
-                    <Image src="/images/icons/chevron-left.svg" alt="collapse" width={14} height={14} />
-                </button>
-            </aside>
+                    <GuestSidebarCard
+                        title="Відкрий Premium"
+                        text="Слухай без реклами та обмежень."
+                        btnLabel="Дізнатися більше"
+                        popoverTitle="Отримай Premium"
+                        popoverText="Щоб оформити підписку, увійди в акаунт."
+                    />
+                </div>
 
-            {collapsed && (
-                <button
-                    className="client-sidebar__restore-btn"
-                    onClick={() => setCollapsed(false)}
-                    aria-label="Показати сайдбар"
-                >
-                    <Image src="/images/icons/chevron-right.svg" alt="open" width={14} height={14} />
-                </button>
-            )}
-        </>
+            </div>
+        </aside>
     );
 };

@@ -15,7 +15,6 @@ import {
 import { useSessionStore, selectIsAuthenticated } from '@/entities/session/model/store';
 import { useCurrentArtistId } from '@/entities/artist/model/currentArtist';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
-import { AccountSwitcher } from '@/widgets/account-switcher/ui/AccountSwitcher';
 import { SearchDropdown } from './SearchDropdown';
 import { UserDropdown } from './UserDropdown';
 
@@ -23,8 +22,7 @@ export const Header = () => {
     const router = useRouter();
     const accessToken = useSessionStore(s => s.accessToken);
     const clearSession = useSessionStore(s => s.clearSession);
-    // Каркас за статусом, а не за токеном: під час refresh токена ще нема,
-    // але показувати кнопки «Увійти/Реєстрація» не можна (саме це блимання).
+
     const status = useSessionStore(s => s.status);
     const isAuthenticated = useSessionStore(selectIsAuthenticated);
     const artistId = useCurrentArtistId();
@@ -97,9 +95,6 @@ export const Header = () => {
                 <Image src="/images/logo.svg" alt="Lumitune" width={32} height={32} />
             </Link>
 
-            {/* Перемикач акаунтів (особистий ↔ кабінети артистів) */}
-            <AccountSwitcher />
-
             {/* Пошук */}
             <div className="client-header__search-wrap" ref={searchRef}>
                 <i className="bi bi-search client-header__search-icon" />
@@ -136,8 +131,6 @@ export const Header = () => {
             {/* Праві дії */}
             <div className="client-header__actions">
                 {status === 'loading' ? (
-                    // Поки відновлюється сесія — не показуємо ні кнопки входу,
-                    // ні аватар, щоб уникнути блимання. Стан короткочасний.
                     null
                 ) : isAuthenticated ? (
                     <div className="client-header__user">

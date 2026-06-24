@@ -16,7 +16,7 @@ import {
     type PlaybackSourceType,
     type PendingAd,
 } from '@/entities/player/model/playerStore';
-import { playerAudioRef, playerAdAudioRef } from '@/entities/player/lib/playerRefs';
+import { playerAudioRef, playerAdAudioRef, audioAnalyticsRef } from '@/entities/player/lib/playerRefs';
 import { useSessionStore } from '@/entities/session/model/store.ts';
 
 // ══════════════════════════════════════════════════════════
@@ -94,27 +94,17 @@ const startHlsPlayback = (
     onPlaying: () => void,
 ): void => {
     const audio = playerAudioRef.current;
-    if (!audio) {
-        console.error('[Player] Audio element not mounted');
-        return;
-    }
+    if (!audio) return;
 
     destroyHls();
 
     if (Hls.isSupported()) {
-        // Вытягиваем параметры подписи из основного URL
         let searchParams = '';
-        try {
-            searchParams = new URL(audioUrl).search;
-        } catch (e) {
-            console.error('[Player] Failed to parse audio URL params', e);
-        }
+        try { searchParams = new URL(audioUrl).search; } catch (e) {}
 
         const hls = new Hls({
             fragLoadingMaxRetry: 0,
             manifestLoadingMaxRetry: 0,
-
-            // Дописываем сигнатуру к каждому .ts чанку
             xhrSetup: (xhr, url) => {
                 if (!url.includes('sig=') && searchParams) {
                     const separator = url.includes('?') ? '&' : '?';
@@ -129,9 +119,7 @@ const startHlsPlayback = (
         hls.attachMedia(audio);
 
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            audio.play()
-                .then(onPlaying)
-                .catch(err => console.error('[Player] play() rejected:', err));
+            audio.play().then(onPlaying).catch(err => console.error(err));
         });
 
         hls.on(Hls.Events.ERROR, async (_, data) => {
@@ -143,11 +131,16 @@ const startHlsPlayback = (
 
             if (isAuthError && !isRetryingToken) {
                 isRetryingToken = true;
-                console.warn('[Player] Signed URL expired or IP changed, refreshing token...');
+                console.warn('[Player] Signed URL expired, refreshing...');
 
                 try {
                     const currentTime = audio.currentTime;
-                    const newUrl      = await refreshStreamUrl(trackId);
+
+                    // 🚨 КРИТИЧЕСКИЙ ФИКС: Перед перезапуском HLS закрываем текущий чанк прослушивания,
+                    // чтобы время разрыва не записалось в аналитику как пустой кусок
+                    audioAnalyticsRef.closeCurrentChunk();
+
+                    const newUrl = await refreshStreamUrl(trackId);
 
                     if (newUrl) {
                         startHlsPlayback(newUrl, trackId, () => {
@@ -158,17 +151,15 @@ const startHlsPlayback = (
                         });
                     }
                 } catch {
-                    console.error('[Player] Token refresh failed, stopping playback');
                     destroyHls();
                     usePlayerStore.getState().setStatus('idle');
-                } {
+                } finally {
                     isRetryingToken = false;
                 }
                 return;
             }
 
             if (!data.fatal) return;
-
             if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
                 hls.recoverMediaError();
             } else {
@@ -180,14 +171,11 @@ const startHlsPlayback = (
         return;
     }
 
-    // Safari native fallback
     if (audio.canPlayType('application/vnd.apple.mpegurl')) {
         audio.src = audioUrl;
-        audio.play().then(onPlaying).catch(err => console.error('[Player] Safari play() rejected:', err));
+        audio.play().then(onPlaying).catch(err => console.error(err));
         return;
     }
-
-    console.error('[Player] HLS is not supported in this browser');
 };
 
 /** Отримує свіжий Signed URL для поточного треку. */
@@ -207,16 +195,27 @@ const commitPlaySession = async (): Promise<void> => {
     const { playSessionId, currentTrack, sourceType, sourceId } = usePlayerStore.getState();
     if (!playSessionId || !currentTrack) return;
 
+    // 1. Закрываем текущий отрезок перед отправкой на бэк
+    audioAnalyticsRef.closeCurrentChunk();
+
+    // 2. Вытягиваем все накопленные за время прослушивания трека отрезки (chunks)
+    const collectedChunks = audioAnalyticsRef.getChunks();
+
     try {
+        // Передаем chunks в тело запроса для ClickHouse согласно спецификации нового API бэкенда
         await postApiAnalyticsPlayCommit({
             playSessionId,
             trackId:    currentTrack.id,
             deviceType: DEVICE_TYPE,
             sourceType: sourceType ?? 'Search',
             sourceId:   sourceId ?? null,
+            chunks:     collectedChunks as any // <-- ИНТЕГРАЦИЯ ЧАНКОВ В СИСТЕМУ
         });
-    } catch {
-        // Не критично
+
+        // 3. Очищаем массив чанков в памяти после успешной фиксации сессии
+        audioAnalyticsRef.clearChunks();
+    } catch (err) {
+        console.error('[Analytics] Failed to commit chunks payload:', err);
     }
 
     usePlayerStore.getState().setPlaySessionId(null);

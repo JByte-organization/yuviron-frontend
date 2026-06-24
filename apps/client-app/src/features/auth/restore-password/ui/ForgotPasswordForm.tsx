@@ -24,9 +24,6 @@ export const ForgotPasswordForm = () => {
                 setSent(true);
             },
             onError: () => {
-                // Бэк специально не различает "email есть"/"нет" чтобы не
-                // палить базу — но 4xx могут прилететь при rate-limit и т.п.
-                // Показываем тот же success-state, чтобы не палить базу с фронта тоже.
                 setSent(true);
             },
         },

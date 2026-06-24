@@ -89,6 +89,7 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
                         {navLink('/ads', 'Ads')}
                         {navLink('/complaints', 'Complaints')}
                         {navLink('/plans', 'Premium Plans')}
+                        {navLink('/themes', 'Premium Themes')}
 
                         <li className="nav-group">
                             <div className="nav-link d-flex justify-content-between align-items-center" style={{ cursor: 'pointer' }} onClick={() => setElementsOpen(o => !o)}>
@@ -98,6 +99,7 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
                             {elementsOpen && (
                                 <ul className="list-unstyled ps-4 submenu">
                                     {navLink('/banners',    'Banners')}
+                                    {navLink('/banner-requests', 'Banner Requests')}
                                     {navLink('/tracks',    'Tracks')}
                                     {navLink('/albums',    'Albums')}
                                     {navLink('/genres',    'Genres')}

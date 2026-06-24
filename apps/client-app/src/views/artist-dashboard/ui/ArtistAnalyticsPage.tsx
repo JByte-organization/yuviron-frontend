@@ -94,7 +94,6 @@ export const ArtistAnalyticsPage = () => {
     return (
         <div className="artist-analytics-page">
 
-            {/* ─── Заголовок + період ───────────────── */}
             <div className="artist-analytics-page__header">
                 <h1 className="artist-analytics-page__title">Статистика</h1>
 
@@ -131,7 +130,6 @@ export const ArtistAnalyticsPage = () => {
                 ))}
             </div>
 
-            {/* ─── Динаміка прослуховувань ───────────── */}
             <div className="artist-analytics-page__chart-block mb-5">
                 <h2 className="artist-analytics-page__chart-title">Прослуховування</h2>
                 {playsQuery.isLoading ? (
@@ -150,8 +148,6 @@ export const ArtistAnalyticsPage = () => {
                             <YAxis tick={{ fill: chart.text, fontSize: 12 }} axisLine={false} tickLine={false} />
                             <Tooltip {...tooltipStyle} />
                             <Legend wrapperStyle={{ fontSize: 13 }} />
-                            {/* Чим ближче лінії Total і Unique — тим більше повторних
-                                прослуховувань від тих самих людей. */}
                             <Line
                                 type="monotone"
                                 dataKey="totalPlays"
@@ -176,7 +172,6 @@ export const ArtistAnalyticsPage = () => {
             </div>
 
             <div className="row g-4 mb-5">
-                {/* ─── Географія ──────────────────────── */}
                 <div className="col-12 col-lg-7">
                     <div className="artist-analytics-page__chart-block h-100">
                         <h2 className="artist-analytics-page__chart-title">Топ країни</h2>
@@ -212,7 +207,6 @@ export const ArtistAnalyticsPage = () => {
                     </div>
                 </div>
 
-                {/* ─── Пристрої ───────────────────────── */}
                 <div className="col-12 col-lg-5">
                     <div className="artist-analytics-page__chart-block h-100">
                         <h2 className="artist-analytics-page__chart-title">Пристрої</h2>
@@ -269,7 +263,6 @@ export const ArtistAnalyticsPage = () => {
                 </div>
             </div>
 
-            {/* ─── Топ трек ──────────────────────────── */}
             {topTrack && (
                 <div className="artist-analytics-page__chart-block">
                     <h2 className="artist-analytics-page__chart-title">Топ трек</h2>

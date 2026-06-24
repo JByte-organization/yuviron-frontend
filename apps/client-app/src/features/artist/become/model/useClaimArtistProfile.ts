@@ -8,7 +8,6 @@ import {
 } from '@repo/api/client.ts';
 import { extractApiError, extractFileId } from './helpers';
 
-// idle → submitting → submitted (заявка ушла, ждём проверки админом).
 export type ClaimStatus = 'idle' | 'submitting' | 'submitted';
 
 export interface ClaimFields {
@@ -18,9 +17,6 @@ export interface ClaimFields {
     proof: File | null;
 }
 
-// Путь 1: «я этот артист». Опциональный пруф-файл грузим в /files/upload,
-// затем claim на /artist-profiles/{id}/claim (claimedRole фиксируем Artist).
-// Бэк отвечает 204 — статус заявки прочитать пока негде, показываем «очікуйте».
 export const useClaimArtistProfile = () => {
     const [status, setStatus] = useState<ClaimStatus>('idle');
     const [error, setError] = useState<string | null>(null);

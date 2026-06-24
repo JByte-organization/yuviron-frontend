@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-// 🚨 1. ІМПОРТУЄМО ПОРТАЛ ДЛЯ ВИХОДУ З КОНТЕКСТУ ПЛЕЄРА
 import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Modal } from '@/shared/ui/Modal';
@@ -22,6 +21,7 @@ interface AddToPlaylistModalProps {
     trackId: string;
     trackTitle: string;
     onCreatePlaylist?: () => void;
+    onSuccess?: (playlistTitle: string) => void;
 }
 
 const extractList = <T,>(raw: unknown): T[] => {
@@ -39,13 +39,12 @@ export const AddToPlaylistModal = ({
                                        trackId,
                                        trackTitle,
                                        onCreatePlaylist,
+                                       onSuccess,
                                    }: AddToPlaylistModalProps) => {
     const { showToast } = usePlaylistToast();
     const queryClient = useQueryClient();
     const [search, setSearch] = useState('');
 
-    // 🚨 2. ЗАХИСТ ВІД HYDRATION MISMATCH У NEXT.JS
-    // Гарантує, що портал почне працювати лише на клієнті, коли DOM уже повністю готовий
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
         setMounted(true);
@@ -53,7 +52,10 @@ export const AddToPlaylistModal = ({
     }, []);
 
     const { data: playlistsRaw, isLoading } = useGetApiMePlaylists(
-        { PageSize: 50 },
+        {
+            PageSize: 50,
+            TrackId: trackId
+        },
         {
             query: { enabled: isOpen }
         } as unknown as Parameters<typeof useGetApiMePlaylists>[1]
@@ -62,6 +64,7 @@ export const AddToPlaylistModal = ({
     const { mutateAsync: addTrack } = usePostApiMePlaylistsIdTracks();
     const { mutateAsync: removeTrack } = useDeleteApiMePlaylistsIdTracksTrackId();
 
+    // Локальний стейт для відстеження змін користувача прямо в модалці
     const [toggledIds, setToggledIds] = useState<Set<string>>(new Set());
 
     const playlists = useMemo(() => {
@@ -70,7 +73,7 @@ export const AddToPlaylistModal = ({
             name:        p.title ?? 'Без назви',
             coverUrl:    getImageUrl(p.coverUrl),
             isPinned:    p.isSystem ?? false,
-            isAdded:     false
+            isAdded:     p.containsTrack ?? false
         }));
     }, [playlistsRaw]);
 
@@ -82,8 +85,12 @@ export const AddToPlaylistModal = ({
     }, [search, playlists]);
 
     const handleToggle = async (playlist: { id: string; name: string; isAdded: boolean }) => {
-        const isCurrentlyAdded = playlist.isAdded ? !toggledIds.has(playlist.id) : toggledIds.has(playlist.id);
+        // Визначаємо поточний реальний стан з урахуванням локальних кліків
+        const isOriginallyAdded = playlist.isAdded;
+        const hasLocalToggle = toggledIds.has(playlist.id);
+        const isCurrentlyAdded = hasLocalToggle ? !isOriginallyAdded : isOriginallyAdded;
 
+        // Оптимістично оновлюємо UI чекбокса
         setToggledIds((prev) => {
             const next = new Set(prev);
             if (next.has(playlist.id)) next.delete(playlist.id);
@@ -93,28 +100,41 @@ export const AddToPlaylistModal = ({
 
         try {
             if (isCurrentlyAdded) {
+                // Якщо трек був — видаляємо
                 await removeTrack({
                     id: playlist.id,
                     trackId: trackId
                 });
             } else {
+                // Якщо треку не було — додаємо
                 await addTrack({
                     id: playlist.id,
                     data: { trackId } as Parameters<typeof addTrack>[0]['data']
                 });
 
                 lastPlaylistStorage.set(playlist.id, playlist.name);
+
                 showToast({
                     trackId,
                     trackTitle,
                     playlistId: playlist.id,
                     playlistName: playlist.name,
                 });
+
+                // Викликаємо успішний колбек для плеєра та закриваємо
+                onSuccess?.(playlist.name);
+                handleClose();
+
+                // Інвалідуємо ТанСтак Кварі, щоб оновити всі списки плейлістів та поточний трек всюди
+                void queryClient.invalidateQueries({ queryKey: ['getApiMePlaylists'] });
+                void queryClient.invalidateQueries({ queryKey: ['api', 'client', 'playlists'] });
+                return;
             }
 
             void queryClient.invalidateQueries({ queryKey: ['getApiMePlaylists'] });
         } catch (error) {
             console.error('[Playlist Mutation] Помилка:', error);
+            // Повертаємо стейт назад у разі помилки сервера
             setToggledIds((prev) => {
                 const next = new Set(prev);
                 if (next.has(playlist.id)) next.delete(playlist.id);
@@ -130,10 +150,8 @@ export const AddToPlaylistModal = ({
         onClose();
     };
 
-    // Якщо попап закритий або DOM ще не змонтувався — нічого не рендеримо
     if (!isOpen || !mounted) return null;
 
-    // 🚨 3. ЗАГОРТАЄМО В ПОРТАЛ НА РІВЕНЬ DOCUMENT.BODY
     return createPortal(
         <Modal isOpen={isOpen} onClose={handleClose} title="Додати в плейліст" size="sm">
             <div className="add-playlist-modal__search-wrap mb-3">
@@ -160,13 +178,18 @@ export const AddToPlaylistModal = ({
             ) : (
                 <ul className="add-playlist-modal__list list-unstyled m-0 p-0">
                     {filtered.map((playlist) => {
-                        const isSelected = playlist.isAdded ? !toggledIds.has(playlist.id) : toggledIds.has(playlist.id);
-                        const coverSrc = playlist.coverUrl ?? `https://picsum.photos/seed/pl-${playlist.id}/40/40`;
+                        const isOriginallyAdded = playlist.isAdded;
+                        const hasLocalToggle = toggledIds.has(playlist.id);
+                        const isSelected = hasLocalToggle ? !isOriginallyAdded : isOriginallyAdded;
+
+                        const coverSrc = playlist.coverUrl ?? 'images/playlist/placeholder.png';
 
                         return (
                             <li key={playlist.id}>
                                 <button className="add-playlist-modal__item" onClick={() => handleToggle(playlist)}>
-                                    <div className="add-playlist-modal__cover"><img src={coverSrc} alt={playlist.name} /></div>
+                                    <div className="add-playlist-modal__cover">
+                                        <img src={coverSrc} alt={playlist.name} />
+                                    </div>
                                     <span className="add-playlist-modal__name">{playlist.name}</span>
                                     <div className="add-playlist-modal__icons">
                                         {playlist.isPinned && <i className="bi bi-pin-fill add-playlist-modal__pin-icon" />}

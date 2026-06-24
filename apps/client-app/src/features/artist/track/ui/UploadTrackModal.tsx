@@ -47,7 +47,6 @@ export const UploadTrackModal = ({ isOpen, onClose, onSuccess }: Props) => {
     const audioRef = useRef<HTMLInputElement>(null);
     const coverRef = useRef<HTMLInputElement>(null);
 
-    // Альбоми артиста для випадашки (трек обовʼязково належить альбому).
     const albumsParams = { ArtistId: artistId ?? undefined, Page: 1, PageSize: 100 };
     const { data: albumsRaw } = useGetApiStudioArtistAlbums(albumsParams, {
         query: { enabled: !!artistId && isOpen, queryKey: getGetApiStudioArtistAlbumsQueryKey(albumsParams) },
@@ -103,8 +102,6 @@ export const UploadTrackModal = ({ isOpen, onClose, onSuccess }: Props) => {
             onSuccess();
             handleClose();
         } catch (e) {
-            // Дістаємо реальну причину з axios-помилки, щоб не ховати 400/403/413/500
-            // за загальним текстом (інакше неможливо зрозуміти, що саме впало).
             const err = e as {
                 response?: { status?: number; data?: { detail?: string; title?: string; message?: string } };
                 message?: string;
@@ -184,7 +181,6 @@ export const UploadTrackModal = ({ isOpen, onClose, onSuccess }: Props) => {
                             </div>
                         </div>
 
-                        {/* Альбом (трек належить альбому) */}
                         <div className="mb-3">
                             <label className="client-modal__field-label">Альбом *</label>
                             {albums.length === 0 ? (

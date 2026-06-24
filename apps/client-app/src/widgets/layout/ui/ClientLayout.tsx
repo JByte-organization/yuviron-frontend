@@ -10,6 +10,7 @@ import { RightSidebar } from '@/widgets/right-sidebar/ui/RightSidebar';
 import { PlaylistToastProvider } from '@/shared/ui/PlaylistToast';
 import { AuthGuardProvider } from '@/shared/lib/useAuthGuard';
 import { PlayerBar } from '@/widgets/player/ui/PlayerBar';
+import { MobileNavigation } from '@/widgets/layout/ui/MobileNavigation';
 
 import {
     SidebarContext,
@@ -19,7 +20,7 @@ import {
 import { useSidebarResize } from '../lib/useSidebarResize';
 import { useRightSidebarState } from '../lib/useRightSidebarState';
 import { useIsDesktop } from '../lib/useIsDesktop';
-import {PlayerInitializer} from "@/entities/player/lib/PlayerInitializer.tsx";
+import { PlayerInitializer } from "@/entities/player/lib/PlayerInitializer.tsx";
 
 interface ClientLayoutProps {
     children: React.ReactNode;
@@ -35,8 +36,6 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
     // ─── Правий сайдбар ───────────────────────────────────
     const { isOpen, userClosed, open, close, openManually } = useRightSidebarState();
 
-    // Каркас рендеримо за статусом, а не за наявністю токена «прямо зараз»:
-    // під час refresh токена ще нема, але показувати гостьовий UI не можна.
     const status = useSessionStore(s => s.status);
     const isAuthenticated = useSessionStore(selectIsAuthenticated);
 
@@ -59,7 +58,7 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
                                 ? null
                                 : isAuthenticated
                                     ? <Sidebar onResizeStart={onResizeStart} />
-                                    : <GuestSidebar onResizeStart={onResizeStart} />
+                                    : <GuestSidebar/>
                             }
 
                             <main
@@ -83,6 +82,8 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
                         </div>
 
                         <PlayerBar />
+
+                        {isAuthenticated && <MobileNavigation />}
                     </div>
                 </AuthGuardProvider>
             </RightSidebarContext.Provider>

@@ -13,12 +13,7 @@ import {
 import { usePostApiFilesUpload } from '@repo/api/client.ts';
 import { extractFileId } from '@/shared/lib/unwrapApi';
 
-// ══════════════════════════════════════════════════════════
-// СОЦМЕРЕЖІ
-// ══════════════════════════════════════════════════════════
 
-// value — це значення enum SocialLinkType з бекенду (PascalCase). Бек прийма
-// тільки ці типи; нижній регістр валиться 500-кою на рівні БД-enum.
 const LINK_TYPES: { value: SocialLinkType; label: string; icon: string }[] = [
     { value: 'Instagram', label: 'Instagram',   icon: 'bi-instagram' },
     { value: 'YouTube',   label: 'YouTube',     icon: 'bi-youtube' },
@@ -47,8 +42,6 @@ export const ArtistSocialLinksBlock = ({ artistId, initialLinks }: SocialLinksPr
     const [saved, setSaved] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Префіл з профілю — лише доки користувач не почав редагувати.
-    // Синхронізація стану під час рендера (you-might-not-need-an-effect).
     const [syncedLinks, setSyncedLinks] = useState<typeof initialLinks>(undefined);
     if (!dirty && initialLinks !== syncedLinks) {
         setSyncedLinks(initialLinks);
@@ -84,8 +77,6 @@ export const ArtistSocialLinksBlock = ({ artistId, initialLinks }: SocialLinksPr
     const submit = async () => {
         setError(null);
         try {
-            // Новий контракт: одна площадка = окремий ресурс. Замість bulk-PUT
-            // робимо DELETE по типах, які прибрали, і POST (upsert) по поточних.
             const currentTypes = new Set(rows.map(r => r.type));
             const removed = (initialLinks ?? [])
                 .map(l => l.type)
@@ -177,9 +168,6 @@ export const ArtistSocialLinksBlock = ({ artistId, initialLinks }: SocialLinksPr
     );
 };
 
-// ══════════════════════════════════════════════════════════
-// ВЕРИФІКАЦІЯ
-// ══════════════════════════════════════════════════════════
 
 interface VerificationProps {
     artistId: string;
@@ -226,7 +214,6 @@ export const ArtistVerificationBlock = ({ artistId, status }: VerificationProps)
         }
     };
 
-    // Verified / Pending / щойно надіслано — лише статусний блок без форми.
     if (status === 'Verified') {
         return (
             <div className="artist-settings-page__section mt-5">

@@ -51,78 +51,9 @@
 }
 
 .client-login-form {
-  &__socials {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  &__social-btn {
-    width: 100%;
-    height: 30px;
-    border-radius: 6px;
-    border: 1px solid $client-outline-border;
-    background: transparent;
-    color: $client-outline-text;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: 0.2s ease;
-
-    &:hover,
-    &:focus {
-      background: $client-outline-bg-hover;
-      color: $client-outline-text-hover;
-    }
-  }
-
-  &__social-icon {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    flex-shrink: 0;
-
-    &--facebook {
-      background: #1877f2;
-      color: #fff;
-    }
-
-    // Белые бейджи Google/Apple сливаются с белой карточкой на светлой теме —
-    // тонкая граница очерчивает их (на тёмной теме незаметна).
-    &--google {
-      background: #fff;
-      color: #ea4335;
-      font-weight: 800;
-      border: 1px solid $client-border;
-    }
-
-    &--apple {
-      background: #fff;
-      color: #111;
-      font-size: 13px;
-      border: 1px solid $client-border;
-    }
-  }
-
-  &__divider,
   &__bottom-divider {
     height: 1px;
     background: rgba(117, 137, 162, 0.28);
-  }
-
-  &__divider {
-    margin-bottom: 22px;
-  }
-
-  &__bottom-divider {
     margin: 20px 0 16px;
   }
 
@@ -354,94 +285,6 @@
     }
   }
 
-  &__divider {
-    position: relative;
-    text-align: center;
-    margin: 0 0 18px;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: rgba(117, 137, 162, 0.28);
-      transform: translateY(-50%);
-    }
-
-    span {
-      position: relative;
-      z-index: 1;
-      padding: 0 10px;
-      background: $client-card-bg;
-      color: $client-text-faint;
-      font-size: 10px;
-      text-transform: lowercase;
-    }
-  }
-
-  &__socials {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-
-  &__social-btn {
-    width: 100%;
-    height: 30px;
-    border-radius: 6px;
-    border: 1px solid $client-outline-border;
-    background: transparent;
-    color: $client-outline-text;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: 0.2s ease;
-
-    &:hover,
-    &:focus {
-      background: $client-outline-bg-hover;
-      color: $client-outline-text-hover;
-    }
-  }
-
-  &__social-icon {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    flex-shrink: 0;
-
-    &--facebook {
-      background: #1877f2;
-      color: #fff;
-    }
-
-    // Белые бейджи Google/Apple сливаются с белой карточкой на светлой теме —
-    // тонкая граница очерчивает их (на тёмной теме незаметна).
-    &--google {
-      background: #fff;
-      color: #ea4335;
-      font-weight: 800;
-      border: 1px solid $client-border;
-    }
-
-    &--apple {
-      background: #fff;
-      color: #111;
-      font-size: 13px;
-      border: 1px solid $client-border;
-    }
-  }
-
   &__bottom-divider {
     height: 1px;
     background: rgba(117, 137, 162, 0.28);
@@ -471,9 +314,6 @@
 }
 
 
-/* =========================
-   REGISTER DETAILS PAGE
-========================= */
 
 .client-register-details-page {
   width: 100%;
@@ -678,9 +518,6 @@
   }
 }
 
-/* =========================
-   REGISTER PROFILE PAGE
-========================= */
 
 .client-register-profile-page {
   width: 100%;
@@ -884,9 +721,6 @@
   }
 }
 
-/* =========================
-   FORM ERROR STATES
-========================= */
 
 .client-forgot-page {
   width: 100%;
@@ -1062,9 +896,6 @@
   }
 }
 
-/* =========================
-   RESET PASSWORD PAGE
-========================= */
 
 .client-reset-page {
   width: 100%;
@@ -1099,10 +930,6 @@
   }
 }
 
-// Страница «Дані акаунту» внутри клиентской оболочки (header + сайдбары).
-// Карточка по центру контентной области; форма внутри переиспользует
-// .client-reset-form стили инпутов/кнопок. Сообщения error/success скоупим
-// сюда, т.к. в самом .client-reset-form они не определены.
 .client-account-page {
   padding: 32px 24px;
   display: flex;
@@ -2317,7 +2144,6 @@
     padding: 0 20px 20px;
   }
 
-  // ─── Повідомлення + дії (напр. «пошта вже зареєстрована») ──
   &__message {
     font-size: 14px;
     line-height: 1.5;
@@ -3613,9 +3439,6 @@
   from { opacity: 0; transform: translateX(-6px); }
   to   { opacity: 1; transform: translateX(0); }
 }
-// ══════════════════════════════════════════════════════════
-// BECOME ARTIST — /become-artist (вибір, створення, заявка)
-// ══════════════════════════════════════════════════════════
 .client-become-artist {
   max-width: 720px;
   margin: 40px auto;
@@ -3651,7 +3474,6 @@
     margin: 0;
   }
 
-  // ─── Вибір шляху ──────────────────────────────────────
   &__choices {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -3702,7 +3524,6 @@
     margin: 0;
   }
 
-  // ─── Форма ────────────────────────────────────────────
   &__form { display: flex; flex-direction: column; gap: 18px; }
 
   &__avatar {
@@ -3767,7 +3588,6 @@
     }
   }
 
-  // ─── Пошук артиста ────────────────────────────────────
   &__search { display: flex; flex-direction: column; gap: 12px; }
 
   &__results {
@@ -3820,7 +3640,6 @@
   &__result-name { flex: 1; font-size: 14px; color: $client-text; }
   &__result-arrow { color: $client-text-muted; font-size: 14px; }
 
-  // ─── Обраний артист ───────────────────────────────────
   &__selected {
     display: flex;
     align-items: center;
@@ -3862,7 +3681,6 @@
     &:hover { text-decoration: underline; }
   }
 
-  // ─── Екрани результату (успіх / ліміт / очікування) ───
   &__result {
     display: flex;
     flex-direction: column;
@@ -3897,16 +3715,12 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// NOTIFICATIONS — список + універсальна картка (реальний контракт)
-// ══════════════════════════════════════════════════════════
 .notifications-page__list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-// Картка як <button> у вертикальному списку: іконка + title/body + час.
 .notifications-page__list .notification-card {
   width: 100%;
   text-align: left;
@@ -3942,9 +3756,6 @@
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// APP NOTIFICATION TOAST — real-time пуш (SignalR)
-// ══════════════════════════════════════════════════════════
 .app-notif-toast {
   position: fixed;
   top: 80px;

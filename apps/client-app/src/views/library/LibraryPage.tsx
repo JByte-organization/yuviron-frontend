@@ -17,7 +17,7 @@ import type { TrackCardData } from '@/entities/track/ui/TrackCard';
 import type { ArtistCardData } from '@/entities/artist/ui/ArtistCard';
 import type { PlaylistCardData } from '@/entities/playlist/ui/PlaylistCard';
 
-// 🚨 ІМПОРТУЄМО ПЛЕЄР ДЛЯ ЗАПУСКУ ЧЕРГИ ТРЕКІВ
+
 import { usePlayer } from '@/entities/player/lib/usePlayer';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
 
@@ -30,7 +30,6 @@ const mapFavoriteTrack = (t: UserFavoriteTrackDto): TrackCardData => ({
     artistId:    t.artistNames?.[0]?.id ?? undefined,
     coverUrl:    t.coverUrl   ?? null,
     durationMs:  t.durationMs ?? undefined,
-    // 🚨 ГЛАВНИЙ ФІКС №1: Примусово ставимо true, бо це треки з Favorites!
     isSaved:     true,
 });
 
@@ -45,14 +44,13 @@ const mapPlaylist = (p: UserPlaylistDto): PlaylistCardData => ({
     id:          p.id         ?? '',
     name:        p.title      ?? '',
     tracksCount: p.tracksCount ?? undefined,
-    coverUrl:    p.coverUrl   ?? null,
+    coverUrl: getImageUrl(p.coverUrl) ?? '',
 });
 
 // ─── Компонент ────────────────────────────────────────────────────────────────
 export const LibraryPage = () => {
     const router = useRouter();
 
-    // 🚨 Ініціалізуємо плеєр
     const { playQueue } = usePlayer();
 
     // ── Запити даних ──────────────────────────────────────────────────────────

@@ -49,8 +49,6 @@ export const EditTrackModal = ({ isOpen, trackId, trackTitle, onClose, onSuccess
     const onSubmit = async (values: EditFormValues) => {
         setError(null);
         try {
-            // Обкладинку чіпаємо лише якщо вибрали новий файл — інакше не шлемо
-            // поле взагалі, щоб бек не скинув наявну обкладинку.
             const coverFileId = coverFile
                 ? extractFileId(await uploadFile({ data: { file: coverFile } }))
                 : null;

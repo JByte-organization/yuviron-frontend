@@ -27,14 +27,8 @@ export const RegisterForm = () => {
     const [error, setError] = useState<string | undefined>();
     const [submitted, setSubmitted] = useState(false);
 
-    // Нужен здесь для повторного захода: юзер вернулся с шага профиля после 409,
-    // меняет почту — и register уходит прямо отсюда. Если 409 повторится (новая
-    // почта тоже занята), та же модалка покажется снова на этом же экране.
     const { submit, isPending, emailTaken, closeEmailTaken, serverError } = useRegisterSubmit();
 
-    // Проверки занятости почты до сабмита здесь больше нет: эндпоинт
-    // /auth/check-email убран на бэке (он же давал user enumeration). Дубль
-    // отлавливает только финальный register — он вернёт 409.
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitted(true);
@@ -43,8 +37,6 @@ export const RegisterForm = () => {
         if (next) return;
         setRegisterDraft({ email: email.trim() });
 
-        // Пароль и анкета уже заполнены (возврат после 409) → пропускаем шаги
-        // пароля/профиля и сразу шлём register с новой почтой. Иначе обычный флоу.
         if (isRegisterDraftComplete(getRegisterDraft())) {
             submit();
             return;
@@ -66,8 +58,6 @@ export const RegisterForm = () => {
                     value={email}
                     onChange={(event) => {
                         setEmail(event.target.value);
-                        // Сбрасываем ошибку «почта занята» при правке; формат
-                        // переоцениваем только после первой попытки сабмита.
                         setError(submitted ? validateEmail(event.target.value) : undefined);
                     }}
                 />
@@ -86,33 +76,6 @@ export const RegisterForm = () => {
                 {isPending ? 'Реєстрація…' : 'Далі'}
             </button>
 
-            <div className="client-register-form__divider">
-                <span>або</span>
-            </div>
-
-            <div className="client-register-form__socials">
-                <button type="button" className="client-register-form__social-btn">
-                    <span className="client-register-form__social-icon client-register-form__social-icon--facebook">
-                        f
-                    </span>
-                    <span>Увійти з Facebook</span>
-                </button>
-
-                <button type="button" className="client-register-form__social-btn">
-                    <span className="client-register-form__social-icon client-register-form__social-icon--google">
-                        G
-                    </span>
-                    <span>Увійти з Google</span>
-                </button>
-
-                <button type="button" className="client-register-form__social-btn">
-                    <span className="client-register-form__social-icon client-register-form__social-icon--apple">
-
-                    </span>
-                    <span>Увійти з Apple</span>
-                </button>
-            </div>
-
             <div className="client-register-form__bottom-divider" />
 
             <div className="client-register-form__login text-center">
@@ -122,8 +85,6 @@ export const RegisterForm = () => {
                 </Link>
             </div>
 
-            {/* Здесь «Змінити пошту» = просто закрыть модалку: юзер уже на email-шаге
-                и правит поле на месте. */}
             <EmailTakenModal
                 isOpen={emailTaken}
                 onClose={closeEmailTaken}
