@@ -1,612 +1,233 @@
 .premium-hub-wrapper {
-  background-color: #0A0A0D;
+  background: radial-gradient(circle at 50% 0%, #1e1e2f 0%, #0a0a0d 100%);
   min-height: 100vh;
+  color: #ffffff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  .hub-section-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #FFFFFF;
-    letter-spacing: -0.3px;
-  }
+  .tracking-tight { letter-spacing: -0.03em; }
 
-  /* ВЕРХНІЙ КОСМІЧНИЙ ГЕРОЙ-БАННЕР */
+  /* 🌌 ТОПОВИЙ ГЕРОЙ-БАННЕР */
   .premium-hub-hero {
-    background:
-            radial-gradient(circle at 15% 20%, rgba(122, 224, 255, 0.08) 0%, transparent 45%),
-            radial-gradient(circle at 85% 80%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
-            linear-gradient(180deg, #12121A 0%, #0B0B0F 100%);
-    border: 1px solid rgba(122, 224, 255, 0.04);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 
     .hero-badge {
-      font-size: 10px;
-      font-weight: 800;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
-      color: #7AE0FF;
-      letter-spacing: 0.12em;
+      color: #1db954; // Spotify Green
+      letter-spacing: 0.15em;
+      background: rgba(29, 185, 84, 0.1);
+      border: 1px solid rgba(29, 185, 84, 0.2);
     }
   }
 
-  /* КАРТКИ ТАРИФІВ */
+  /* 📊 СУЧАСНА СІТКА ТАРИФІВ (SPOTIFY STYLE) */
+  .plans-grid-system {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    width: 100%;
+  }
+
   .plan-premium-card {
-    background-color: #14141C;
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    transition: all 0.25s ease;
+    background: #121216;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 400px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease;
 
     &:hover {
-      background-color: #171724;
-      border-color: rgba(122, 224, 255, 0.05);
+      transform: translateY(-8px);
+      border-color: rgba(29, 185, 84, 0.4);
+      box-shadow: 0 12px 30px rgba(29, 185, 84, 0.1);
+      background: #16161f;
     }
 
     &.current-active-plan {
-      background: linear-gradient(145deg, #0E1424 0%, #111117 100%);
-      border-color: rgba(122, 224, 255, 0.15);
+      border-color: #1db954;
+      background: linear-gradient(180deg, #131d17 0%, #121216 100%);
+      box-shadow: 0 12px 30px rgba(29, 185, 84, 0.15);
     }
 
     .current-badge {
-      font-size: 10px;
-      font-weight: 700;
-      color: #4ade80;
-      background-color: rgba(74, 222, 128, 0.06);
-      padding: 2px 8px;
-      border-radius: 4px;
-      border: 1px solid rgba(74, 222, 128, 0.15);
+      font-size: 11px;
+      font-weight: 600;
+      color: #1db954;
+      background: rgba(29, 185, 84, 0.12);
+      padding: 4px 12px;
+      border-radius: 100px;
     }
-  }
 
-  /* КАРТКА ЛАБОРАТОРІЇ КАСТОМІЗАЦІЇ */
-  .theme-workspace-card {
-    background-color: #14141C;
-    border: 1px solid rgba(255, 255, 255, 0.02);
-  }
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0 0 0;
 
-  /* РЯДОК МАЛЕНЬКИХ КОЛІРНИХ ПІКЕРІВ */
-  .color-picker-node-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 13px;
-    color: #8C8C9E;
-    font-weight: 500;
-
-    // Стилізація нативного круглого HTML5 Color Picker
-    input[type="color"] {
-      -webkit-appearance: none;
-      border: none;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      cursor: pointer;
-      background: transparent;
-
-      &::-webkit-color-swatch-wrapper { padding: 0; }
-      &::-webkit-color-swatch {
-        border: 2px solid rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      }
-    }
-  }
-
-  /* ГРИД КРУГЛИХ ПРЕСЕТІВ */
-  .catalog-theme-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 16px;
-
-    .preset-circle-card {
-      background: transparent;
-      border: none;
-      outline: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-
-      .triple-dot-preview {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
+      li {
+        font-size: 14px;
+        color: #b3b3b3;
+        margin-bottom: 12px;
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 6px;
-        border: 2px solid #22222E;
-        transition: all 0.2s ease;
+        gap: 10px;
 
-        .dot-node {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-        }
-      }
-
-      .preset-name {
-        font-size: 12px;
-        color: #5F5F6E;
-        margin-top: 8px;
-        font-weight: 500;
-        max-width: 85px;
-        transition: color 0.2s;
-      }
-
-      .premium-lock-badge {
-        font-size: 8px;
-        font-weight: 700;
-        color: #FFC107;
-        text-transform: uppercase;
-        margin-top: 2px;
-      }
-
-      &:hover:not(.selected-preset) {
-        .triple-dot-preview { border-color: #3F3F4E; }
-        .preset-name { color: #FFF; }
-      }
-
-      &.selected-preset {
-        .triple-dot-preview {
-          border-color: #7AE0FF !important;
-          box-shadow: 0 0 14px rgba(122, 224, 255, 0.2);
-        }
-        .preset-name {
-          color: #7AE0FF !important;
-          font-weight: 700;
+        &::before {
+          content: "✓";
+          color: #1db954;
+          font-weight: bold;
         }
       }
     }
   }
 
-  /* В'ЮПОРТ ЖИВОГО ПРЕВ'Ю ГРАДІЄНТА */
-  .gradient-preview-viewport {
-    height: 120px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: flex-end;
+  /* ⚙️ ЕРГОНОМІЧНІ КНОПКИ YUVRION */
+  .yuviron-btn-cosmic-glow {
+    background: #1db954;
+    color: #000000;
+    font-weight: 700;
+    font-size: 14px;
+    border: none;
+    border-radius: 100px;
+    transition: all 0.2s ease;
+    width: 100%;
 
-    .app-mock-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #FFF;
+    &:hover {
+      background: #1ed760;
+      transform: scale(1.03);
     }
-    .app-mock-subtitle {
-      font-size: 10px;
-      font-family: monospace;
-      color: rgba(255, 255, 255, 0.4);
+
+    &:disabled {
+      background: #282828;
+      color: #a7a7a7;
+      cursor: not-allowed;
+      transform: none;
     }
   }
 
-  /* СКЛЯНИЙ БЛОКУВАЛЬНИЙ ОВЕРЛЕЙ (GLASSMOURPHISM ДЛЯ FREE) */
+  .yuviron-btn-minimal {
+    background: transparent;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 100px;
+    transition: all 0.2s ease;
+    width: 100%;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  /* 🏢 РОБОЧИЙ ПРОСТІР ТЕМ */
+  .theme-workspace-card {
+    background: #121216;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 20px;
+    height: 100%;
+  }
+
+  /* 🔒 КРАСИВИЙ СКЛЯНИЙ ОВЕРЛЕЙ БЛОКУВАННЯ */
   .premium-blur-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(11, 11, 15, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(10, 10, 13, 0.6);
+    backdrop-filter: blur(12px);
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
 
     .overlay-glass-card {
-      background: rgba(255, 255, 255, 0.01);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      max-width: 340px;
-      box-shadow: 0 20px 45px rgba(0,0,0,0.5);
-
-      .crown-icon {
-        font-size: 26px;
-        color: #FFC107;
-        display: block;
-        filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.4));
-      }
-    }
-  }
-}
-
-
-
-
-.manage-premium-view {
-  // Зміна плоского чорного на дорогий оксамитовий обсидіан із м'яким градієнтом
-  min-height: 90vh;
-
-  .premium-micro-headline {
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #7AE0FF;
-    letter-spacing: 0.15em;
-    display: block;
-  }
-
-  .tracking-tight {
-    letter-spacing: -0.03em;
-  }
-
-  .text-muted-custom {
-    color: #616173;
-  }
-
-  /* 💎 КАРТКА 1: МОНОЛІТНИЙ СТАТУС ПІДПИСКИ */
-  .billing-status-card-v2 {
-    background: linear-gradient(180deg, #111116 0%, #0C0C10 100%);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    border-radius: 24px; // Сучасний великий радіус скруглення
-    padding: 36px !important;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-
-    .tier-badge-pill {
-      font-size: 10px;
-      font-weight: 700;
-      color: #7AE0FF;
-      background-color: rgba(122, 224, 255, 0.05);
-      padding: 6px 14px;
-      border-radius: 100px;
-      border: 1px solid rgba(122, 224, 255, 0.1);
-    }
-
-    .shield-icon-glow {
-      color: #7AE0FF;
-      font-size: 22px;
-      filter: drop-shadow(0 0 8px rgba(122, 224, 255, 0.3));
-    }
-
-    .display-title {
-      font-size: 26px;
-      letter-spacing: -0.5px;
-    }
-
-    .small-desc {
-      color: #555566;
-      line-height: 1.5;
-    }
-
-    /* Рядки параметрів */
-    .diagnostic-metrics-list {
-      .metric-row-item {
-        padding: 14px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-        font-size: 13px;
-
-        .m-label {
-          color: #555566;
-          font-weight: 500;
-        }
-
-        .currency-type {
-          color: #444455;
-          font-size: 11px;
-          font-weight: 700;
-        }
-      }
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      max-width: 360px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
     }
   }
 
-  /* 💎 КАРТКА 2: ШВЕЙЦАРСЬКА ТАБЛИЦЯ ІНВОЙСІВ */
-  .invoice-history-card-v2 {
-    background-color: #111116;
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    border-radius: 24px;
-    padding: 36px !important;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-
-    .card-inner-caption {
-      font-size: 16px;
-      font-weight: 700;
-      color: #FFFFFF;
-      letter-spacing: -0.2px;
-    }
-
-    .empty-history-placeholder {
-      background-color: rgba(255, 255, 255, 0.01);
-      border: 1px dashed rgba(255, 255, 255, 0.04);
-      font-size: 13px;
-    }
-
-    /* ЕЛІТНА ТАБЛИЦЯ ДАНІХ */
-    .table-custom {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-
-      th {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #444455;
-        padding-bottom: 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
-      }
-
-      td {
-        padding: 16px 0;
-        font-size: 13px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.02) !important;
-      }
-
-      tr:last-child td {
-        border-bottom: none !important;
-      }
-
-      .text-secondary-custom {
-        color: #555566;
-      }
-
-      /* 🪐 СТИЛІЗАЦІЯ STATUS PILLS ПОД ТЕМНУ ТЕМУ */
-      .status-capsule-badge {
-        font-size: 11px;
-        font-weight: 700;
-        padding: 4px 10px;
-        border-radius: 6px;
-        letter-spacing: -0.1px;
-
-        &.is-paid {
-          background-color: rgba(74, 222, 128, 0.04);
-          color: #4ade80;
-          border: 1px solid rgba(74, 222, 128, 0.08);
-        }
-
-        &.is-pending {
-          background-color: rgba(250, 204, 21, 0.04);
-          color: #facc15;
-          border: 1px solid rgba(250, 204, 21, 0.08);
-        }
-      }
-
-      /* Іконка Stripe квитанції */
-      .stripe-receipt-link-icon {
-        color: #555566;
-        font-size: 14px;
-        transition: color 0.2s ease, transform 0.2s ease;
-
-        &:hover {
-          color: #7AE0FF;
-        }
-      }
-    }
-  }
-}
-
-
-.manage-premium-view {
-  min-height: 100vh;
-
-  // 🌌 ГЛОБАЛЬНЫЙ КОСМИЧЕСКИЙ ГРАДИЕНТ ДЛЯ ВСЕЙ СТРАНИЦЫ
-  background:
-          radial-gradient(circle at 80% 20%, rgba(29, 78, 216, 0.07) 0%, transparent 50%),
-          radial-gradient(circle at 20% 80%, rgba(122, 224, 255, 0.05) 0%, transparent 50%),
-          linear-gradient(145deg, #060609 0%, #0A0A10 50%, #040406 100%);
-
-  .premium-micro-headline {
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #7AE0FF;
-    letter-spacing: 0.15em;
-    display: block;
+  /* ГРАДІЄНТНИЙ В'ЮПОРТ */
+  .gradient-preview-viewport {
+    height: 140px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
   }
 
-  .tracking-tight {
-    letter-spacing: -0.03em;
-  }
+  .color-picker-node-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1c1c24;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #b3b3b3;
 
-  .text-muted-custom {
-    color: #4E4E5E;
-  }
-
-  /* 💎 ЛЕВАЯ КАРТОЧКА СТАЛА ХРУСТАЛЬНО-ПРОЗРАЧНОЙ (БЕЗ ПОДЛОЖКИ) */
-  .billing-status-container {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-
-    .tier-badge-pill {
-      font-size: 10px;
-      font-weight: 700;
-      color: #7AE0FF;
-      background-color: rgba(122, 224, 255, 0.04);
-      padding: 6px 14px;
-      border-radius: 100px;
-      border: 1px solid rgba(122, 224, 255, 0.08);
-    }
-
-    .shield-icon-glow {
-      color: #7AE0FF;
-      font-size: 22px;
-      filter: drop-shadow(0 0 8px rgba(122, 224, 255, 0.25));
-    }
-
-    .display-title {
-      font-size: 28px;
-      letter-spacing: -0.5px;
-    }
-
-    .small-desc {
-      color: #4E4E5E;
-      line-height: 1.5;
-    }
-
-    .diagnostic-metrics-list {
-      .metric-row-item {
-        padding: 14px 0;
-        // Тончайший неоновый штрих вместо тяжелых границ
-        border-bottom: 1px solid rgba(122, 224, 255, 0.03);
-        font-size: 13px;
-
-        .m-label {
-          color: #4E4E5E;
-          font-weight: 500;
-        }
-
-        .currency-type {
-          color: #3A3A4A;
-          font-size: 11px;
-          font-weight: 700;
-        }
-      }
-    }
-  }
-
-  /* 💎 ТАБЛИЦА ТАКЖЕ ПАРИТ В НЕВЕСОМОСТИ (БЕЗ ПОДЛОЖКИ) */
-  .invoice-history-container {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-
-    .card-inner-caption {
-      font-size: 15px;
-      font-weight: 700;
-      color: #FFFFFF;
-      letter-spacing: -0.2px;
-    }
-
-    .empty-history-placeholder {
-      background-color: rgba(255, 255, 255, 0.01);
-      border: 1px dashed rgba(255, 255, 255, 0.03);
-      font-size: 13px;
-    }
-
-    .table-custom {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-
-      th {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #3A3A4A;
-        padding-bottom: 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
-      }
-
-      td {
-        padding: 16px 0;
-        font-size: 13px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.02) !important;
-      }
-
-      tr:last-child td {
-        border-bottom: none !important;
-      }
-
-      .text-secondary-custom {
-        color: #4E4E5E;
-      }
-
-      .status-capsule-badge {
-        font-size: 11px;
-        font-weight: 700;
-        padding: 4px 10px;
-        border-radius: 6px;
-
-        &.is-paid {
-          background-color: rgba(74, 222, 128, 0.03);
-          color: #4ade80;
-          border: 1px solid rgba(74, 222, 128, 0.06);
-        }
-
-        &.is-pending {
-          background-color: rgba(250, 204, 21, 0.03);
-          color: #facc15;
-          border: 1px solid rgba(250, 204, 21, 0.06);
-        }
-      }
-
-      .stripe-receipt-link-icon {
-        color: #3A3A4A;
-        font-size: 14px;
-        transition: color 0.2s ease;
-
-        &:hover {
-          color: #7AE0FF;
-        }
-      }
-    }
-  }
-}
-
-/* 🪐 ФУТУРИСТИЧНЫЙ КИБЕР-ЛОАДЕР YUVIRON */
-.yuviron-loader-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 70vh;
-  gap: 24px;
-  animation: fadeIn 0.3s ease-out;
-
-  .cyber-spinner {
-    position: relative;
-    width: 44px;
-    height: 44px;
-
-    // Внешнее ультратонкое неоновое кольцо
-    .spinner-outer-ring {
-      position: absolute;
-      width: 100%;
-      height: 100%;
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: none;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      // Тонкая полупрозрачная основа и яркая точка-засечка
-      border: 2px solid rgba(122, 224, 255, 0.03);
-      border-top-color: #7AE0FF;
+      cursor: pointer;
+      background: transparent;
 
-      // Идеально плавное вращение без микро-рывков
-      animation: cyberRotate 0.85s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-      filter: drop-shadow(0 0 12px rgba(122, 224, 255, 0.35));
-    }
-
-    // Центральное пульсирующее ядро
-    .spinner-core-node {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 6px;
-      height: 6px;
-      background-color: #7AE0FF;
-      border-radius: 50%;
-      box-shadow: 0 0 14px #7AE0FF;
-      animation: corePulse 1.6s ease-in-out infinite;
+      &::-webkit-color-swatch-wrapper { padding: 0; }
+      &::-webkit-color-swatch {
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+      }
     }
   }
 
-  // Деликатный моноширинный текст под лоадером
-  .loader-diagnostic-text {
-    font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 10px;
-    font-weight: 700;
-    color: #3A3A4A; // Изначально приглушенный
-    text-transform: uppercase;
-    letter-spacing: 0.18em; // Элегантный разлет букв
-    animation: textBreathe 1.6s ease-in-out infinite;
-  }
-}
+  /* КАТАЛОГ КРУГЛИХ ПРЕСЕТІВ */
+  .catalog-theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 16px;
 
-/* 🎬 КИНЕМАТОГРАФИЧНЫЕ АНИМАЦИИ */
-@keyframes cyberRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+    .preset-circle-card {
+      background: transparent;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
 
-@keyframes corePulse {
-  0%, 100% {
-    transform: translate(-50%, -50%) scale(0.85);
-    opacity: 0.4;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.25);
-    opacity: 1;
-    filter: drop-shadow(0 0 8px #7AE0FF);
-  }
-}
+      .triple-dot-preview {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: 2px solid #22222e;
+        transition: all 0.2s ease;
+      }
 
-@keyframes textBreathe {
-  0%, 100% { color: #3A3A4A; }
-  50% { color: #5F5F7E; }
+      .preset-name {
+        font-size: 12px;
+        color: #a7a7a7;
+        margin-top: 8px;
+        font-weight: 500;
+      }
+
+      &.selected-preset {
+        .triple-dot-preview { border-color: #1db954 !important; box-shadow: 0 0 15px rgba(29, 185, 84, 0.3); }
+        .preset-name { color: #1db954 !important; font-bold: 700; }
+      }
+    }
+  }
 }
