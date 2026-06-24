@@ -1,31 +1,40 @@
-.premium-hub-wrapper {
-  background: radial-gradient(circle at 50% 0%, #1e1e2f 0%, #0a0a0d 100%);
+/* premium.scss */
+
+// Глобальний космічний градієнт розтягується на весь екран сторінки
+body, .premium-hub-page-root {
+  background: radial-gradient(circle at 50% 15%, #121420 0%, #06070a 100%) !important;
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.premium-hub-wrapper {
   color: #ffffff;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 
   .tracking-tight { letter-spacing: -0.03em; }
 
-  /* 🌌 ТОПОВИЙ ГЕРОЙ-БАННЕР */
+  /* 🌌 ВЕРХНІЙ КОСМІЧНИЙ ГЕРОЙ-БАННЕР З ЕФЕКТОМ СКЛА */
   .premium-hub-hero {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
+    background: linear-gradient(180deg, rgba(122, 224, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
+    border: 1px solid rgba(122, 224, 255, 0.06);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border-radius: 24px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.02);
 
     .hero-badge {
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
-      color: #1db954; // Spotify Green
+      color: #7AE0FF; // Фірмовий ціан Yuviron
       letter-spacing: 0.15em;
-      background: rgba(29, 185, 84, 0.1);
-      border: 1px solid rgba(29, 185, 84, 0.2);
+      background: rgba(122, 224, 255, 0.08);
+      border: 1px solid rgba(122, 224, 255, 0.15);
     }
   }
 
-  /* 📊 СУЧАСНА СІТКА ТАРИФІВ (SPOTIFY STYLE) */
+  /* 📊 СУЧАСНА СІТКА КАРТОК (GLASSMORPHISM) */
   .plans-grid-system {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -34,145 +43,160 @@
   }
 
   .plan-premium-card {
-    background: #121216;
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(18, 19, 26, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-radius: 20px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 400px;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+    min-height: 200px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s;
 
     &:hover {
-      transform: translateY(-8px);
-      border-color: rgba(29, 185, 84, 0.4);
-      box-shadow: 0 12px 30px rgba(29, 185, 84, 0.1);
-      background: #16161f;
+      transform: translateY(-6px);
+      border-color: rgba(122, 224, 255, 0.25);
+      background: rgba(22, 25, 38, 0.8);
+      box-shadow: 0 15px 35px rgba(122, 224, 255, 0.06);
     }
 
+    // Стилізація картки поточного активного плану користувача
     &.current-active-plan {
-      border-color: #1db954;
-      background: linear-gradient(180deg, #131d17 0%, #121216 100%);
-      box-shadow: 0 12px 30px rgba(29, 185, 84, 0.15);
+      border-color: rgba(122, 224, 255, 0.5);
+      background: linear-gradient(180deg, rgba(29, 78, 216, 0.1) 0%, rgba(18, 19, 26, 0.8) 100%);
+      box-shadow: 0 15px 40px rgba(122, 224, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
     .current-badge {
       font-size: 11px;
-      font-weight: 600;
-      color: #1db954;
-      background: rgba(29, 185, 84, 0.12);
-      padding: 4px 12px;
+      font-weight: 700;
+      color: #7AE0FF;
+      background: rgba(122, 224, 255, 0.12);
+      padding: 4px 14px;
       border-radius: 100px;
+      border: 1px solid rgba(122, 224, 255, 0.2);
     }
 
     .feature-list {
       list-style: none;
       padding: 0;
-      margin: 20px 0 0 0;
+      margin: 24px 0 0 0;
 
       li {
         font-size: 14px;
-        color: #b3b3b3;
+        color: #b3b3cb;
         margin-bottom: 12px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
 
         &::before {
           content: "✓";
-          color: #1db954;
-          font-weight: bold;
+          color: #7AE0FF; // Синій маркер замість зеленого
+          font-weight: 900;
         }
       }
     }
   }
 
-  /* ⚙️ ЕРГОНОМІЧНІ КНОПКИ YUVRION */
+  /* ⚙️ КНОПКИ З НЕОНОВИМ СВІТІННЯМ YUVRION */
   .yuviron-btn-cosmic-glow {
-    background: #1db954;
-    color: #000000;
+    background: #7AE0FF;
+    color: #020a13;
     font-weight: 700;
     font-size: 14px;
     border: none;
     border-radius: 100px;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     width: 100%;
+    box-shadow: 0 4px 15px rgba(122, 224, 255, 0.25);
 
     &:hover {
-      background: #1ed760;
-      transform: scale(1.03);
+      background: #9ce7ff;
+      transform: scale(1.02);
+      box-shadow: 0 6px 20px rgba(122, 224, 255, 0.4);
     }
 
     &:disabled {
-      background: #282828;
-      color: #a7a7a7;
+      background: #242631;
+      color: #616270;
       cursor: not-allowed;
       transform: none;
+      box-shadow: none;
     }
   }
 
   .yuviron-btn-minimal {
-    background: transparent;
-    border: 2px solid #ffffff;
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.5);
     font-weight: 700;
     font-size: 14px;
     border-radius: 100px;
-    transition: all 0.2s ease;
     width: 100%;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
+    cursor: not-allowed;
+    transition: background 0.2s;
   }
 
-  /* 🏢 РОБОЧИЙ ПРОСТІР ТЕМ */
+  /* 🏢 КАРТКА ЛАБОРАТОРІЇ КАСТОМІЗАЦІЇ */
   .theme-workspace-card {
-    background: #121216;
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(18, 19, 26, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-radius: 20px;
-    height: 100%;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
   }
 
-  /* 🔒 КРАСИВИЙ СКЛЯНИЙ ОВЕРЛЕЙ БЛОКУВАННЯ */
+  /* 🔒 СКЛЯНИЙ БЛОКУВАЛЬНИЙ ОВЕРЛЕЙ ДЛЯ FREE-КОРИСТУВАЧІВ */
   .premium-blur-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(10, 10, 13, 0.6);
-    backdrop-filter: blur(12px);
+    background: rgba(6, 7, 10, 0.5);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
 
     .overlay-glass-card {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(18, 19, 26, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-radius: 20px;
       max-width: 360px;
-      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+
+      .crown-icon {
+        font-size: 24px;
+        color: #7AE0FF;
+        filter: drop-shadow(0 0 10px rgba(122, 224, 255, 0.4));
+      }
     }
   }
 
-  /* ГРАДІЄНТНИЙ В'ЮПОРТ */
   .gradient-preview-viewport {
-    height: 140px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+    height: 130px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
   }
 
   .color-picker-node-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #1c1c24;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.03);
     padding: 10px 16px;
     border-radius: 12px;
     font-size: 13px;
-    color: #b3b3b3;
+    color: #9da0b5;
 
     input[type="color"] {
       -webkit-appearance: none;
@@ -185,13 +209,13 @@
 
       &::-webkit-color-swatch-wrapper { padding: 0; }
       &::-webkit-color-swatch {
-        border: 2px solid rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.15);
         border-radius: 50%;
       }
     }
   }
 
-  /* КАТАЛОГ КРУГЛИХ ПРЕСЕТІВ */
+  /* ГРИД КРУГЛИХ ПРЕСЕТІВ З СИНІМ СВІТІННЯМ */
   .catalog-theme-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -206,28 +230,76 @@
       cursor: pointer;
 
       .triple-dot-preview {
-        width: 60px;
-        height: 60px;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 6px;
-        border: 2px solid #22222e;
+        border: 2px solid rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.01);
         transition: all 0.2s ease;
+
+        .dot-node {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+        }
       }
 
       .preset-name {
         font-size: 12px;
-        color: #a7a7a7;
+        color: #8a8d9f;
         margin-top: 8px;
         font-weight: 500;
       }
 
       &.selected-preset {
-        .triple-dot-preview { border-color: #1db954 !important; box-shadow: 0 0 15px rgba(29, 185, 84, 0.3); }
-        .preset-name { color: #1db954 !important; font-bold: 700; }
+        .triple-dot-preview {
+          border-color: #7AE0FF !important;
+          box-shadow: 0 0 15px rgba(122, 224, 255, 0.35);
+        }
+        .preset-name {
+          color: #7AE0FF !important;
+          font-weight: 700;
+        }
       }
+    }
+  }
+}
+
+
+/* Додати всередину .premium-hub-wrapper */
+.premium-hero-features {
+
+  .feature-mini-node {
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid rgba(122, 224, 255, 0.04);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: border-color 0.25s ease, background 0.25s ease;
+
+    &:hover {
+      background: rgba(122, 224, 255, 0.02);
+      border-color: rgba(122, 224, 255, 0.15);
+    }
+
+    h6 {
+      font-size: 14px;
+      letter-spacing: -0.1px;
+    }
+
+    .icon-vector {
+      color: #7AE0FF; // Фірмовий ціан системи
+      font-size: 16px;
+      filter: drop-shadow(0 0 8px rgba(122, 224, 255, 0.3));
+    }
+
+    .text-muted-desc {
+      color: #8a8d9f;
+      font-size: 12.5px;
+      line-height: 1.5;
     }
   }
 }
