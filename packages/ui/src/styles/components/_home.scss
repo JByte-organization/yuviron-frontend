@@ -42,27 +42,23 @@
 .hero-panoramic-banner {
   width: 100%;
   position: relative;
-  overflow: hidden; // Гарантує, що слайдер не розтягне ширину всього сайту
+  overflow: hidden;
 
-  __container {
-    width: 100%;
-    // Дозволяємо слайдам виходити за межі стандартного Swiper-контейнера
+  &__container {
     .panoramic-banner-swiper {
       overflow: visible !important;
       width: 100%;
 
-      __slide {
-        // Бокові (сусідні) слайди рівні, але трохи приглушені
+      &__slide {
         opacity: 0.4;
-        transform: scale(0.96); // Легкий благородний відступ по глибині, без перекосів
+        transform: scale(0.96);
         transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1),
         transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-        cursor: pointer;
 
         // ЦЕНТРАЛЬНИЙ АКТИВНИЙ БАННЕР
         &.swiper-slide-active {
           opacity: 1;
-          transform: scale(1); // Натуральний повноцінний розмір за сіткою
+          transform: scale(1.02);
         }
       }
     }
@@ -71,12 +67,11 @@
   // Об'єкт самої картки баннера
   .panoramic-banner-card {
     width: 100%;
-    aspect-ratio: 16 / 9; // Мобільний формат за замовчуванням
-    border-radius: 0; // На мобільних лежить впритул до країв
+    aspect-ratio: 16 / 9;
+    border-radius: 0;
     overflow: hidden;
     position: relative;
     background: #121212;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 
     @media (min-width: 768px) {
       aspect-ratio: 16 / 6.5;
@@ -84,19 +79,19 @@
     }
 
     @media (min-width: 1200px) {
-      aspect-ratio: 16 / 5.2; // Кінематографічний рівний формат для десктопу
-      border-radius: 16px; // Радіус округлення як у вашої картки
+      aspect-ratio: 16 / 5.2;
+      border-radius: 16px;
     }
 
     img {
       width: 100%;
       height: 100%;
-      object-fit: cover; // Зображення обрізається строго по центру під будь-який монітор
+      object-fit: cover;
       object-position: center;
       user-select: none;
     }
 
-    __gradient {
+    &__gradient {
       position: absolute;
       bottom: 0;
       left: 0;
@@ -171,9 +166,10 @@
     height: 32px;
     padding: 0 14px;
     border-radius: 8px;
-    border: 1px solid $client-border;
-    background: $client-surface;
-    color: $client-text-muted;
+    // Заменяем старые $переменные на чистые CSS-токены с вашим префиксом
+    border: 1px solid var(--client-mood-border);
+    background: transparent; // Делаем прозрачным, чтобы просвечивал фон страницы, как на макете
+    color: var(--client-mood-text-muted);
     font-size: 13px;
     display: inline-flex;
     align-items: center;
@@ -182,9 +178,9 @@
     transition: all 0.2s ease-in-out;
 
     &:hover {
-      border-color: $client-accent;
-      color: $client-text;
-      background: $client-hover;
+      border-color: var(--client-mood-accent);
+      color: var(--client-mood-text);
+      background: var(--client-mood-hover);
     }
   }
 
@@ -193,30 +189,14 @@
     right: 0;
     top: calc(100% + 6px);
     min-width: 140px;
-    background: $client-surface-2;
-    border: 1px solid $client-border;
+    // Исправлено: строго var(--client-mood-*) без хардкода и SCSS-знаков
+    background: var(--client-mood-dropdown-bg);
+    border: 1px solid var(--client-mood-border);
     border-radius: 8px;
     padding: 6px 0;
     z-index: 1100;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  }
-
-  &__dropdown-item {
-    display: block;
-    width: 100%;
-    text-align: left;
-    padding: 10px 16px;
-    border: none;
-    background: transparent;
-    color: $client-text-muted;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-
-    &:hover, &--active {
-      color: $client-accent;
-      background: rgba(255, 255, 255, 0.03);
-    }
+    // Оставляем мягкую тень, которая адекватно выглядит и на темной, и на светлой теме
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   }
 
   &__dropdown-overlay {
@@ -230,72 +210,155 @@
   }
 }
 
+
+// ─── MoodCard ─────────────────────────────────────────────
+.mood-section {
+  position: relative;
+
+  &__filter-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  &__filter-btn {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid var(--client-mood-border);
+    background: transparent;
+    color: var(--client-mood-text-muted);
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      border-color: var(--client-mood-accent);
+      color: var(--client-mood-text);
+      background: var(--client-mood-hover);
+    }
+  }
+
+  &__dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    min-width: 140px;
+    background: var(--client-mood-dropdown-bg); // Строго по твоей просьбе client-mood-
+    border: 1px solid var(--client-mood-border);
+    border-radius: 8px;
+    padding: 6px 0;
+    z-index: 1100;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  &__dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    color: var(--client-mood-text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover, &--active {
+      color: var(--client-mood-accent);
+      background: var(--client-mood-hover);
+    }
+  }
+}
+
 // ─── MoodCard ─────────────────────────────────────────────
 .mood-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
-  min-width: 90px;
   text-align: center;
   user-select: none;
   background: transparent;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
+  // Обёртка, контролирующая размеры (адаптивная под Bootstrap)
   &__circle-wrap {
+    width: 100%;
+    max-height: 160px;
+    min-height: 84px; // Чтобы тянулось адекватно мобилкам
+    aspect-ratio: 1 / 1;
     position: relative;
-    padding: 2px; // Захисний буфер для запобігання обрізання граней при трансформації
   }
 
+  // Сам круг — один единственный слой, в точности как на картинке
   &__circle {
-    width: 84px;
-    height: 84px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
-    border: 2px solid $client-border;
-    background: $client-surface;
+
+    // Применяем сложный градиент из твоей Figma
+    background-color: var(--client-mood-card-bg);
+    border: 1px solid var(--client-mood-card-border);
+
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.25s ease,
-    background-color 0.25s ease;
 
-    img, i {
-      color: $client-text-muted;
-      font-size: 26px;
-      transition: color 0.25s ease;
-    }
+    // Внутренний блик сверху-слева для эффекта объема "линзы"
+    box-shadow: inset 2px 2px 10px rgba(255, 255, 255, 0.1),
+    inset -2px -2px 10px rgba(0, 0, 0, 0.2);
+
+    // Матовое размытие заднего фона (Glassmorphism), если под ним будет арт
+    backdrop-filter: blur(4px);
+
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &__icon {
+    width: 55%; // Пропорциональный размер иконки относительно круга
+    height: 55%;
+    object-fit: contain;
+    transition: all 0.25s ease;
+
+    // На картинке у иконки (особенно у молнии и капли) есть мягкое неоновое свечение внутри круга
+    filter: var(--client-mood-icon-shadow);
   }
 
   &__name {
-    font-size: 13px;
-    font-weight: 500;
-    color: $client-text-muted;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--client-mood-text-muted);
     transition: color 0.25s ease;
   }
 
+  // ─── Состояние Hover (Наведение) ────────────────────────
   &:hover {
     .mood-card__circle {
-      border-color: rgba($client-accent, 0.5);
-      background: $client-hover;
-
-      i, img { color: $client-text; }
+      border-color: var(--client-mood-accent);
+      box-shadow: 0 5px 15px rgba(0, 132, 255, 0.25),
+      inset 2px 2px 12px rgba(255, 255, 255, 0.2);
     }
+
     .mood-card__name {
-      color: $client-text;
+      color: var(--client-mood-text);
     }
   }
 
+  // ─── Состояние Active (Выбрано) ─────────────────────────
   &--active {
     .mood-card__circle {
-      border-color: $client-accent;
-      background: rgba(0, 166, 255, 0.12);
-
-      i, img { color: $client-accent; }
+      border-color: var(--client-mood-accent);
+      // Заметное неоновое свечение вокруг активного круга, как на первом скрине
+      box-shadow: 0 0 25px rgba(0, 132, 255, 0.45),
+      inset 2px 2px 15px rgba(255, 255, 255, 0.25);
     }
 
     .mood-card__name {
-      color: $client-accent;
+      color: var(--client-mood-accent); // Текст становится акцентным (голубым)
     }
   }
 }
@@ -663,123 +726,6 @@
   //}
 }
 
-// ══════════════════════════════════════════════════════════
-// MOOD CARD
-// ══════════════════════════════════════════════════════════
-.mood-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  //gap: 12px;
-  cursor: pointer;
-  text-align: center;
-  //padding: 0;             // відступи між картками — через Bootstrap g-* на row
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-
-  // ─── Обгортка — задає квадратні пропорції ─────────────
-  // width: 100% від колонки, aspect-ratio робить висоту = ширині
-  &__circle-wrap {
-    width: 100%;
-    max-height: 160px;
-    min-height: 160px;
-    aspect-ratio: 1 / 1;
-  }
-
-  &__circle {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    padding: 2px;
-
-    background: linear-gradient(
-                    145deg,
-                    rgba(0, 166, 255, 0.65) 0%,
-                    rgba(0, 80, 180, 0.25)  50%,
-                    rgba(0, 166, 255, 0.12) 100%
-    );
-
-    box-shadow: none;
-    transition: background 0.25s ease;
-  }
-
-  // ─── Внутрішнє коло — темно-синій радіальний градієнт ─
-  &__circle-inner {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: radial-gradient(
-                    circle at 35% 30%,
-                    rgba(0, 55, 115, 0.92) 0%,
-                    rgba(0, 20, 55, 0.96)  55%,
-                    rgba(0, 8,  25, 1)     100%
-    );
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-  }
-
-  &__icon {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0, 100, 200, 0.3));
-  }
-
-  // ─── Назва ────────────────────────────────────────────
-  &__name {
-    font-size: $h6-font-size;
-    font-weight: 600;
-    color: $client-text-muted;
-    transition: color 0.2s ease;
-  }
-
-  // ─── Hover ────────────────────────────────────────────
-  &:hover {
-    .mood-card__circle {
-      background: linear-gradient(
-                      145deg,
-                      rgba(0, 166, 255, 0.85) 0%,
-                      rgba(0, 80,  180, 0.45) 50%,
-                      rgba(0, 166, 255, 0.25) 100%
-      );
-    }
-
-    .mood-card__name {
-      color: $client-text;
-    }
-  }
-
-  // ─── Активний ─────────────────────────────────────────
-  &--active {
-    .mood-card__circle {
-      background: linear-gradient(
-                      145deg,
-                      rgba(0, 166, 255, 1)    0%,
-                      rgba(0, 100, 220, 0.65) 50%,
-                      rgba(0, 166, 255, 0.35) 100%
-      );
-    }
-
-    .mood-card__circle-inner {
-      background: radial-gradient(
-                      circle at 35% 30%,
-                      rgba(0, 75,  155, 0.96) 0%,
-                      rgba(0, 28,  75,  0.98) 55%,
-                      rgba(0, 8,   30,  1)    100%
-      );
-    }
-
-    .mood-card__name {
-      color: $client-accent;
-    }
-  }
-}
 
 // ══════════════════════════════════════════════════════════
 // FOOTER
@@ -1177,16 +1123,5 @@
   &::-webkit-scrollbar { display: none; }
 }
 
-
-.mood-section {
-  &__swiper {
-    width: 100%;
-    padding-bottom: 8px !important;
-  }
-
-  &__swiper-slide {
-    width: auto !important;
-  }
-}
 
 

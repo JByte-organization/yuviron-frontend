@@ -98,6 +98,31 @@ $admin-tr-bg-1: #3B4452;
   --client-solid-badge:     rgba(0, 0, 0, 0.15);
 
   --client-header-bg:       rgba(2, 10, 19, 0.92);
+
+
+  // Mood section
+  // Базовые цвета (Тёмная тема)
+  --client-mood-text: #ffffff;
+  --client-mood-text-muted: #7e8b9b;
+  --client-mood-accent: #0084ff;       // Яркий голубой из слова "настрою"
+  --client-mood-border: #1e2638;       // Граница селектора "Настрій"
+  --client-mood-hover: rgba(255, 255, 255, 0.05);
+
+  // Компоненты (Тёмная тема)
+  --client-mood-dropdown-bg: #161b26;  // Фон дропдауна
+
+  // Круги-карточки (Тёмная тема — точный перенос твоих Stops из Figma)
+  // Плотный, насыщенный синий градиент, который точно будет видно
+  --client-mood-card-bg: linear-gradient(
+          135deg,
+          #005AAE 0%,    // СВЕРХУ: Плотный синий на 100% мощности
+          #002E60 20%,   // Плавный переход в темно-синий
+          #00151A 50%,   // СЕРЕДИНА: Глубокий темный центр
+          #004493 80%,   // Переход к нижнему синему
+          #0058FB 100%   // СНИЗУ: Яркий светящийся синий на 100% мощности
+  );
+  --client-mood-card-border: rgba(0, 166, 255, 0.3);
+  --client-mood-icon-shadow: drop-shadow(0 0 10px rgba(0, 166, 255, 0.6));
 }
 
 [data-theme="light"] {
@@ -148,6 +173,24 @@ $admin-tr-bg-1: #3B4452;
   --client-solid-badge:     rgba(255, 255, 255, 0.15);
 
   --client-header-bg:       rgba(234, 241, 248, 0.92);
+
+    //Mood section
+  // Базовые цвета (Светлая тема)
+  --client-mood-text: #1e293b;
+  --client-mood-text-muted: #64748b;
+  --client-mood-accent: #00a6ff;
+  --client-mood-border: #cbd5e1;
+  --client-mood-hover: #f1f5f9;
+
+  // Компоненты (Светлая тема)
+  --client-mood-dropdown-bg: #ffffff; // Чистый белый дропдаун
+
+  // Круги-карточки (Светлая тема — мягкий водянисто-голубой градиент)
+  --client-mood-card-bg: linear-gradient(180deg, #5cb0ff99 0%, #d7e9ff4d 60%, #ffffff21 100%);
+  --client-mood-card-border: rgba(0, 132, 255, 0.2);
+  --client-mood-icon-shadow: drop-shadow(0 2px 6px rgba(0, 112, 243, 0.15));
+
+
 }
 
 
@@ -201,6 +244,15 @@ $client-solid-badge:     var(--client-solid-badge);
 $header-height:  56px;
 $sidebar-width:  240px;
 $sidebar-margin: 12px;
+
+
+//Mood section
+$client-mood-text: var(--client-mood-text);
+$client-mood-text-muted: var(--client-mood-text-muted);
+$client-mood-accent: var(--client-mood-accent);
+$client-mood-border: var(--client-mood-border);
+$client-mood-hover: var(--client-mood-hover);
+$client-mood-dropdown-bg: var(--client-mood-dropdown-bg);
 
 
 // Buttons

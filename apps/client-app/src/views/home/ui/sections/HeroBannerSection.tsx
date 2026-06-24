@@ -56,7 +56,7 @@ export const HeroBannerSection = ({
                             spaceBetween: 16,
                         },
                         1200: {
-                            slidesPerView: 1.4, // Центр займає ~60%, боки — по ~20%
+                            slidesPerView: 1.4, 
                             spaceBetween: 24,
                         },
                         1600: {
