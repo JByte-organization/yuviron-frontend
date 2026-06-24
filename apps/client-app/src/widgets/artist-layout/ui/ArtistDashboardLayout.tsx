@@ -23,12 +23,8 @@ export const ArtistDashboardLayout = ({ children }: ArtistDashboardLayoutProps) 
     const { artistId, isResolving, canManage } = useCurrentArtist();
     const authResolved = useSessionStore((s) => s.authResolved);
 
-    // Поки сесія не відновилась АБО /auth/me ще тягне managedArtists (без швидкого
-    // claim/stored fallback) — лоадер, інакше реальний артист мигне блокером.
     if (!authResolved || isResolving) return <ArtistGateScreen loading />;
 
-    // Сесія відома, але артиста немає → чистий екран як в auth, без студійного хрому
-    // (хедер/сайдбар/футер). Стосується всіх роутів кабінету (фінанси, аналітика…).
     if (!artistId) return <ArtistGateScreen />;
 
     return (

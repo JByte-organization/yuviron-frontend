@@ -7,9 +7,11 @@ import {
     postApiFilesUpload,
     getApiAdminArtistsAutocomplete,
     getApiAdminGenresAutocomplete,
-    type CreateBannerCommand
+    type CreateBannerCommand,
+    type ArtistAutocompleteDto
 } from '@repo/api/admin.ts';
 import { ALLOWED_COUNTRIES } from '@/shared/config/countries';
+import { formatToGuid } from '@/shared/lib/formatToGuid';
 
 interface Props { isOpen: boolean; onClose: () => void; onSuccess: () => void; }
 
@@ -28,16 +30,24 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
     const {
         register, handleSubmit, setError, setValue, clearErrors, reset, watch, trigger,
         formState: { errors, isSubmitting }
-    } = useForm<FormValues>({
+    } = useForm<FormValues>(({
         mode: 'onChange',
-        defaultValues: { title: '', targetUrl: '', isActive: true, artistId: '', startsAtUtc: '', endsAtUtc: '', targetCountries: '', targetGenres: '' }
-    });
+        defaultValues: {
+            title: '',
+            targetUrl: '',
+            isActive: true,
+            artistId: '',
+            startsAtUtc: '',
+            endsAtUtc: '',
+            targetCountries: '',
+            targetGenres: ''
+        }
+    }));
 
-    // Слідкуємо за датами для миттєвої крос-валідації
+    // Следим за датами для автоматической кросс-валидации
     const startsAtUtc = watch('startsAtUtc');
     const endsAtUtc = watch('endsAtUtc');
 
-    // Тригеримо взаємну перевірку полей при зміні будь-якого з них
     useEffect(() => {
         if (startsAtUtc || endsAtUtc) {
             trigger(['startsAtUtc', 'endsAtUtc']);
@@ -49,15 +59,16 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
     const [artistsOptions, setArtistsOptions] = useState<{ id: string; name: string }[]>([]);
     const [isArtistsLoading, setIsArtistsLoading] = useState(false);
     const [isArtistDropdownOpen, setIsArtistDropdownOpen] = useState(false);
+    const selectedArtistId = watch('artistId');
 
-    // ─── Стейты для тегування та пошуку жанрів ──────────────
+    // ─── Стейты для поиска жанров ───────────────────────────
     const [genreSearch, setGenreSearch] = useState('');
     const [genreOptions, setGenreOptions] = useState<string[]>([]);
     const [isGenresLoading, setIsGenresLoading] = useState(false);
     const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
     const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
-    // ─── Стейты для зображення ──────────────────────────────
+    // ─── Стейты для изображения ─────────────────────────────
     const [bannerFileId, setBannerFileId] = useState<string | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -66,8 +77,10 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
 
     const { mutateAsync: createBanner, isPending } = usePostApiAdminBanners();
 
-    // Автокомплит артистів
+    // Автокомплит артистов (Защита от дублирования + PascalCase)
     useEffect(() => {
+        if (selectedArtistId) return;
+
         if (artistSearch.trim().length < 3) {
             setArtistsOptions([]);
             setIsArtistDropdownOpen(false);
@@ -76,10 +89,17 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
         const timer = setTimeout(async () => {
             setIsArtistsLoading(true);
             try {
-                const res = await getApiAdminArtistsAutocomplete({ searchTerm: artistSearch, limit: 5 });
-                const raw = res as any[] | { data?: any[] };
-                const list = Array.isArray(raw) ? raw : (raw.data ?? []);
-                setArtistsOptions(list.map((a: any) => ({ id: a.id, name: a.name || '—' })));
+                const res = await getApiAdminArtistsAutocomplete({ SearchTerm: artistSearch, Limit: 5 } as any);
+                const rawBody = (res as any)?.data || res;
+
+                const list: ArtistAutocompleteDto[] = Array.isArray(rawBody)
+                    ? rawBody
+                    : (Array.isArray(rawBody?.items) ? rawBody.items : []);
+
+                setArtistsOptions(list.map((a: ArtistAutocompleteDto) => ({
+                    id: a.id || '',
+                    name: a.name || '—'
+                })));
                 setIsArtistDropdownOpen(list.length > 0);
             } catch {
                 setArtistsOptions([]);
@@ -88,8 +108,9 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
             }
         }, 300);
         return () => clearTimeout(timer);
-    }, [artistSearch]);
+    }, [artistSearch, selectedArtistId]);
 
+    // Автокомплит жанров (Отказоустойчивый парсинг + PascalCase)
     useEffect(() => {
         if (genreSearch.trim().length < 2) {
             setGenreOptions([]);
@@ -99,13 +120,14 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
         const timer = setTimeout(async () => {
             setIsGenresLoading(true);
             try {
-                const res = await getApiAdminGenresAutocomplete({ searchTerm: genreSearch, limit: 5 });
-                const raw = res as any[] | { data?: any[] };
-                const list = Array.isArray(raw) ? raw : (raw.data ?? []);
+                const res = await getApiAdminGenresAutocomplete({ SearchTerm: genreSearch, Limit: 5 } as any);
+                const rawBody = (res as any)?.data || res;
 
-                // Безпечно мапимо рядки або об'єкти жанрів
+                const list = Array.isArray(rawBody)
+                    ? rawBody
+                    : (Array.isArray(rawBody?.items) ? rawBody.items : []);
+
                 const mapped = list.map((g: any) => typeof g === 'string' ? g : (g.name || g.title || ''));
-                // Фільтруємо ті, що вже обрані адміном
                 setGenreOptions(mapped.filter((g: string) => g && !selectedGenres.includes(g)));
                 setIsGenreDropdownOpen(mapped.length > 0);
             } catch {
@@ -142,24 +164,43 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        setIsUploading(true); setUploadError(null);
+
+        // Мгновенно создаем локальный Blob URL для UI-потока, не дожидаясь ответа
+        const localBlobUrl = URL.createObjectURL(file);
+        setPreviewUrl(localBlobUrl);
+
+        setIsUploading(true);
+        setUploadError(null);
+
         try {
             const res = await postApiFilesUpload({ file });
             const data = res as { fileId?: string; url?: string };
-            if (!data.fileId) throw new Error();
+            if (!data.fileId) throw new Error('No fileId in response');
             setBannerFileId(data.fileId);
-            setPreviewUrl(data.url ?? null);
         } catch {
             setUploadError('Failed to upload image assets.');
+            setPreviewUrl(null);
+            URL.revokeObjectURL(localBlobUrl);
         } finally {
             setIsUploading(false);
         }
     };
 
     const handleClose = useCallback(() => {
-        reset(); setBannerFileId(null); setPreviewUrl(null); setUploadError(null);
-        setArtistSearch(''); setGenreSearch(''); setSelectedGenres([]); onClose();
-    }, [reset, onClose]);
+        reset();
+        setBannerFileId(null);
+        setUploadError(null);
+        setArtistSearch('');
+        setGenreSearch('');
+        setSelectedGenres([]);
+
+        if (previewUrl && previewUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(previewUrl);
+        }
+
+        setPreviewUrl(null);
+        onClose();
+    }, [reset, onClose, previewUrl]);
 
     const onSubmit = async (values: FormValues) => {
         if (!bannerFileId) {
@@ -176,13 +217,13 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
         const body: CreateBannerCommand = {
             title: values.title || null,
             targetUrl: values.targetUrl || null,
-            bannerFileId,
+            bannerFileId: formatToGuid(bannerFileId)!,
             isActive: values.isActive,
             artistId: values.artistId || null,
             startsAtUtc: formatUtcString(values.startsAtUtc),
             endsAtUtc: formatUtcString(values.endsAtUtc),
             targetCountries: values.targetCountries || null,
-            targetGenres: values.targetGenres || null, // Сервер отримає чистий рядок "Pop, Rock"
+            targetGenres: values.targetGenres || null,
         };
 
         try {
@@ -219,11 +260,33 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
 
                             <div className="mb-4">
                                 <label className="form-label admin-text small fw-bold">BANNER IMAGE *</label>
-                                <div className="rounded overflow-hidden bg-secondary d-flex align-items-center justify-content-center mb-2 position-relative" style={{ width: '100%', height: 180, cursor: 'pointer' }} onClick={() => fileInputRef.current?.click()}>
-                                    {previewUrl ? <img src={previewUrl} alt="Preview" className="w-100 h-100 object-fit-cover" /> : <span className="text-muted small">➕ Click to upload image</span>}
-                                    {isUploading && <div className="position-absolute w-100 h-100 bg-dark bg-opacity-70 d-flex align-items-center justify-content-center"><div className="spinner-border text-primary" /></div>}
+                                <div
+                                    className="rounded overflow-hidden bg-secondary d-flex align-items-center justify-content-center mb-2 position-relative"
+                                    style={{ width: '100%', height: 180, cursor: 'pointer' }}
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    {previewUrl ? (
+                                        <img src={previewUrl} alt="Preview" className="w-100 h-100 object-fit-cover" />
+                                    ) : (
+                                        <span className="text-muted small">➕ Click to upload image</span>
+                                    )}
+
+                                    {isUploading && (
+                                        <div className="position-absolute w-100 h-100 bg-dark bg-opacity-60 d-flex align-items-center justify-content-center">
+                                            <div className="spinner-border text-info" />
+                                            <span className="ms-2 small text-info fw-semibold">Uploading to servers...</span>
+                                        </div>
+                                    )}
                                 </div>
-                                <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.webp" className="d-none" onChange={handleFileChange} />
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.webp"
+                                    className="d-none"
+                                    onChange={handleFileChange}
+                                />
+
                                 {uploadError && <p className="text-danger small mt-1">{uploadError}</p>}
                             </div>
 
@@ -347,7 +410,6 @@ export const CreateBannerModal = ({ isOpen, onClose, onSuccess }: Props) => {
                                             ))}
                                         </ul>
                                     )}
-                                    {/* Приховане обов'язкове поле для валідації форми */}
                                     <input type="hidden" {...register('targetGenres', { required: 'Please attach at least one genre parameter.' })} />
                                     {errors.targetGenres && <div className="text-danger small mt-1">{errors.targetGenres.message}</div>}
                                 </div>

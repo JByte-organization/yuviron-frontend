@@ -28,7 +28,6 @@ export const NotificationsPage = () => {
     const tabCfg = NOTIFICATION_TABS.find((t) => t.key === tab) ?? NOTIFICATION_TABS[0];
 
     const { data, isLoading } = useQuery({
-        // key[0] начинается с /api/notifications → попадает под invalidateNotifications.
         queryKey: ['/api/notifications', tab],
         queryFn: () => fetchNotifications({ categories: tabCfg.categories }),
     });

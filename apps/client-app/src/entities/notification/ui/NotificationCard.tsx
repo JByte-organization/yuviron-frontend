@@ -9,9 +9,6 @@ interface NotificationCardProps {
     onClick: (notification: NotificationDto) => void;
 }
 
-// Универсальная карточка из реального контракта: иконка по type/category,
-// title + body, относительное время, точка непрочитанного. Клик уходит наверх
-// (пометка прочитанным + роутинг живут в useNotificationClick).
 export const NotificationCard = ({ notification, onClick }: NotificationCardProps) => {
     const { title, body, isRead, createdAt } = notification;
 

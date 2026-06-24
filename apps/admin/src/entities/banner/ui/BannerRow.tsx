@@ -24,7 +24,6 @@ const formatDate = (dateString?: string | null): string => {
     });
 };
 
-
 export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: BannerRowProps) => {
     const previewUrl = getImageUrl(banner.bannerUrl);
 
@@ -42,9 +41,13 @@ export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: Ba
             <td className="py-2">
                 <div className="rounded overflow-hidden bg-secondary d-flex align-items-center justify-content-center" style={{ width: 80, height: 45 }}>
                     {previewUrl ? (
-                        <img src={previewUrl} alt={banner.title ?? 'Banner'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img
+                            src={previewUrl}
+                            alt={banner.title ?? 'Banner'}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
                     ) : (
-                        <i className="bi bi-image text-secondary" style={{ fontSize: 20 }} />
+                        <span style={{ fontSize: '16px' }}>🖼️</span>
                     )}
                 </div>
             </td>
@@ -75,4 +78,3 @@ export const BannerRow = ({ banner, isSelected, onSelect, onEdit, onDelete }: Ba
         </tr>
     );
 };
-

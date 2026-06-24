@@ -8,7 +8,6 @@ import { useTheme } from '@/shared/lib/ThemeProvider';
  * (сторінка статистики + модалка аналітики треку).
  */
 
-// Акцентні кольори серій (data-viz, не залежать від теми).
 export const CHART_COLORS = {
     accent:  '#00A6FF',
     accent2: '#7B61FF',

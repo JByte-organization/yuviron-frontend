@@ -2,13 +2,8 @@
 
 import React from 'react';
 
-// Лёгкое конфетти без сторонних либ и без правок SCSS у @repo/ui (он пребилдится —
-// см. память про rebuild). Кейфреймы инжектим одним <style>, чтобы компонент был
-// самодостаточным. Запускается анмаунтом/ремаунтом (key) у вызывающего.
 const COLORS = ['#2ECC71', '#00A6FF', '#7B61FF', '#FFB347', '#FF6B6B'];
 
-// Детермінований псевдорандом від числа (чиста Math.sin — не порушує
-// react-hooks/purity, на відміну від Math.random). seed змінює патерн між залпами.
 const pseudo = (n: number): number => {
     const x = Math.sin(n) * 43758.5453;
     return x - Math.floor(x);

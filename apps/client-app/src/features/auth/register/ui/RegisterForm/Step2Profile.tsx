@@ -36,9 +36,6 @@ const MONTHS = [
 const CURRENT_YEAR = new Date().getFullYear();
 const MIN_AGE_YEARS = 16;
 
-// Кількість днів у місяці з урахуванням високосного року. Якщо рік ще не
-// введений/некоректний — беремо високосний (2000), щоб не блокувати 29 лютого
-// передчасно; точна перевірка спрацює, коли рік стане валідним.
 const daysInMonth = (month: number, year: number): number => {
     if (!Number.isInteger(month) || month < 1 || month > 12) return 31;
     const y = Number.isInteger(year) && year >= 1900 ? year : 2000;
@@ -80,7 +77,6 @@ const validate = (state: ProfileState): ProfileErrors => {
         errors.year = `Рік 1900–${CURRENT_YEAR}`;
     }
 
-    // Верхня межа дня залежить від обраного місяця (і року для лютого).
     const maxDay = state.month ? daysInMonth(month, year) : 31;
     if (!state.day) errors.day = '—';
     else if (!Number.isInteger(day) || day < 1 || day > maxDay) {
@@ -123,7 +119,6 @@ export const Step2Profile = () => {
 
     const update = <K extends keyof ProfileState>(key: K, value: ProfileState[K]) => {
         const next = { ...state, [key]: value };
-        // Зміна країни → скидаємо місто, якщо воно не належить новій країні.
         if (key === 'country' && !citiesFor(value as string).includes(next.city)) {
             next.city = '';
         }

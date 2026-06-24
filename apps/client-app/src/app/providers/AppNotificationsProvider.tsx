@@ -6,10 +6,6 @@ import { useNotificationClick } from '@/entities/notification/lib/useNotificatio
 import { iconForNotification } from '@/entities/notification/lib/notificationView';
 import type { NotificationDto } from '@/entities/notification/model/types';
 
-// App-wide SignalR-слой: открывает соединение для залогиненного юзера (хук сам
-// гейтит по токену) и на каждый пуш показывает тост. Клик по тосту = тот же
-// сценарий, что и в списке (пометка прочитанным + роутинг). Монтируется один
-// раз в корневом layout, поэтому пуши приходят на любой странице.
 export const AppNotificationsProvider = ({ children }: { children: React.ReactNode }) => {
     const [toast, setToast] = useState<NotificationDto | null>(null);
     const [visible, setVisible] = useState(false);

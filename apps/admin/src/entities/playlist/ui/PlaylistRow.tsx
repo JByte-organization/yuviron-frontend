@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { type PlaylistDto, PlaylistVisibility } from '@repo/api/admin.ts';
-import {getImageUrl} from "@/shared/lib/getImageUrl";
+import Image from 'next/image';
+import { type PlaylistDto } from '@repo/api/admin.ts';
+import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 interface Props {
     playlist: PlaylistDto;
@@ -14,28 +15,30 @@ interface Props {
 
 const formatDate = (dateString?: string): string => {
     if (!dateString) return '—';
-    return new Date(dateString).toLocaleDateString('ru-RU', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
+    return new Date(dateString).toLocaleDateString('uk-UA', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
     });
 };
 
 const VisibilityBadge = ({ visibility }: { visibility?: string }) => {
     const map: Record<string, { cls: string }> = {
         Public:   { cls: 'bg-success' },
-        Private:  { cls: 'bg-secondary' },
+        Private:  { cls: 'bg-secondary text-white-50' },
         Unlisted: { cls: 'bg-warning text-dark' },
     };
     const s = map[visibility ?? ''] ?? { cls: 'bg-secondary' };
-    return <span className={`badge ${s.cls}`}>{visibility ?? '—'}</span>;
+    return <span className={`badge ${s.cls} border border-secondary`}>{visibility ?? '—'}</span>;
 };
 
 export const PlaylistRow = ({ playlist, isSelected, onSelect, onEdit, onDelete }: Props) => {
-
     const coverSrc = getImageUrl(playlist.coverUrl);
 
     return (
         <tr className="border-bottom border-secondary align-middle" style={{ backgroundColor: '#212631' }}>
 
+            {/* Checkbox */}
             <td className="px-4">
                 <input
                     type="checkbox"
@@ -48,7 +51,7 @@ export const PlaylistRow = ({ playlist, isSelected, onSelect, onEdit, onDelete }
             {/* Cover */}
             <td className="py-3">
                 <div
-                    className="rounded bg-secondary d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0"
+                    className="rounded bg-secondary d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0 border border-secondary"
                     style={{ width: '40px', height: '40px' }}
                 >
                     {coverSrc
@@ -62,7 +65,7 @@ export const PlaylistRow = ({ playlist, isSelected, onSelect, onEdit, onDelete }
             <td className="text-white fw-semibold text-nowrap">
                 {playlist.title || '—'}
                 {playlist.isEditorial && (
-                    <span className="badge bg-info text-dark ms-2 small">Editorial</span>
+                    <span className="badge bg-info text-dark ms-2 small fw-bold">Editorial</span>
                 )}
             </td>
 
@@ -82,29 +85,33 @@ export const PlaylistRow = ({ playlist, isSelected, onSelect, onEdit, onDelete }
             {/* Editorial */}
             <td className="text-center">
                 {playlist.isEditorial
-                    ? <span className="text-success">✓</span>
+                    ? <span className="text-success fw-bold">✓</span>
                     : <span className="text-secondary">—</span>
                 }
             </td>
 
             {/* Created */}
-            <td className="text-secondary small text-nowrap">
+            <td className="text-secondary small text-nowrap font-monospace">
                 {formatDate(playlist.createdAt)}
             </td>
 
             {/* Actions */}
-            <td className="px-4">
-                <div className="d-flex justify-content-end gap-1">
+            <td className="px-4 text-end">
+                <div className="d-flex justify-content-end gap-2">
                     <button
-                        className="btn btn-sm btn-outline-warning border-0 shadow-none px-2"
-                        title="Edit"
+                        className="btn btn-sm btn-secondary border-0 shadow-none"
+                        title="Modify playlist configuration"
                         onClick={() => onEdit(playlist)}
-                    >✏️</button>
+                    >
+                        <Image src="/images/icons/edit-btn.svg" width={16} height={16} alt="edit" />
+                    </button>
                     <button
-                        className="btn btn-sm btn-outline-danger border-0 shadow-none px-2"
-                        title="Delete"
+                        className="btn btn-sm btn-secondary border-0 shadow-none"
+                        title="Delete playlist grid tier"
                         onClick={() => onDelete(playlist)}
-                    >🗑️</button>
+                    >
+                        <Image src="/images/icons/delete-btn.svg" width={16} height={16} alt="delete" />
+                    </button>
                 </div>
             </td>
         </tr>

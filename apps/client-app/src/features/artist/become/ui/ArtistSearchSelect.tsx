@@ -13,7 +13,6 @@ interface ArtistSearchSelectProps {
     onSelect: (artist: SearchArtistDto) => void;
 }
 
-// Поиск артиста по имени (debounce 300мс, запрос только от 2 символов).
 export const ArtistSearchSelect = ({ onSelect }: ArtistSearchSelectProps) => {
     const [query, setQuery] = useState('');
     const [debounced, setDebounced] = useState('');

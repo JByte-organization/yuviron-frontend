@@ -69,7 +69,7 @@ $active-blue: #40A2FF;
   .sidebar-nav {
     .nav-link {
       color: rgba($white, 0.6);
-      padding: 10px 20px;
+      padding: 9px 20px;
       font-size: 16px;
       transition: all 0.2s ease;
       text-decoration: none;
@@ -399,7 +399,6 @@ $active-blue: #40A2FF;
   }
 }
 
-// АДМИН ЛОГИН
 .admin-login {
   background: $admin-bg;
   color: $white;

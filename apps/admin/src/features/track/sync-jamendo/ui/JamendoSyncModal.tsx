@@ -93,7 +93,7 @@ export const JamendoSyncModal = ({ isOpen, onClose }: Props) => {
                                     onChange={(e) => setLimit(Number(e.target.value))}
                                     required
                                 />
-                                <div className="form-text text-muted" style={{ fontSize: '11px' }}>
+                                <div className="form-text text-white-50" style={{ fontSize: '11px' }}>
                                     Recommended safe batch size: 20–50 tracks per pool session.
                                 </div>
                             </div>

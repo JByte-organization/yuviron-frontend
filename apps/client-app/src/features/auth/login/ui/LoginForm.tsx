@@ -13,8 +13,6 @@ type LoginErrors = {
     password?: string;
 };
 
-// Помилка з customInstance: кидається Error із доданим полем `response`
-// ({ status, data }). data — або об'єкт ProblemDetails, або сирий рядок.
 type ApiErrorData = {
     errors?: Record<string, string[]>;
     detail?: string;
@@ -27,7 +25,6 @@ type ApiError = { response?: { status?: number; data?: ApiErrorData | string } }
 const asApiError = (error: unknown): ApiError =>
     typeof error === 'object' && error !== null ? (error as ApiError) : {};
 
-// Успішна відповідь login: токен лежить у корені або під .data.
 type LoginSuccess = { token?: string; data?: { token?: string } };
 
 const validate = (identifier: string, password: string): LoginErrors => {
@@ -58,10 +55,6 @@ export const LoginForm = () => {
     const [errors, setErrors] = useState<LoginErrors>({});
     const [submitted, setSubmitted] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
-    // Бэкенд при перевищенні ліміту входів (ASP.NET lockout / rate-limit) віддає
-    // 429 з англомовним повідомленням «Please wait a minute…». Показуємо
-    // локалізований текст і блокуємо кнопку зі зворотним відліком, щоб не
-    // виглядало як «зламалось».
     const [cooldown, setCooldown] = useState(0);
 
     useEffect(() => {
@@ -70,8 +63,6 @@ export const LoginForm = () => {
         return () => clearTimeout(id);
     }, [cooldown]);
 
-    // Спільний обробник 429 для login та send-code. Повертає true, якщо це був
-    // rate-limit (далі викликаючий код може зупинитись).
     const handleRateLimit = (status?: number): boolean => {
         if (status !== 429) return false;
         setCooldown(60);
@@ -120,8 +111,6 @@ export const LoginForm = () => {
         },
     });
 
-    // Вход без пароля: send-code шлёт 6-значный код на почту, дальше на
-    // /verify-code юзер вводит его и логинится через login-with-code.
     const { mutate: sendCode, isPending: isSendingCode } = usePostApiAuthSendCode({
         mutation: {
             onSuccess: (_res, variables) => {
@@ -172,31 +161,6 @@ export const LoginForm = () => {
 
     return (
         <form className="client-login-form" onSubmit={handleSubmit} noValidate>
-            <div className="client-login-form__socials">
-                <button type="button" className="client-login-form__social-btn">
-                    <span className="client-login-form__social-icon client-login-form__social-icon--facebook">
-                        f
-                    </span>
-                    <span>Увійти з Facebook</span>
-                </button>
-
-                <button type="button" className="client-login-form__social-btn">
-                    <span className="client-login-form__social-icon client-login-form__social-icon--google">
-                        G
-                    </span>
-                    <span>Увійти з Google</span>
-                </button>
-
-                <button type="button" className="client-login-form__social-btn">
-                    <span className="client-login-form__social-icon client-login-form__social-icon--apple">
-
-                    </span>
-                    <span>Увійти з Apple</span>
-                </button>
-            </div>
-
-            <div className="client-login-form__divider" />
-
             <div className="mb-3">
                 <label htmlFor="identifier" className="form-label client-login-form__label">
                     Електронна пошта або ім’я користувача

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { CoverUpload } from '@/shared/ui/CoverUpload';
 import { useCreateArtistProfile } from '../model/useCreateArtistProfile';
 
-// Путь 2: создание нового артист-профиля (имя + опциональный аватар).
 export const CreateArtistForm = () => {
     const { status, error, submit, isSubmitting } = useCreateArtistProfile();
     const [name, setName] = useState('');

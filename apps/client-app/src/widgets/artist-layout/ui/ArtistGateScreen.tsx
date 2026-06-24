@@ -3,9 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 
-// Екран-гейт кабінету артиста в чистому auth-шеллі (без хедера/сайдбара/футера) —
-// як сторінки логіну/реєстрації. Показуємо, поки відновлюється сесія (loading) або
-// коли користувач ще не артист.
 export const ArtistGateScreen = ({ loading = false }: { loading?: boolean }) => (
     <main className="client-auth-shell">
         {loading ? (

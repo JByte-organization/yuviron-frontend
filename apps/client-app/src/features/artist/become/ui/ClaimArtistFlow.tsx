@@ -10,7 +10,6 @@ import { type ClaimFields, useClaimArtistProfile } from '../model/useClaimArtist
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Путь 1: поиск артиста → форма заявки с пруфами → экран «очікуйте».
 export const ClaimArtistFlow = () => {
     const { status, error, submit, isSubmitting } = useClaimArtistProfile();
     const [artist, setArtist] = useState<SearchArtistDto | null>(null);

@@ -18,7 +18,6 @@ export const ArtistRelatedTracksSection = ({
                                                isLoading = false,
                                                onTrackClick,
                                            }: ArtistRelatedTracksSectionProps) => {
-    // Стрілки — лише коли контент переповнює слайдер (є що гортати).
     const [sliderRef, hasOverflow] = useHasOverflow<HTMLDivElement>([tracks]);
 
     // ─── Маппинг DTO в данные для отображения карточки ────────────────────────

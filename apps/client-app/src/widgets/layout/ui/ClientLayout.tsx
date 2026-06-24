@@ -36,8 +36,6 @@ export const ClientLayout = ({ children }: ClientLayoutProps) => {
     // ─── Правий сайдбар ───────────────────────────────────
     const { isOpen, userClosed, open, close, openManually } = useRightSidebarState();
 
-    // Каркас рендеримо за статусом, а не за наявністю токена «прямо зараз»:
-    // під час refresh токена ще нема, але показувати гостьовий UI не можна.
     const status = useSessionStore(s => s.status);
     const isAuthenticated = useSessionStore(selectIsAuthenticated);
 

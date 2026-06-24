@@ -52,7 +52,6 @@ export const ArtistSettingsPage = () => {
 
     const [avatarFile,    setAvatarFile]    = useState<File | null>(null);
     const [bannerFile,    setBannerFile]    = useState<File | null>(null);
-    // Локальні object-URL для щойно вибраних файлів (мають пріоритет над тим, що з бека).
     const [avatarObjectUrl, setAvatarObjectUrl] = useState<string | null>(null);
     const [bannerObjectUrl, setBannerObjectUrl] = useState<string | null>(null);
     const [saved,         setSaved]         = useState(false);
@@ -61,11 +60,9 @@ export const ArtistSettingsPage = () => {
     const avatarRef = useRef<HTMLInputElement>(null);
     const bannerRef = useRef<HTMLInputElement>(null);
 
-    // Прев'ю виводимо під час рендера: новий файл → object-URL, інакше — з бека.
     const avatarPreview = avatarObjectUrl ?? getImageUrl(profile?.details?.avatarUrl);
     const bannerPreview = bannerObjectUrl ?? getImageUrl(profile?.details?.bannerUrl);
 
-    // Префіл текстових полів форми, коли профіль завантажився (reset — не setState).
     useEffect(() => {
         if (!profile) return;
         reset({
@@ -93,8 +90,6 @@ export const ArtistSettingsPage = () => {
         if (!artistId) return;
         setError(null);
         try {
-            // Опційні файли вантажимо окремо (як у create-флоу), отримуємо fileId +
-            // тимчасовий url (його бек віддає одразу — показуємо картинку до персисту).
             let avatarFileId: string | null = null;
             let bannerFileId: string | null = null;
             let avatarTempUrl: string | null = null;
@@ -122,9 +117,6 @@ export const ArtistSettingsPage = () => {
                 },
             });
 
-            // Скидаємо вибрані файли. Прев'ю лишаємо на тимчасовому url з upload
-            // (а не на медіа-хеші профілю, який ще 404-ить) — fallback на старий blob,
-            // якщо бек url не віддав; null → береться картинка з профілю (вже персиснута).
             setAvatarFile(null);
             setBannerFile(null);
             setAvatarObjectUrl(prev => avatarTempUrl ?? (avatarFileId ? prev : null));
@@ -134,7 +126,6 @@ export const ArtistSettingsPage = () => {
             setSaved(true);
             setTimeout(() => setSaved(false), 3000);
         } catch (e) {
-            // Дістаємо реальну причину з axios-помилки, щоб не ховати 400/403/500 за загальним текстом.
             const err = e as {
                 response?: { status?: number; data?: { detail?: string; title?: string; message?: string } };
                 message?: string;
@@ -238,7 +229,6 @@ export const ArtistSettingsPage = () => {
                                 )}
                             </div>
 
-                            {/* Країна (поки не зберігається — бек не має поля) */}
                             <div className="mb-4">
                                 <label className="artist-settings-page__field-label">Країна</label>
                                 <input
@@ -293,7 +283,6 @@ export const ArtistSettingsPage = () => {
                 </div>
             </form>
 
-            {/* ─── Соцмережі + верифікація (тільки для тих, хто може керувати) ─── */}
             {artistId && canManage && (
                 <>
                     <ArtistSocialLinksBlock

@@ -1,91 +1,134 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useGetApiAdminGenres, type GenreListItemDto } from '@repo/api/admin.ts';
+import React, { useState, useCallback, useMemo } from 'react';
+import { useGetApiAdminGenres, type GenreListItemDto, type GetApiAdminGenresParams } from '@repo/api/admin.ts';
 import { BaseTable } from '@/shared/ui/Table/BaseTable';
+import { Pagination } from '@/shared/ui/Pagination';
 import { GenreRow } from '@/entities/genre/ui/GenreRow';
 import { genreTableColumns } from '@/entities/genre/model/columns';
 import { CreateGenreModal } from '@/features/genre/create/ui/CreateGenreModal';
 import { EditGenreModal } from '@/features/genre/edit/ui/EditGenreModal';
 import { DeleteGenreModal } from '@/features/genre/delete/ui/DeleteGenreModal';
 
-export const GenresPage = () => {
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [editingGenre, setEditingGenre] = useState<GenreListItemDto | null>(null);
-    const [deletingGenre, setDeletingGenre] = useState<GenreListItemDto | null>(null);
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [currentPage, setCurrentPage] = useState(1);
+const PAGE_SIZE = 20;
 
-    const { data, isLoading, isError, refetch } = useGetApiAdminGenres({
-        Page: currentPage,
-        PageSize: 20,
-    });
+const SORT_OPTIONS = [
+    { value: 'Name',        label: 'Genre Name (A-Z)' },
+    { value: 'TracksCount', label: 'Tracks Total Count' },
+    { value: 'CreatedAt',   label: 'Date Created' },
+];
+
+export const GenresPage = () => {
+    const [page, setPage] = useState(1);
+    const [search, setSearch]           = useState('');
+    const [searchInput, setSearchInput] = useState('');
+    const [sortBy, setSortBy]       = useState<string | undefined>(undefined);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+    // Стани модальних вікон та чекбоксів
+    const [isCreateOpen, setIsCreateOpen]   = useState(false);
+    const [editingGenre, setEditingGenre]   = useState<GenreListItemDto | null>(null);
+    const [deletingGenre, setDeletingGenre] = useState<GenreListItemDto | null>(null);
+    const [selectedIds, setSelectedIds]     = useState<Set<string>>(new Set());
+
+    // Мемоізація параметрів запиту до API за спільним шаблоном
+    const queryParams: GetApiAdminGenresParams = useMemo(() => ({
+        Page: page,
+        PageSize: PAGE_SIZE,
+        SearchTerm: search || undefined,
+        SortBy: sortBy,
+        SortOrder: sortBy ? sortOrder : undefined,
+    }), [page, search, sortBy, sortOrder]);
+
+    const { data, isLoading, isError, refetch } = useGetApiAdminGenres(queryParams as any);
 
     const responseData = (data as any)?.data || data as any;
     const genres: GenreListItemDto[] = responseData?.items ?? [];
     const totalPages  = responseData?.totalPages  ?? 1;
-    const hasNext     = responseData?.hasNextPage  ?? false;
-    const hasPrev     = responseData?.hasPreviousPage ?? false;
     const totalCount  = responseData?.totalCount   ?? 0;
 
-    const handleToggleSelect = (id: string) => {
+    // Керування чекбоксами
+    const handleToggleSelect = useCallback((id: string) => {
         setSelectedIds(prev => {
             const next = new Set(prev);
             next.has(id) ? next.delete(id) : next.add(id);
             return next;
         });
-    };
+    }, []);
+
+    // Пошук
+    const handleSearch = useCallback(() => {
+        setPage(1);
+        setSearch(searchInput);
+    }, [searchInput]);
+
+    const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter')  handleSearch();
+        if (e.key === 'Escape') { setSearchInput(''); setSearch(''); setPage(1); }
+    }, [handleSearch]);
+
+    const handleClearSearch = useCallback(() => {
+        setSearchInput('');
+        setSearch('');
+        setPage(1);
+    }, []);
+
+    // Сортування
+    const handleSortChange = useCallback((newSortBy: string, newSortOrder: 'asc' | 'desc') => {
+        if (sortBy === newSortBy && sortOrder === newSortOrder) {
+            setSortBy(undefined);
+            setSortOrder('asc');
+        } else {
+            setSortBy(newSortBy);
+            setSortOrder(newSortOrder);
+        }
+        setPage(1);
+    }, [sortBy, sortOrder]);
 
     return (
         <>
             <BaseTable
                 title="Genres"
-                subtitle={`Manage music genres (Total: ${totalCount})`}
+                subtitle={`Manage music genres, metadata, and classification tracks (${totalCount} layers)`}
                 columns={genreTableColumns}
                 onNewClick={() => setIsCreateOpen(true)}
-                searchPlaceholder="Search by name or ID..."
-                pagination={
-                    <nav>
-                        <ul className="pagination pagination-sm mb-0">
-                            <li className={`page-item ${!hasPrev ? 'disabled' : ''}`}>
-                                <button
-                                    className="page-link bg-dark border-secondary text-white"
-                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                    disabled={!hasPrev}
-                                >«</button>
-                            </li>
-                            <li className="page-item active">
-                                <span className="page-link bg-primary border-primary text-dark fw-bold">
-                                    {currentPage} / {totalPages}
-                                </span>
-                            </li>
-                            <li className={`page-item ${!hasNext ? 'disabled' : ''}`}>
-                                <button
-                                    className="page-link bg-dark border-secondary text-white"
-                                    onClick={() => setCurrentPage(p => p + 1)}
-                                    disabled={!hasNext}
-                                >»</button>
-                            </li>
-                        </ul>
-                    </nav>
-                }
+                searchPlaceholder="Search genres by name..."
+                searchValue={searchInput}
+                onSearchChange={(e) => setSearchInput(e.target.value)}
+                onSearchKeyDown={handleSearchKeyDown}
+                onSearchClear={handleClearSearch}
+                sortOptions={SORT_OPTIONS}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={handleSortChange}
+                isAllSelected={selectedIds.size === genres.length && genres.length > 0}
+                onSelectAll={() => {
+                    if (selectedIds.size === genres.length) {
+                        setSelectedIds(new Set());
+                    } else {
+                        setSelectedIds(new Set(genres.map(g => g.id!)));
+                    }
+                }}
+                selectedCount={selectedIds.size}
+                pagination={<Pagination page={page} totalPages={totalPages} onPageChange={setPage} />}
             >
                 {isLoading ? (
                     <tr>
-                        <td colSpan={genreTableColumns.length} className="text-center py-5">
-                            <div className="spinner-border text-primary" />
+                        <td colSpan={genreTableColumns.length + 2} className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status" />
+                            <div className="text-secondary mt-2 small">Fetching cluster genres...</div>
                         </td>
                     </tr>
                 ) : isError ? (
                     <tr>
-                        <td colSpan={genreTableColumns.length} className="text-center py-5 text-danger">
-                            Error loading genres.
+                        <td colSpan={genreTableColumns.length + 2} className="text-center py-5 text-danger small">
+                            Error loading system genre catalog.
                         </td>
                     </tr>
                 ) : genres.length === 0 ? (
                     <tr>
-                        <td colSpan={genreTableColumns.length} className="text-center py-5 text-secondary">
-                            No genres found.
+                        <td colSpan={genreTableColumns.length + 2} className="text-center py-5 text-secondary small">
+                            {search ? `No genres found matching "${search}"` : 'No genres registered in the system.'}
                         </td>
                     </tr>
                 ) : (
@@ -108,19 +151,23 @@ export const GenresPage = () => {
                 onSuccess={refetch}
             />
 
-            <EditGenreModal
-                genre={editingGenre}
-                isOpen={!!editingGenre}
-                onClose={() => setEditingGenre(null)}
-                onSuccess={() => { refetch(); setEditingGenre(null); }}
-            />
+            {editingGenre && (
+                <EditGenreModal
+                    genre={editingGenre}
+                    isOpen={!!editingGenre}
+                    onClose={() => setEditingGenre(null)}
+                    onSuccess={() => { refetch(); setEditingGenre(null); }}
+                />
+            )}
 
-            <DeleteGenreModal
-                genre={deletingGenre}
-                isOpen={!!deletingGenre}
-                onClose={() => setDeletingGenre(null)}
-                onSuccess={() => { refetch(); setDeletingGenre(null); }}
-            />
+            {deletingGenre && (
+                <DeleteGenreModal
+                    genre={deletingGenre}
+                    isOpen={!!deletingGenre}
+                    onClose={() => setDeletingGenre(null)}
+                    onSuccess={() => { refetch(); setDeletingGenre(null); }}
+                />
+            )}
         </>
     );
 };
