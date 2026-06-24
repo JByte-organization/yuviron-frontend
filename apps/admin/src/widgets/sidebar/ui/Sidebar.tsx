@@ -87,6 +87,7 @@ export const Sidebar = ({ isOpen, onClose }: Props) => {
                         {navLink('/verification', 'Verification')}
                         {navLink('/payout', 'Finance')}
                         {navLink('/ads', 'Ads')}
+                        {navLink('/complaints', 'Complaints')}
                         {navLink('/plans', 'Premium Plans')}
                         {navLink('/themes', 'Premium Themes')}
 
