@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
     useGetApiAdminPlaylists,
     getApiAdminUsers,
     type PlaylistDto,
 } from '@repo/api/admin.ts';
 import { BaseTable } from '@/shared/ui/Table/BaseTable';
+import { Pagination } from '@/shared/ui/Pagination';
 import { PlaylistRow } from '@/entities/playlist/ui/PlaylistRow';
 import { playlistTableColumns } from '@/entities/playlist/model/columns';
 import { CreatePlaylistModal } from '@/features/playlist/create/ui/CreatePlaylistModal';
@@ -14,33 +15,82 @@ import { EditPlaylistModal } from '@/features/playlist/edit/ui/EditPlaylistModal
 import { DeletePlaylistModal } from '@/features/playlist/delete/ui/DeletePlaylistModal';
 import type { SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
 
-export const PlaylistsPage = () => {
-    const [isCreateOpen,     setIsCreateOpen]     = useState(false);
-    const [editingPlaylist,  setEditingPlaylist]  = useState<PlaylistDto | null>(null);
-    const [deletingPlaylist, setDeletingPlaylist] = useState<PlaylistDto | null>(null);
-    const [selectedIds,      setSelectedIds]      = useState<Set<string>>(new Set());
-    const [currentPage,      setCurrentPage]      = useState(1);
+const PAGE_SIZE = 20;
 
-    const { data, isLoading, isError, refetch } = useGetApiAdminPlaylists({
-        Page: currentPage,
-        PageSize: 20,
-    });
+const SORT_OPTIONS = [
+    { value: 'Title',       label: 'Playlist Title (A-Z)' },
+    { value: 'TracksCount', label: 'Tracks Total Count' },
+    { value: 'CreatedAt',   label: 'Date Created' },
+];
+
+export const PlaylistsPage = () => {
+    const [page, setPage] = useState(1);
+    const [search, setSearch]           = useState('');
+    const [searchInput, setSearchInput] = useState('');
+    const [sortBy, setSortBy]       = useState<string | undefined>(undefined);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+    // Стани модальних вікон та виділених елементів
+    const [isCreateOpen, setIsCreateOpen]     = useState(false);
+    const [editingPlaylist, setEditingPlaylist]   = useState<PlaylistDto | null>(null);
+    const [deletingPlaylist, setDeletingPlaylist] = useState<PlaylistDto | null>(null);
+    const [selectedIds, setSelectedIds]           = useState<Set<string>>(new Set());
+
+    // Мемоізація уніфікованих параметрів для TanStack Query
+    const queryParams = useMemo(() => ({
+        Page: page,
+        PageSize: PAGE_SIZE,
+        SearchTerm: search || undefined,
+        SortBy: sortBy,
+        SortOrder: sortBy ? sortOrder : undefined,
+    }), [page, search, sortBy, sortOrder]);
+
+    const { data, isLoading, isError, refetch } = useGetApiAdminPlaylists(queryParams as any);
 
     const responseData = (data as any)?.data || (data as any);
     const playlists: PlaylistDto[] = responseData?.items ?? [];
     const totalPages = responseData?.totalPages ?? 1;
-    const hasNext    = responseData?.hasNextPage ?? false;
-    const hasPrev    = responseData?.hasPreviousPage ?? false;
     const totalCount = responseData?.totalCount ?? 0;
 
-    const handleToggleSelect = (id: string) => {
+    // Керування чекбоксами
+    const handleToggleSelect = useCallback((id: string) => {
         setSelectedIds(prev => {
             const next = new Set(prev);
             next.has(id) ? next.delete(id) : next.add(id);
             return next;
         });
-    };
+    }, []);
 
+    // Пошук
+    const handleSearch = useCallback(() => {
+        setPage(1);
+        setSearch(searchInput);
+    }, [searchInput]);
+
+    const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter')  handleSearch();
+        if (e.key === 'Escape') { setSearchInput(''); setSearch(''); setPage(1); }
+    }, [handleSearch]);
+
+    const handleClearSearch = useCallback(() => {
+        setSearchInput('');
+        setSearch('');
+        setPage(1);
+    }, []);
+
+    // Сортування
+    const handleSortChange = useCallback((newSortBy: string, newSortOrder: 'asc' | 'desc') => {
+        if (sortBy === newSortBy && sortOrder === newSortOrder) {
+            setSortBy(undefined);
+            setSortOrder('asc');
+        } else {
+            setSortBy(newSortBy);
+            setSortOrder(newSortOrder);
+        }
+        setPage(1);
+    }, [sortBy, sortOrder]);
+
+    // Автокомплит користувачів
     const searchUsers = useCallback(async (term: string): Promise<SelectOption[]> => {
         if (!term.trim()) return [];
         try {
@@ -57,52 +107,46 @@ export const PlaylistsPage = () => {
         <>
             <BaseTable
                 title="Playlists"
-                subtitle={`Manage playlists (Total: ${totalCount})`}
+                subtitle={`Manage system playlists, editorial tracks curation, and coverage flags (${totalCount} layers)`}
                 columns={playlistTableColumns}
                 onNewClick={() => setIsCreateOpen(true)}
-                searchPlaceholder="Search by title or creator..."
-                pagination={
-                    <nav>
-                        <ul className="pagination pagination-sm mb-0">
-                            <li className={`page-item ${!hasPrev ? 'disabled' : ''}`}>
-                                <button
-                                    className="page-link bg-dark border-secondary text-white"
-                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                    disabled={!hasPrev}
-                                >«</button>
-                            </li>
-                            <li className="page-item active">
-                                <span className="page-link bg-primary border-primary text-dark fw-bold">
-                                    {currentPage} / {totalPages}
-                                </span>
-                            </li>
-                            <li className={`page-item ${!hasNext ? 'disabled' : ''}`}>
-                                <button
-                                    className="page-link bg-dark border-secondary text-white"
-                                    onClick={() => setCurrentPage(p => p + 1)}
-                                    disabled={!hasNext}
-                                >»</button>
-                            </li>
-                        </ul>
-                    </nav>
-                }
+                searchPlaceholder="Search playlists by title or creator..."
+                searchValue={searchInput}
+                onSearchChange={(e) => setSearchInput(e.target.value)}
+                onSearchKeyDown={handleSearchKeyDown}
+                onSearchClear={handleClearSearch}
+                sortOptions={SORT_OPTIONS}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={handleSortChange}
+                isAllSelected={selectedIds.size === playlists.length && playlists.length > 0}
+                onSelectAll={() => {
+                    if (selectedIds.size === playlists.length) {
+                        setSelectedIds(new Set());
+                    } else {
+                        setSelectedIds(new Set(playlists.map(p => p.id!)));
+                    }
+                }}
+                selectedCount={selectedIds.size}
+                pagination={<Pagination page={page} totalPages={totalPages} onPageChange={setPage} />}
             >
                 {isLoading ? (
                     <tr>
                         <td colSpan={playlistTableColumns.length + 2} className="text-center py-5">
-                            <div className="spinner-border text-primary" />
+                            <div className="spinner-border text-primary" role="status" />
+                            <div className="text-secondary mt-2 small">Fetching cluster playlists...</div>
                         </td>
                     </tr>
                 ) : isError ? (
                     <tr>
-                        <td colSpan={playlistTableColumns.length + 2} className="text-center py-5 text-danger">
-                            Error loading playlists.
+                        <td colSpan={playlistTableColumns.length + 2} className="text-center py-5 text-danger small">
+                            Error loading system playlist catalog.
                         </td>
                     </tr>
                 ) : playlists.length === 0 ? (
                     <tr>
-                        <td colSpan={playlistTableColumns.length + 2} className="text-center py-5 text-secondary">
-                            No playlists found.
+                        <td colSpan={playlistTableColumns.length + 2} className="text-center py-5 text-secondary small">
+                            {search ? `No playlists found matching "${search}"` : 'No playlists registered in the system.'}
                         </td>
                     </tr>
                 ) : (
@@ -125,19 +169,25 @@ export const PlaylistsPage = () => {
                 onSuccess={refetch}
                 onSearchUsers={searchUsers}
             />
-            <EditPlaylistModal
-                playlist={editingPlaylist}
-                isOpen={!!editingPlaylist}
-                onClose={() => setEditingPlaylist(null)}
-                onSuccess={() => { refetch(); setEditingPlaylist(null); }}
-                onSearchUsers={searchUsers}
-            />
-            <DeletePlaylistModal
-                playlist={deletingPlaylist}
-                isOpen={!!deletingPlaylist}
-                onClose={() => setDeletingPlaylist(null)}
-                onSuccess={() => { refetch(); setDeletingPlaylist(null); }}
-            />
+
+            {editingPlaylist && (
+                <EditPlaylistModal
+                    playlist={editingPlaylist}
+                    isOpen={!!editingPlaylist}
+                    onClose={() => setEditingPlaylist(null)}
+                    onSuccess={() => { refetch(); setEditingPlaylist(null); }}
+                    onSearchUsers={searchUsers}
+                />
+            )}
+
+            {deletingPlaylist && (
+                <DeletePlaylistModal
+                    playlist={deletingPlaylist}
+                    isOpen={!!deletingPlaylist}
+                    onClose={() => setDeletingPlaylist(null)}
+                    onSuccess={() => { refetch(); setDeletingPlaylist(null); }}
+                />
+            )}
         </>
     );
 };

@@ -1,20 +1,22 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { type GenreListItemDto } from '@repo/api/admin.ts';
-import {getImageUrl} from "@/shared/lib/getImageUrl";
+import { getImageUrl } from '@/shared/lib/getImageUrl';
 
 interface Props {
     genre: GenreListItemDto;
     isSelected: boolean;
     onSelect: () => void;
     onEdit: (genre: GenreListItemDto) => void;
+    // Змінено назву пропса на onDelete для відповідності іншим рядкам
     onDelete: (genre: GenreListItemDto) => void;
 }
 
 const formatDate = (dateString?: string): string => {
     if (!dateString) return '—';
-    return new Date(dateString).toLocaleDateString('ru-RU', {
+    return new Date(dateString).toLocaleDateString('uk-UA', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -40,7 +42,7 @@ export const GenreRow = ({ genre, isSelected, onSelect, onEdit, onDelete }: Prop
             {/* Cover */}
             <td className="py-3">
                 <div
-                    className="rounded bg-dark d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0"
+                    className="rounded bg-dark d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0 border border-secondary"
                     style={{ width: '40px', height: '40px' }}
                 >
                     {coverSrc
@@ -66,31 +68,31 @@ export const GenreRow = ({ genre, isSelected, onSelect, onEdit, onDelete }: Prop
             </td>
 
             {/* Created At */}
-            <td className="text-secondary small text-nowrap">
+            <td className="text-secondary small text-nowrap font-monospace">
                 {formatDate(genre.createdAt)}
             </td>
 
             {/* Updated At */}
-            <td className="text-secondary small text-nowrap">
+            <td className="text-secondary small text-nowrap font-monospace">
                 {formatDate(genre.updatedAt)}
             </td>
 
             {/* Actions */}
-            <td className="px-4">
-                <div className="d-flex justify-content-end gap-1">
+            <td className="px-4 text-end">
+                <div className="d-flex justify-content-end gap-2">
                     <button
-                        className="btn btn-sm btn-outline-warning border-0 shadow-none px-2"
-                        title="Edit"
+                        className="btn btn-sm btn-secondary border-0 shadow-none"
+                        title="Modify genre metadata"
                         onClick={() => onEdit(genre)}
                     >
-                        ✏️
+                        <Image src="/images/icons/edit-btn.svg" width={16} height={16} alt="edit" />
                     </button>
                     <button
-                        className="btn btn-sm btn-outline-danger border-0 shadow-none px-2"
-                        title="Delete"
+                        className="btn btn-sm btn-secondary border-0 shadow-none"
+                        title="Delete genre grid level"
                         onClick={() => onDelete(genre)}
                     >
-                        🗑️
+                        <Image src="/images/icons/delete-btn.svg" width={16} height={16} alt="delete" />
                     </button>
                 </div>
             </td>

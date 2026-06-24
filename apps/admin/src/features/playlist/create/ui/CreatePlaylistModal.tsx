@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { usePostApiAdminPlaylists, PlaylistVisibility, postApiFilesUpload } from '@repo/api/admin.ts';
 import { AsyncSelect, type SelectOption } from '@/shared/ui/AsyncSelect/AsyncSelect';
+import { formatToGuid } from '@/shared/lib/formatToGuid';
 
 interface Props {
     isOpen: boolean;
@@ -72,7 +73,7 @@ export const CreatePlaylistModal = ({ isOpen, onClose, onSuccess, onSearchUsers 
                 data: {
                     title:       values.title,
                     description: values.description || null,
-                    coverFileId: coverFileId ?? null,
+                    coverFileId: formatToGuid(coverFileId),
                     visibility:  values.visibility as any,
                     isEditorial: values.isEditorial,
                     ownerUserId: owner[0]?.id || null,
