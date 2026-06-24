@@ -41,7 +41,6 @@ export const PremiumHubView = () => {
 
     // ─── Запит тарифних планів з бази даних ──────────────
     const { data: plansRaw, isLoading: isPlansLoading } = useGetApiPlans();
-    // Забираємо абсолютно всі плани без виключень
     const plans: PlanDto[] = (plansRaw as any)?.data || plansRaw || [];
 
     // ─── Запити даних тем ─────────────────────────────────
@@ -77,6 +76,7 @@ export const PremiumHubView = () => {
         }
     }, [customTheme]);
 
+    // УКРАЇНІЗОВАНИЙ ЦІАНОВИЙ КИБЕР-ЛОАДЕР YUVIRON
     if (isUserLoading || isPlansLoading || isThemesLoading) {
         return (
             <div className="yuviron-loader-wrapper text-center py-5">
@@ -84,7 +84,7 @@ export const PremiumHubView = () => {
                     <div className="spinner-outer-ring" />
                     <div className="spinner-core-node" />
                 </div>
-                <div className="loader-diagnostic-text font-monospace small text-muted">Synchronizing billing nodes...</div>
+                <div className="loader-diagnostic-text font-monospace small text-muted">Синхронізація платіжних вузлів...</div>
             </div>
         );
     }
@@ -94,7 +94,6 @@ export const PremiumHubView = () => {
         setTimeout(() => setSuccessMessage(null), 4000);
     };
 
-    // ФІКС РЕДІРЕКТУ НА STRIPE
     const handleSubscribe = async (planId: string | undefined) => {
         if (!planId) return;
         try {
@@ -110,14 +109,11 @@ export const PremiumHubView = () => {
                 } as any
             });
 
-            // Дістаємо тіло відповіді залежно від налаштувань Axios перехоплювачів
             const resBody = (response as any)?.data || response;
-
-            // Точково витягуємо властивість "url" з об'єкта, який повернув ваш бекенд
             const redirectUrl = resBody?.url || (typeof resBody === 'string' ? resBody : null);
 
             if (redirectUrl) {
-                window.location.href = redirectUrl; // Прямий перехід на Stripe Checkout
+                window.location.href = redirectUrl;
             } else {
                 console.error('[Billing] URL property key missing in response payload structure:', response);
             }
@@ -134,7 +130,7 @@ export const PremiumHubView = () => {
             await activateThemePreset({ id: themeId });
             await queryClient.invalidateQueries({ queryKey: getGetApiMeAppearanceThemesQueryKey() });
             await queryClient.invalidateQueries({ queryKey: getGetApiAuthMeQueryKey() });
-            triggerToast('Color node configuration applied successfully.');
+            triggerToast('Конфігурацію кольорової схеми успішно застосовано.');
         } catch (err) {
             console.error('[Theme] Activation failed:', err);
         }
@@ -150,7 +146,7 @@ export const PremiumHubView = () => {
                 data: { primaryColor, secondaryColor, backgroundColor }
             });
             await queryClient.invalidateQueries({ queryKey: getGetApiMeAppearanceCustomThemeQueryKey() });
-            triggerToast('Your personal custom gradient layer has been deployed.');
+            triggerToast('Ваш персональний шар кастомного градієнта успішно впроваджено.');
         } catch (err) {
             console.error('[Theme] Custom save failed:', err);
         } finally {
@@ -158,169 +154,119 @@ export const PremiumHubView = () => {
         }
     };
 
+    const formatPeriod = (period?: string | null) => {
+        if (period === PlanPeriod.Month) return 'місяць';
+        if (period === PlanPeriod.Year) return 'рік';
+        return 'період';
+    };
+
     return (
-        <div className="premium-hub-wrapper container py-5">
+        <div className="premium-hub-page-root">
+            <div className="premium-hub-wrapper container py-5">
 
-            {/* ГЕРОЙ-БАННЕР */}
-            <header className="premium-hub-hero text-center mb-5 p-5 rounded-4">
-                <span className="hero-badge px-3 py-1 rounded-pill mb-2 d-inline-block">Yuviron Premium</span>
-                <h1 className="fw-black text-white display-5 mb-3 tracking-tight mt-2">
-                    {isPremium ? 'Welcome to Premium Studio' : 'Unlock Maximum Acoustic Fidelity'}
-                </h1>
-                <p className="text-secondary mx-auto mb-0" style={{ maxWidth: '600px', fontSize: '15px', lineHeight: '1.6' }}>
-                    Experience unrestricted spatial rendering, native lossless compilation nodes, and deep client layout customization options.
-                </p>
-            </header>
+                {/* ГЕРОЙ-БАННЕР */}
+                <header className="premium-hub-hero text-center mb-5 p-5 rounded-4">
+                    <span className="hero-badge px-3 py-1 rounded-pill mb-2 d-inline-block">Yuviron Premium</span>
+                    <h1 className="fw-black text-white display-5 mb-3 tracking-tight mt-2">
+                        {isPremium ? 'Ласкаво просимо до Premium Студії' : 'Розблокуйте максимальну акустичну точність'}
+                    </h1>
+                    <div className="premium-hero-features mx-auto mt-4" style={{ maxWidth: '780px' }}>
+                        <p className="text-secondary mb-4" style={{ fontSize: '15px', lineHeight: '1.6', color: '#b3b3cb' }}>
+                            Виведіть свій досвід у Yuviron на новий рівень. З Premium ви отримуєте не лише професійні аудіо- та рендеринг-інструменти, а й абсолютний комфорт:
+                        </p>
 
-            {/* СІТКА ТАРИФІВ (СТАБІЛЬНО ВІДОБРАЖАЄ ВСІ 3 ПЛАНИ З БД В ОДИН РЯД) */}
-            <section className="mb-5">
-                <h3 className="hub-section-title mb-4 tracking-tight">Pick Your Premium Level</h3>
-                <div className="plans-grid-system">
-                    {plans.map((plan: PlanDto) => {
-                        // Евристика визначення поточного активного тарифу користувача
-                        const isCurrentPlan = isPremium && plan.type === PlanType.Listener;
-                        return (
-                            <div
-                                key={plan.id}
-                                className={`plan-premium-card p-4 rounded-4 ${isCurrentPlan ? 'current-active-plan' : ''}`}
-                            >
-                                <div className="card-top-details">
-                                    <div className="d-flex align-items-center justify-content-between">
-                                        <h4 className="fw-bold text-white mb-0">{plan.name || 'Premium Tier'}</h4>
-                                        {isCurrentPlan && <span className="current-badge">Active</span>}
+                        <div className="row g-3 text-start mt-2">
+                            {/* Фіча 1 */}
+                            <div className="col-12 col-md-4">
+                                <div className="feature-mini-node p-3 rounded-3 h-100">
+                                    <div className="d-flex align-items-center gap-2 mb-2">
+                                        <i className="bi bi-person-lines-fill icon-vector" />
+                                        <h6 className="fw-bold text-white mb-0">Керуйте ефективніше</h6>
                                     </div>
-
-                                    <div className="plan-price-tag my-3">
-                                        <span className="price-amount text-white fw-black fs-2">{plan.price}</span>
-                                        <span className="text-white-50 small"> {plan.currency || 'USD'} / {plan.period?.toLowerCase()}</span>
-                                    </div>
-
-                                    <hr className="border-secondary my-3" style={{ opacity: 0.1 }} />
-
-                                    <ul className="feature-list">
-                                        <li>32-bit FLAC High-Fidelity audio</li>
-                                        <li>Unrestricted spatial rendering maps</li>
-                                        <li>Zero commercial advertisement modules</li>
-                                        <li>Exclusive access to Aesthetic Workspace</li>
-                                    </ul>
-                                </div>
-
-                                <div className="card-action-block mt-4">
-                                    <button
-                                        type="button"
-                                        className={isCurrentPlan ? 'yuviron-btn-minimal py-2.5' : 'yuviron-btn-cosmic-glow py-2.5'}
-                                        disabled={isCurrentPlan}
-                                        onClick={() => handleSubscribe(plan.id)}
-                                    >
-                                        {isCurrentPlan ? 'Current Tier Account' : 'Upgrade Profile'}
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </section>
-
-            {/* РОБОЧИЙ ПРОСТІР ТЕМ */}
-            <section className="row">
-                <div className="col-12">
-                    <h3 className="hub-section-title mb-4 tracking-tight">Aesthetic Studio Node</h3>
-                    <div className="theme-workspace-card p-4 rounded-4 position-relative overflow-hidden">
-
-                        {/* 🔒 GLASSMORPHISM OVERLAY ДЛЯ FREE ЮЗЕРОВ */}
-                        {!isPremium && (
-                            <div className="premium-blur-overlay rounded-4 text-center p-4">
-                                <div className="overlay-glass-card p-4 rounded-4 text-center">
-                                    <i className="bi bi-crown-fill crown-icon mb-2" />
-                                    <h5 className="fw-bold text-white mb-2 tracking-tight">Laboratory Matrix Gated</h5>
-                                    <p className="text-secondary small mb-4 px-2" style={{ color: '#a7a7a7', lineHeight: '1.5' }}>
-                                        Custom gradient-map configurations, custom personal nodes and palette catalogs are exclusive to Premium account configurations.
+                                    <p className="small mb-0 text-muted-desc">
+                                        Необмежена кількість артистів в одному інтерфейсі керування.
                                     </p>
-                                    <button
-                                        type="button"
-                                        className="yuviron-btn-cosmic-glow py-2.5 px-4 text-uppercase fw-bold"
-                                        style={{ fontSize: '12px' }}
-                                        onClick={() => handleSubscribe(plans[1]?.id || plans[0]?.id)}
-                                    >
-                                        Unlock Design Studio
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="row g-4">
-                            {/* Каталог пресетів */}
-                            <div className="col-12 col-md-6">
-                                <label className="input-label mb-3 d-block text-white-50 small fw-bold text-uppercase">Preset Palette Catalog</label>
-                                <div className="catalog-theme-grid">
-                                    {themes.map((themeItem: ThemeDto) => (
-                                        <button
-                                            key={themeItem.id}
-                                            type="button"
-                                            className={`preset-circle-card ${themeItem.isSelected ? 'selected-preset' : ''}`}
-                                            onClick={() => handlePresetActivate(themeItem.id, themeItem.isPremiumOnly)}
-                                        >
-                                            <div className="triple-dot-preview" style={{ background: themeItem.backgroundColor ?? '#111' }}>
-                                                <span className="dot-node" style={{ background: themeItem.primaryColor ?? '#7AE0FF' }} />
-                                                <span className="dot-node" style={{ background: themeItem.secondaryColor ?? '#1D4ED8' }} />
-                                            </div>
-                                            <span className="preset-name text-truncate d-block">{themeItem.name}</span>
-                                        </button>
-                                    ))}
                                 </div>
                             </div>
 
-                            {/* Конструктор градієнта */}
-                            <div className="col-12 col-md-6">
-                                <form onSubmit={handleSaveCustomTheme} className="premium-generator-layout d-flex flex-column gap-3">
-                                    <label className="input-label mb-0 text-white-50 small fw-bold text-uppercase">Linear-Gradient Generator</label>
-
-                                    <div className="d-flex gap-3 align-items-center">
-                                        <div
-                                            className="gradient-preview-viewport flex-grow-1 rounded-3 p-3 d-flex align-items-end"
-                                            style={{ background: `linear-gradient(135deg, ${backgroundColor} 0%, ${secondaryColor} 50%, ${primaryColor} 100%)` }}
-                                        >
-                                            <div className="viewport-inner-content">
-                                                <span className="app-mock-title d-block fw-bold small text-white">Canvas Layer</span>
-                                                <span className="app-mock-subtitle font-monospace text-white-50" style={{ fontSize: '10px' }}>Live Shader Engine</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="d-flex flex-column gap-2 flex-shrink-0">
-                                            <div className="color-picker-node-row gap-3">
-                                                <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
-                                                <span>Primary</span>
-                                            </div>
-                                            <div className="color-picker-node-row gap-3">
-                                                <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} />
-                                                <span>Middle</span>
-                                            </div>
-                                            <div className="color-picker-node-row gap-3">
-                                                <input type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} />
-                                                <span>Base</span>
-                                            </div>
-                                        </div>
+                            {/* Фіча 2 */}
+                            <div className="col-12 col-md-4">
+                                <div className="feature-mini-node p-3 rounded-3 h-100">
+                                    <div className="d-flex align-items-center gap-2 mb-2">
+                                        <i className="bi bi-palette-fill icon-vector" />
+                                        <h6 className="fw-bold text-white mb-0">Персоналізуйте простір</h6>
                                     </div>
+                                    <p className="small mb-0 text-muted-desc">
+                                        Динамічно змінюйте кольори фону та вектори тем клієнта.
+                                    </p>
+                                </div>
+                            </div>
 
-                                    <div className="d-flex justify-content-end mt-2">
-                                        <button type="submit" className="yuviron-btn-cosmic-glow py-2 px-4" style={{ width: 'auto' }} disabled={isSavingCustom}>
-                                            {isSavingCustom ? 'Deploying Configuration...' : 'Deploy Live Palette'}
-                                        </button>
+                            {/* Фіча 3 */}
+                            <div className="col-12 col-md-4">
+                                <div className="feature-mini-node p-3 rounded-3 h-100">
+                                    <div className="d-flex align-items-center gap-2 mb-2">
+                                        <i className="bi bi-eye-slash-fill icon-vector" />
+                                        <h6 className="fw-bold text-white mb-0">Працюйте без обмежень</h6>
                                     </div>
-                                </form>
+                                    <p className="small mb-0 text-muted-desc">
+                                        Жодної реклами чи сторонніх модулів — тільки ви та ваш контент.
+                                    </p>
+                                </div>
                             </div>
                         </div>
-
                     </div>
-                </div>
-            </section>
+                </header>
 
-            {/* ТОСТ НА ПОВЕРХНІ */}
-            {successMessage && (
-                <div className="position-fixed bottom-0 end-0 m-4 p-3 rounded-3 shadow-lg border border-success bg-dark text-success" style={{ zIndex: 1100 }}>
-                    <span className="small fw-semibold">✓ {successMessage}</span>
-                </div>
-            )}
+                {/* СІТКА ТАРИФІВ */}
+                <section className="mb-5 py-2 pb-5 py-lg-4">
+                    <h3 className="hub-section-title text-center mb-3 mb-lg-5 tracking-tight">Оберіть свій рівень Premium</h3>
+                    <div className="plans-grid-system">
+                        {plans.map((plan: PlanDto) => {
+                            const isCurrentPlan = isPremium && plan.type === PlanType.Listener;
+                            return (
+                                <div
+                                    key={plan.id}
+                                    className={`plan-premium-card p-4 rounded-4 ${isCurrentPlan ? 'current-active-plan' : ''}`}
+                                >
+                                    <div className="card-top-details">
+                                        <div className="d-flex align-items-center justify-content-between">
+                                            <h4 className="fw-bold text-white mb-0">{plan.name || 'Premium план'}</h4>
+                                            {isCurrentPlan && <span className="current-badge">Активний</span>}
+                                        </div>
+
+                                        <div className="plan-price-tag my-3">
+                                            <span className="price-amount text-white fw-black fs-2">{plan.price}</span>
+                                            <span className="text-white-50 small"> {plan.currency || 'USD'} / {formatPeriod(plan.period)}</span>
+                                        </div>
+
+                                        <hr className="border-secondary my-3" style={{ opacity: 0.1 }} />
+                                    </div>
+
+                                    <div className="card-action-block mt-1">
+                                        <button
+                                            type="button"
+                                            className={isCurrentPlan ? 'yuviron-btn-minimal py-2' : 'yuviron-btn-cosmic-glow py-2'}
+                                            disabled={isCurrentPlan}
+                                            onClick={() => handleSubscribe(plan.id)}
+                                        >
+                                            {isCurrentPlan ? 'Поточний тариф' : 'Оновити профіль'}
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
+
+
+                {/* ТОСТ НА ПОВЕРХНІ */}
+                {successMessage && (
+                    <div className="position-fixed bottom-0 end-0 m-4 p-3 rounded-3 shadow-lg border border-success bg-dark text-success" style={{ zIndex: 1100 }}>
+                        <span className="small fw-semibold">✓ {successMessage}</span>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
