@@ -124,21 +124,35 @@
   // Рядок з кнопками
   &__row-wrap {
     position: relative;
-    display: flex;
-    align-items: center;
+    // НЕ display:flex! Інакше .track-row стає flex-елементом і стискається
+    // до content-width — grid-колонки рядка схлопуються й перестають збігатися
+    // з шапкою (__columns). Як блоковий grid рядок займає всю ширину сам.
 
     &:hover .artist-tracks-page__row-actions {
       opacity: 1;
+      pointer-events: auto;
     }
   }
 
+  // Кнопки керування (аналітика/редагування/видалення) — overlay справа,
+  // що зʼявляється по ховеру поверх колонки тривалості. Absolute, щоб не
+  // забирати ширину в рядка й не ламати вирівнювання колонок.
   &__row-actions {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
     display: flex;
+    align-items: center;
     gap: 4px;
+    padding: 4px 8px;
+    border-radius: 20px;
+    background: $client-surface-2;
+    border: 1px solid $client-border;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.15s;
-    flex-shrink: 0;
-    padding-right: 8px;
   }
 
   &__row-btn {
