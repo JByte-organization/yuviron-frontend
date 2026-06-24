@@ -4,16 +4,22 @@ import React, { useEffect, useState, useMemo } from 'react';
 import {
     getGetApiStudioArtistTracksQueryKey,
     useGetApiStudioArtistTracks,
+    useGetApiStudioArtistAlbums,
+    getGetApiStudioArtistAlbumsQueryKey,
+    getApiStudioArtistAlbumsIdTracks,
+    getGetApiStudioArtistAlbumsIdTracksQueryKey,
+    type StudioAlbumListItemDto,
+    type StudioAlbumTrackDto,
 } from '@repo/api/artist.ts';
 import type { StudioTrackListItemFlex } from '@/entities/artist/model/studioListDtoFlex';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 import { UploadTrackModal } from '@/features/artist/track/ui/UploadTrackModal';
 import { EditTrackModal, DeleteTrackModal } from '@/features/artist/track/ui/EditDeleteArtistTrackModals';
 import { TrackAnalyticsModal } from '@/features/artist/track/ui/TrackAnalyticsModal';
 import { useCurrentArtist } from '@/entities/artist/model/currentArtist';
 import { useArtistPermissions } from '@/entities/artist/model/useArtistPermissions';
-import { unwrapItems } from '@/shared/lib/unwrapApi';
+import { unwrapItems, unwrapList } from '@/shared/lib/unwrapApi';
 
 interface TrackToEdit {
     id: string;
@@ -49,21 +55,69 @@ export const ArtistTracksPage = () => {
         query: { enabled: !!artistId, queryKey: getGetApiStudioArtistTracksQueryKey(params) },
     });
 
+    // ─── Воркераунд: привʼязка трек → альбом ──────────────────────────────
+    // Список треків (StudioTrackListItemDto) НЕ повертає albumId/albumTitle —
+    // ці поля є лише в StudioTrackDetailsDto. Тому будуємо мапу trackId → альбом
+    // з альбомів артиста та їхніх треків (/albums/{id}/tracks). Прибрати, щойно
+    // бек додасть albumId/albumTitle у StudioTrackListItemDto (тоді спрацює
+    // прямий t.albumId/t.albumTitle нижче).
+    const albumsParams = { ArtistId: artistId ?? undefined, Page: 1, PageSize: 100 };
+    const { data: albumsRaw } = useGetApiStudioArtistAlbums(albumsParams, {
+        query: { enabled: !!artistId, queryKey: getGetApiStudioArtistAlbumsQueryKey(albumsParams) },
+    });
+    const albumList = useMemo(
+        () => unwrapItems<StudioAlbumListItemDto>(albumsRaw),
+        [albumsRaw],
+    );
+
+    // По одному запиту на альбом (N+1, прийнятно для воркераунда). Кешуємо на хвилину.
+    const albumTrackQueries = useQueries({
+        queries: albumList.map((album) => ({
+            queryKey: getGetApiStudioArtistAlbumsIdTracksQueryKey(album.id ?? ''),
+            queryFn: () => getApiStudioArtistAlbumsIdTracks(album.id ?? ''),
+            enabled: !!album.id,
+            staleTime: 60_000,
+        })),
+    });
+
+    // Підпис результатів — стабільний рядок, що змінюється лише коли підʼїхали
+    // нові дані (інакше useMemo нижче перебудовувався б щорендера через новий масив).
+    const albumTracksSig = albumTrackQueries
+        .map((q) => q.dataUpdatedAt ?? 0)
+        .join(',');
+
     const tracks: TrackRowData[] = useMemo(() => {
-        return unwrapItems<StudioTrackListItemFlex>(tracksRaw).map((t, i) => ({
-            id:          t.id ?? '',
-            index:       t.albumPosition ?? i + 1,
-            title:       t.title ?? 'Без назви',
-            artistNames: t.artistNames ?? [],
-            artistId:    artistId ?? '',
-            albumId:     t.albumId ?? '',
-            albumTitle:  t.albumTitle ?? null,
-            addedAt:     t.createdAt ?? '',
-            durationMs:  t.durationMs ?? 0,
-            coverUrl:    t.coverUrl,
-            isSaved:     (t as any).isSaved ?? false,
-        }));
-    }, [tracksRaw, artistId]);
+        // trackId → { albumId, albumTitle }
+        const albumByTrackId = new Map<string, { albumId: string; albumTitle: string }>();
+        albumTrackQueries.forEach((q, i) => {
+            const album = albumList[i];
+            if (!album?.id) return;
+            unwrapList<StudioAlbumTrackDto>(q.data).forEach((tr) => {
+                if (tr.id) albumByTrackId.set(tr.id, { albumId: album.id!, albumTitle: album.title ?? '' });
+            });
+        });
+
+        return unwrapItems<StudioTrackListItemFlex>(tracksRaw).map((t, i) => {
+            const fromAlbum = t.id ? albumByTrackId.get(t.id) : undefined;
+            return {
+                id:          t.id ?? '',
+                index:       t.albumPosition ?? i + 1,
+                title:       t.title ?? 'Без назви',
+                artistNames: t.artistNames ?? [],
+                artistId:    artistId ?? '',
+                // Прямі поля з беку мають пріоритет; мапа — фолбек, поки їх немає.
+                albumId:     t.albumId ?? fromAlbum?.albumId ?? '',
+                albumTitle:  t.albumTitle ?? fromAlbum?.albumTitle ?? null,
+                addedAt:     t.createdAt ?? '',
+                durationMs:  t.durationMs ?? 0,
+                coverUrl:    t.coverUrl,
+                isSaved:     (t as any).isSaved ?? false,
+            };
+        });
+        // albumTrackQueries читаємо через albumTracksSig, щоб не перебудовуватись
+        // щорендера на новому масиві результатів useQueries.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tracksRaw, artistId, albumList, albumTracksSig]);
 
     const refetchTracks = () =>
         queryClient.invalidateQueries({ queryKey: ['/api/studio-artist/tracks'] });
