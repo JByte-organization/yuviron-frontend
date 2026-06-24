@@ -15,6 +15,7 @@ export * from './generated/admin/endpoints/admin-jamendo';
 export * from './generated/admin/endpoints/admin-finance';
 export * from './generated/admin/endpoints/admin-verification-requests';
 export * from './generated/admin/endpoints/admin-plans';
+export * from './generated/admin/endpoints/admin-complaints';
 
 export * from './generated/client/endpoints/files';
 
