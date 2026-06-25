@@ -70,9 +70,7 @@ export const LibraryPlaylistsSection = ({
                             />
                         </div>
                     ))}
-                    <div className="col-auto d-flex align-items-center">
-                        <ShowAllButton href={showAllHref} />
-                    </div>
+
                 </div>
             )}
         </section>

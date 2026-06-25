@@ -52,7 +52,6 @@ export const TrackCard = ({ track, onClick }: TrackCardProps) => {
 
     const isCurrentlyPlaying = currentTrackId === track.id && playerStatus === 'playing';
 
-    // 🚨 ОНОВЛЕНО: Підключаємо ініціалізацію лайку до реального поля isSaved
     const { isLiked, isPending: isLikePending, toggle: toggleLike } = useFavoriteTrack({
         initialLiked: track.isSaved ?? false,
     });

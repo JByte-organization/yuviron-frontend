@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { getImageUrl } from "@/shared/lib/getImageUrl";
 import { usePlayer } from '@/entities/player/lib/usePlayer';
 import { usePlayerStore } from '@/entities/player/model/playerStore';
@@ -11,6 +12,7 @@ interface PlaylistInfo {
     name: string;
     coverUrl?: string | null;
     ownerName: string;
+    creatorId: string;
     tracksCount: number;
     isSubscribed: boolean;
 }
@@ -22,7 +24,7 @@ interface PlaylistPageHeaderProps {
     onEdit?: () => void;
     onDelete?: () => void;
     onShare?: () => void;
-    onSubscribe?: () => void;
+    onReport?: () => void; // Добавляем проп для вызова жалобы
 }
 
 export const PlaylistPageHeader = ({
@@ -32,9 +34,11 @@ export const PlaylistPageHeader = ({
                                        onEdit,
                                        onDelete,
                                        onShare,
-                                       onSubscribe,
+
+                                       onReport,
                                    }: PlaylistPageHeaderProps) => {
-    const [isSubscribed, setIsSubscribed] = useState(playlist.isSubscribed);
+    const router = useRouter();
+    const [isSubscribed] = useState(playlist.isSubscribed);
 
     const { playQueue, togglePlay } = usePlayer();
     const currentTrackId = usePlayerStore((s) => s.currentTrack?.id);
@@ -65,10 +69,6 @@ export const PlaylistPageHeader = ({
     const coverSrc = getImageUrl(playlist.coverUrl)
         ?? '/images/playlist/placeholder.png';
 
-    const handleSubscribe = () => {
-        setIsSubscribed((v) => !v);
-        onSubscribe?.();
-    };
 
     return (
         <div className="playlist-page-header">
@@ -85,14 +85,22 @@ export const PlaylistPageHeader = ({
                     <h1 className="playlist-page-header__title">{playlist.name}</h1>
 
                     <p className="playlist-page-header__meta">
-                        <span className="playlist-page-header__owner">{playlist.ownerName}</span>
+                        <span
+                            className="playlist-page-header__owner text-white fw-semibold"
+                            style={{ cursor: 'pointer', textDecoration: 'none' }}
+                            onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                            onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                            onClick={() => router.push(`/user/${playlist.creatorId}`)}
+                        >
+                            {playlist.ownerName}
+                        </span>
                         <span className="playlist-page-header__dot">•</span>
                         <span>{playlist.tracksCount ?? tracks.length} треків</span>
                     </p>
                 </div>
             </div>
 
-            <div className="playlist-page-header__actions">
+            <div className="playlist-page-header__actions d-flex align-items-center gap-2">
                 <button
                     className={`playlist-page-header__btn playlist-page-header__btn--play${isCollectionPlaying ? ' playlist-page-header__btn--active' : ''}`}
                     onClick={handlePlayAll}
@@ -133,18 +141,22 @@ export const PlaylistPageHeader = ({
                 ) : (
                     <>
                         <button
-                            className={`playlist-page-header__subscribe-btn${isSubscribed ? ' playlist-page-header__subscribe-btn--active' : ''}`}
-                            onClick={handleSubscribe}
-                        >
-                            {isSubscribed ? 'Відписатися' : 'Підписатися'}
-                        </button>
-
-                        <button
                             className="playlist-page-header__btn playlist-page-header__btn--icon"
                             onClick={onShare}
                             aria-label="Поділитися"
+                            title="Поділитися плейлістом"
                         >
                             <i className="bi bi-share" />
+                        </button>
+
+                        {/* Кнопка жалобы для гостей плейлиста */}
+                        <button
+                            className="playlist-page-header__btn playlist-page-header__btn--icon"
+                            onClick={onReport}
+                            aria-label="Поскаржитися"
+                            title="Поскаржитися на плейліст"
+                        >
+                            <i className="bi bi-exclamation-triangle ext-white-50" />
                         </button>
                     </>
                 )}

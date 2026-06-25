@@ -21,7 +21,7 @@ export const UserCard = ({ user }: UserCardProps) => {
 
     const href = user.isArtist && user.artistId
         ? `/artists/${user.artistId}`
-        : `/users/${user.id}`;
+        : `/user/${user.id}`;
 
     return (
         <Link href={href} className="user-card">

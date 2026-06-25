@@ -2,13 +2,10 @@
 
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-
-// Імпортуємо Swiper та його модулі
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 import type { Swiper as SwiperClass } from 'swiper/types';
 
-// Імпортуємо базові стилі Swiper
 import 'swiper/css';
 
 import {
@@ -24,14 +21,11 @@ import {
     type FollowedProfileDto,
 } from '@repo/api/client.ts';
 import { UserPageHeader } from './UserPageHeader';
+import { ReportUserModal } from '@/features/complaint/ui/ReportUserModal';
 import { UserCard, type UserCardData } from '@/entities/user/ui/UserCard';
 import { PlaylistCard, type PlaylistCardData } from '@/entities/playlist/ui/PlaylistCard';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
-
-// ══════════════════════════════════════════════════════════
-// ЧИСТІ МАППЕРІ ДАННИХ (Поза компонентом для чистоти пам'яті)
-// ══════════════════════════════════════════════════════════
 
 const mapPlaylist = (p: UserPlaylistDto): PlaylistCardData => ({
     id:          p.id          ?? '',
@@ -59,18 +53,16 @@ interface UserProfilePageProps {
     userId: string;
 }
 
-// ══════════════════════════════════════════════════════════
-// КОМПОНЕНТ СТРАНИЦІ
-// ══════════════════════════════════════════════════════════
-
 export const UserProfilePage = ({ userId }: UserProfilePageProps) => {
     const router = useRouter();
 
-    // Інстанс Swiper та стейт для приховування/відображення стрілок
     const [swiperInstance, setSwiperInstance] = useState<SwiperClass | null>(null);
     const [showArrows, setShowArrows] = useState(false);
 
-    // ── 1. Запити даних ───────────────────────────────────
+    const [showReport, setShowReport] = useState(false);
+    const [successToast, setSuccessToast] = useState<string | null>(null);
+
+    // ── Запити даних ─────────────────────────────────────
     const { data: userRaw, isLoading: userLoading, refetch: refetchUser } = useGetApiUsersId(userId);
     const { data: playlistsRaw } = useGetApiUsersIdPlaylists(userId, { PageSize: 20 });
     const { data: followersRaw } = useGetApiUsersIdFollowers(userId, { PageSize: 20 });
@@ -78,7 +70,6 @@ export const UserProfilePage = ({ userId }: UserProfilePageProps) => {
 
     const user = userRaw as unknown as UserProfileDto | undefined;
 
-    // ── 2. Мемоізація та безпечний парсинг без any ────────
     const playlists = useMemo(() => {
         const items = (playlistsRaw as Record<string, unknown> | undefined)?.items as UserPlaylistDto[] | undefined;
         return (items ?? []).map(mapPlaylist);
@@ -94,13 +85,12 @@ export const UserProfilePage = ({ userId }: UserProfilePageProps) => {
         return (items ?? []).map(mapFollowing);
     }, [followingRaw]);
 
-    // ── 3. Мутації підписок ───────────────────────────────
+    // ── Мутації ──────────────────────────────────────────
     const { mutate: follow } = usePostApiUsersIdFollow();
     const { mutate: unfollow } = useDeleteApiUsersIdFollow();
 
     const handleFollowToggle = () => {
         if (!user) return;
-
         const isCurrentlyFollowing = user.isFollowedByCurrentUser ?? false;
 
         if (isCurrentlyFollowing) {
@@ -110,14 +100,17 @@ export const UserProfilePage = ({ userId }: UserProfilePageProps) => {
         }
     };
 
-    // Налаштування точок адаптивності (відповідає col-6 col-md-4 col-lg-2)
+    const handleReportSuccess = () => {
+        setSuccessToast("Скарга успішно зареєстрована модераційним вузлом.");
+        setTimeout(() => setSuccessToast(null), 4000);
+    };
+
     const swiperBreakpoints = {
         320: { slidesPerView: 2, spaceBetween: 12 },
         768: { slidesPerView: 4, spaceBetween: 16 },
         1200: { slidesPerView: 6, spaceBetween: 16 }
     };
 
-    // ── 4. Завантаження та перевірка ──────────────────────
     if (userLoading) {
         return (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
@@ -139,18 +132,17 @@ export const UserProfilePage = ({ userId }: UserProfilePageProps) => {
                 playlistsCount={user.publicPlaylistsCount ?? 0}
                 followersCount={user.followersCount ?? 0}
                 followingCount={user.followingCount ?? 0}
-                isOwner={false} // Завжди false для публічної сторінки чужого профілю
+                isOwner={false}
                 isFollowing={user.isFollowedByCurrentUser ?? false}
                 onFollow={handleFollowToggle}
-                onShare={() => navigator.clipboard.writeText(window.location.href)}
+                onReport={() => setShowReport(true)}
             />
 
-            {/* ─── Секція відкритих плейлістів ─────────────────── */}
+            {/* Відкриті плейлісти */}
             {playlists.length > 0 && (
                 <section className="user-page__section mb-5">
                     <SectionHeader
                         title="Відкриті плейлісти"
-                        // Передаємо функції стрілок лише якщо слайдів більше, ніж вміщає екран
                         onPrev={showArrows ? () => swiperInstance?.slidePrev() : undefined}
                         onNext={showArrows ? () => swiperInstance?.slideNext() : undefined}
                     />
@@ -177,7 +169,7 @@ export const UserProfilePage = ({ userId }: UserProfilePageProps) => {
                 </section>
             )}
 
-            {/* ─── Підписники ─────────────────────────── */}
+            {/* Підписники */}
             {followers.length > 0 && (
                 <section className="user-page__section mb-5" id="followers">
                     <SectionHeader title="Підписники" />
@@ -191,7 +183,7 @@ export const UserProfilePage = ({ userId }: UserProfilePageProps) => {
                 </section>
             )}
 
-            {/* ─── Підписки ───────────────────────────── */}
+            {/* Підписки */}
             {following.length > 0 && (
                 <section className="user-page__section mb-5" id="following">
                     <SectionHeader title="Підписки" />
@@ -203,6 +195,22 @@ export const UserProfilePage = ({ userId }: UserProfilePageProps) => {
                         ))}
                     </div>
                 </section>
+            )}
+
+            {showReport && (
+                <ReportUserModal
+                    isOpen={showReport}
+                    onClose={() => setShowReport(false)}
+                    userId={userId}
+                    userName={user.name ?? ''}
+                    onSuccess={handleReportSuccess}
+                />
+            )}
+
+            {successToast && (
+                <div className="position-fixed bottom-0 end-0 m-4 p-3 rounded-3 shadow-lg border border-success bg-dark text-success" style={{ zIndex: 1100, fontSize: '13px' }}>
+                    <span className="small fw-semibold">✓ {successToast}</span>
+                </div>
             )}
         </div>
     );

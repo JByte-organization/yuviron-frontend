@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query'; // 👈 ДодалиuseQuery
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     useGetApiAuthMe,
     useGetApiMeSettingsPreferences,
@@ -10,7 +10,7 @@ import {
     usePutApiMeSettingsPrivacy,
     usePutApiMeSettingsPrivateSession,
     getGetApiMeSettingsPreferencesQueryKey,
-    customInstance, // 👈 Імпортуємо інстанс клієнта
+    customInstance,
     type UserSettingsDto,
     type UpdatePrivacyTogglesCommand,
     type CurrentUserDto
@@ -32,13 +32,13 @@ export const SettingsPreferencesPage = () => {
     const { data: prefsRaw, isLoading: isPrefsLoading } = useGetApiMeSettingsPreferences();
     const prefs = (prefsRaw as { data?: UserSettingsDto })?.data ?? (prefsRaw as UserSettingsDto);
 
-    // ─── 🚨 ГЛАВНИЙ ФІКС: Завантажуємо теми з правильного клієнтського роуту Сваггера ───
+    // ─── Завантаження доступних амбієнтних пресетів ───
     const { data: themesRaw, isLoading: isThemesLoading } = useQuery({
-        queryKey: ['api', 'client', 'appearance', 'themes'], // Спільний ключ кешу із секцією
+        queryKey: ['api', 'client', 'appearance', 'themes'],
         queryFn: ({ signal }) => customInstance<any>('/api/me/appearance/themes', { method: 'GET', signal }),
         enabled: isPremiumUser,
         retry: false,
-        staleTime: 1000 * 60 * 15, // Кешуємо на 15 хвилин
+        staleTime: 1000 * 60 * 15,
     });
 
     const availableThemes = useMemo(() => {
@@ -56,7 +56,6 @@ export const SettingsPreferencesPage = () => {
     const [localCrossfade, setLocalCrossfade] = useState<number>(0);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-    // Синхронізуємо повзунок кросфейду лише один раз при завантаженні даних
     useEffect(() => {
         if (prefs && !isInitialized) {
             setLocalCrossfade(prefs.crossfadeMs ?? 0);
@@ -64,14 +63,12 @@ export const SettingsPreferencesPage = () => {
         }
     }, [prefs, isInitialized]);
 
-    // ─── 🚨 ЕФЕКТ СИНХРОНІЗАЦІЇ: Тепер передаємо повний набір даних ───
     useEffect(() => {
         if (prefs) {
             applyThemeGradients(prefs.themeId, availableThemes);
         }
     }, [prefs, availableThemes]);
 
-    // Кастомний преміальний кібер-лоадер
     if (isPrefsLoading || isUserLoading || isThemesLoading) {
         return (
             <div className="yuviron-loader-wrapper">
@@ -79,12 +76,10 @@ export const SettingsPreferencesPage = () => {
                     <div className="spinner-outer-ring" />
                     <div className="spinner-core-node" />
                 </div>
-                <span className="loader-diagnostic-text">Loading client preferences...</span>
+                <span className="loader-diagnostic-text">Завантаження налаштувань клієнта...</span>
             </div>
         );
     }
-
-    // ─── Хендлери атомарного оновлення ───────────────────
 
     const triggerToast = (msg: string) => {
         setSuccessMessage(msg);
@@ -96,8 +91,13 @@ export const SettingsPreferencesPage = () => {
             await updateAudioQuality({ data: { audioQualityPreference: quality } });
             await queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
 
-            const qualityLabels: Record<number, string> = { 1: 'Low', 2: 'Normal', 3: 'High', 4: 'Lossless' };
-            triggerToast(`Audio quality streaming set to ${qualityLabels[quality] || 'Custom'}.`);
+            const qualityLabels: Record<number, string> = {
+                1: 'Низька',
+                2: 'Звичайна',
+                3: 'Висока',
+                4: 'Найвища (Lossless AAC)'
+            };
+            triggerToast(`Якість потокового аудіо встановлена на значення: ${qualityLabels[quality] || 'Кастомна'}.`);
         } catch (err) {
             console.error('[Settings] Quality update failed:', err);
         }
@@ -107,7 +107,7 @@ export const SettingsPreferencesPage = () => {
         try {
             await updateCrossfade({ data: { crossfadeMs: value } });
             await queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
-            triggerToast(`Playback crossfade transition adjusted to ${(value / 1000).toFixed(1)}s.`);
+            triggerToast(`Плавний перехід між треками скориговано на ${(value / 1000).toFixed(1)} сек.`);
         } catch (err) {
             console.error('[Settings] Crossfade update failed:', err);
         }
@@ -121,7 +121,7 @@ export const SettingsPreferencesPage = () => {
         try {
             await updatePrivacy({ data: body });
             await queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
-            triggerToast(field === 'playlists' ? 'Default playlist visibility altered.' : 'Social network board updated.');
+            triggerToast(field === 'playlists' ? 'Стандартну видимість нових плейлістів змінено.' : 'Стан дошки соціальної мережі оновлено.');
         } catch (err) {
             console.error('[Settings] Privacy toggles failed:', err);
         }
@@ -132,7 +132,7 @@ export const SettingsPreferencesPage = () => {
         try {
             await updatePrivateSession({ data: { privateSession: !prefs?.privateSession } });
             await queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
-            triggerToast(!prefs?.privateSession ? 'Private session activated. Algorithmic logs paused.' : 'Returned to public streaming session.');
+            triggerToast(!prefs?.privateSession ? 'Приватну сесію активовано. Запис алгоритмічних логів призупинено.' : 'Повернено до публічного режиму стрімінгу.');
         } catch (err) {
             console.error('[Settings] Private session toggle failed:', err);
         }
@@ -142,15 +142,15 @@ export const SettingsPreferencesPage = () => {
         <div className="yuviron-settings py-5 animate-fade-in">
             <div className="container-lg">
                 <header className="settings-header text-start mb-5">
-                    <span className="settings-micro-headline mb-2">Control Panel</span>
-                    <h1 className="settings-title tracking-tight">Settings</h1>
-                    <p className="settings-subtitle">Account preferences and playback configurations.</p>
+                    <span className="settings-micro-headline mb-2">Панель керування</span>
+                    <h1 className="settings-title tracking-tight">Налаштування</h1>
+                    <p className="settings-subtitle">Конфігурація облікового запису та параметри відтворення медіапотоку.</p>
                 </header>
 
                 <div className="d-flex flex-column gap-5">
                     {/* СЕКЦІЯ 1: APPEARANCE */}
                     <section className="settings-section">
-                        <h3 className="section-caption">Appearance</h3>
+                        <h3 className="section-caption">Зовнішній вигляд</h3>
                         <AppearanceSettingsSection onToast={triggerToast} />
                     </section>
 
@@ -158,12 +158,12 @@ export const SettingsPreferencesPage = () => {
 
                     {/* СЕКЦІЯ 2: AUDIO QUALITY */}
                     <section className="settings-section">
-                        <h3 className="section-caption">Audio Experience</h3>
+                        <h3 className="section-caption">Аудіо-досвід</h3>
 
                         <div className="settings-row">
                             <div className="settings-info">
-                                <span className="settings-label">Audio Quality</span>
-                                <p className="settings-description">Stream bitrate capacity. High quality requires more network bandwidth.</p>
+                                <span className="settings-label">Якість звуку</span>
+                                <p className="settings-description">Ємність бітрейту аудіопотоку. Висока якість потребує стабільного інтернет-з'єднання.</p>
                             </div>
                             <div className="minimal-select-wrapper">
                                 <select
@@ -171,10 +171,10 @@ export const SettingsPreferencesPage = () => {
                                     value={prefs?.audioQualityPreference ?? 2}
                                     onChange={(e) => handleQualityChange(Number(e.target.value))}
                                 >
-                                    <option value={1}>Low (96 kbps)</option>
-                                    <option value={2}>Normal (160 kbps)</option>
-                                    <option value={3}>High (320 kbps)</option>
-                                    <option value={4}>Lossless (AAC)</option>
+                                    <option value={1}>Низька (96 кбіт/с)</option>
+                                    <option value={2}>Звичайна (160 кбіт/с)</option>
+                                    <option value={3}>Висока (320 кбіт/с)</option>
+                                    <option value={4}>Найвища (Lossless AAC)</option>
                                 </select>
                             </div>
                         </div>
@@ -183,10 +183,10 @@ export const SettingsPreferencesPage = () => {
                         <div className="settings-row flex-column align-items-stretch gap-3">
                             <div className="d-flex justify-content-between align-items-center">
                                 <div className="settings-info">
-                                    <span className="settings-label">Crossfade Transition</span>
-                                    <p className="settings-description">Smooth audio cross-fading between tracks overlap.</p>
+                                    <span className="settings-label">Плавний перехід (Crossfade)</span>
+                                    <p className="settings-description">Ефект м'якого накладання та згасання звуку між сусідніми аудіозаписами.</p>
                                 </div>
-                                <span className="range-value">{(localCrossfade / 1000).toFixed(1)}s</span>
+                                <span className="range-value">{(localCrossfade / 1000).toFixed(1)} сек</span>
                             </div>
                             <div className="range-container">
                                 <input
@@ -208,12 +208,12 @@ export const SettingsPreferencesPage = () => {
 
                     {/* СЕКЦІЯ 3: PRIVACY */}
                     <section className="settings-section">
-                        <h3 className="section-caption">Social & Privacy</h3>
+                        <h3 className="section-caption">Соціальні мережі та приватність</h3>
 
                         <div className="settings-row">
                             <div className="settings-info">
-                                <span className="settings-label">Public Playlists</span>
-                                <p className="settings-description">Publish new playlist compilations to your profile by default.</p>
+                                <span className="settings-label">Публічні плейлісти</span>
+                                <p className="settings-description">Робити створювані компіляції плейлістів відкритими для всіх користувачів за замовчуванням.</p>
                             </div>
 
                             <label className="yuviron-checkbox-wrapper">
@@ -230,8 +230,8 @@ export const SettingsPreferencesPage = () => {
 
                         <div className="settings-row">
                             <div className="settings-info">
-                                <span className="settings-label">Show Followers</span>
-                                <p className="settings-description">Display follower list inside your public network layout board.</p>
+                                <span className="settings-label">Показувати підписників</span>
+                                <p className="settings-description">Відображати повний список підписників у вашій публічній картці профілю.</p>
                             </div>
 
                             <label className="yuviron-checkbox-wrapper">
@@ -249,10 +249,10 @@ export const SettingsPreferencesPage = () => {
                         <div className={`settings-row ${!isPremiumUser ? 'disabled' : ''}`}>
                             <div className="settings-info">
                             <span className="settings-label d-flex align-items-center gap-2">
-                                Private Session
+                                Приватна сесія
                                 {!isPremiumUser && <span className="premium-pill">Premium</span>}
                             </span>
-                                <p className="settings-description">Anonymize listening logs. Plays won't affect recommendation algorithms.</p>
+                                <p className="settings-description">Повна анонімізація журналів прослуховування контенту. Треки не впливатимуть на рекомендаційні алгоритми.</p>
                             </div>
 
                             <label className="yuviron-checkbox-wrapper">

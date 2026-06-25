@@ -190,9 +190,22 @@ $admin-tr-bg-1: #3B4452;
   --client-mood-card-border: rgba(0, 132, 255, 0.2);
   --client-mood-icon-shadow: drop-shadow(0 2px 6px rgba(0, 112, 243, 0.15));
 
-
 }
 
+html[data-premium-theme="true"]:not([data-theme="light"]) .client-layout {
+  background-color: var(--premium-bg) !important;
+
+  background-image:
+          radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--premium-secondary) 38%, transparent) 0%, transparent 55%),
+          radial-gradient(circle at 85% 20%, color-mix(in srgb, var(--premium-primary) 35%, transparent) 0%, transparent 45%),
+          radial-gradient(circle at 15% 15%, color-mix(in srgb, var(--premium-secondary) 35%, transparent) 0%, transparent 45%),
+          radial-gradient(circle at 85% 85%, color-mix(in srgb, var(--premium-primary) 25%, transparent) 0%, transparent 50%) !important;
+}
+
+html[data-theme="light"] .client-layout {
+  background-color: var(--client-bg) !important;
+  background-image: none !important;
+}
 
 $client-bg:              var(--client-bg);
 $client-auth-bg:         var(--client-auth-bg);

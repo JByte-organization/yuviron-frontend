@@ -23,7 +23,7 @@ export const UserDropdown = ({
         {
             icon: 'bi-person-circle',
             label: 'Профіль',
-            href: `/users/${userId}`,
+            href: `/user/${userId}`,
             show: true,
         },
         {

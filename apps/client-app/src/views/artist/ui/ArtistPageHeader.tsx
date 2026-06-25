@@ -9,11 +9,12 @@ interface ArtistPageHeaderProps {
     avatarUrl?: string | null;
     isVerified?: boolean;
     monthlyListeners?: number;
-    isPlaying?: boolean; // 🚨 ФИКС: Флаг текущего состояния плеера
+    isPlaying?: boolean;
     onPlay?: () => void;
     onFollow?: () => void;
     isFollowing?: boolean;
     followPending?: boolean;
+    onReport?: () => void;
 }
 
 const formatListeners = (count?: number): string => {
@@ -27,15 +28,14 @@ export const ArtistPageHeader = ({
                                      avatarUrl,
                                      isVerified = false,
                                      monthlyListeners,
-                                     isPlaying = false, // По умолчанию не играет
+                                     isPlaying = false,
                                      onPlay,
                                      onFollow,
                                      isFollowing = false,
                                      followPending = false,
+                                     onReport,
                                  }: ArtistPageHeaderProps) => {
-    const following = isFollowing;
 
-    // Переводим на единый хелпер картинок FSD архитектуры
     const avatarSrc = getImageUrl(avatarUrl)
         ?? `https://picsum.photos/seed/artist-${artistId}/200/200`;
 
@@ -53,7 +53,6 @@ export const ArtistPageHeader = ({
                 </div>
 
                 <div className="col">
-                    {/* Верифікація */}
                     {isVerified && (
                         <div className="artist-page-header__verified">
                             <i className="bi bi-patch-check-fill" />
@@ -61,10 +60,8 @@ export const ArtistPageHeader = ({
                         </div>
                     )}
 
-                    {/* Назва */}
                     <h1 className="artist-page-header__name">{name}</h1>
 
-                    {/* Слухачі */}
                     {monthlyListeners && (
                         <p className="artist-page-header__listeners">
                             {formatListeners(monthlyListeners)}
@@ -73,38 +70,37 @@ export const ArtistPageHeader = ({
                 </div>
             </div>
 
-            {/* ─── Кнопки дій ───────────────────────────── */}
-            <div className="artist-page-header__actions">
-                {/* Play / Pause Toggle Button */}
+            {/* ─── Оновлений блок дій: чистий лінійний ряд ─── */}
+            <div className="artist-page-header__actions d-flex align-items-center gap-2">
+                {/* Кнопка відтворення */}
                 <button
                     className="artist-page-header__btn artist-page-header__btn--play"
                     onClick={onPlay}
                     aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
-                    {/* 🚨 ДИНАМИЧЕСКАЯ ИКОНКА */}
                     <i className={isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill'} />
                 </button>
 
-                {/* Підписатися / Відписатися */}
+                {/* Уніфікована текстова кнопка Підписатися / Відписатися */}
                 <button
-                    className={`artist-page-header__btn artist-page-header__btn--follow${following ? ' artist-page-header__btn--following' : ''}`}
+                    type="button"
+                    className={`playlist-page-header__subscribe-btn${isFollowing ? ' playlist-page-header__subscribe-btn--active' : ''}`}
                     onClick={onFollow}
                     disabled={followPending}
-                    aria-label={following ? 'Відписатися' : 'Підписатися'}
+                    style={{ height: '42px', padding: '0 24px' }} // Выравниваем высоту под кнопку Play
                 >
-                    {following ? (
-                        <i className="bi bi-check-lg" />
-                    ) : (
-                        <i className="bi bi-plus-lg" />
-                    )}
+                    {isFollowing ? 'Відписатися' : 'Підписатися'}
                 </button>
 
-                {/* Більше опцій */}
+                {/* Кнопка скарги замість трьох точок */}
                 <button
-                    className="artist-page-header__btn artist-page-header__btn--icon ms-2"
-                    aria-label="Більше опцій"
+                    type="button"
+                    className="playlist-page-header__btn playlist-page-header__btn--icon"
+                    onClick={onReport}
+                    aria-label="Поскаржитися"
+                    title="Поскаржитися на виконавця"
                 >
-                    <i className="bi bi-three-dots" />
+                    <i className="bi bi-exclamation-triangle" />
                 </button>
             </div>
         </div>

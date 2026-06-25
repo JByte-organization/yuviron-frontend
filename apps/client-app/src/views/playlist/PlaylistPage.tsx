@@ -12,6 +12,7 @@ import {
     usePutApiMePlaylistsId,
     useDeleteApiMePlaylistsId,
     usePatchApiMePlaylistsIdTracksTrackIdPosition,
+    usePostApiMarketingSmartlinks,
     getGetApiPlaylistsIdTracksQueryKey,
     type PlaylistDetailsClientDto,
     type PlaylistTrackItemClientDto,
@@ -24,6 +25,7 @@ import { AddToPlaylistModal } from '@/features/playlist/add/ui/AddToPlaylistModa
 import { EditPlaylistModal, type PlaylistToEdit } from '@/features/playlist/edit/ui/EditPlaylistModal';
 import { DeletePlaylistModal } from '@/features/playlist/detete/ui/DeletePlaylistModal';
 import { CreatePlaylistModal } from '@/features/playlist/create/ui/CreatePlaylistModal';
+import { ReportPlaylistModal } from '@/features/complaint/ui/ReportPlaylistModal';
 import { PlaylistPageHeader } from './ui/PlaylistPageHeader';
 import { PlaylistRecommendations } from './ui/PlaylistRecommendations';
 import { PlaylistVisibility } from "@repo/api/generated/client/models";
@@ -80,27 +82,61 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
     const { mutateAsync: updatePlaylist } = usePutApiMePlaylistsId();
     const { mutateAsync: deletePlaylist } = useDeleteApiMePlaylistsId();
     const { mutateAsync: patchTrackPosition } = usePatchApiMePlaylistsIdTracksTrackIdPosition();
+    const { mutateAsync: generateSmartLink } = usePostApiMarketingSmartlinks();
 
-    // ── Стан модалок ──────────────────────────────────────────────────────────
+    // ── Стан модалок та сповіщень ─────────────────────────────────────────────
     const [addToPlaylistTrackId, setAddToPlaylistTrackId] = useState<string | null>(null);
     const [addToPlaylistTitle,   setAddToPlaylistTitle]   = useState('');
     const [showEdit,   setShowEdit]   = useState(false);
     const [showDelete, setShowDelete] = useState(false);
     const [showCreate, setShowCreate] = useState(false);
+    const [showReport, setShowReport] = useState(false); // Стейт модалки жалобы
+    const [successToast, setSuccessToast] = useState<string | null>(null); // Стейт для тоста
+
+    const triggerToast = (msg: string) => {
+        setSuccessToast(msg);
+        setTimeout(() => setSuccessToast(null), 3500);
+    };
+
+    // ─── ОБРОБНИК ГЕНЕРАЦІЇ ТА КОПІЮВАННЯ ССИЛКИ ПОДІЛИТИСЯ ──────────────────
+    const handleSharePlaylist = async () => {
+        try {
+            // Вызываем команду CreateSmartLinkCommand с типом Playlist
+            const response = await generateSmartLink({
+                data: {
+                    entityType: 'Playlist',
+                    entityId: playlistId
+                }
+            });
+
+            const resData = (response as any)?.data || response;
+            const finalUrl = resData?.url || resData?.code || window.location.href;
+
+            // Копируем ссылку в буфер обмена
+            await navigator.clipboard.writeText(finalUrl);
+            triggerToast("Посилання скопійовано!");
+        } catch (error) {
+            console.error('[Share Error] Не вдалося згенерувати смарт-посилання:', error);
+            // Резервный фолбек на текущий URL браузера, если бэкенд упал
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                triggerToast("Посилання скопійовано!");
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    };
 
     const calculateNewPosition = (items: TrackRowData[], movedIndex: number): number => {
         if (items.length === 1) return 65536.0;
-
         if (movedIndex === 0) {
             const nextTrack = items[1];
             return nextTrack.position - 65536.0;
         }
-
         if (movedIndex === items.length - 1) {
             const previousTrack = items[items.length - 2];
             return previousTrack.position + 65536.0;
         }
-
         const previousTrack = items[movedIndex - 1];
         const nextTrack = items[movedIndex + 1];
         return (previousTrack.position + nextTrack.position) / 2.0;
@@ -125,14 +161,12 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
 
         queryClient.setQueryData(queryKey, (old: any) => {
             if (!old || !old.items) return old;
-
             const updatedItems = old.items.map((item: any) => {
                 if (item.trackId === updatedTrack.id) {
                     return { ...item, position: calculatedPos };
                 }
                 return item;
             });
-
             return { ...old, items: updatedItems };
         });
 
@@ -153,7 +187,6 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
         setAddToPlaylistTitle(title);
     };
 
-    // ─── ОНОВЛЕНИЙ ОБРОБНИК ЗБЕРЕЖЕННЯ ────────────────────────────────────────
     const handleEditSuccess = async (values: {
         name: string;
         coverFileId: string | null;
@@ -196,7 +229,7 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
         );
     }
 
-    if (!playlist) return <div className="text-center text-secondary mt-5">Плейліст не знайдено</div>;
+    if (!playlist) return <div className="text-center text-secondary mt-5">Плейліст не знадено</div>;
 
     const playlistForHeader = {
         id:           playlist.id          ?? '',
@@ -204,6 +237,7 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
         description:  playlist.description ?? null,
         coverUrl:     playlist.coverUrl    ?? null,
         ownerName:    playlist.creatorName ?? '',
+        creatorId:    playlist.creatorId   ?? '',
         tracksCount:  playlist.totalTracks ?? tracks.length,
         isSubscribed: false,
     };
@@ -223,8 +257,8 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
                 tracks={tracks}
                 onEdit={() => setShowEdit(true)}
                 onDelete={() => setShowDelete(true)}
-                onShare={() => console.log('share')}
-                onSubscribe={() => console.log('subscribe')}
+                onShare={handleSharePlaylist}
+                onReport={() => setShowReport(true)}
             />
 
             <DragDropContext onDragEnd={handleDragEnd}>
@@ -256,11 +290,11 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
                                             index={index}
                                             isDragDisabled={!isOwner}
                                         >
-                                            {(dragProvided, snapshot) => (
+                                            {(providedSnapshot, snapshot) => (
                                                 <div
-                                                    ref={dragProvided.innerRef}
-                                                    {...dragProvided.draggableProps}
-                                                    {...dragProvided.dragHandleProps}
+                                                    ref={providedSnapshot.innerRef}
+                                                    {...providedSnapshot.draggableProps}
+                                                    {...providedSnapshot.dragHandleProps}
                                                     className={`playlist-page__draggable-row-holder ${snapshot.isDragging ? 'playlist-page__draggable-row-holder--dragging' : ''}`}
                                                 >
                                                     <TrackRow
@@ -288,6 +322,24 @@ export const PlaylistPage = ({ playlistId }: PlaylistPageProps) => {
             {showEdit && <EditPlaylistModal isOpen={showEdit} onClose={() => setShowEdit(false)} onSuccess={handleEditSuccess} playlist={playlistToEdit} />}
             <DeletePlaylistModal isOpen={showDelete} onClose={() => setShowDelete(false)} onSuccess={handleDeleteSuccess} playlistName={playlist.title ?? ''} />
             <CreatePlaylistModal isOpen={showCreate} onClose={() => setShowCreate(false)} onSuccess={() => setShowCreate(false)} />
+
+            {/* Рендеринг новой модалки жалобы */}
+            {showReport && (
+                <ReportPlaylistModal
+                    isOpen={showReport}
+                    onClose={() => setShowReport(false)}
+                    playlistId={playlistId}
+                    playlistName={playlist.title ?? ''}
+                    onSuccess={() => triggerToast("Скарга успішно надіслана модераційному вузлу.")}
+                />
+            )}
+
+            {/* ВСПЛЫВАЮЩИЙ ТОСТ СПРАВА СНИЗУ */}
+            {successToast && (
+                <div className="position-fixed bottom-0 end-0 m-4 p-3 rounded-3 shadow-lg border border-success bg-dark text-success" style={{ zIndex: 1100, fontSize: '13px' }}>
+                    <span className="fw-semibold">✓ {successToast}</span>
+                </div>
+            )}
         </div>
     );
 };
