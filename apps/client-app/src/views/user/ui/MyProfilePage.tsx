@@ -15,10 +15,10 @@ import {
     useGetApiMePlaylists,
     useGetApiUsersIdFollowers,
     useGetApiUsersIdFollowing,
-    // ФІКС: Імпортуємо автогенеровані хелпери ключів для React Query
     getGetApiMePlaylistsQueryKey,
     getGetApiUsersIdFollowersQueryKey,
     getGetApiUsersIdFollowingQueryKey,
+    getGetApiAuthMeQueryKey,
     type UserPlaylistDto,
     type FollowerDto,
     type FollowedProfileDto,
@@ -29,6 +29,7 @@ import { PlaylistCard, type PlaylistCardData } from '@/entities/playlist/ui/Play
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { EditProfileModal } from '@/features/user/ui/EditProfileModal';
 import { getImageUrl } from '@/shared/lib/getImageUrl';
+import { useQueryClient } from '@tanstack/react-query';
 
 // ══════════════════════════════════════════════════════════
 // ТИПІЗАЦІЯ СТРУКТУРИ СЕРВЕРА
@@ -55,11 +56,10 @@ interface ExtendedPlaylistCardData extends PlaylistCardData {
 }
 
 // ══════════════════════════════════════════════════════════
-// ЧИСТІ МАППЕРИ ДАННИХ
+// 🌟 ЧИСТІ МАППЕРИ ДАННИХ З СУВОРОЮ ТИПІЗАЦІЄЮ (ФІКС TS2304)
 // ══════════════════════════════════════════════════════════
 
 const mapPlaylist = (p: UserPlaylistDto): ExtendedPlaylistCardData => {
-    // ФІКС ПОМИЛКИ TS2430: Робимо безпечний інлайн-каст властивості без any
     const rawVisibility = (p as { visibility?: string }).visibility;
 
     return {
@@ -74,14 +74,14 @@ const mapPlaylist = (p: UserPlaylistDto): ExtendedPlaylistCardData => {
 const mapFollower = (f: FollowerDto): UserCardData => ({
     id:        f.id        ?? '',
     name:      f.name      ?? '',
-    avatarUrl: f.avatarUrl ?? null,
+    avatarUrl: f.avatarUrl ? getImageUrl(f.avatarUrl) : null,
     isArtist:  false,
 });
 
 const mapFollowing = (f: FollowedProfileDto): UserCardData => ({
     id:        f.id        ?? '',
     name:      f.name      ?? '',
-    avatarUrl: f.avatarUrl ?? null,
+    avatarUrl: f.avatarUrl ? getImageUrl(f.avatarUrl) : null,
     isArtist:  f.type === 'Artist',
     artistId:  f.type === 'Artist' ? f.id : undefined,
 });
@@ -101,6 +101,7 @@ const extractPlaylists = (response: unknown): UserPlaylistDto[] => {
 
 export const MyProfilePage = () => {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const [showEditProfile, setShowEditProfile] = useState(false);
 
     const [instantAvatarUrl, setInstantAvatarUrl] = useState<string | null | undefined>(undefined);
@@ -112,9 +113,22 @@ export const MyProfilePage = () => {
     const [showPrivateArrows, setShowPrivateArrows] = useState(false);
 
     // ── 1. Запити до API ──────────────────────────────────
-    const { data: meRaw, isLoading: meLoading, refetch: refetchMe } = useGetApiAuthMe();
+    const { data: meRaw, isLoading: meLoading, refetch: refetchMe } = useGetApiAuthMe({
+        query: {
+            queryKey: getGetApiAuthMeQueryKey(),
+            staleTime: 0,
+        }
+    });
     const me = meRaw as unknown as UserMeResponse | undefined;
     const userId = me?.id;
+
+    useEffect(() => {
+        refetchMe();
+        if (userId) {
+            void queryClient.invalidateQueries({ queryKey: getGetApiUsersIdFollowingQueryKey(userId, { PageSize: 20 }) });
+            void queryClient.invalidateQueries({ queryKey: getGetApiUsersIdFollowersQueryKey(userId, { PageSize: 20 }) });
+        }
+    }, [userId, refetchMe, queryClient]);
 
     useEffect(() => {
         if (!userId) return;
@@ -140,7 +154,6 @@ export const MyProfilePage = () => {
         }
     }, [userId, me?.profile?.avatarUrl]);
 
-    // ФІКС ПОМИЛКИ TS2741: Передаємо правильний згенерований queryKey
     const { data: playlistsResponse, isLoading: playlistsLoading } = useGetApiMePlaylists(
         { PageSize: 50 },
         {
@@ -151,7 +164,6 @@ export const MyProfilePage = () => {
         }
     );
 
-    // ФІКС ПОМИЛКИ TS2741: Передаємо правильний згенерований queryKey для підписників
     const { data: followersRaw } = useGetApiUsersIdFollowers(
         userId ?? '',
         { PageSize: 20 },
@@ -163,7 +175,6 @@ export const MyProfilePage = () => {
         }
     );
 
-    // ФІКС ПОМИЛКИ TS2741: Передаємо правильний згенерований queryKey для підписок
     const { data: followingRaw } = useGetApiUsersIdFollowing(
         userId ?? '',
         { PageSize: 20 },
@@ -247,7 +258,8 @@ export const MyProfilePage = () => {
                             breakpoints={swiperBreakpoints}
                             className="user-slider"
                         >
-                            {publicPlaylists.map((pl) => (
+                            {/* 🌟 ФІКС TS18046 / TS2322: Явно вказуємо тип ExtendedPlaylistCardData */}
+                            {publicPlaylists.map((pl: ExtendedPlaylistCardData) => (
                                 <SwiperSlide key={pl.id}>
                                     <PlaylistCard playlist={pl} onClick={(id) => router.push(`/playlist/${id}`)} />
                                 </SwiperSlide>
@@ -278,7 +290,8 @@ export const MyProfilePage = () => {
                             breakpoints={swiperBreakpoints}
                             className="user-slider"
                         >
-                            {privatePlaylists.map((pl) => (
+                            {/* 🌟 ФІКС TS18046 / TS2322: Явно вказуємо тип ExtendedPlaylistCardData */}
+                            {privatePlaylists.map((pl: ExtendedPlaylistCardData) => (
                                 <SwiperSlide key={pl.id}>
                                     <PlaylistCard playlist={pl} onClick={(id) => router.push(`/playlist/${id}`)} />
                                 </SwiperSlide>
@@ -293,7 +306,8 @@ export const MyProfilePage = () => {
                 <section className="user-page__section mb-5" id="followers">
                     <SectionHeader title="Підписники" />
                     <div className="row g-3">
-                        {followers.map((u) => (
+                        {/* 🌟 ФІКС TS18046: Явно вказуємо тип UserCardData */}
+                        {followers.map((u: UserCardData) => (
                             <div key={u.id} className="col-6 col-sm-4 col-md-3 col-lg-2">
                                 <UserCard user={u} />
                             </div>
@@ -307,7 +321,8 @@ export const MyProfilePage = () => {
                 <section className="user-page__section mb-5" id="following">
                     <SectionHeader title="Підписки" />
                     <div className="row g-3">
-                        {following.map((u) => (
+                        {/* 🌟 ФІКС TS18046: Явно вказуємо тип UserCardData */}
+                        {following.map((u: UserCardData) => (
                             <div key={u.id} className="col-6 col-sm-4 col-md-3 col-lg-2">
                                 <UserCard user={u} />
                             </div>

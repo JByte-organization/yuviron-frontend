@@ -15,7 +15,8 @@ interface UserPageHeaderProps {
     isFollowing?: boolean;
     onEdit?: () => void;
     onFollow?: () => void;
-    onReport?: () => void; // Тригер модалки скарги залишається
+    onShare?: () => void; // 🌟 ФІКС: Додано проп для усунення помилки Property 'onShare' does not exist
+    onReport?: () => void;
 }
 
 const formatCount = (n: number): string => {
@@ -35,6 +36,7 @@ export const UserPageHeader = ({
                                    isFollowing = false,
                                    onEdit,
                                    onFollow,
+                                   onShare, // Деструктуризуємо проп
                                    onReport,
                                }: UserPageHeaderProps) => {
     const [following, setFollowing] = useState(isFollowing);
@@ -69,7 +71,6 @@ export const UserPageHeader = ({
 
     return (
         <div className="user-page-header">
-            {/* Градієнтний фон */}
             <div
                 className="user-page-header__gradient"
                 style={{
@@ -87,7 +88,7 @@ export const UserPageHeader = ({
                     <h1 className="user-page-header__name">{name}</h1>
 
                     <div className="user-page-header__stats">
-                        <span className="user-page-header__stat">{playlistsCount} плейлістів</span>
+                        <span className="user-page-header__stat">{playlistsCount} плейлістов</span>
                         <span className="user-page-header__dot">•</span>
                         <button
                             className="user-page-header__stat-link"
@@ -106,10 +107,20 @@ export const UserPageHeader = ({
                 </div>
             </div>
 
-            {/* БЛОК ДІЙ: ЧИСТИЙ РЯД КНОПОК БЕЗ ДРОПДАУНІВ */}
             <div className="user-page-header__actions d-flex align-items-center gap-2">
                 {isOwner ? (
                     <>
+                        {/* Кнопка поділитися для власника профілю */}
+                        <button
+                            type="button"
+                            className="user-page-header__action-btn"
+                            onClick={onShare}
+                            aria-label="Поділитися профілем"
+                            title="Поділитися профілем"
+                        >
+                            <i className="bi bi-share" />
+                        </button>
+
                         <Link
                             href="/settings"
                             className="user-page-header__action-btn"
