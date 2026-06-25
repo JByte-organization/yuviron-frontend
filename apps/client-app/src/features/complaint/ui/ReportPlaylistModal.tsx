@@ -1,0 +1,125 @@
+'use client';
+
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { usePostApiComplaints } from '@repo/api/client.ts'; // Хук Orval для жалоб
+import { Modal } from '@/shared/ui/Modal';
+
+const ComplaintReasonCode = {
+    Spam: "Spam",
+    CopyrightViolation: "CopyrightViolation",
+    Pornography: "Pornography",
+    HateSpeech: "HateSpeech",
+    Abuse: "Abuse",
+    Scam: "Scam",
+    Other: "Other",
+} as const;
+
+const REASON_LABELS: Record<keyof typeof ComplaintReasonCode, string> = {
+    Spam: "Спам / Небажаний контент",
+    CopyrightViolation: "Порушення авторських прав або плагіат",
+    Pornography: "Порнографічні матеріали",
+    HateSpeech: "Мова ворожнечі / Пропаганда насильства",
+    Abuse: "Образи або шкідливий вміст",
+    Scam: "Шахрайство / Офіційне видавання себе за іншого",
+    Other: "Інша причина"
+};
+
+interface ReportPlaylistModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    playlistId: string;
+    playlistName: string;
+    onSuccess?: () => void;
+}
+
+type ReportFormValues = {
+    reasonCode: keyof typeof ComplaintReasonCode;
+    comment: string;
+};
+
+export const ReportPlaylistModal = ({ isOpen, onClose, playlistId, playlistName, onSuccess }: ReportPlaylistModalProps) => {
+    const { mutateAsync: sendComplaint } = usePostApiComplaints();
+
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors, isSubmitting }
+    } = useForm<ReportFormValues>({
+        defaultValues: {
+            reasonCode: 'Spam',
+            comment: ''
+        }
+    });
+
+    const handleClose = () => {
+        reset();
+        onClose();
+    };
+
+    const onSubmit = async (values: ReportFormValues) => {
+        try {
+            // Отправляем TargetType = Playlist на бэкенд
+            await sendComplaint({
+                data: {
+                    targetType: 'Playlist',
+                    targetId: playlistId,
+                    reasonCode: values.reasonCode,
+                    comment: values.comment?.trim() || null
+                }
+            });
+
+            onSuccess?.();
+            handleClose();
+        } catch (error) {
+            console.error('[Complaint Error] Не вдалося надіслати скаргу на плейліст:', error);
+        }
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={handleClose} title={`Поскаржитися на плейліст "${playlistName}"`}>
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="mb-4">
+                    <label className="client-modal__field-label mb-2 d-block small text-white-50">Оберіть причину скарги</label>
+                    <div className="d-flex flex-column gap-2">
+                        {Object.entries(ComplaintReasonCode).map(([key, code]) => (
+                            <label key={code} className="d-flex align-items-center gap-2 text-white small p-2 rounded transition-all" style={{ backgroundColor: '#161b26', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    value={code}
+                                    className="form-check-input bg-transparent border-secondary shadow-none"
+                                    {...register('reasonCode', { required: true })}
+                                />
+                                <span>{REASON_LABELS[key as keyof typeof ComplaintReasonCode]}</span>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="mb-3">
+                    <label className="client-modal__field-label mb-1">Пояснення (необов'язково)</label>
+                    <textarea
+                        className="client-modal__input w-100 p-2 text-white border border-secondary rounded"
+                        style={{ backgroundColor: '#0f141c', height: '80px', resize: 'none', fontSize: '13px' }}
+                        placeholder="Додайте деталі, які допоможуть модераторам швидше розібратися..."
+                        {...register('comment', { maxLength: { value: 300, message: 'Максимум 300 символів' } })}
+                    />
+                    {errors.comment && (
+                        <p className="client-modal__field-error mt-1">{errors.comment.message}</p>
+                    )}
+                </div>
+
+                <div className="client-modal__footer d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" className="client-modal__btn client-modal__btn--ghost" onClick={handleClose} disabled={isSubmitting}>
+                        Скасувати
+                    </button>
+                    <button type="submit" className="client-modal__btn" style={{ backgroundColor: '#dc3545', color: '#fff' }} disabled={isSubmitting}>
+                        {isSubmitting && <span className="spinner-border spinner-border-sm me-2" />}
+                        Надіслати скаргу
+                    </button>
+                </div>
+            </form>
+        </Modal>
+    );
+};

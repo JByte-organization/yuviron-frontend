@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom'; // Імпортуємо Портал для винесення за межі overflow сайдбара
 import { usePathname, useRouter } from 'next/navigation';
 import {
     getGetApiAuthMeQueryKey,
@@ -17,7 +18,6 @@ import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { unwrap } from '@/shared/lib/unwrapApi';
 import { PremiumGateModal } from './PremiumGateModal';
 
-// Людська назва ролі команди для бейджа. Невідому/Owner показуємо як «Власник».
 const ROLE_LABEL: Record<string, string> = {
     Owner: 'Власник',
     Manager: 'Менеджер',
@@ -27,7 +27,6 @@ const ROLE_LABEL: Record<string, string> = {
 const roleLabel = (role?: string | null): string | null =>
     role ? ROLE_LABEL[role] ?? role : null;
 
-// Аватар-кружок: картинка або плейсхолдер-іконка.
 const Avatar = ({ src, fallbackIcon }: { src: string | null; fallbackIcon: string }) =>
     src ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -38,16 +37,6 @@ const Avatar = ({ src, fallbackIcon }: { src: string | null; fallbackIcon: strin
         </div>
     );
 
-/**
- * Перемикач акаунтів (зверху сайдбара). Особистий профіль ↔ кабінети артистів,
- * якими керує користувач (власні + ті, куди запросили менеджером). Активний акаунт
- * визначається маршрутом: у /artist-dashboard — обраний артист, інакше — особистий.
- * «Особистий» не скидає обраного артиста (повернення в кабінет лишає того самого).
- *
- * Живе тільки в сайдбарах (клієнтський + кабінет артиста), у хедер НЕ додаємо —
- * у кабінеті це дублювало внутрішній перемикач артистів. `collapsed` — згорнутий
- * сайдбар: лишаємо тільки аватар.
- */
 export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) => {
     const router = useRouter();
     const pathname = usePathname();
@@ -58,8 +47,6 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
     const { artists } = useManagedArtists();
     const { artistId: selectedArtistId } = useCurrentArtist();
 
-    // Запит гейтимо по токену (як managedArtists/Header) — щоб не бити /auth/me
-    // в оптимістичному 'authenticated' ще до приходу токена.
     const { data: meRaw } = useGetApiAuthMe({
         query: { enabled: hasToken, queryKey: getGetApiAuthMeQueryKey() },
     });
@@ -68,7 +55,22 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
     const [open, setOpen] = useState(false);
     const [showPremium, setShowPremium] = useState(false);
 
-    // Свитчер тільки для авторизованих (для гостя — нічого, лого лишається).
+    // Реф та стейт для динамічного прорахунку координат випадаючого меню
+    const triggerRef = useRef<HTMLButtonElement>(null);
+    const [coords, setCoords] = useState({ top: 0, left: 0, width: 280 });
+
+    // Оновлюємо координати при відкритті меню або зміні розмірів екрана/сайдбара
+    useEffect(() => {
+        if (open && triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect();
+            setCoords({
+                top: rect.bottom + window.scrollY + 10, // 10px відступ знизу кнопки
+                left: rect.left + window.scrollX,
+                width: Math.max(rect.width, 280), // Зберігаємо мінімальну ширину 280px з SCSS
+            });
+        }
+    }, [open, collapsed]);
+
     if (!isAuthenticated) return null;
 
     const isInCabinet = pathname?.startsWith('/artist-dashboard') ?? false;
@@ -83,13 +85,11 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
 
     const goPersonal = () => {
         close();
-        // Особистий режим = просто клієнтський застосунок; артист-вибір не чіпаємо.
         router.push('/home');
     };
 
     const goArtist = (artistId: string) => {
         close();
-        // Guard: перемикаємось лише на артиста зі списку керованих (захист від стейлу).
         if (!artists.some((a) => a.artistId === artistId)) return;
         setStoredArtistId(userId, artistId);
         router.push('/artist-dashboard');
@@ -101,7 +101,6 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
         else setShowPremium(true);
     };
 
-    // Що показуємо на тригері: активний кабінет або особистий профіль.
     const triggerName = activeArtist ? (activeArtist.name ?? 'Артист') : personalName;
     const triggerAvatar = activeArtist ? getImageUrl(activeArtist.avatarUrl) : personalAvatar;
     const triggerSub = activeArtist ? roleLabel(activeArtist.role) ?? 'Кабінет артиста' : 'Особистий профіль';
@@ -109,6 +108,7 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
     return (
         <div className={`account-switcher account-switcher--sidebar${collapsed ? ' account-switcher--collapsed' : ''}`}>
             <button
+                ref={triggerRef} // Прив'язуємо реф для зчитування позиції
                 type="button"
                 className="account-switcher__trigger"
                 onClick={() => setOpen((v) => !v)}
@@ -124,10 +124,30 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
                 <i className={`bi bi-chevron-down account-switcher__chevron${open ? ' account-switcher__chevron--up' : ''}`} />
             </button>
 
-            {open && (
+            {/* 🪐 РЕНДЕРИНГ МЕНЮ ЧЕРЕЗ REACT PORTAL В BODY КЛІЄНТА */}
+            {open && createPortal(
                 <>
-                    <div className="account-switcher__overlay" onClick={close} />
-                    <div className="account-switcher__menu" role="menu">
+                    {/* Глобальний оверлей клік-ауту тепер на весь екран */}
+                    <div
+                        className="account-switcher__overlay"
+                        onClick={close}
+                        style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'transparent' }}
+                    />
+
+                    {/* Випадаюче меню з фіксованими координатами поверх будь-яких overflow */}
+                    <div
+                        className="account-switcher__menu show"
+                        role="menu"
+                        style={{
+                            position: 'fixed',
+                            top: `${coords.top}px`,
+                            left: `${coords.left}px`,
+                            width: `${coords.width}px`,
+                            margin: 0,
+                            zIndex: 9999,
+                            display: 'block'
+                        }}
+                    >
                         <div className="account-switcher__label">Облікові записи</div>
 
                         {/* Особистий акаунт */}
@@ -170,7 +190,7 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
 
                         <div className="account-switcher__divider" />
 
-                        {/* Додати акаунт артиста (гейт по Premium) */}
+                        {/* Додати акаунт артиста */}
                         <button
                             type="button"
                             className="account-switcher__item account-switcher__item--add"
@@ -186,7 +206,8 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
                             </span>
                         </button>
                     </div>
-                </>
+                </>,
+                document.body
             )}
 
             <PremiumGateModal isOpen={showPremium} onClose={() => setShowPremium(false)} />

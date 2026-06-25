@@ -42,16 +42,16 @@ export const Footer = () => {
 
                 {/* Соцмережі */}
                 <div className="client-footer__socials">
-                    <a href="#" className="client-footer__social client-footer__social--fb" aria-label="Facebook">
+                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="client-footer__social client-footer__social--fb" aria-label="Facebook">
                         <i className="bi bi-facebook" />
                     </a>
-                    <a href="#" className="client-footer__social client-footer__social--tw" aria-label="Twitter">
+                    <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="client-footer__social client-footer__social--tw" aria-label="Twitter">
                         <i className="bi bi-twitter-x" />
                     </a>
-                    <a href="#" className="client-footer__social client-footer__social--pt" aria-label="Pinterest">
+                    <a href="https://pinterest.com" target="_blank" rel="noopener noreferrer" className="client-footer__social client-footer__social--pt" aria-label="Pinterest">
                         <i className="bi bi-pinterest" />
                     </a>
-                    <a href="#" className="client-footer__social client-footer__social--rss" aria-label="RSS">
+                    <a href="#" className="client-footer__social client-footer__social--rss" aria-label="RSS Feed">
                         <i className="bi bi-rss-fill" />
                     </a>
                 </div>

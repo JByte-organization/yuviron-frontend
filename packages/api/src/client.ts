@@ -24,6 +24,8 @@ export * from './generated/client/endpoints/complaints';
 export * from './generated/client/endpoints/stream';
 export * from './generated/client/endpoints/analytics';
 export * from './generated/client/endpoints/plans';
+export * from './generated/client/endpoints/public-media';
+export * from './generated/client/endpoints/marketing';
 
 export { postApiAnalyticsPlayStart, postApiAnalyticsPlayCommit } from './generated/client/endpoints/analytics';
 

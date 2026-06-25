@@ -31,7 +31,6 @@ export const AppearanceSettingsSection = ({ onToast }: AppearanceSettingsSection
     const { data: prefsRaw } = useGetApiMeSettingsPreferences();
     const prefs = (prefsRaw as { data?: UserSettingsDto })?.data ?? (prefsRaw as UserSettingsDto);
 
-    // ─── 🚨 ФІКС 1: Отримання списку тем з правильного ендпоінту ───────────
     const { data: themesRaw, isLoading: isThemesLoading } = useQuery({
         queryKey: ['api', 'client', 'appearance', 'themes'],
         queryFn: ({ signal }) => customInstance<any>('/api/me/appearance/themes', { method: 'GET', signal }),
@@ -67,24 +66,27 @@ export const AppearanceSettingsSection = ({ onToast }: AppearanceSettingsSection
                 } as unknown as UpdateThemeCommand
             });
             await queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
-            onToast?.(`Режим інтерфейсу змінено на ${mode}.`);
+
+            const modeLabels: Record<ThemeMode, string> = {
+                System: 'системний',
+                Dark: 'темний',
+                White: 'світлий'
+            };
+            onToast?.(`Режим інтерфейсу змінено на ${modeLabels[mode] || mode}.`);
         } catch (err) {
             console.error('[ThemeMode] Failed to save mode:', err);
         }
     };
 
-    // ─── 🚨 ФІКС 2: Активація теми через виділений роут Сваггера ───────────
     const handleSelectPreset = async (theme: ClientThemeDto) => {
         if (!isPremium || isSaving || !theme.id) return;
         setIsThemeActivating(true);
 
         try {
-            // Викликаємо нативний PUT-метод активації зі скріншоту Сваггера
             await customInstance(`/api/me/appearance/themes/${theme.id}/activate`, {
                 method: 'PUT'
             });
 
-            // 🚨 ФІКС: Передаємо 2 аргументи (ID нової теми та поточний масив тем)
             applyThemeGradients(theme.id, availableThemes);
 
             await queryClient.invalidateQueries({ queryKey: getGetApiMeSettingsPreferencesQueryKey() });
@@ -96,14 +98,21 @@ export const AppearanceSettingsSection = ({ onToast }: AppearanceSettingsSection
         }
     };
 
+    // Мапа відображення режимів інтерфейсу
+    const modeTranslations: Record<ThemeMode, string> = {
+        System: 'Системна',
+        Dark: 'Темна',
+        White: 'Світла'
+    };
+
     return (
         <div className="yuviron-settings-appearance d-flex flex-column gap-4">
             {/* БЛОК 1: INTERFACE BASE SHELL */}
             <div className="appearance-card-v2 p-4 rounded-4">
                 <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
                     <div>
-                        <span className="card-label d-block fw-bold mb-1">Interface Base Shell</span>
-                        <p className="card-description small mb-0">Select your preferred client layout canvas scheme.</p>
+                        <span className="card-label d-block fw-bold mb-1">Базова оболонка інтерфейсу</span>
+                        <p className="card-description small mb-0">Виберіть бажану колірну схему оформлення полотна клієнта.</p>
                     </div>
 
                     <div className="aesthetic-segmented-v2">
@@ -111,7 +120,7 @@ export const AppearanceSettingsSection = ({ onToast }: AppearanceSettingsSection
                             const isActive = prefs?.themeMode === mode;
                             return (
                                 <button key={mode} type="button" className={`segmented-btn-v2 ${isActive ? 'active-mode-bold' : ''}`} onClick={() => handleModeChange(mode)}>
-                                    {mode}
+                                    {modeTranslations[mode]}
                                 </button>
                             );
                         })}
@@ -125,15 +134,15 @@ export const AppearanceSettingsSection = ({ onToast }: AppearanceSettingsSection
                     <div className="premium-blur-overlay-v2 rounded-4 text-center p-4">
                         <div className="overlay-glass-card-v2 p-4 rounded-4">
                             <i className="bi bi-crown-fill crown-icon-v2 mb-2" />
-                            <h5 className="fw-bold mb-1 overlay-title">Theme Laboratory Gated</h5>
-                            <p className="small mb-0 overlay-desc">Custom approved ambient templates require active Premium status.</p>
+                            <h5 className="fw-bold mb-1 overlay-title">Лабораторія тем заблокована</h5>
+                            <p className="small mb-0 overlay-desc">Ексклюзивні затверджені амбієнтні шаблони вимагають активного статусу Premium.</p>
                         </div>
                     </div>
                 )}
 
                 <div className="mb-4">
-                    <span className="card-label d-block fw-bold mb-1">Ambient Universe Preset Selection</span>
-                    <p className="card-description small mb-0">Choose one of the official volumetric layouts deployed by server administration.</p>
+                    <span className="card-label d-block fw-bold mb-1">Вибір пресетів амбієнт-всесвіту</span>
+                    <p className="card-description small mb-0">Оберіть один із офіційних об'ємних макетів, розгорнутих адміністрацією сервера Yuviron.</p>
                 </div>
 
                 {isThemesLoading ? (
@@ -166,10 +175,7 @@ export const AppearanceSettingsSection = ({ onToast }: AppearanceSettingsSection
                                             )}
                                         </div>
                                         <div className="viewport-content-v2">
-                                            <span className="v-title d-block fw-bold text-white small">{preset.name ?? 'Untitled Theme'}</span>
-                                            <span className="v-sub font-monospace text-white-50 text-uppercase" style={{ fontSize: '9px', letterSpacing: '0.5px' }}>
-                                                Approved Preset
-                                            </span>
+                                            <span className="v-title d-block fw-bold text-white small">{preset.name ?? 'Тема без назви'}</span>
                                         </div>
                                     </div>
                                 </div>

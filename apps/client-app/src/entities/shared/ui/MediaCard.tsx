@@ -11,10 +11,6 @@ interface MediaCardProps {
     onClick?: () => void;
 }
 
-/**
- * Базовий компонент картки — обкладинка + назва + підпис.
- * Використовується в AlbumCard, PlaylistCard і будь-яких інших картках.
- */
 export const MediaCard = ({
                               title,
                               subtitle,

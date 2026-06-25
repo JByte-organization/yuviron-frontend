@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { notFound } from 'next/navigation';
 import {
     useGetApiAlbumsId,
     useGetApiAlbumsIdTracks,
+    usePostApiMarketingSmartlinks,
     getGetApiAlbumsIdQueryKey,
     getGetApiAlbumsIdTracksQueryKey,
     type AlbumDetailsDto,
@@ -15,6 +16,7 @@ import { getImageUrl } from '@/shared/lib/getImageUrl';
 import { useAvatarColor } from '@/shared/lib/useAvatarColor';
 import { TrackRow, type TrackRowData } from '@/entities/track/ui/TrackRow';
 import { AlbumHeader } from './ui/AlbumHeader';
+import { ReportAlbumModal } from '@/features/complaint/ui/ReportAlbumModal';
 import { useTrackCollection } from '@/shared/lib/useTrackCollection';
 
 interface AlbumPageProps {
@@ -35,30 +37,27 @@ const unwrapOrvalData = <T,>(rawResponse: unknown): T | undefined => {
 };
 
 export const AlbumPage = ({ albumId }: AlbumPageProps) => {
-    // 1. Запросы к API
-    const { data: albumRaw, isLoading: albumLoading } = useGetApiAlbumsId(
-        albumId,
-        {
-            query: {
-                enabled: !!albumId,
-                queryKey: getGetApiAlbumsIdQueryKey(albumId),
-            },
-        }
-    );
+    const [showReport, setShowReport] = useState(false);
+    const [successToast, setSuccessToast] = useState<string | null>(null);
 
-    const { data: tracksRaw, isLoading: tracksLoading } = useGetApiAlbumsIdTracks(
-        albumId,
-        {
-            query: {
-                enabled: !!albumId,
-                queryKey: getGetApiAlbumsIdTracksQueryKey(albumId),
-            },
-        }
-    );
+    const { data: albumRaw, isLoading: albumLoading } = useGetApiAlbumsId(albumId, {
+        query: { enabled: !!albumId, queryKey: getGetApiAlbumsIdQueryKey(albumId) }
+    });
+
+    const { data: tracksRaw, isLoading: tracksLoading } = useGetApiAlbumsIdTracks(albumId, {
+        query: { enabled: !!albumId, queryKey: getGetApiAlbumsIdTracksQueryKey(albumId) }
+    });
+
+    const { mutateAsync: generateSmartLink } = usePostApiMarketingSmartlinks();
 
     const album = unwrapOrvalData<AlbumDetailsDto>(albumRaw);
 
-    // 🌟 ХУКИ ВЫЗЫВАЕМ СТРОГО В САМОМ ВЕРХУ ДО ЛЮБЫХ RETURN!
+    // Безпечно витягуємо ID головного артиста альбому
+    const mainArtistId = useMemo(() => {
+        const artists = album?.artists as TrackArtistDto[] | null | undefined;
+        return artists?.[0]?.id ?? '';
+    }, [album]);
+
     const albumCoverSrc = useMemo(() => {
         if (!album?.coverUrl) return '/images/album/placeholder.png';
         return getImageUrl(album.coverUrl) ?? '/images/album/placeholder.png';
@@ -71,7 +70,6 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
         return albumCoverSrc;
     }, [albumCoverSrc]);
 
-    // 🌟 Переносим вызов хука useAvatarColor СЮДА (до условий загрузки)
     const detectedColor = useAvatarColor(album?.coverUrl ? proxiedCoverUrl : '');
     const dominantColor = detectedColor || '#282828';
 
@@ -92,9 +90,6 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
     }, [album]);
 
     const mappedTracks: TrackRowData[] = useMemo(() => {
-        const artistsList = album?.artists as TrackArtistDto[] | null | undefined;
-        const mainArtistId = artistsList?.[0]?.id;
-
         return rawTracks.map((track, index) => {
             let calculatedDuration: number | null = null;
             const rawDuration = (track as any).durationMs ?? (track as any).duration ?? (track as any).durationSeconds;
@@ -125,7 +120,7 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
                 addedAt:     album?.releaseDate ?? null,
             };
         });
-    }, [rawTracks, album, albumArtistsNames]);
+    }, [rawTracks, album, albumArtistsNames, mainArtistId]);
 
     const {
         processedTracks,
@@ -139,7 +134,41 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
         hideControls: true
     });
 
-    // 🌟 ТЕПЕРЬ УСЛОВИЯ РАННЕГО ВЫХОДА НАХОДЯТСЯ ПОД ВСЕМИ ХУКАМИ
+    const triggerToast = (msg: string) => {
+        setSuccessToast(msg);
+        setTimeout(() => setSuccessToast(null), 4000);
+    };
+
+    const handleShareAlbum = async () => {
+        try {
+            const response = await generateSmartLink({
+                data: {
+                    entityType: 'Album',
+                    entityId: albumId
+                }
+            });
+
+            const resData = (response as any)?.data || response;
+            const backendUrl = resData?.url || resData?.code;
+
+            if (backendUrl) {
+                await navigator.clipboard.writeText(backendUrl);
+                triggerToast("Посилання скопійовано!");
+            } else {
+                await navigator.clipboard.writeText(`${window.location.origin}/albums/${albumId}`);
+                triggerToast("Посилання скопійовано!");
+            }
+        } catch (error) {
+            console.error('[Share Album Error]', error);
+            try {
+                await navigator.clipboard.writeText(`${window.location.origin}/albums/${albumId}`);
+                triggerToast("Посилання скопійовано!");
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    };
+
     if (albumLoading || tracksLoading) {
         return (
             <div className="d-flex justify-content-center align-items-center bg-neutral-950" style={{ minHeight: '50vh' }}>
@@ -156,14 +185,16 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
                 title={album.title ?? 'Без назви'}
                 coverUrl={albumCoverSrc}
                 artistsNames={albumArtistsNames.join(', ')}
+                artistId={mainArtistId} // Прокидаємо ID артиста для роутингу лінка
                 releaseYear={albumReleaseYear}
                 tracksCount={album.tracksCount ?? 0}
-                dominantColor={dominantColor}
+                // dominantColor={dominantColor}
                 isCollectionPlaying={isCollectionPlaying}
                 onPlayAll={handlePlayAll}
                 onShufflePlay={handleShufflePlay}
+                onShare={handleShareAlbum}
+                onReport={() => setShowReport(true)}
             />
-
 
             <div className="album-page__tracks-container px-4 px-md-5 pb-5">
                 {processedTracks.length === 0 ? (
@@ -193,6 +224,22 @@ export const AlbumPage = ({ albumId }: AlbumPageProps) => {
                     </div>
                 )}
             </div>
+
+            {showReport && (
+                <ReportAlbumModal
+                    isOpen={showReport}
+                    onClose={() => setShowReport(false)}
+                    albumId={albumId}
+                    albumTitle={album.title ?? ''}
+                    onSuccess={() => triggerToast("Скарга на музичний альбом успішно надіслана.")}
+                />
+            )}
+
+            {successToast && (
+                <div className="position-fixed bottom-0 end-0 m-4 p-3 rounded-3 shadow-lg border border-success bg-dark text-success" style={{ zIndex: 1100, fontSize: '13px' }}>
+                    <span className="fw-semibold">✓ {successToast}</span>
+                </div>
+            )}
         </div>
     );
 };

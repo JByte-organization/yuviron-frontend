@@ -13,16 +13,23 @@
     gap: 10px;
     max-width: 220px;
     padding: 6px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+
+    // Адаптивна рамка та напівпрозорий фон картки
+    border: 1px solid $client-border;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.03);
-    color: #fff;
+    background: var(--client-hover);
+    color: $client-text;
+
     cursor: pointer;
     transition: background 0.18s ease, border-color 0.18s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.07);
-      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba($white, 0.07);
+      border-color: $client-border-strong;
+
+    [data-theme="light"] & {
+      background: rgba($black, 0.04);
+    }
     }
   }
 
@@ -42,11 +49,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: $client-text-strong;
   }
 
   &__trigger-sub {
     font-size: 11px;
-    color: #8c8c9e;
+    color: $client-text-muted;
     max-width: 130px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -55,7 +63,7 @@
 
   &__chevron {
     font-size: 12px;
-    color: #8c8c9e;
+    color: $client-text-muted;
     transition: transform 0.18s ease;
 
     &--up {
@@ -70,15 +78,16 @@
     flex-shrink: 0;
     border-radius: 50%;
     object-fit: cover;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--client-hover);
+    border: 1px solid $client-border;
 
-    &--placeholder {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #9aa3b2;
-      font-size: 14px;
-    }
+  &--placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: $client-text-muted;
+    font-size: 14px;
+  }
 
     &--add {
       display: inline-flex;
@@ -87,6 +96,7 @@
       color: $client-accent;
       background: rgba(0, 166, 255, 0.12);
       font-size: 14px;
+      border-color: transparent;
     }
   }
 
@@ -107,14 +117,22 @@
     z-index: 300;
     padding: 6px;
 
-    background: rgba(17, 17, 22, 1);
+    // Скляна Glassmorphism підкладка, що адаптується під тему
+    background: $client-surface;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid $client-border;
     border-radius: 16px;
+
+    // М'яка адаптивна тінь плашки
     box-shadow:
-      0 16px 48px rgba(0, 0, 0, 0.65),
-      inset 0 1px 1px rgba(255, 255, 255, 0.02);
+            0 16px 48px rgba(0, 0, 0, 0.35),
+            inset 0 1px 1px rgba(255, 255, 255, 0.03);
+
+    [data-theme="light"] & {
+      box-shadow: 0 12px 32px rgba(15, 23, 36, 0.08);
+    }
+
     overflow: hidden;
     animation: dropdownFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -125,7 +143,7 @@
     font-weight: 600;
     letter-spacing: 0.4px;
     text-transform: uppercase;
-    color: #6b6b7b;
+    color: $client-text-muted;
   }
 
   &__item {
@@ -137,21 +155,26 @@
     border: none;
     border-radius: 10px;
     background: transparent;
-    color: #c7c7d2;
+    color: $client-text-soft;
     text-align: left;
     cursor: pointer;
     transition: background 0.16s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--client-hover);
     }
 
     &--active {
       background: rgba(0, 166, 255, 0.10);
+      color: $client-text-strong;
+
+    [data-theme="light"] & {
+      background: rgba(0, 166, 255, 0.08);
+    }
     }
 
     &--add {
-      color: #c7c7d2;
+      color: $client-text-soft;
     }
   }
 
@@ -165,7 +188,7 @@
   &__item-name {
     font-size: 13.5px;
     font-weight: 600;
-    color: #fff;
+    color: $client-text-strong;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -173,7 +196,7 @@
 
   &__item-sub {
     font-size: 11.5px;
-    color: #8c8c9e;
+    color: $client-text-muted;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -188,7 +211,7 @@
   &__divider {
     height: 1px;
     margin: 6px 8px;
-    background: rgba(255, 255, 255, 0.06);
+    background: $client-border;
   }
 }
 

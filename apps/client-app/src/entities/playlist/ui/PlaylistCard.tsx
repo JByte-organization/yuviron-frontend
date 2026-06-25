@@ -27,8 +27,8 @@ export const PlaylistCard = ({ playlist, onClick }: PlaylistCardProps) => {
         <MediaCard
             title={playlist.name}
             subtitle={subtitle}
-            coverUrl={playlist.coverUrl} // Передаємо як є
-            coverSeed={`playlist-${playlist.id}`} // 🌟 Префікс 'playlist' залізно ввімкне потрібний плейсхолдер
+            coverUrl={playlist.coverUrl}
+            coverSeed={`playlist-${playlist.id}`}
             onClick={() => onClick?.(playlist.id)}
         />
     );

@@ -850,12 +850,13 @@
 
 .yuviron-settings {
   min-height: 100vh;
+  color: $client-text; // Автоматично перемикається між #FFFFFF та #0D1520
 
   .settings-micro-headline {
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
-    color: #7AE0FF;
+    color: $client-accent; // Адаптивний ціановий акцент
     letter-spacing: 0.15em;
     display: block;
   }
@@ -868,12 +869,12 @@
     .settings-title {
       font-size: 32px;
       font-weight: 900;
-      color: #FFFFFF;
+      color: $client-text-strong; // Ідеальний контраст у обох темах
     }
 
     .settings-subtitle {
       font-size: 14px;
-      color: #4E4E5E;
+      color: $client-text-muted; // М'який колір опису, що адаптується
       margin-top: 4px;
     }
   }
@@ -881,7 +882,7 @@
   .settings-divider {
     border: none;
     height: 1px;
-    background: rgba(255, 255, 255, 0.02);
+    background: $client-border; // Замість прозорого білого використовує системну рамку
     margin: 0;
   }
 
@@ -891,8 +892,8 @@
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: #7AE0FF;
-      filter: drop-shadow(0 0 6px rgba(122, 224, 255, 0.2));
+      color: $client-accent;
+      filter: drop-shadow(0 0 6px rgba(0, 166, 255, 0.2));
       margin-bottom: 24px;
     }
   }
@@ -903,22 +904,22 @@
     align-items: center;
     justify-content: space-between;
     padding: 18px 0;
-    border-bottom: 1px solid rgba(122, 224, 255, 0.02);
+    border-bottom: 1px solid $client-border;
 
     &.disabled {
       opacity: 0.25;
-      pointer-events: none; // Полная блокировка для free-аккаунтов
+      pointer-events: none;
     }
 
     .settings-info {
       .settings-label {
         font-size: 15px;
         font-weight: 600;
-        color: #FFFFFF;
+        color: $client-text-strong; // Був хардкод #FFFFFF, тепер адаптивний токен
       }
       .settings-description {
         font-size: 12.5px;
-        color: #4E4E5E;
+        color: $client-text-soft; // Текст опису тепер чудово видно на світлому тлі
         margin-top: 3px;
         margin-bottom: 0;
         max-width: 460px;
@@ -939,11 +940,10 @@
       width: 0;
       height: 0;
 
-      // Логика состояния Checked
       &:checked + .custom-checkbox-box {
-        background: rgba(122, 224, 255, 0.08);
-        border-color: #7AE0FF;
-        box-shadow: 0 0 12px rgba(122, 224, 255, 0.2);
+        background: rgba(0, 166, 255, 0.08);
+        border-color: $client-accent;
+        box-shadow: 0 0 12px rgba(0, 166, 255, 0.2);
 
         .check-icon {
           transform: scale(1);
@@ -955,8 +955,8 @@
     .custom-checkbox-box {
       width: 22px;
       height: 22px;
-      background: rgba(255, 255, 255, 0.01);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: $client-field-bg; // Фон підлаштовується під світлу/темну тему
+      border: 1px solid $client-field-border;
       border-radius: 6px;
       display: flex;
       align-items: center;
@@ -965,15 +965,15 @@
 
       .check-icon {
         font-size: 13px;
-        color: #7AE0FF;
+        color: $client-accent;
         opacity: 0;
         transform: scale(0.6);
         transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       }
 
       &:hover {
-        border-color: rgba(122, 224, 255, 0.4);
-        background: rgba(255, 255, 255, 0.02);
+        border-color: $client-accent-hover;
+        background: var(--client-hover);
       }
     }
   }
@@ -983,9 +983,9 @@
     .minimal-select {
       appearance: none;
       -webkit-appearance: none;
-      background-color: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      color: #FFFFFF;
+      background-color: $client-field-bg;
+      border: 1px solid $client-field-border;
+      color: $client-text-strong;
       font-size: 13px;
       font-weight: 600;
       padding: 8px 36px 8px 14px;
@@ -993,23 +993,24 @@
       outline: none;
       cursor: pointer;
 
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%234E4E5E' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+      // Динамічна іконка шеврону, колір якої адаптується через %23 в URL
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%237791B2' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 12px center;
       transition: all 0.2s ease;
 
       &:hover {
-        border-color: rgba(122, 224, 255, 0.3);
+        border-color: $client-accent-hover;
       }
 
       &:focus {
-        border-color: #7AE0FF;
-        box-shadow: 0 0 10px rgba(122, 224, 255, 0.15);
+        border-color: $client-field-focus;
+        box-shadow: 0 0 10px rgba(0, 166, 255, 0.15);
       }
 
       option {
-        background-color: #0A0A10;
-        color: #FFFFFF;
+        background-color: $client-surface; // Випадаючий список стане білим у світлій темі
+        color: $client-text-strong;
       }
     }
   }
@@ -1018,9 +1019,9 @@
   .range-value {
     font-size: 13px;
     font-weight: 700;
-    color: #7AE0FF;
+    color: $client-accent;
     font-family: monospace;
-    background: rgba(122, 224, 255, 0.05);
+    background: rgba(0, 166, 255, 0.05);
     padding: 2px 8px;
     border-radius: 4px;
   }
@@ -1033,7 +1034,7 @@
       -webkit-appearance: none;
       appearance: none;
       width: 100%;
-      background: rgba(255, 255, 255, 0.04);
+      background: $client-field-border;
       height: 3px;
       border-radius: 100px;
       outline: none;
@@ -1044,8 +1045,8 @@
         width: 12px;
         height: 12px;
         border-radius: 50%;
-        background: #7AE0FF;
-        box-shadow: 0 0 8px rgba(122, 224, 255, 0.5);
+        background: $client-accent;
+        box-shadow: 0 0 8px rgba(0, 166, 255, 0.5);
         cursor: grab;
         transition: transform 0.15s ease;
 
@@ -1056,9 +1057,9 @@
   }
 
   .premium-pill {
-    background: rgba(255, 193, 7, 0.04);
-    border: 1px solid rgba(255, 193, 7, 0.15);
-    color: #FFC107;
+    background: rgba(255, 193, 7, 0.08);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    color: $client-premium;
     font-size: 9px;
     font-weight: 800;
     padding: 2px 6px;

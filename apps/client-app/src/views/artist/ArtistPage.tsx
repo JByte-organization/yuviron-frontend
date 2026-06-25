@@ -26,6 +26,7 @@ import {
 import { useAuthGuard } from '@/shared/lib/useAuthGuard';
 
 import { ArtistPageHeader } from './ui/ArtistPageHeader';
+import { ReportArtistModal } from '@/features/complaint/ui/ReportArtistModal';
 import { ArtistMusicSection } from './ui/ArtistMusicSection';
 import { ArtistRelatedTracksSection } from './ui/ArtistRelatedTracksSection';
 import { ArtistSimilarArtistsSection } from './ui/ArtistSimilarArtistsSection';
@@ -57,20 +58,21 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
     const { playQueue, togglePlay } = usePlayer();
     const { requireAuth } = useAuthGuard();
 
-    // Получаем состояние плеера для интерактивной кнопки Play в шапке
     const currentTrackId = usePlayerStore(s => s.currentTrack?.id);
     const playerStatus   = usePlayerStore(s => s.status);
 
-    // ─── 1. ВСЕ ЗАПРОСЫ К API (Параллельный запуск через React Query) ────────
+    // Локальные стейты для жалоб
+    const [showReport, setShowReport] = useState(false);
+    const [successToast, setSuccessToast] = useState<string | null>(null);
+
+    // ─── ЗАПРОСЫ К API ───────────────────────────────────────────────────────
     const { data: artistData, isLoading: isArtistLoading } = useGetApiArtistsId(artistId);
     const { data: topTracksRaw } = useGetApiArtistsIdTopTracks(artistId, { limit: 5 });
 
-    // Музыкальные релизы (табы)
     const { data: popularRaw, isLoading: isPopularLoading } = useGetApiArtistsIdPopularReleases(artistId);
     const { data: albumsRaw,  isLoading: isAlbumsLoading  } = useGetApiArtistsIdAlbums(artistId);
     const { data: singlesRaw, isLoading: isSinglesLoading } = useGetApiArtistsIdSingles(artistId);
 
-    // Связанные треки, плейлисты и похожие артисты
     const { data: relatedRaw, isLoading: isRelatedLoading } = useGetApiArtistsIdRelatedTracks(artistId);
     const { data: playlistsRaw, isLoading: isPlaylistsLoading } = useGetApiArtistsIdPlaylists(artistId);
     const { data: similarRaw, isLoading: isSimilarLoading } = useGetApiArtistsIdSimilarArtists(artistId);
@@ -108,7 +110,11 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
         });
     };
 
-    // ─── 2. РАЗВЕРТЫВАНИЕ СПИСКОВ ДЛЯ СЕКЦИЙ ─────────────────────────────────
+    const handleReportSuccess = () => {
+        setSuccessToast("Скарга успішно надіслана модераційному вузлу.");
+        setTimeout(() => setSuccessToast(null), 4000);
+    };
+
     const popularReleases = extractList<ArtistAlbumDto>(popularRaw);
     const albums          = extractList<ArtistAlbumDto>(albumsRaw);
     const singles         = extractList<ArtistAlbumDto>(singlesRaw);
@@ -116,7 +122,6 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
     const playlists       = extractList<ArtistPlaylistDto>(playlistsRaw);
     const similarArtists  = extractList<SimilarArtistDto>(similarRaw);
 
-    // Мапимо топ-треки для кнопки "Play All" у хедері
     const topTracksMapped: TrackCardData[] = useMemo(() => {
         return extractList<ArtistTopTrackDto>(topTracksRaw).map(t => ({
             id:          t.id ?? '',
@@ -127,13 +132,11 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
         }));
     }, [topTracksRaw]);
 
-    // Вычисляем, играет ли сейчас какой-либо топ-трек этого артиста
     const isCollectionPlaying = useMemo(() => {
         if (playerStatus !== 'playing' || topTracksMapped.length === 0) return false;
         return topTracksMapped.some(t => t.id === currentTrackId);
     }, [topTracksMapped, currentTrackId, playerStatus]);
 
-    // Общий первичный спиннер загрузки профиля
     if (isArtistLoading) {
         return (
             <div className="container-fluid px-lg-4 py-5 text-center">
@@ -144,7 +147,6 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
 
     if (!artist) return <div className="container-fluid p-5">Виконавця не знайдено</div>;
 
-    // Умный обработчик кнопки Play в шапке
     const handlePlayAllTopTracks = () => {
         if (topTracksMapped.length === 0) return;
 
@@ -170,15 +172,14 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
                     onFollow={handleFollow}
                     isFollowing={isFollowing}
                     followPending={followPending}
+                    onReport={() => setShowReport(true)} // Открываем модалку жалобы
                 />
 
-                {/* Популярні треки */}
                 <ArtistTopTracksSection
                     artistId={artistId}
                     artistName={artist.name ?? ''}
                 />
 
-                {/* Музика — популярні релизы, альбоми, сингли */}
                 <ArtistMusicSection
                     artistName={artist.name ?? ''}
                     popularReleases={popularReleases}
@@ -188,7 +189,6 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
                     onAlbumClick={(id) => router.push(`/albums/${id}`)}
                 />
 
-                {/* Вас може зацікавити */}
                 <ArtistRelatedTracksSection
                     tracks={relatedTracks}
                     isLoading={isRelatedLoading}
@@ -197,22 +197,12 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
                     }}
                 />
 
-                {/* Шанувальникам також подобаються */}
                 <ArtistSimilarArtistsSection
                     artists={similarArtists}
                     isLoading={isSimilarLoading}
                     onArtistClick={(id) => router.push(`/artists/${id}`)}
                 />
 
-                {/* Плейлісти виконавця */}
-                {/*<ArtistPlaylistsSection*/}
-                {/*    artistName={artist.name ?? ''}*/}
-                {/*    playlists={playlists}*/}
-                {/*    isLoading={isPlaylistsLoading}*/}
-                {/*    onPlaylistClick={(id) => router.push(`/playlists/${id}`)}*/}
-                {/*/>*/}
-
-                {/* Про виконавця */}
                 <ArtistAboutSection
                     artistId={artistId}
                     monthlyListeners={artist.listenersCount}
@@ -220,6 +210,24 @@ export const ArtistPage = ({ artistId }: ArtistPageProps) => {
                     bannerUrl={artist.bannerUrl}
                 />
             </div>
+
+            {/* Модальное окно жалобы */}
+            {showReport && (
+                <ReportArtistModal
+                    isOpen={showReport}
+                    onClose={() => setShowReport(false)}
+                    artistId={artistId}
+                    artistName={artist.name ?? ''}
+                    onSuccess={handleReportSuccess}
+                />
+            )}
+
+            {/* Всплывающий тост */}
+            {successToast && (
+                <div className="position-fixed bottom-0 end-0 m-4 p-3 rounded-3 shadow-lg border border-success bg-dark text-success" style={{ zIndex: 1100, fontSize: '13px' }}>
+                    <span className="fw-semibold">✓ {successToast}</span>
+                </div>
+            )}
         </div>
     );
 };
