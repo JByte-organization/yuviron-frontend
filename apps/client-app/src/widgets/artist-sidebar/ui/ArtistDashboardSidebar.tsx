@@ -121,25 +121,8 @@ export const ArtistDashboardSidebar = () => {
                     </div>
 
                 </div>
-
-                <button
-                    className="client-sidebar__toggle"
-                    onClick={() => setCollapsed(true)}
-                    aria-label="Сховати сайдбар"
-                >
-                    <i className="bi bi-chevron-left" />
-                </button>
             </aside>
 
-            {collapsed && (
-                <button
-                    className="client-sidebar__restore-btn"
-                    onClick={() => setCollapsed(false)}
-                    aria-label="Показати сайдбар"
-                >
-                    <i className="bi bi-chevron-right" />
-                </button>
-            )}
         </>
     );
 };
