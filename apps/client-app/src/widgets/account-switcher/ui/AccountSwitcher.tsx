@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom'; // Імпортуємо Портал для винесення за межі overflow сайдбара
+import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';
 import {
     getGetApiAuthMeQueryKey,
@@ -55,20 +55,34 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
     const [open, setOpen] = useState(false);
     const [showPremium, setShowPremium] = useState(false);
 
-    // Реф та стейт для динамічного прорахунку координат випадаючого меню
     const triggerRef = useRef<HTMLButtonElement>(null);
     const [coords, setCoords] = useState({ top: 0, left: 0, width: 280 });
 
-    // Оновлюємо координати при відкритті меню або зміні розмірів екрана/сайдбара
+    // 🌟 ФІКС: Динамічний перерахунок координат відносно в'юпорту при скролі та ресайзі
     useEffect(() => {
-        if (open && triggerRef.current) {
-            const rect = triggerRef.current.getBoundingClientRect();
-            setCoords({
-                top: rect.bottom + window.scrollY + 10, // 10px відступ знизу кнопки
-                left: rect.left + window.scrollX,
-                width: Math.max(rect.width, 280), // Зберігаємо мінімальну ширину 280px з SCSS
-            });
+        const updateCoordinates = () => {
+            if (open && triggerRef.current) {
+                const rect = triggerRef.current.getBoundingClientRect();
+                setCoords({
+                    top: rect.bottom + 10, // 10px відступ прямо під кнопкою тригера
+                    left: rect.left,
+                    width: Math.max(rect.width, 280),
+                });
+            }
+        };
+
+        if (open) {
+            updateCoordinates();
+
+            window.addEventListener('resize', updateCoordinates);
+            // capture: true відстежує скрол у будь-якому елементі (навіть усередині сайдбара)
+            window.addEventListener('scroll', updateCoordinates, { capture: true });
         }
+
+        return () => {
+            window.removeEventListener('resize', updateCoordinates);
+            window.removeEventListener('scroll', updateCoordinates, { capture: true });
+        };
     }, [open, collapsed]);
 
     if (!isAuthenticated) return null;
@@ -108,7 +122,7 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
     return (
         <div className={`account-switcher account-switcher--sidebar${collapsed ? ' account-switcher--collapsed' : ''}`}>
             <button
-                ref={triggerRef} // Прив'язуємо реф для зчитування позиції
+                ref={triggerRef}
                 type="button"
                 className="account-switcher__trigger"
                 onClick={() => setOpen((v) => !v)}
@@ -124,22 +138,19 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
                 <i className={`bi bi-chevron-down account-switcher__chevron${open ? ' account-switcher__chevron--up' : ''}`} />
             </button>
 
-            {/* 🪐 РЕНДЕРИНГ МЕНЮ ЧЕРЕЗ REACT PORTAL В BODY КЛІЄНТА */}
             {open && createPortal(
                 <>
-                    {/* Глобальний оверлей клік-ауту тепер на весь екран */}
                     <div
                         className="account-switcher__overlay"
                         onClick={close}
                         style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'transparent' }}
                     />
 
-                    {/* Випадаюче меню з фіксованими координатами поверх будь-яких overflow */}
                     <div
                         className="account-switcher__menu show"
                         role="menu"
                         style={{
-                            position: 'fixed',
+                            position: 'fixed', // Залишаємо фіксованим, координати тепер вираховуються ідеально
                             top: `${coords.top}px`,
                             left: `${coords.left}px`,
                             width: `${coords.width}px`,
@@ -150,7 +161,6 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
                     >
                         <div className="account-switcher__label">Облікові записи</div>
 
-                        {/* Особистий акаунт */}
                         <button
                             type="button"
                             className={`account-switcher__item${!isInCabinet ? ' account-switcher__item--active' : ''}`}
@@ -165,7 +175,6 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
                             {!isInCabinet && <i className="bi bi-check2 account-switcher__check" />}
                         </button>
 
-                        {/* Кабінети артистів */}
                         {artists.map((a) => {
                             const active = isInCabinet && a.artistId === selectedArtistId;
                             return (
@@ -190,7 +199,6 @@ export const AccountSwitcher = ({ collapsed = false }: { collapsed?: boolean }) 
 
                         <div className="account-switcher__divider" />
 
-                        {/* Додати акаунт артиста */}
                         <button
                             type="button"
                             className="account-switcher__item account-switcher__item--add"

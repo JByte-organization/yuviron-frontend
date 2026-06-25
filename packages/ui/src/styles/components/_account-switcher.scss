@@ -14,7 +14,6 @@
     max-width: 220px;
     padding: 6px 10px;
 
-    // Адаптивна рамка та напівпрозорий фон картки
     border: 1px solid $client-border;
     border-radius: 12px;
     background: var(--client-hover);
@@ -27,9 +26,9 @@
       background: rgba($white, 0.07);
       border-color: $client-border-strong;
 
-    [data-theme="light"] & {
-      background: rgba($black, 0.04);
-    }
+      [data-theme="light"] & {
+        background: rgba($black, 0.04);
+      }
     }
   }
 
@@ -71,7 +70,6 @@
     }
   }
 
-  // ─── Аватар (тригер + пункти) ───────────────────────────────
   &__avatar {
     width: 28px;
     height: 28px;
@@ -81,13 +79,13 @@
     background: var(--client-hover);
     border: 1px solid $client-border;
 
-  &--placeholder {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: $client-text-muted;
-    font-size: 14px;
-  }
+    &--placeholder {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: $client-text-muted;
+      font-size: 14px;
+    }
 
     &--add {
       display: inline-flex;
@@ -100,7 +98,6 @@
     }
   }
 
-  // ─── Оверлей для клік-аут ───────────────────────────────────
   &__overlay {
     position: fixed;
     inset: 0;
@@ -108,23 +105,19 @@
     background: transparent;
   }
 
-  // ─── Меню ───────────────────────────────────────────────────
+  // ─── Меню (🌟 ФІКС: міняємо на fixed) ───────────────────
   &__menu {
-    position: absolute;
-    top: calc(100% + 10px);
-    left: 0;
+    position: fixed !important; // Перебиваємо будь-які абсолютні стилі
     min-width: 280px;
-    z-index: 300;
+    z-index: 9999;
     padding: 6px;
 
-    // Скляна Glassmorphism підкладка, що адаптується під тему
     background: $client-surface;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid $client-border;
     border-radius: 16px;
 
-    // М'яка адаптивна тінь плашки
     box-shadow:
             0 16px 48px rgba(0, 0, 0, 0.35),
             inset 0 1px 1px rgba(255, 255, 255, 0.03);
@@ -168,9 +161,9 @@
       background: rgba(0, 166, 255, 0.10);
       color: $client-text-strong;
 
-    [data-theme="light"] & {
-      background: rgba(0, 166, 255, 0.08);
-    }
+      [data-theme="light"] & {
+        background: rgba(0, 166, 255, 0.08);
+      }
     }
 
     &--add {
@@ -214,7 +207,6 @@
     background: $client-border;
   }
 }
-
 // На вузьких екранах ховаємо текст, лишаємо тільки аватар+chevron.
 @media (max-width: 720px) {
   .account-switcher__trigger-text {

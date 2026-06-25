@@ -285,12 +285,12 @@
   background: transparent;
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-  // Обёртка, контролирующая размеры (адаптивная под Bootstrap)
+  // ─── Обёртка, контролирующая размеры (ФИКС ОВАЛОВ) ───────
   &__circle-wrap {
     width: 100%;
-    max-height: 160px;
-    min-height: 84px; // Чтобы тянулось адекватно мобилкам
-    aspect-ratio: 1 / 1;
+    max-width: 160px; // 🌟 МЕНЯЕМ max-height НА max-width! Это ограничит рост круга вверх
+    margin: 0 auto;   // Центрируем круг внутри адаптивной колонки Bootstrap
+    aspect-ratio: 1 / 1; // 🌟 Теперь и ширина, и высота будут гарантированно эквивалентны
     position: relative;
   }
 
@@ -319,12 +319,12 @@
   }
 
   &__icon {
-    width: 55%; // Пропорциональный размер иконки относительно круга
+    width: 55%;
     height: 55%;
     object-fit: contain;
     transition: all 0.25s ease;
 
-    // На картинке у иконки (особенно у молнии и капли) есть мягкое неоновое свечение внутри круга
+    // На картинке у иконки есть мягкое неоновое свечение внутри круга
     filter: var(--client-mood-icon-shadow);
   }
 
@@ -358,7 +358,7 @@
     }
 
     .mood-card__name {
-      color: var(--client-mood-accent); // Текст становится акцентным (голубым)
+      color: var(--client-mood-accent);
     }
   }
 }
